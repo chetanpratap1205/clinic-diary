@@ -1,0 +1,166 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { LayoutDashboard, Calendar, Settings, LogOut, ExternalLink, Menu, X, Loader2 } from "lucide-react";
+import { useState, useTransition } from "react";
+import { logoutDoctor } from "@/app/dashboard/actions";
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+
+interface SidebarProps {
+  clinicName: string;
+  clinicSlug: string;
+  doctorName: string;
+  themeColor?: string;
+}
+
+const navItems = [
+  { href: "/dashboard", label: "Today", icon: LayoutDashboard },
+  { href: "/dashboard/calendar", label: "Calendar", icon: Calendar },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings },
+];
+
+export function Sidebar({ clinicName, clinicSlug, doctorName, themeColor = "#0ea5e9" }: SidebarProps) {
+  const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  const handleLogout = () => {
+    startTransition(async () => {
+      toast.promise(logoutDoctor(), {
+        loading: "Signing out securely...",
+        success: "Signed out successfully",
+        error: "Failed to sign out",
+      });
+    });
+  };
+
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full bg-white">
+      {/* Logo */}
+      <div className="p-5 border-b border-slate-100/60 bg-white">
+        <div className="flex items-center gap-3">
+          <div 
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm" 
+            style={{ backgroundColor: themeColor }}
+          >
+            {clinicName[0]?.toUpperCase() ?? "N"}
+          </div>
+          <div className="overflow-hidden">
+            <p className="font-semibold text-sm text-slate-900 truncate tracking-tight">{clinicName}</p>
+            <p className="text-xs text-slate-500 truncate">{doctorName}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto">
+        {navItems.map((item) => {
+          const active = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setMobileOpen(false)}
+              className="relative block"
+            >
+              {active && (
+                <motion.div
+                  layoutId="sidebar-active"
+                  className="absolute inset-0 rounded-xl"
+                  style={{ backgroundColor: themeColor, opacity: 0.1 }}
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                />
+              )}
+              <div
+                className={cn(
+                  "relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                  active
+                    ? "text-slate-900"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                )}
+                style={active ? { color: themeColor } : {}}
+              >
+                <item.icon className="w-4 h-4 flex-shrink-0" />
+                {item.label}
+              </div>
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Footer Actions */}
+      <div className="p-3 border-t border-slate-100 bg-slate-50/50">
+        <a
+          href={`/book/${clinicSlug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-white hover:shadow-sm hover:text-slate-900 transition-all border border-transparent hover:border-slate-200"
+        >
+          <ExternalLink className="w-4 h-4 flex-shrink-0 text-sky-600" />
+          View Booking Page
+        </a>
+        <button
+          onClick={handleLogout}
+          disabled={isPending}
+          className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all mt-1"
+        >
+          {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4 flex-shrink-0" />}
+          Sign Out
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white/80 backdrop-blur-md border-b border-slate-200/60 flex items-center justify-between px-4 z-40">
+        <div className="flex items-center gap-2.5">
+          <div 
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-sm" 
+            style={{ backgroundColor: themeColor }}
+          >
+            {clinicName[0]?.toUpperCase() ?? "N"}
+          </div>
+          <span className="font-semibold text-slate-900 text-sm tracking-tight">{clinicName}</span>
+        </div>
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="p-2 -mr-2 rounded-lg hover:bg-slate-100 transition-colors"
+        >
+          {mobileOpen ? <X className="w-5 h-5 text-slate-600" /> : <Menu className="w-5 h-5 text-slate-600" />}
+        </button>
+      </div>
+
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="lg:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-30"
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Mobile Sidebar */}
+      <div className={cn(
+        "lg:hidden fixed left-0 top-14 bottom-0 w-[280px] bg-white border-r border-slate-200 z-40 transition-transform duration-300 ease-out",
+        mobileOpen ? "translate-x-0" : "-translate-x-full shadow-2xl"
+      )}>
+        <SidebarContent />
+      </div>
+
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 bg-white border-r border-slate-200 z-10 shadow-sm">
+        <SidebarContent />
+      </div>
+    </>
+  );
+}
