@@ -3,9 +3,8 @@ import { Pool } from "pg";
 
 const databaseUrl = process.env.DATABASE_URL;
 
-if (!databaseUrl) {
-  throw new Error("DATABASE_URL is required");
-}
+// We don't throw an error here immediately because Next.js evaluates this file during the build step.
+// If DATABASE_URL is missing, the Pool will naturally fail later when a connection is actually attempted.
 
 const globalForDb = globalThis as typeof globalThis & {
   __arenaNextJsPostgresqlPool?: Pool;
