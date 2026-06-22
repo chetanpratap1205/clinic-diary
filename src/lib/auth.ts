@@ -47,7 +47,11 @@ export async function getAuthUser(): Promise<AuthUser | null> {
       clinicId: clinic[0]?.id ?? null,
       clinicSlug: clinic[0]?.slug ?? null,
     };
-  } catch (err) {
+  } catch (err: any) {
+    // Next.js uses exceptions to handle dynamic routing, so we must rethrow it
+    if (err?.digest === "DYNAMIC_SERVER_USAGE" || err?.message?.includes("Dynamic server usage")) {
+      throw err;
+    }
     console.error("getAuthUser error:", err);
     return null;
   }
