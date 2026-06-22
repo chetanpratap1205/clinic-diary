@@ -66,7 +66,7 @@ export async function GET(request: Request) {
       if (!clinicRecords.length) continue;
       const clinic = clinicRecords[0];
 
-      const trackingUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in"}/track/${appt.id}`;
+      const trackingUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://doctordiary.in"}/track/${appt.id}`;
 
       // Check Daily Reminder: If within 24 hours and hasn't been sent yet
       if (minsUntil <= 24 * 60 && minsUntil > 0 && !sentTriggers.has("reminder_24h")) {

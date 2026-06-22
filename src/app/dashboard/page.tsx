@@ -80,7 +80,7 @@ export default async function DashboardPage() {
     .limit(1);
 
   const clinicData = clinic[0];
-  const bookingUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in"}/${clinicData?.slug}`;
+  const bookingUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://doctordiary.in"}/${clinicData?.slug}`;
 
   return (
     <StaggerContainer className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-8">

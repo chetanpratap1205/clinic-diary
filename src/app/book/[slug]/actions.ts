@@ -111,7 +111,7 @@ export async function createBooking(
     
     if (clinicRecord.length > 0) {
       const clinic = clinicRecord[0];
-      const trackingUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in"}/track/${newAppointment.id}`;
+      const trackingUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://doctordiary.in"}/track/${newAppointment.id}`;
       
       // Fire and forget the simulated SMS notification
       sendNotification("sms", "booking_confirmation", {

@@ -37,7 +37,7 @@ export default async function BookingLayout({
       
       {/* Minimal Footer */}
       <footer className="py-6 text-center text-slate-400 text-xs">
-        Powered by Nature Express
+        Powered by Doctor Diary
       </footer>
     </div>
   );

@@ -177,7 +177,7 @@ export default function OnboardingWizard() {
                         <Label htmlFor="slug">Public Booking URL</Label>
                         <div className="flex items-center">
                           <div className="bg-slate-100 text-slate-500 px-3 py-2 rounded-l-md border border-r-0 border-slate-200 text-sm">
-                            doctor.naturexpress.in/
+                            doctordiary.in/
                           </div>
                           <Input
                             id="slug"

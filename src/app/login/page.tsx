@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, Activity } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
 
@@ -45,7 +45,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-slate-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-slate-50 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -54,10 +54,10 @@ export default function LoginPage() {
       >
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-sky-600 flex items-center justify-center shadow-md">
-              <span className="text-white font-bold text-lg">N</span>
+            <div className="w-10 h-10 rounded-xl bg-teal-700 flex items-center justify-center shadow-md">
+              <Activity className="w-5 h-5 text-white" strokeWidth={3} />
             </div>
-            <span className="font-bold text-slate-900 text-xl tracking-tight">Nature Express Hub</span>
+            <span className="font-bold text-slate-900 text-xl tracking-tight">Doctor Diary</span>
           </Link>
         </div>
 
@@ -78,7 +78,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoComplete="email"
-                  className="transition-all duration-200 focus:ring-sky-500/20"
+                  className="transition-all duration-200 focus:ring-teal-500/20"
                 />
               </div>
 
@@ -95,7 +95,7 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     autoComplete="current-password"
-                    className="pr-10 transition-all duration-200 focus:ring-sky-500/20"
+                    className="pr-10 transition-all duration-200 focus:ring-teal-500/20"
                   />
                   <button
                     type="button"
@@ -107,14 +107,14 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full bg-sky-600 hover:bg-sky-700 text-white shadow-md transition-all active:scale-[0.98]" size="lg" disabled={loading}>
+              <Button type="submit" className="w-full bg-teal-700 hover:bg-teal-800 text-white shadow-md transition-all active:scale-[0.98]" size="lg" disabled={loading}>
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign In"}
               </Button>
             </form>
 
             <div className="mt-8 text-center text-sm text-slate-500">
               Don&apos;t have an account?{" "}
-              <Link href="/signup" className="text-sky-600 font-medium hover:text-sky-700 transition-colors">
+              <Link href="/signup" className="text-teal-700 font-medium hover:text-teal-800 transition-colors">
                 Create one free
               </Link>
             </div>
