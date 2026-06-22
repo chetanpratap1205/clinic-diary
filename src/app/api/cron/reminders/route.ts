@@ -56,8 +56,8 @@ export async function GET(request: Request) {
 
       const minsUntil = differenceInMinutes(apptTime, now);
 
-      // We only care about appointments within 24 hours
-      if (minsUntil > 24 * 60 + 15) continue; // +15 mins buffer
+      // We only care about appointments within the next 24 hours
+      if (minsUntil > 24 * 60) continue;
 
       const sentTriggers = logsByAppt[appt.id] || new Set();
 
@@ -68,9 +68,9 @@ export async function GET(request: Request) {
 
       const trackingUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in"}/track/${appt.id}`;
 
-      // Check 24-Hour Reminder: If within 24.25 hours and hasn't been sent
-      if (minsUntil <= 24 * 60 + 15 && minsUntil > 23 * 60 && !sentTriggers.has("reminder_24h")) {
-        console.log(`[CRON] Triggering 24h reminder for Appt ${appt.id}`);
+      // Check Daily Reminder: If within 24 hours and hasn't been sent yet
+      if (minsUntil <= 24 * 60 && minsUntil > 0 && !sentTriggers.has("reminder_24h")) {
+        console.log(`[CRON] Triggering daily reminder for Appt ${appt.id}`);
         await sendNotification("sms", "reminder_24h", {
           appointmentId: appt.id,
           patientPhone: appt.patientPhone,
