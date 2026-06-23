@@ -1,12 +1,16 @@
 import { redirect } from "next/navigation";
 import { getAuthUser } from "@/lib/auth";
 import { db } from "@/db";
-import { clinics, clinicAdmins } from "@/db/schema";
+import { clinics } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import type { ReactNode } from "react";
 
-export default async function DashboardLayout({ children }: { children: ReactNode }) {
+export default async function DashboardLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const authUser = await getAuthUser();
 
   if (!authUser) {
@@ -17,7 +21,6 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     redirect("/onboarding");
   }
 
-  // Load clinic data for the sidebar
   const clinicResult = await db
     .select()
     .from(clinics)
@@ -38,8 +41,9 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         doctorName={clinic.doctorName}
         themeColor={clinic.themeColor ?? "#0ea5e9"}
       />
+      {/* Main content: offset for desktop sidebar, top header on mobile, bottom nav on mobile */}
       <div className="lg:pl-64">
-        <div className="pt-14 lg:pt-0 min-h-screen">
+        <div className="pt-14 lg:pt-0 pb-20 lg:pb-0 min-h-screen">
           {children}
         </div>
       </div>

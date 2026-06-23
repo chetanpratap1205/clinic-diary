@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { CheckCircle2, Clock, Check, Phone, Navigation, XCircle } from "lucide-react";
@@ -11,26 +13,50 @@ interface TrackingClientProps {
   clinic: any;
 }
 
-export function TrackingClient({ appointment, clinic }: TrackingClientProps) {
+export function TrackingClient({ appointment: initialAppointment, clinic }: TrackingClientProps) {
+  const [appointment, setAppointment] = useState(initialAppointment);
   const themeColor = clinic.themeColor ?? "#0ea5e9";
   
+  useEffect(() => {
+    const supabase = createClient();
+    
+    const channel = supabase
+      .channel(`appointment-${appointment.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "appointments",
+          filter: `id=eq.${appointment.id}`,
+        },
+        (payload) => {
+          setAppointment(payload.new);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [appointment.id]);
+
   // Swiggy-style timeline states
   const statuses = [
     { id: "confirmed", title: "Booking Confirmed", desc: "Your slot has been successfully reserved." },
-    { id: "doctor_notified", title: "Doctor Notified", desc: `Dr. ${clinic.doctorName} has been informed.` },
-    { id: "ready", title: "Ready for Consultation", desc: "Please arrive 5 mins early." },
+    { id: "checked_in", title: "Checked In", desc: "You are checked in and waiting." },
+    { id: "in_consultation", title: "In Consultation", desc: `Dr. ${clinic.doctorName} is seeing you now.` },
     { id: "completed", title: "Completed", desc: "Thank you for visiting!" },
   ];
 
   let currentIndex = 0;
-  if (appointment.status === "completed") currentIndex = 3;
-  else if (appointment.status === "no_show") currentIndex = 3;
+  if (appointment.status === "completed") currentIndex = 4;
+  else if (appointment.status === "in_consultation") currentIndex = 2;
+  else if (appointment.status === "checked_in") currentIndex = 1;
+  else if (appointment.status === "no_show") currentIndex = 4;
   else if (appointment.status === "cancelled") currentIndex = -1; // special case
   else {
-    // In a real app, 'doctor_notified' or 'ready' would be driven by real-time updates.
-    // For MVP, if it's 'confirmed', we assume it's at step 1 (Doctor Notified) or Step 0.
-    // Let's just highlight Step 1 as "active" immediately for the wow factor.
-    currentIndex = 1; 
+    currentIndex = 0; // confirmed
   }
 
   function formatTimeDisplay(time: string): string {

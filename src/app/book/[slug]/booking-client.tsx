@@ -12,7 +12,14 @@ import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Calendar, Clock, User, Phone, CheckCircle2, ChevronLeft, Loader2 } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  User,
+  Phone,
+  ChevronLeft,
+  Loader2,
+} from "lucide-react";
 
 interface ClinicData {
   id: string;
@@ -24,7 +31,9 @@ interface ClinicData {
 
 const bookingSchema = z.object({
   patientName: z.string().min(2, "Name must be at least 2 characters"),
-  patientPhone: z.string().regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian phone number"),
+  patientPhone: z
+    .string()
+    .regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian phone number"),
 });
 
 type BookingData = z.infer<typeof bookingSchema>;
@@ -33,7 +42,6 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [selectedDate, setSelectedDate] = useState<Date>(startOfToday());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -41,13 +49,18 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
 
   const themeColor = clinic.themeColor ?? "#0ea5e9";
 
-  const { register, handleSubmit, formState: { errors } } = useForm<BookingData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<BookingData>({
     resolver: zodResolver(bookingSchema),
   });
 
-  // Generate next 14 days
   const today = startOfToday();
-  const next14Days = Array.from({ length: 14 }).map((_, i) => addDays(today, i));
+  const next14Days = Array.from({ length: 14 }).map((_, i) =>
+    addDays(today, i)
+  );
 
   useEffect(() => {
     if (step === 1 || step === 2) {
@@ -73,7 +86,7 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
 
   const onSubmit = (data: BookingData) => {
     if (!selectedTime) return;
-    
+
     startTransition(async () => {
       const res = await createBooking(
         clinic.id,
@@ -86,12 +99,13 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
       if (res.error) {
         toast.error(res.error);
         if (res.error.includes("taken")) {
-          // Send them back to time selection
           setStep(2);
           setSelectedTime(null);
-          // Refresh slots
           setIsLoadingSlots(true);
-          getAvailableSlots(clinic.id, format(selectedDate, "yyyy-MM-dd")).then((r) => {
+          getAvailableSlots(
+            clinic.id,
+            format(selectedDate, "yyyy-MM-dd")
+          ).then((r) => {
             if (r.slots) setAvailableSlots(r.slots);
             setIsLoadingSlots(false);
           });
@@ -111,47 +125,58 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
     return `${displayH}:${m.toString().padStart(2, "0")} ${ampm}`;
   }
 
-  // --- Render Functions ---
-
   const renderStep1 = () => (
     <motion.div
       key="step1"
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="space-y-6"
+      className="space-y-5"
     >
       <div>
-        <h2 className="text-xl font-bold text-slate-900">Select a Date</h2>
-        <p className="text-slate-500 text-sm mt-1">When would you like to visit?</p>
+        <h2 className="text-lg sm:text-xl font-bold text-slate-900">
+          Select a Date
+        </h2>
+        <p className="text-slate-500 text-sm mt-1">
+          When would you like to visit?
+        </p>
       </div>
 
-      <div className="flex overflow-x-auto pb-4 gap-3 snap-x scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
-        {next14Days.map((date) => {
-          const isSelected = isSameDay(date, selectedDate);
-          return (
-            <button
-              key={date.toISOString()}
-              onClick={() => handleDateSelect(date)}
-              className={`snap-start flex-shrink-0 flex flex-col items-center justify-center w-[72px] h-[88px] rounded-2xl border transition-all ${
-                isSelected 
-                  ? "border-transparent text-white shadow-md scale-105" 
-                  : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
-              }`}
-              style={isSelected ? { backgroundColor: themeColor } : {}}
-            >
-              <span className="text-xs font-semibold uppercase tracking-wider opacity-90">
-                {format(date, "EEE")}
-              </span>
-              <span className="text-2xl font-bold mt-1">
-                {format(date, "d")}
-              </span>
-              <span className="text-[10px] uppercase font-medium mt-0.5 opacity-80">
-                {format(date, "MMM")}
-              </span>
-            </button>
-          );
-        })}
+      {/* Horizontal scrollable date selector */}
+      <div className="-mx-5 sm:-mx-6 px-5 sm:px-6">
+        <div className="flex overflow-x-auto pb-3 gap-2.5 snap-x scrollbar-hide">
+          {next14Days.map((date) => {
+            const isSelected = isSameDay(date, selectedDate);
+            const isToday = isSameDay(date, today);
+            return (
+              <button
+                key={date.toISOString()}
+                onClick={() => handleDateSelect(date)}
+                className={`snap-start flex-shrink-0 flex flex-col items-center justify-center w-[68px] sm:w-[72px] h-[84px] sm:h-[90px] rounded-2xl border transition-all duration-200 active:scale-95 ${
+                  isSelected
+                    ? "border-transparent text-white shadow-md scale-105"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                }`}
+                style={isSelected ? { backgroundColor: themeColor } : {}}
+                aria-label={format(date, "EEEE MMMM d")}
+                aria-pressed={isSelected}
+              >
+                <span className="text-[10px] font-bold uppercase tracking-wider opacity-90">
+                  {format(date, "EEE")}
+                </span>
+                <span className="text-2xl font-bold mt-1 leading-none">
+                  {format(date, "d")}
+                </span>
+                <span className="text-[10px] uppercase font-medium mt-1 opacity-80">
+                  {format(date, "MMM")}
+                </span>
+                {isToday && !isSelected && (
+                  <div className="w-1 h-1 rounded-full bg-teal-500 mt-1" />
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </motion.div>
   );
@@ -162,31 +187,39 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      className="space-y-6"
+      className="space-y-5"
     >
       <div>
-        <h2 className="text-xl font-bold text-slate-900">Available Times</h2>
-        <p className="text-slate-500 text-sm mt-1">{format(selectedDate, "EEEE, MMMM d")}</p>
+        <h2 className="text-lg sm:text-xl font-bold text-slate-900">
+          Available Times
+        </h2>
+        <p className="text-slate-500 text-sm mt-1">
+          {format(selectedDate, "EEEE, MMMM d")}
+        </p>
       </div>
 
       {isLoadingSlots ? (
         <div className="flex flex-col items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-slate-300 mb-4" />
-          <p className="text-slate-500 text-sm animate-pulse">Finding available slots...</p>
+          <p className="text-slate-500 text-sm animate-pulse">
+            Finding available slots...
+          </p>
         </div>
       ) : availableSlots.length === 0 ? (
         <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
           <Calendar className="w-10 h-10 text-slate-300 mx-auto mb-3" />
           <p className="text-slate-600 font-medium">No slots available</p>
-          <p className="text-slate-500 text-sm mt-1 px-4">Dr. {clinic.doctorName} is fully booked on this date. Please select another date.</p>
+          <p className="text-slate-500 text-sm mt-1 px-4">
+            Dr. {clinic.doctorName} is fully booked. Please select another date.
+          </p>
         </div>
       ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
           {availableSlots.map((time) => (
             <button
               key={time}
               onClick={() => handleTimeSelect(time)}
-              className="py-3 px-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold text-sm hover:border-slate-300 hover:bg-slate-50 transition-all hover:scale-105 active:scale-95"
+              className="py-3 px-1 sm:px-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold text-xs sm:text-sm hover:border-slate-300 hover:bg-slate-50 transition-all hover:scale-105 active:scale-95 min-h-[48px]"
             >
               {formatTimeDisplay(time)}
             </button>
@@ -202,32 +235,45 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className="space-y-6"
+      className="space-y-5"
     >
       <div>
-        <h2 className="text-xl font-bold text-slate-900">Your Details</h2>
-        <p className="text-slate-500 text-sm mt-1">Almost done! Enter your info to confirm.</p>
+        <h2 className="text-lg sm:text-xl font-bold text-slate-900">
+          Your Details
+        </h2>
+        <p className="text-slate-500 text-sm mt-1">
+          Almost done! Enter your info to confirm.
+        </p>
       </div>
 
+      {/* Appointment Summary Card */}
       <Card className="border-slate-100 bg-slate-50/50 shadow-sm">
-        <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+        <CardContent className="p-4 flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-slate-100 shadow-sm">
+            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center border border-slate-100 shadow-sm flex-shrink-0">
               <Calendar className="w-4 h-4 text-slate-500" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Date</p>
-              <p className="text-sm font-semibold text-slate-900">{format(selectedDate, "MMM d, yyyy")}</p>
+              <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
+                Date
+              </p>
+              <p className="text-sm font-bold text-slate-900">
+                {format(selectedDate, "MMM d, yyyy")}
+              </p>
             </div>
           </div>
-          <div className="hidden sm:block w-px h-8 bg-slate-200"></div>
+          <div className="w-px h-8 bg-slate-200 hidden sm:block" />
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-slate-100 shadow-sm">
+            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center border border-slate-100 shadow-sm flex-shrink-0">
               <Clock className="w-4 h-4 text-slate-500" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Time</p>
-              <p className="text-sm font-semibold text-slate-900">{selectedTime && formatTimeDisplay(selectedTime)}</p>
+              <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
+                Time
+              </p>
+              <p className="text-sm font-bold text-slate-900">
+                {selectedTime && formatTimeDisplay(selectedTime)}
+              </p>
             </div>
           </div>
         </CardContent>
@@ -238,34 +284,53 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
           <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
             <User className="w-4 h-4 text-slate-400" /> Full Name
           </label>
-          <Input 
-            placeholder="John Doe" 
-            {...register("patientName")} 
-            className={`h-12 rounded-xl bg-white ${errors.patientName ? "border-red-500" : ""}`}
+          <Input
+            placeholder="e.g. Rahul Sharma"
+            autoComplete="name"
+            {...register("patientName")}
+            className={`h-12 rounded-xl bg-white text-base ${
+              errors.patientName ? "border-red-500" : ""
+            }`}
           />
-          {errors.patientName && <p className="text-xs text-red-500 font-medium">{errors.patientName.message}</p>}
+          {errors.patientName && (
+            <p className="text-xs text-red-500 font-medium">
+              {errors.patientName.message}
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
           <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
             <Phone className="w-4 h-4 text-slate-400" /> Mobile Number
           </label>
-          <Input 
+          <Input
             type="tel"
-            placeholder="9876543210" 
-            {...register("patientPhone")} 
-            className={`h-12 rounded-xl bg-white ${errors.patientPhone ? "border-red-500" : ""}`}
+            inputMode="numeric"
+            autoComplete="tel"
+            placeholder="9876543210"
+            {...register("patientPhone")}
+            className={`h-12 rounded-xl bg-white text-base ${
+              errors.patientPhone ? "border-red-500" : ""
+            }`}
           />
-          {errors.patientPhone && <p className="text-xs text-red-500 font-medium">{errors.patientPhone.message}</p>}
+          {errors.patientPhone && (
+            <p className="text-xs text-red-500 font-medium">
+              {errors.patientPhone.message}
+            </p>
+          )}
         </div>
 
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={isPending}
-          className="w-full h-12 rounded-xl text-white font-semibold text-base shadow-md transition-all hover:opacity-90 mt-4"
+          className="w-full h-12 rounded-xl text-white font-semibold text-base shadow-md transition-all hover:opacity-90 active:scale-[0.98] mt-2"
           style={{ backgroundColor: themeColor }}
         >
-          {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : "Confirm Booking"}
+          {isPending ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            "Confirm Booking"
+          )}
         </Button>
       </form>
     </motion.div>
@@ -273,22 +338,22 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
 
   return (
     <div className="w-full">
-      {/* Back Button Area */}
+      {/* Back Button */}
       {step > 1 && step < 4 && (
         <button
           onClick={() => setStep((s) => (s - 1) as any)}
-          className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors mb-6"
+          className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors mb-5 -ml-1 py-2 px-1"
         >
           <ChevronLeft className="w-4 h-4" /> Back
         </button>
       )}
-      {step === 1 && <div className="h-10 mb-2"></div>}
+      {step === 1 && <div className="h-8 sm:h-10 mb-1" />}
 
       <Card className="border-slate-100 shadow-xl shadow-slate-200/40 rounded-3xl overflow-hidden bg-white relative">
         {/* Progress Bar */}
         {step < 4 && (
           <div className="absolute top-0 left-0 right-0 h-1 bg-slate-100">
-            <motion.div 
+            <motion.div
               className="h-full"
               style={{ backgroundColor: themeColor }}
               initial={{ width: "33%" }}
@@ -298,7 +363,22 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
           </div>
         )}
 
-        <CardContent className="p-6 sm:p-8">
+        {/* Step indicator */}
+        <div className="absolute top-4 right-5 flex items-center gap-1.5">
+          {[1, 2, 3].map((s) => (
+            <div
+              key={s}
+              className="w-1.5 h-1.5 rounded-full transition-all duration-300"
+              style={{
+                backgroundColor:
+                  s <= step ? themeColor : "#e2e8f0",
+                transform: s === step ? "scale(1.4)" : "scale(1)",
+              }}
+            />
+          ))}
+        </div>
+
+        <CardContent className="p-5 sm:p-7 pt-6">
           <AnimatePresence mode="wait">
             {step === 1 && renderStep1()}
             {step === 2 && renderStep2()}

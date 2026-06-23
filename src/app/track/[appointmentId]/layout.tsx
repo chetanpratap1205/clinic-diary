@@ -38,16 +38,16 @@ export default async function TrackingLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col" style={{ minHeight: '100dvh' }}>
       <div 
-        className="h-2 w-full" 
+        className="h-1.5 w-full flex-shrink-0" 
         style={{ backgroundColor: themeColor }} 
       />
-      <main className="flex-1 max-w-2xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+      <main className="flex-1 w-full max-w-lg mx-auto px-4 py-6 sm:px-6 sm:py-8">
         {children}
       </main>
-      <footer className="py-6 text-center text-slate-400 text-xs">
-        Powered by Doctor Diary
+      <footer className="py-5 pb-safe text-center text-slate-400 text-xs flex-shrink-0">
+        Powered by <span className="font-semibold text-slate-500">Doctor Diary</span>
       </footer>
     </div>
   );

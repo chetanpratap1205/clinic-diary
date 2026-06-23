@@ -45,3 +45,37 @@ export async function updateClinicSettings(data: SettingsData) {
     return { error: "Failed to save settings. Please try again." };
   }
 }
+
+export async function updateClinicAvailability(availabilityData: any[]) {
+  try {
+    const user = await getAuthUser();
+    if (!user || !user.clinicId) {
+      return { error: "Unauthorized" };
+    }
+
+    const { availability } = await import("@/db/schema");
+
+    // Clear existing
+    await db.delete(availability).where(eq(availability.clinicId, user.clinicId));
+
+    // Insert new
+    if (availabilityData.length > 0) {
+      const recordsToInsert = availabilityData.map(a => ({
+        clinicId: user.clinicId!,
+        dayOfWeek: a.dayOfWeek,
+        startTime: a.startTime,
+        endTime: a.endTime,
+        slotDurationMinutes: a.slotDurationMinutes,
+      }));
+      await db.insert(availability).values(recordsToInsert);
+    }
+
+    revalidatePath("/dashboard/settings");
+    revalidatePath(`/book`);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update availability:", error);
+    return { error: "Failed to save availability. Please try again." };
+  }
+}

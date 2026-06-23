@@ -50,7 +50,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-slate-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-slate-50 flex items-center justify-center p-4" style={{ minHeight: '100dvh' }}>
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -83,7 +83,8 @@ export default function SignupPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoComplete="email"
-                  className="transition-all duration-200 focus:ring-teal-500/20"
+                  inputMode="email"
+                  className="h-11 text-base transition-all duration-200 focus:ring-teal-500/20"
                 />
               </div>
 
@@ -99,7 +100,7 @@ export default function SignupPage() {
                     required
                     minLength={6}
                     autoComplete="new-password"
-                    className="pr-10 transition-all duration-200 focus:ring-teal-500/20"
+                    className="h-11 pr-10 text-base transition-all duration-200 focus:ring-teal-500/20"
                   />
                   <button
                     type="button"
@@ -111,7 +112,7 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full bg-teal-700 hover:bg-teal-800 text-white shadow-md transition-all active:scale-[0.98]" size="lg" disabled={loading}>
+              <Button type="submit" className="w-full h-12 bg-teal-700 hover:bg-teal-800 text-white shadow-md transition-all active:scale-[0.98] rounded-xl" size="lg" disabled={loading}>
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign Up"}
               </Button>
             </form>

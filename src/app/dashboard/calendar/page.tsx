@@ -21,9 +21,9 @@ export default async function CalendarPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
-      <FadeInUp className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Clinic Calendar</h1>
-        <p className="text-slate-500 mt-1.5">Manage your entire schedule and upcoming bookings.</p>
+      <FadeInUp className="mb-5 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Clinic Calendar</h1>
+        <p className="text-slate-500 mt-1 sm:mt-1.5 text-sm sm:text-base">Manage your entire schedule and upcoming bookings.</p>
       </FadeInUp>
 
       <CalendarClient appointments={allAppointments} />
