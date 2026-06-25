@@ -61,6 +61,26 @@ export const availabilityOverrides = pgTable("availability_overrides", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// ─── Patients ──────────────────────────────────────────────────────────────────
+export const patients = pgTable(
+  "patients",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    clinicId: uuid("clinic_id")
+      .notNull()
+      .references(() => clinics.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    phone: text("phone").notNull(),
+    age: integer("age"),
+    gender: text("gender"),
+    address: text("address"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("patients_clinic_phone_unique").on(table.clinicId, table.phone),
+  ]
+);
+
 // ─── Appointments ──────────────────────────────────────────────────────────────
 export const appointments = pgTable(
   "appointments",
@@ -69,6 +89,7 @@ export const appointments = pgTable(
     clinicId: uuid("clinic_id")
       .notNull()
       .references(() => clinics.id, { onDelete: "cascade" }),
+    patientId: uuid("patient_id").references(() => patients.id, { onDelete: "set null" }),
     patientName: text("patient_name").notNull(),
     patientPhone: text("patient_phone").notNull(),
     patientEmail: text("patient_email"),
@@ -93,6 +114,55 @@ export const appointments = pgTable(
   ]
 );
 
+// ─── Follow Ups ────────────────────────────────────────────────────────────────
+export const followUps = pgTable(
+  "follow_ups",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    clinicId: uuid("clinic_id")
+      .notNull()
+      .references(() => clinics.id, { onDelete: "cascade" }),
+    patientId: uuid("patient_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
+    appointmentId: uuid("appointment_id").references(() => appointments.id, { onDelete: "set null" }),
+    dueDate: date("due_date").notNull(),
+    status: text("status").notNull().default("pending"), // pending/completed/missed
+    notes: text("notes"),
+    reminderSent3d: boolean("reminder_sent_3d").default(false),
+    reminderSent1d: boolean("reminder_sent_1d").default(false),
+    reminderSent0d: boolean("reminder_sent_0d").default(false),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    completedAt: timestamp("completed_at"),
+  },
+  (table) => [
+    index("follow_ups_clinic_due_date_status_idx").on(
+      table.clinicId,
+      table.dueDate,
+      table.status
+    ),
+  ]
+);
+
+// ─── Visit Notes ───────────────────────────────────────────────────────────────
+export const visitNotes = pgTable("visit_notes", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  clinicId: uuid("clinic_id")
+    .notNull()
+    .references(() => clinics.id, { onDelete: "cascade" }),
+  patientId: uuid("patient_id")
+    .notNull()
+    .references(() => patients.id, { onDelete: "cascade" }),
+  appointmentId: uuid("appointment_id")
+    .notNull()
+    .references(() => appointments.id, { onDelete: "cascade" }),
+  complaint: text("complaint"),
+  diagnosis: text("diagnosis"),
+  treatment: text("treatment"),
+  followUpRequired: boolean("follow_up_required").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // ─── Reminder Logs ─────────────────────────────────────────────────────────────
 export const reminderLogs = pgTable("reminder_logs", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -114,4 +184,10 @@ export type Availability = typeof availability.$inferSelect;
 export type AvailabilityOverride = typeof availabilityOverrides.$inferSelect;
 export type Appointment = typeof appointments.$inferSelect;
 export type NewAppointment = typeof appointments.$inferInsert;
+export type Patient = typeof patients.$inferSelect;
+export type NewPatient = typeof patients.$inferInsert;
+export type FollowUp = typeof followUps.$inferSelect;
+export type NewFollowUp = typeof followUps.$inferInsert;
+export type VisitNote = typeof visitNotes.$inferSelect;
+export type NewVisitNote = typeof visitNotes.$inferInsert;
 export type ReminderLog = typeof reminderLogs.$inferSelect;

@@ -99,13 +99,13 @@ export default function HomePage() {
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <Link href="/book/dr-priya-sharma" className="w-full sm:w-auto">
+            <Link href="#features" className="w-full sm:w-auto">
               <Button
                 variant="outline"
                 size="lg"
                 className="w-full sm:w-auto bg-white hover:bg-slate-50 border-slate-200 h-12 sm:h-14 px-6 sm:px-8 text-sm sm:text-base font-medium"
               >
-                See Live Demo
+                See Features
               </Button>
             </Link>
           </div>
@@ -136,7 +136,7 @@ export default function HomePage() {
       </section>
 
       {/* Features */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6 relative">
+      <section id="features" className="py-16 sm:py-24 px-4 sm:px-6 relative">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-teal-50/50 rounded-[100px] blur-3xl -z-10" />
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10 sm:mb-16 animate-slide-up">
@@ -245,7 +245,7 @@ export default function HomePage() {
             </span>
           </div>
           <p className="text-xs sm:text-sm font-medium text-slate-400 text-center sm:text-right">
-            © 2024 Doctor Diary by NatureXpress. Built for modern healthcare.
+            © {new Date().getFullYear()} Doctor Diary by NatureXpress. Built for modern healthcare.
           </p>
         </div>
       </footer>

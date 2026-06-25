@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { appointments, availability, availabilityOverrides, clinics } from "@/db/schema";
+import { appointments, availability, availabilityOverrides, clinics, patients } from "@/db/schema";
 import { eq, and, ne } from "drizzle-orm";
 import { parseISO, getDay, format, addMinutes } from "date-fns";
 import { sendNotification } from "@/lib/notifications";
@@ -96,9 +96,37 @@ export async function createBooking(
   patientPhone: string
 ) {
   try {
+    // 0. Find or create patient
+    let patientId = null;
+    const existingPatient = await db
+      .select({ id: patients.id })
+      .from(patients)
+      .where(
+        and(
+          eq(patients.clinicId, clinicId),
+          eq(patients.phone, patientPhone)
+        )
+      )
+      .limit(1);
+
+    if (existingPatient.length > 0) {
+      patientId = existingPatient[0].id;
+    } else {
+      const [newPatient] = await db
+        .insert(patients)
+        .values({
+          clinicId,
+          name: patientName,
+          phone: patientPhone,
+        })
+        .returning({ id: patients.id });
+      patientId = newPatient.id;
+    }
+
     // Insert the appointment and return the ID
     const [newAppointment] = await db.insert(appointments).values({
       clinicId,
+      patientId,
       patientName,
       patientPhone,
       appointmentDate: dateStr,

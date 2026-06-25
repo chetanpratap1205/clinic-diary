@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { appointments, reminderLogs, clinics } from "@/db/schema";
-import { eq, and, ne } from "drizzle-orm";
+import { appointments, reminderLogs, clinics, followUps, patients } from "@/db/schema";
+import { eq, and, ne, lte } from "drizzle-orm";
 import { sendNotification } from "@/lib/notifications";
 import { parseISO, differenceInMinutes, addHours } from "date-fns";
 
@@ -101,8 +101,43 @@ export async function GET(request: Request) {
       }
     }
 
-    console.log(`⏰ Cron scan complete. Reminders dispatched: ${processedCount}`);
-    return NextResponse.json({ success: true, dispatched: processedCount });
+
+
+    console.log(`⏰ Appointments scan complete. Reminders dispatched: ${processedCount}`);
+
+    // 4. Scan Follow-ups
+    console.log("⏰ Scanning for due follow-ups...");
+    const tomorrow = addHours(now, 24);
+    const tomorrowStr = tomorrow.toISOString().split("T")[0];
+    
+    const pendingFollowUps = await db
+      .select({
+        id: followUps.id,
+        dueDate: followUps.dueDate,
+        patientName: patients.name,
+        patientPhone: patients.phone,
+        clinicId: followUps.clinicId,
+      })
+      .from(followUps)
+      .innerJoin(patients, eq(followUps.patientId, patients.id))
+      .where(
+        and(
+          eq(followUps.status, "pending"),
+          // Log if due today or tomorrow
+          lte(followUps.dueDate, tomorrowStr)
+        )
+      );
+
+    let followUpLogs = 0;
+    for (const fu of pendingFollowUps) {
+      // In a real system we'd check a log table to avoid duplicates.
+      // For MVP cron logging, we just print to console to simulate the "Log Follow-up Reminders" feature.
+      console.log(`[CRON] FOLLOW-UP REMINDER ALERT: Patient ${fu.patientName} (${fu.patientPhone}) is due on ${fu.dueDate}`);
+      followUpLogs++;
+    }
+
+    console.log(`⏰ Cron scan complete. Appt Reminders: ${processedCount}, Follow-up Alerts Logged: ${followUpLogs}`);
+    return NextResponse.json({ success: true, apptsDispatched: processedCount, followUpsLogged: followUpLogs });
 
   } catch (error) {
     console.error("Cron failed:", error);

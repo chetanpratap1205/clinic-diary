@@ -6,11 +6,29 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, Activity } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
+
+const AUTH_ERROR_MAP: Record<string, string> = {
+  "Invalid login credentials": "Incorrect email or password. Please try again.",
+  "Email not confirmed":
+    "Please verify your email address before signing in. Check your inbox.",
+  "User not found": "No account found with this email. Please sign up.",
+  "Too many requests": "Too many attempts. Please wait a few minutes and try again.",
+};
+
+function mapAuthError(message: string): string {
+  return AUTH_ERROR_MAP[message] ?? "Sign in failed. Please try again.";
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,6 +36,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
   const supabase = createClient();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -31,21 +50,46 @@ export default function LoginPage() {
       });
 
       if (error) {
-        toast.error(error.message);
+        toast.error(mapAuthError(error.message));
         return;
       }
 
       toast.success("Welcome back!");
-      router.push("/dashboard"); // Middleware or layout will handle redirect to onboarding if no clinic
-    } catch (err) {
-      toast.error("An unexpected error occurred");
+      router.push("/dashboard");
+    } catch {
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
   }
 
+  async function handleForgotPassword() {
+    if (!email) {
+      toast.error("Please enter your email address first.");
+      return;
+    }
+    setResetLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) {
+        toast.error("Could not send reset email. Please try again.");
+      } else {
+        toast.success("Password reset email sent! Check your inbox.");
+      }
+    } catch {
+      toast.error("An unexpected error occurred.");
+    } finally {
+      setResetLoading(false);
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-slate-50 flex items-center justify-center p-4" style={{ minHeight: '100dvh' }}>
+    <div
+      className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-slate-50 flex items-center justify-center p-4"
+      style={{ minHeight: "100dvh" }}
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -57,14 +101,20 @@ export default function LoginPage() {
             <div className="w-10 h-10 rounded-xl bg-teal-700 flex items-center justify-center shadow-md">
               <Activity className="w-5 h-5 text-white" strokeWidth={3} />
             </div>
-            <span className="font-bold text-slate-900 text-xl tracking-tight">Doctor Diary</span>
+            <span className="font-bold text-slate-900 text-xl tracking-tight">
+              Doctor Diary
+            </span>
           </Link>
         </div>
 
         <Card className="shadow-xl border-slate-200/60 bg-white/80 backdrop-blur-sm">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl font-semibold tracking-tight text-slate-900">Welcome back</CardTitle>
-            <CardDescription className="text-slate-500">Sign in to your doctor account</CardDescription>
+            <CardTitle className="text-2xl font-semibold tracking-tight text-slate-900">
+              Welcome back
+            </CardTitle>
+            <CardDescription className="text-slate-500">
+              Sign in to your doctor account
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -86,6 +136,14 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    disabled={resetLoading}
+                    className="text-xs text-teal-700 hover:text-teal-900 font-medium transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:underline"
+                  >
+                    {resetLoading ? "Sending…" : "Forgot password?"}
+                  </button>
                 </div>
                 <div className="relative">
                   <Input
@@ -102,20 +160,37 @@ export default function LoginPage() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
 
-              <Button type="submit" className="w-full h-12 bg-teal-700 hover:bg-teal-800 text-white shadow-md transition-all active:scale-[0.98] rounded-xl" size="lg" disabled={loading}>
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign In"}
+              <Button
+                type="submit"
+                className="w-full h-12 bg-teal-700 hover:bg-teal-800 text-white shadow-md transition-all active:scale-[0.98] rounded-xl"
+                size="lg"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  "Sign In"
+                )}
               </Button>
             </form>
 
             <div className="mt-8 text-center text-sm text-slate-500">
               Don&apos;t have an account?{" "}
-              <Link href="/signup" className="text-teal-700 font-medium hover:text-teal-800 transition-colors">
+              <Link
+                href="/signup"
+                className="text-teal-700 font-medium hover:text-teal-800 transition-colors"
+              >
                 Create one free
               </Link>
             </div>

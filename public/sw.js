@@ -1,11 +1,15 @@
-const CACHE_NAME = "doctor-diary-v1";
-const STATIC_CACHE = "doctor-diary-static-v1";
+// Auto-versioned cache: update BUILD_TIME on each deploy
+// In production, inject the build timestamp via CI/CD or use a build hash
+const BUILD_TIME = "2026-06-25"; // Update this on each deploy
+const CACHE_NAME = `doctor-diary-v2-${BUILD_TIME}`;
+const STATIC_CACHE = `doctor-diary-static-v2-${BUILD_TIME}`;
 
 const STATIC_ASSETS = [
   "/",
   "/manifest.json",
   "/icon-192.png",
   "/icon-512.png",
+  "/offline",
 ];
 
 // Install: cache static assets
@@ -18,7 +22,7 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-// Activate: clean up old caches
+// Activate: clean up ALL old caches (any that don't match current version)
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -32,7 +36,7 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Fetch: network-first for API, cache-first for static
+// Fetch: network-first for API/dynamic routes, cache-first for static
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -47,25 +51,28 @@ self.addEventListener("fetch", (event) => {
     url.pathname.startsWith("/dashboard") ||
     url.pathname.startsWith("/login") ||
     url.pathname.startsWith("/signup") ||
-    url.pathname.startsWith("/onboarding")
+    url.pathname.startsWith("/onboarding") ||
+    url.pathname.startsWith("/track/")
   ) {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Cache successful responses for _next assets
-          if (
-            response.ok &&
-            url.pathname.startsWith("/_next/static/")
-          ) {
+          // Cache successful _next static assets
+          if (response.ok && url.pathname.startsWith("/_next/static/")) {
             const cloned = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned));
           }
           return response;
         })
-        .catch(() => {
-          // Offline fallback for navigations
+        .catch(async () => {
+          // Offline fallback for navigations — show branded offline page
           if (request.mode === "navigate") {
-            return caches.match("/") || new Response("Offline", { status: 503 });
+            const offlinePage = await caches.match("/offline");
+            if (offlinePage) return offlinePage;
+            return caches.match("/") || new Response("Offline — Please check your connection.", {
+              status: 503,
+              headers: { "Content-Type": "text/plain" },
+            });
           }
           return caches.match(request);
         })
@@ -73,14 +80,34 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Cache-first for static assets (images, fonts)
+  // Cache-first for public booking pages
+  if (url.pathname.startsWith("/book/")) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        // Always try to update the cache in the background (stale-while-revalidate)
+        const fetchPromise = fetch(request).then((response) => {
+          if (response.ok) {
+            const cloned = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned));
+          }
+          return response;
+        });
+        return cached || fetchPromise;
+      })
+    );
+    return;
+  }
+
+  // Cache-first for static assets (images, fonts, icons)
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
       return fetch(request).then((response) => {
         if (response.ok) {
           const cloned = response.clone();
-          caches.open(STATIC_CACHE).then((cache) => cache.put(request, cloned));
+          caches.open(STATIC_CACHE).then((cache) =>
+            cache.put(request, cloned)
+          );
         }
         return response;
       });
@@ -88,7 +115,7 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-// Push notifications (future use)
+// Push notifications
 self.addEventListener("push", (event) => {
   if (!event.data) return;
   const data = event.data.json();

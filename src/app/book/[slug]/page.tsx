@@ -21,15 +21,37 @@ export async function generateMetadata({
   if (!clinicResult.length) return { title: "Not Found" };
 
   const clinic = clinicResult[0];
+  const BASE_URL =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in";
+
+  const ogParams = new URLSearchParams({
+    name: clinic.name,
+    doctor: clinic.doctorName,
+    specialty: clinic.specialty || "",
+    fee: String(clinic.consultationFee ?? ""),
+  });
+
+  const ogImageUrl = `${BASE_URL}/api/og?${ogParams.toString()}`;
+
   return {
     title: `Book Appointment | ${clinic.name}`,
-    description: `Book a consultation with Dr. ${clinic.doctorName} at ${clinic.name}. Online appointments available.`,
+    description: `Book a consultation with Dr. ${clinic.doctorName} at ${clinic.name}. Online appointments available. No signup required.`,
     openGraph: {
       title: `Book with Dr. ${clinic.doctorName} — ${clinic.name}`,
+      description: `Fast, easy online appointment booking at ${clinic.name}. No signup required.`,
+      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: `Book appointment at ${clinic.name}` }],
+      url: `${BASE_URL}/book/${slug}`,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Book with Dr. ${clinic.doctorName} — ${clinic.name}`,
       description: `Fast, easy online appointment booking. No signup required.`,
+      images: [ogImageUrl],
     },
   };
 }
+
 
 export default async function BookingPage({
   params,

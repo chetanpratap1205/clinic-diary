@@ -176,8 +176,8 @@ export default function OnboardingWizard() {
                       <div className="space-y-2">
                         <Label htmlFor="slug">Public Booking URL</Label>
                         <div className="flex items-center">
-                          <div className="bg-slate-100 text-slate-500 px-3 py-2 rounded-l-md border border-r-0 border-slate-200 text-sm">
-                            doctordiary.in/
+                          <div className="bg-slate-100 text-slate-500 px-3 py-2 rounded-l-md border border-r-0 border-slate-200 text-sm whitespace-nowrap">
+                            {(process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in").replace("https://", "")}/
                           </div>
                           <Input
                             id="slug"

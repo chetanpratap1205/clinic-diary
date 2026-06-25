@@ -1,14 +1,16 @@
 import { getAuthUser } from "@/lib/auth";
 import { db } from "@/db";
-import { appointments, clinics } from "@/db/schema";
-import { eq, and, gte, lte, count } from "drizzle-orm";
+import { appointments, clinics, followUps, patients } from "@/db/schema";
+import { eq, and, gte, lte, count, lt } from "drizzle-orm";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppointmentActions } from "@/components/dashboard/appointment-actions";
-import { Calendar, Phone, Clock, TrendingUp, AlertCircle } from "lucide-react";
+import { Calendar, Phone, Clock, TrendingUp, AlertCircle, Check } from "lucide-react";
 import { CopyLinkButton } from "@/components/dashboard/copy-link-button";
+import { FollowUpCard } from "@/components/dashboard/follow-ups/follow-up-card";
+import Link from "next/link";
 import {
   StaggerContainer,
   FadeInUp,
@@ -16,46 +18,43 @@ import {
 } from "@/components/dashboard/dashboard-animations";
 
 function getStatusBadge(status: string) {
-  switch (status) {
-    case "confirmed":
-      return (
-        <Badge className="bg-sky-100 text-sky-700 hover:bg-sky-100 border-none text-[11px] px-2 py-0.5">
-          Confirmed
-        </Badge>
-      );
-    case "checked_in":
-      return (
-        <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-100 border-none text-[11px] px-2 py-0.5">
-          Checked In
-        </Badge>
-      );
-    case "in_consultation":
-      return (
-        <Badge className="bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-100 border-none text-[11px] px-2 py-0.5">
-          In Consult
-        </Badge>
-      );
-    case "completed":
-      return (
-        <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none text-[11px] px-2 py-0.5">
-          Completed
-        </Badge>
-      );
-    case "cancelled":
-      return (
-        <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-none text-[11px] px-2 py-0.5">
-          Cancelled
-        </Badge>
-      );
-    case "no_show":
-      return (
-        <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none text-[11px] px-2 py-0.5">
-          No Show
-        </Badge>
-      );
-    default:
-      return <Badge variant="secondary">{status}</Badge>;
-  }
+  const map: Record<string, { label: string; className: string }> = {
+    confirmed: {
+      label: "Confirmed",
+      className: "bg-sky-100 text-sky-700 hover:bg-sky-100",
+    },
+    checked_in: {
+      label: "Checked In",
+      className: "bg-indigo-100 text-indigo-700 hover:bg-indigo-100",
+    },
+    in_consultation: {
+      label: "In Consult",
+      className: "bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-100",
+    },
+    completed: {
+      label: "Completed",
+      className: "bg-emerald-100 text-emerald-700 hover:bg-emerald-100",
+    },
+    cancelled: {
+      label: "Cancelled",
+      className: "bg-red-100 text-red-700 hover:bg-red-100",
+    },
+    no_show: {
+      label: "No Show",
+      className: "bg-amber-100 text-amber-700 hover:bg-amber-100",
+    },
+  };
+
+  const config = map[status];
+  if (!config) return <Badge variant="secondary">{status}</Badge>;
+
+  return (
+    <Badge
+      className={`${config.className} border-none text-[11px] px-2 py-0.5`}
+    >
+      {config.label}
+    </Badge>
+  );
 }
 
 function formatTimeDisplay(time: string): string {
@@ -80,64 +79,116 @@ export default async function DashboardPage() {
     "yyyy-MM-dd"
   );
 
-  const todayAppts = await db
-    .select()
-    .from(appointments)
+  // ✅ Parallelized — all 4 queries run simultaneously
+  const [todayAppts, weekApptsResult, weekNoShowsResult, clinicResult] =
+    await Promise.all([
+      db
+        .select()
+        .from(appointments)
+        .where(
+          and(
+            eq(appointments.clinicId, authUser.clinicId),
+            eq(appointments.appointmentDate, today)
+          )
+        )
+        .orderBy(appointments.appointmentTime),
+
+      db
+        .select({ count: count() })
+        .from(appointments)
+        .where(
+          and(
+            eq(appointments.clinicId, authUser.clinicId),
+            gte(appointments.appointmentDate, weekStart),
+            lte(appointments.appointmentDate, weekEnd)
+          )
+        ),
+
+      db
+        .select({ count: count() })
+        .from(appointments)
+        .where(
+          and(
+            eq(appointments.clinicId, authUser.clinicId),
+            gte(appointments.appointmentDate, weekStart),
+            lte(appointments.appointmentDate, weekEnd),
+            eq(appointments.status, "no_show")
+          )
+        ),
+
+      db
+        .select()
+        .from(clinics)
+        .where(eq(clinics.id, authUser.clinicId))
+        .limit(1),
+    ]);
+
+  const overdueFollowUpsResult = await db
+    .select({ count: count() })
+    .from(followUps)
     .where(
       and(
-        eq(appointments.clinicId, authUser.clinicId),
-        eq(appointments.appointmentDate, today)
+        eq(followUps.clinicId, authUser.clinicId),
+        eq(followUps.status, "pending"),
+        lt(followUps.dueDate, today)
+      )
+    );
+
+  const dueTodayFollowUps = await db
+    .select({
+      id: followUps.id,
+      dueDate: followUps.dueDate,
+      status: followUps.status,
+      notes: followUps.notes,
+      patient: {
+        id: patients.id,
+        name: patients.name,
+        phone: patients.phone,
+      }
+    })
+    .from(followUps)
+    .innerJoin(patients, eq(followUps.patientId, patients.id))
+    .where(
+      and(
+        eq(followUps.clinicId, authUser.clinicId),
+        eq(followUps.status, "pending"),
+        eq(followUps.dueDate, today)
       )
     )
-    .orderBy(appointments.appointmentTime);
+    .limit(3);
 
-  const weekAppts = await db
+  const dueTodayCountResult = await db
     .select({ count: count() })
-    .from(appointments)
+    .from(followUps)
     .where(
       and(
-        eq(appointments.clinicId, authUser.clinicId),
-        gte(appointments.appointmentDate, weekStart),
-        lte(appointments.appointmentDate, weekEnd)
+        eq(followUps.clinicId, authUser.clinicId),
+        eq(followUps.status, "pending"),
+        eq(followUps.dueDate, today)
       )
     );
 
-  const weekNoShows = await db
-    .select({ count: count() })
-    .from(appointments)
-    .where(
-      and(
-        eq(appointments.clinicId, authUser.clinicId),
-        gte(appointments.appointmentDate, weekStart),
-        lte(appointments.appointmentDate, weekEnd),
-        eq(appointments.status, "no_show")
-      )
-    );
+  const overdueCount = overdueFollowUpsResult[0]?.count ?? 0;
+  const dueTodayCount = dueTodayCountResult[0]?.count ?? 0;
 
   const todayConfirmed = todayAppts.filter(
     (a) => a.status === "confirmed"
   ).length;
+  const todayCompleted = todayAppts.filter(
+    (a) => a.status === "completed"
+  ).length;
 
-  const clinic = await db
-    .select()
-    .from(clinics)
-    .where(eq(clinics.id, authUser.clinicId))
-    .limit(1);
-
-  const clinicData = clinic[0];
+  const clinicData = clinicResult[0];
   const bookingUrl = `${
     process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in"
   }/${clinicData?.slug}`;
 
+  const hour = new Date().getHours();
   const greeting =
-    new Date().getHours() < 12
-      ? "morning"
-      : new Date().getHours() < 17
-      ? "afternoon"
-      : "evening";
+    hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
 
   return (
-    <StaggerContainer className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-5 sm:space-y-8">
+    <StaggerContainer className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-5 sm:space-y-8 pb-safe bottom-nav-spacing lg:pb-8">
       {/* Header */}
       <FadeInUp>
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
@@ -172,41 +223,41 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {[
             {
-              label: "Today's Bookings",
+              label: "Today's Appointments",
               value: todayAppts.length,
               icon: Calendar,
-              color: "sky",
               bg: "bg-sky-100",
               text: "text-sky-600",
             },
             {
-              label: "Confirmed",
-              value: todayConfirmed,
-              icon: Clock,
-              color: "emerald",
+              label: "Completed Today",
+              value: todayCompleted,
+              icon: Check,
               bg: "bg-emerald-100",
               text: "text-emerald-600",
             },
             {
-              label: "This Week",
-              value: weekAppts[0]?.count ?? 0,
-              icon: TrendingUp,
-              color: "violet",
-              bg: "bg-violet-100",
-              text: "text-violet-600",
-            },
-            {
-              label: "No-Shows",
-              value: weekNoShows[0]?.count ?? 0,
-              icon: AlertCircle,
-              color: "amber",
+              label: "Follow-ups Due",
+              value: dueTodayCount,
+              icon: Clock,
               bg: "bg-amber-100",
               text: "text-amber-600",
+            },
+            {
+              label: "Overdue Follow-ups",
+              value: overdueCount,
+              icon: AlertCircle,
+              bg: "bg-red-100",
+              text: "text-red-600",
             },
           ].map((stat) => (
             <Card
               key={stat.label}
-              className="border-slate-100 shadow-sm hover:shadow-md transition-shadow"
+              className={`border-slate-100 shadow-sm hover:shadow-md transition-shadow ${
+                stat.label.includes("Overdue") && stat.value > 0
+                  ? "ring-2 ring-red-500/20"
+                  : ""
+              }`}
             >
               <CardContent className="p-4 sm:p-5">
                 <div
@@ -283,7 +334,7 @@ export default async function DashboardPage() {
                               {formatTimeDisplay(appt.appointmentTime as string)}
                             </p>
                           </div>
-                          <div className="flex items-center gap-1 hidden sm:flex">
+                          <div className="hidden sm:flex items-center gap-1">
                             <Phone className="w-3 h-3 text-slate-400 flex-shrink-0" />
                             <p className="text-xs text-slate-500 font-medium">
                               {appt.patientPhone}
@@ -293,14 +344,48 @@ export default async function DashboardPage() {
                       </div>
                     </div>
 
-                    {/* Right: Actions — always visible on mobile */}
+                    {/* Right: Actions */}
                     <div className="flex-shrink-0">
                       <AppointmentActions
                         appointmentId={appt.id}
+                        patientId={appt.patientId}
                         currentStatus={appt.status}
                       />
                     </div>
                   </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </FadeInUp>
+
+      {/* Follow-ups Due Today */}
+      <FadeInUp>
+        <Card className="border-slate-100 shadow-sm overflow-hidden bg-gradient-to-br from-amber-50/30 to-white">
+          <CardHeader className="bg-transparent border-b border-slate-100/50 py-4 px-4 sm:px-6">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base sm:text-lg font-semibold tracking-tight text-slate-900 flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                  <Calendar className="w-4 h-4 text-amber-700" />
+                </div>
+                Follow-ups Due Today
+              </CardTitle>
+              <Link href="/dashboard/follow-ups" className="text-xs sm:text-sm font-medium text-sky-600 hover:text-sky-700 transition-colors">
+                View all ({dueTodayCount}) →
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            {dueTodayFollowUps.length === 0 ? (
+              <div className="text-center py-6">
+                <Check className="w-8 h-8 text-amber-300 mx-auto mb-2" />
+                <p className="text-slate-600 font-medium text-sm">No follow-ups due today</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {dueTodayFollowUps.map((fu) => (
+                  <FollowUpCard key={fu.id} followUp={fu} variant="today" />
                 ))}
               </div>
             )}

@@ -281,10 +281,14 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+          <label
+            htmlFor="patient-name"
+            className="text-sm font-semibold text-slate-700 flex items-center gap-2"
+          >
             <User className="w-4 h-4 text-slate-400" /> Full Name
           </label>
           <Input
+            id="patient-name"
             placeholder="e.g. Rahul Sharma"
             autoComplete="name"
             {...register("patientName")}
@@ -300,10 +304,14 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+          <label
+            htmlFor="patient-phone"
+            className="text-sm font-semibold text-slate-700 flex items-center gap-2"
+          >
             <Phone className="w-4 h-4 text-slate-400" /> Mobile Number
           </label>
           <Input
+            id="patient-phone"
             type="tel"
             inputMode="numeric"
             autoComplete="tel"

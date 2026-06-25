@@ -224,6 +224,7 @@ export function CalendarClient({ appointments }: CalendarClientProps) {
                         <div className="flex-shrink-0">
                           <AppointmentActions
                             appointmentId={appt.id}
+                            patientId={appt.patientId}
                             currentStatus={appt.status}
                           />
                         </div>

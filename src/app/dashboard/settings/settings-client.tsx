@@ -99,10 +99,11 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
             <CardContent className="p-4 sm:p-6 space-y-5 sm:space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">
+                  <label htmlFor="clinic-name" className="text-sm font-semibold text-slate-700">
                     Clinic Name
                   </label>
                   <Input
+                    id="clinic-name"
                     {...register("name")}
                     className="h-11 rounded-xl text-base"
                   />
@@ -111,10 +112,11 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">
+                  <label htmlFor="doctor-name" className="text-sm font-semibold text-slate-700">
                     Doctor Name
                   </label>
                   <Input
+                    id="doctor-name"
                     {...register("doctorName")}
                     className="h-11 rounded-xl text-base"
                   />
@@ -128,20 +130,22 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">
+                  <label htmlFor="specialty" className="text-sm font-semibold text-slate-700">
                     Specialty
                   </label>
                   <Input
+                    id="specialty"
                     {...register("specialty")}
                     placeholder="e.g. Cardiologist"
                     className="h-11 rounded-xl text-base"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">
+                  <label htmlFor="consultation-fee" className="text-sm font-semibold text-slate-700">
                     Consultation Fee (₹)
                   </label>
                   <Input
+                    id="consultation-fee"
                     type="number"
                     inputMode="numeric"
                     {...register("consultationFee", { valueAsNumber: true })}
@@ -151,20 +155,22 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">
+                <label htmlFor="clinic-address" className="text-sm font-semibold text-slate-700">
                   Clinic Address
                 </label>
                 <Input
+                  id="clinic-address"
                   {...register("address")}
                   className="h-11 rounded-xl text-base"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">
+                <label htmlFor="clinic-phone" className="text-sm font-semibold text-slate-700">
                   Phone Number
                 </label>
                 <Input
+                  id="clinic-phone"
                   {...register("phone")}
                   type="tel"
                   inputMode="tel"
