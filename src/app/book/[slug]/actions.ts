@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@/db";
-import { appointments, availability, availabilityOverrides, clinics, patients } from "@/db/schema";
-import { eq, and, ne } from "drizzle-orm";
+import { appointments, availability, availabilityOverrides, clinics, patients, subscriptions } from "@/db/schema";
+import { eq, and, ne, count } from "drizzle-orm";
 import { parseISO, getDay, format, addMinutes } from "date-fns";
 import { sendNotification } from "@/lib/notifications";
 
@@ -113,6 +113,31 @@ export async function createBooking(
     if (existingPatient.length > 0) {
       patientId = existingPatient[0].id;
     } else {
+      // --- Subscription & Patient Limit Check ---
+      const [{ count: patientCount }] = await db
+        .select({ count: count() })
+        .from(patients)
+        .where(eq(patients.clinicId, clinicId));
+
+      if (patientCount >= 5) {
+        // Check if clinic has an active subscription
+        const activeSubs = await db
+          .select()
+          .from(subscriptions)
+          .where(
+            and(
+              eq(subscriptions.clinicId, clinicId),
+              eq(subscriptions.status, "active")
+            )
+          )
+          .limit(1);
+
+        if (activeSubs.length === 0) {
+          return { error: "This clinic is currently not accepting new patients." };
+        }
+      }
+      // -------------------------------------------
+
       const [newPatient] = await db
         .insert(patients)
         .values({

@@ -1,6 +1,6 @@
 import { getAuthUser } from "@/lib/auth";
 import { db } from "@/db";
-import { patients, appointments } from "@/db/schema";
+import { patients, appointments, subscriptions } from "@/db/schema";
 import { eq, desc, count, and } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { Plus } from "lucide-react";
@@ -44,8 +44,40 @@ export default async function PatientsPage() {
     )
     .orderBy(desc(patients.createdAt));
 
+  // Check subscription status
+  const activeSubs = await db
+    .select()
+    .from(subscriptions)
+    .where(
+      and(
+        eq(subscriptions.clinicId, authUser.clinicId),
+        eq(subscriptions.status, "active")
+      )
+    )
+    .limit(1);
+
+  const hasActiveSubscription = activeSubs.length > 0;
+  const isLimitReached = !hasActiveSubscription && patientsWithStats.length >= 5;
+
   return (
     <StaggerContainer className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-5 sm:space-y-8 pb-safe bottom-nav-spacing lg:pb-8">
+      {isLimitReached && (
+        <FadeInUp>
+          <div className="bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-100 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+            <div>
+              <h3 className="text-lg font-semibold text-sky-900">Patient Limit Reached</h3>
+              <p className="text-sky-700 mt-1">You've reached the 5-patient limit on the free plan. Upgrade to unlock unlimited patients and premium features.</p>
+            </div>
+            <Link
+              href="/dashboard/billing"
+              className="whitespace-nowrap inline-flex items-center justify-center bg-sky-600 hover:bg-sky-700 text-white px-6 py-2.5 rounded-xl font-semibold transition-all shadow-md hover:shadow-lg"
+            >
+              View Pricing
+            </Link>
+          </div>
+        </FadeInUp>
+      )}
+
       <FadeInUp>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -54,13 +86,23 @@ export default async function PatientsPage() {
               {patientsWithStats.length} patient{patientsWithStats.length !== 1 ? 's' : ''} in your directory
             </p>
           </div>
-          <Link
-            href="/dashboard/patients/new"
-            className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-md shadow-sky-500/20 hover:shadow-lg hover:shadow-sky-500/30 hover:-translate-y-0.5"
-          >
-            <Plus className="w-4 h-4" />
-            Add Patient
-          </Link>
+          {!isLimitReached ? (
+            <Link
+              href="/dashboard/patients/new"
+              className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-md shadow-sky-500/20 hover:shadow-lg hover:shadow-sky-500/30 hover:-translate-y-0.5"
+            >
+              <Plus className="w-4 h-4" />
+              Add Patient
+            </Link>
+          ) : (
+            <button
+              disabled
+              className="inline-flex items-center justify-center gap-2 bg-slate-100 text-slate-400 px-5 py-2.5 rounded-xl font-semibold cursor-not-allowed"
+            >
+              <Plus className="w-4 h-4" />
+              Add Patient
+            </button>
+          )}
         </div>
       </FadeInUp>
 

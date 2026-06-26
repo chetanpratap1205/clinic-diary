@@ -1,0 +1,210 @@
+"use client";
+
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Check, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import Script from "next/script";
+
+const plans = [
+  {
+    id: "monthly",
+    name: "Monthly",
+    price: "₹499",
+    duration: "per month",
+    description: "Perfect for getting started",
+    features: [
+      "Unlimited Patients",
+      "Unlimited Appointments",
+      "SMS & Email Reminders",
+      "Basic Analytics",
+      "Standard Support",
+    ],
+  },
+  {
+    id: "quarterly",
+    name: "3 Months",
+    price: "₹1299",
+    duration: "₹433/mo",
+    description: "Great for growing clinics",
+    features: [
+      "Everything in Monthly",
+      "Priority Support",
+      "Advanced Analytics",
+      "Custom Branding",
+    ],
+    popular: false,
+  },
+  {
+    id: "yearly",
+    name: "12 Months",
+    price: "₹4999",
+    duration: "₹416/mo",
+    description: "Best value for established clinics",
+    features: [
+      "Everything in 3 Months",
+      "Dedicated Account Manager",
+      "Early Access to Features",
+      "Premium Onboarding",
+    ],
+    popular: true,
+  },
+];
+
+export function PricingCards() {
+  const [loading, setLoading] = useState<string | null>(null);
+
+  const handleSubscribe = async (planId: string) => {
+    try {
+      setLoading(planId);
+      
+      // 1. Create order on our backend
+      const res = await fetch("/api/billing/create-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId }),
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to create subscription");
+      }
+
+      // 2. Open Razorpay Checkout
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || data.keyId,
+        amount: data.amount,
+        currency: data.currency,
+        name: "Doctor Diary",
+        description: "Clinic Management Subscription",
+        order_id: data.orderId,
+        handler: async function (response: any) {
+          // 3. Verify payment on success
+          const verifyRes = await fetch("/api/billing/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...response,
+              planId,
+            }),
+          });
+          
+          if (verifyRes.ok) {
+            toast.success("Subscription successful! Your account is upgraded.");
+            setTimeout(() => window.location.reload(), 1500);
+          } else {
+            toast.error("Payment verification failed.");
+          }
+        },
+        prefill: {
+          name: "Clinic Admin",
+          // email: "admin@clinic.com",
+          // contact: "9999999999"
+        },
+        theme: {
+          color: "#0ea5e9",
+        },
+      };
+
+      const rzp1 = new (window as any).Razorpay(options);
+      rzp1.on('payment.failed', function (response: any){
+        toast.error(`Payment Failed: ${response.error.description}`);
+      });
+      
+      rzp1.open();
+
+    } catch (error: any) {
+      toast.error(error.message || "An error occurred");
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  return (
+    <div className="w-full">
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+      
+      <div className="text-center mb-16 space-y-4">
+        <h2 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+          Simple, No Hidden Cost
+        </h2>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Setup free. Cancel anytime. No long-term lock-in.
+        </p>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto items-center">
+        {plans.map((plan, idx) => (
+          <motion.div
+            key={plan.id}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.15, duration: 0.5, type: "spring" }}
+            className={`relative rounded-3xl bg-white p-8 shadow-xl ring-1 ring-gray-900/10 flex flex-col h-full 
+              ${plan.popular ? "scale-105 border-2 border-primary ring-0 shadow-2xl z-10" : ""}
+            `}
+          >
+            {plan.popular && (
+              <div className="absolute -top-4 left-0 right-0 mx-auto w-fit rounded-full bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-1 text-sm font-medium text-white flex items-center gap-1 shadow-md">
+                <Sparkles className="w-4 h-4" />
+                Best Value
+              </div>
+            )}
+            
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold text-gray-900">{plan.name}</h3>
+              <p className="text-sm text-gray-500 mt-2 h-10">{plan.description}</p>
+            </div>
+            
+            <div className="mb-6 flex items-baseline gap-2">
+              <span className="text-4xl font-bold tracking-tight text-gray-900">{plan.price}</span>
+              <span className="text-sm font-semibold text-gray-500">{plan.duration}</span>
+            </div>
+
+            <ul className="mb-8 flex-1 space-y-4">
+              {plan.features.map((feature, i) => (
+                <li key={i} className="flex items-center gap-3">
+                  <Check className="h-5 w-5 text-sky-500 flex-shrink-0" />
+                  <span className="text-sm text-gray-700">{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            <Button
+              onClick={() => handleSubscribe(plan.id)}
+              disabled={loading === plan.id}
+              className={`w-full py-6 text-base font-semibold rounded-xl transition-all ${
+                plan.popular 
+                ? "bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 shadow-md hover:shadow-lg" 
+                : "bg-gray-900 hover:bg-gray-800"
+              }`}
+            >
+              {loading === plan.id ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                "Get Started"
+              )}
+            </Button>
+          </motion.div>
+        ))}
+      </div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6, duration: 0.5 }}
+        className="mt-16 mx-auto max-w-2xl text-center p-6 bg-gradient-to-b from-sky-50/50 to-white rounded-3xl border border-sky-100 shadow-sm"
+      >
+        <div className="flex items-center justify-center gap-2 text-sky-600 mb-3">
+          <ShieldCheck className="h-8 w-8" />
+        </div>
+        <h4 className="text-xl font-semibold text-gray-900 mb-2">100% Money-Back Guarantee</h4>
+        <p className="text-gray-600">
+          Try our premium features risk-free for your first month. If you feel it's not useful, we'll refund your money — <strong>no questions asked.</strong>
+        </p>
+      </motion.div>
+    </div>
+  );
+}

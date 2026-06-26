@@ -18,6 +18,7 @@ import {
   Repeat,
   BarChart3,
   Settings2,
+  CreditCard,
 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { logoutDoctor } from "@/app/dashboard/actions";
@@ -37,6 +38,7 @@ const navItems = [
   { href: "/dashboard/calendar", label: "Calendar", icon: Calendar },
   { href: "/dashboard/patients", label: "Patients", icon: Users },
   { href: "/dashboard/follow-ups", label: "Follow-ups", icon: Repeat },
+  { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
 ];
 

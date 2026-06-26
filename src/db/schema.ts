@@ -176,6 +176,24 @@ export const reminderLogs = pgTable("reminder_logs", {
   message: text("message"),
 });
 
+// ─── Subscriptions (Razorpay) ──────────────────────────────────────────────────
+export const subscriptions = pgTable("subscriptions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  clinicId: uuid("clinic_id")
+    .notNull()
+    .unique() // One active subscription per clinic typically
+    .references(() => clinics.id, { onDelete: "cascade" }),
+  razorpayCustomerId: text("razorpay_customer_id"),
+  razorpaySubscriptionId: text("razorpay_subscription_id"),
+  planId: text("plan_id").notNull(), // monthly, quarterly, yearly
+  status: text("status").notNull().default("active"), // active, cancelled, past_due
+  currentPeriodStart: timestamp("current_period_start"),
+  currentPeriodEnd: timestamp("current_period_end"),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // ─── Type Exports ──────────────────────────────────────────────────────────────
 export type Clinic = typeof clinics.$inferSelect;
 export type NewClinic = typeof clinics.$inferInsert;
@@ -191,3 +209,5 @@ export type NewFollowUp = typeof followUps.$inferInsert;
 export type VisitNote = typeof visitNotes.$inferSelect;
 export type NewVisitNote = typeof visitNotes.$inferInsert;
 export type ReminderLog = typeof reminderLogs.$inferSelect;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type NewSubscription = typeof subscriptions.$inferInsert;

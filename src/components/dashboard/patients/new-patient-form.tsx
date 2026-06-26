@@ -52,7 +52,7 @@ export function NewPatientForm() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "Failed to add patient");
+        throw new Error(data.message || data.error || "Failed to add patient");
       }
 
       toast.success("Patient added successfully");
