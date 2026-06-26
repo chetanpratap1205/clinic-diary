@@ -86,9 +86,12 @@ export default async function FollowUpsDashboardPage() {
           </div>
           
           {dueToday.length === 0 ? (
-            <div className="bg-slate-50/50 border border-dashed border-slate-200 rounded-2xl p-8 text-center">
-              <CheckCircle2 className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-              <p className="text-slate-500 text-sm font-medium">No follow-ups due today.</p>
+            <div className="bg-gradient-to-br from-amber-50/50 to-white border border-dashed border-amber-200/60 rounded-3xl p-10 text-center shadow-sm">
+              <div className="w-16 h-16 bg-amber-100/50 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                <CheckCircle2 className="w-8 h-8 text-amber-500" />
+              </div>
+              <p className="text-amber-900 font-bold text-lg">No follow-ups due today.</p>
+              <p className="text-amber-600/80 text-sm mt-1">You're all caught up for the day!</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -114,9 +117,12 @@ export default async function FollowUpsDashboardPage() {
           </div>
           
           {overdue.length === 0 ? (
-            <div className="bg-slate-50/50 border border-dashed border-slate-200 rounded-2xl p-8 text-center">
-              <CheckCircle2 className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-              <p className="text-slate-500 text-sm font-medium">All caught up! No overdue patients.</p>
+            <div className="bg-gradient-to-br from-emerald-50/50 to-white border border-dashed border-emerald-200/60 rounded-3xl p-10 text-center shadow-sm">
+              <div className="w-16 h-16 bg-emerald-100/50 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+              </div>
+              <p className="text-emerald-900 font-bold text-lg">All caught up! No overdue patients.</p>
+              <p className="text-emerald-600/80 text-sm mt-1">Great job staying on top of your schedule.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -142,9 +148,12 @@ export default async function FollowUpsDashboardPage() {
           </div>
           
           {upcoming.length === 0 ? (
-            <div className="bg-slate-50/50 border border-dashed border-slate-200 rounded-2xl p-8 text-center">
-              <Calendar className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-              <p className="text-slate-500 text-sm font-medium">No upcoming follow-ups scheduled.</p>
+            <div className="bg-gradient-to-br from-slate-50/50 to-white border border-dashed border-slate-200/60 rounded-3xl p-10 text-center shadow-sm">
+              <div className="w-16 h-16 bg-slate-100/50 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                <Calendar className="w-8 h-8 text-slate-400" />
+              </div>
+              <p className="text-slate-900 font-bold text-lg">No upcoming follow-ups scheduled.</p>
+              <p className="text-slate-500 text-sm mt-1">Future follow-ups will appear here.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

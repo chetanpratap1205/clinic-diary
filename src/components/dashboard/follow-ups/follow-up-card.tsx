@@ -55,11 +55,11 @@ export function FollowUpCard({ followUp, variant }: FollowUpCardProps) {
   const getVariantStyles = () => {
     switch (variant) {
       case "overdue":
-        return "border-red-100 bg-red-50/30 hover:border-red-200";
+        return "border-red-100 bg-gradient-to-br from-red-50/80 to-white hover:border-red-200 shadow-sm shadow-red-100/30 hover:shadow-md hover:-translate-y-1";
       case "today":
-        return "border-amber-100 bg-amber-50/30 hover:border-amber-200";
+        return "border-amber-100 bg-gradient-to-br from-amber-50/80 to-white hover:border-amber-200 shadow-sm shadow-amber-100/30 hover:shadow-md hover:-translate-y-1";
       case "upcoming":
-        return "border-sky-100 bg-sky-50/30 hover:border-sky-200";
+        return "border-sky-100 bg-gradient-to-br from-sky-50/80 to-white hover:border-sky-200 shadow-sm shadow-sky-100/30 hover:shadow-md hover:-translate-y-1";
     }
   };
 
@@ -106,7 +106,7 @@ export function FollowUpCard({ followUp, variant }: FollowUpCardProps) {
         <div className="flex items-center gap-2 mt-auto pt-3 border-t border-slate-200/50">
           <button
             onClick={handleWhatsApp}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 bg-green-50 hover:bg-green-100 text-green-700 text-xs font-semibold rounded-lg transition-colors border border-green-200"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 bg-gradient-to-r from-emerald-50 to-green-50 hover:from-emerald-100 hover:to-green-100 text-emerald-700 text-xs font-semibold rounded-xl transition-all border border-emerald-200/50 shadow-sm hover:shadow active:scale-95"
           >
             <MessageSquare className="w-3.5 h-3.5" />
             WhatsApp
@@ -114,7 +114,7 @@ export function FollowUpCard({ followUp, variant }: FollowUpCardProps) {
           <button
             onClick={handleMarkDone}
             disabled={isMarking}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg transition-colors border border-slate-200 disabled:opacity-50"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl transition-all border border-slate-200 shadow-sm hover:shadow active:scale-95 disabled:opacity-50"
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
             {isMarking ? "Saving..." : "Done"}

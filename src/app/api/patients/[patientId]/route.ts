@@ -52,3 +52,33 @@ export async function GET(
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ patientId: string }> }
+) {
+  try {
+    const authUser = await getAuthUser();
+    if (!authUser || !authUser.clinicId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const patientId = (await params).patientId;
+
+    const [deleted] = await db
+      .delete(patients)
+      .where(
+        and(eq(patients.id, patientId), eq(patients.clinicId, authUser.clinicId))
+      )
+      .returning();
+
+    if (!deleted) {
+      return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, patient: deleted });
+  } catch (err) {
+    console.error("[Patient DELETE] Error:", err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+}

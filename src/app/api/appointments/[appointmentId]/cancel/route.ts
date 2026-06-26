@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { appointments } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export async function POST(
   _req: Request,
@@ -10,13 +10,18 @@ export async function POST(
   try {
     const { appointmentId } = await params;
 
-    if (!appointmentId) {
-      return NextResponse.json({ error: "Missing appointment ID" }, { status: 400 });
+    if (!appointmentId || !appointmentId.match(/^[0-9a-f-]{36}$/i)) {
+      return NextResponse.json({ error: "Invalid appointment ID" }, { status: 400 });
     }
 
     // Verify the appointment exists and is cancellable
     const existing = await db
-      .select({ id: appointments.id, status: appointments.status })
+      .select({ 
+        id: appointments.id, 
+        status: appointments.status,
+        clinicId: appointments.clinicId,
+        appointmentDate: appointments.appointmentDate,
+      })
       .from(appointments)
       .where(eq(appointments.id, appointmentId))
       .limit(1);
@@ -27,6 +32,7 @@ export async function POST(
 
     const appt = existing[0];
 
+    // Cannot cancel appointments that are already terminal or in progress
     if (["cancelled", "completed", "in_consultation"].includes(appt.status)) {
       return NextResponse.json(
         { error: "This appointment cannot be cancelled" },
@@ -34,10 +40,24 @@ export async function POST(
       );
     }
 
+    // Prevent cancellation of past appointments (more than 24h ago)
+    const appointmentDateTime = new Date(appt.appointmentDate as string);
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    if (appointmentDateTime < oneDayAgo) {
+      return NextResponse.json(
+        { error: "Cannot cancel appointments from more than 24 hours ago" },
+        { status: 409 }
+      );
+    }
+
     await db
       .update(appointments)
       .set({ status: "cancelled" })
-      .where(eq(appointments.id, appointmentId));
+      .where(and(
+        eq(appointments.id, appointmentId),
+        eq(appointments.clinicId, appt.clinicId) // extra guard
+      ));
 
     return NextResponse.json({ success: true });
   } catch (error) {

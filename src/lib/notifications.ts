@@ -48,14 +48,24 @@ export async function sendNotification(
         message = `Update for your appointment with Dr. ${payload.doctorName}: ${payload.trackingUrl}`;
     }
 
-    // 2. Simulate Sending (Wait 500ms to mimic network request)
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // 2. Sending Logic (MSG91 / Fast2SMS or Simulated)
+    if (channel === "sms" && process.env.MSG91_AUTH_KEY) {
+      // MSG91 / Fast2SMS Production Integration placeholder
+      // e.g., fetch(`https://api.msg91.com/api/v5/flow/`, { ... })
+      
+      console.log(`[MSG91] Dispatching SMS to ${payload.patientPhone}`);
+      // Simulate API latency
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    } else {
+      // Simulate Sending (Wait 500ms to mimic network request)
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-    console.log("\n==============================================");
-    console.log(`🚀 [SIMULATED ${channel.toUpperCase()}] SENT TO: ${payload.patientPhone}`);
-    console.log(`📝 MESSAGE:`);
-    console.log(message);
-    console.log("==============================================\n");
+      console.log("\n==============================================");
+      console.log(`🚀 [SIMULATED ${channel.toUpperCase()}] SENT TO: ${payload.patientPhone}`);
+      console.log(`📝 MESSAGE:`);
+      console.log(message);
+      console.log("==============================================\n");
+    }
 
     // 3. Log to Database for Audit Trail
     await db.insert(reminderLogs).values({

@@ -76,10 +76,13 @@ export default async function BookingPage({
       {/* Clinic Header Profile */}
       <div className="mb-8 sm:mb-10 text-center">
         <div
-          className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-2xl sm:rounded-3xl shadow-md flex items-center justify-center text-white text-2xl sm:text-3xl font-bold mb-4"
-          style={{ backgroundColor: clinic.themeColor ?? "#0ea5e9" }}
+          className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-2xl sm:rounded-3xl shadow-md flex items-center justify-center text-white text-2xl sm:text-3xl font-bold mb-4 bg-center bg-cover bg-no-repeat overflow-hidden relative"
+          style={{ 
+            backgroundColor: clinic.themeColor ?? "#0ea5e9",
+            backgroundImage: clinic.logoUrl ? `url(${clinic.logoUrl})` : "none"
+          }}
         >
-          {clinic.name[0]?.toUpperCase()}
+          {!clinic.logoUrl && clinic.name[0]?.toUpperCase()}
         </div>
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">
           {clinic.name}
@@ -115,6 +118,14 @@ export default async function BookingPage({
             </a>
           )}
         </div>
+
+        {clinic.about && (
+          <div className="mt-6 max-w-xl mx-auto px-4">
+            <p className="text-slate-500 text-sm sm:text-base leading-relaxed bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+              {clinic.about}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Booking Widget */}

@@ -80,26 +80,36 @@ export function CalendarClient({ appointments }: CalendarClientProps) {
             <style>{`
               .rdp {
                 margin: 0;
-                --rdp-cell-size: 44px;
+                --rdp-cell-size: 46px;
                 --rdp-accent-color: #0ea5e9;
                 --rdp-background-color: #f0f9ff;
                 --rdp-outline: 2px solid var(--rdp-accent-color);
               }
               @media (max-width: 400px) {
                 .rdp {
-                  --rdp-cell-size: 36px;
+                  --rdp-cell-size: 38px;
                   font-size: 13px;
                 }
               }
               .rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover {
                 font-weight: 600;
+                color: white;
+                background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%) !important;
+                box-shadow: 0 4px 14px 0 rgba(2, 132, 199, 0.35) !important;
+                border: none !important;
               }
-              .rdp-day_today {
+              .rdp-day_today:not(.rdp-day_selected) {
                 font-weight: 700;
-                color: #0ea5e9;
+                color: #0284c7;
+                background-color: #e0f2fe;
               }
               .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
                 background-color: #f8fafc;
+                color: #0f172a;
+              }
+              .rdp-day {
+                transition: all 0.2s ease;
+                border-radius: 12px;
               }
               .has-appointments::after {
                 content: '';
@@ -109,10 +119,28 @@ export function CalendarClient({ appointments }: CalendarClientProps) {
                 background-color: #0ea5e9;
                 border-radius: 50%;
                 margin: 0 auto;
-                margin-top: 1px;
+                margin-top: 3px;
+                transition: transform 0.2s ease;
               }
               .rdp-day_selected.has-appointments::after {
                 background-color: white;
+                box-shadow: 0 0 4px rgba(255,255,255,0.8);
+              }
+              .rdp-head_cell {
+                font-size: 13px;
+                font-weight: 600;
+                color: #64748b;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                padding-bottom: 12px;
+              }
+              .rdp-nav_button {
+                border-radius: 10px;
+                transition: all 0.2s;
+              }
+              .rdp-nav_button:hover {
+                background-color: #f0f9ff;
+                color: #0ea5e9;
               }
             `}</style>
             <div className="p-3 sm:p-4 flex justify-center overflow-x-auto">
@@ -137,9 +165,18 @@ export function CalendarClient({ appointments }: CalendarClientProps) {
       <div className="w-full lg:col-span-7 xl:col-span-8">
         <div className="mb-4 sm:mb-6 flex items-center justify-between">
           <div>
-            <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
-              Schedule
-            </h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <CalendarIcon className="w-5 h-5 text-sky-500" />
+                Schedule
+              </h2>
+              <button
+                onClick={() => setSelectedDate(new Date())}
+                className="text-xs font-semibold px-2 py-1 bg-sky-50 text-sky-700 rounded-md hover:bg-sky-100 transition-colors"
+              >
+                Today
+              </button>
+            </div>
             <p className="text-slate-500 text-sm mt-0.5">
               {format(selectedDate, "EEEE, MMMM d, yyyy")}
             </p>
@@ -180,7 +217,7 @@ export function CalendarClient({ appointments }: CalendarClientProps) {
                 {dayAppointments.map((appt) => (
                   <Card
                     key={appt.id}
-                    className="border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+                    className="border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-100/60"
                   >
                     <CardContent className="p-0">
                       <div className="p-3 sm:p-4 flex items-center justify-between gap-3">

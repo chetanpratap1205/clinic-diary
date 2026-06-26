@@ -16,6 +16,7 @@ import {
   Clock,
   User,
   Phone,
+  Mail,
   ChevronLeft,
   Loader2,
   CheckCircle2,
@@ -37,6 +38,7 @@ const bookingSchema = z.object({
   patientPhone: z
     .string()
     .regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian phone number"),
+  patientEmail: z.string().email("Please enter a valid email address").optional().or(z.literal("")),
 });
 
 type BookingData = z.infer<typeof bookingSchema>;
@@ -115,7 +117,8 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
         format(selectedDate, "yyyy-MM-dd"),
         selectedTime,
         data.patientName,
-        data.patientPhone
+        data.patientPhone,
+        data.patientEmail
       );
 
       if (res.error) {
@@ -450,6 +453,31 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
           {errors.patientPhone && (
             <p className="text-xs text-red-500 font-medium">
               {errors.patientPhone.message}
+            </p>
+          )}
+        </div>
+
+        {/* Email Address */}
+        <div className="space-y-1.5">
+          <label
+            htmlFor="patient-email"
+            className="text-sm font-semibold text-slate-700 flex items-center gap-2"
+          >
+            <Mail className="w-4 h-4 text-slate-400" /> Email <span className="text-slate-400 font-normal ml-1">(Optional)</span>
+          </label>
+          <Input
+            id="patient-email"
+            type="email"
+            autoComplete="email"
+            placeholder="your@email.com"
+            {...register("patientEmail")}
+            className={`h-12 rounded-xl bg-white text-base ${
+              errors.patientEmail ? "border-red-400 focus-visible:ring-red-300" : ""
+            }`}
+          />
+          {errors.patientEmail && (
+            <p className="text-xs text-red-500 font-medium">
+              {errors.patientEmail.message}
             </p>
           )}
         </div>

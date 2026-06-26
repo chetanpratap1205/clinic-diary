@@ -179,6 +179,7 @@ export default async function DashboardPage() {
   ).length;
 
   const clinicData = clinicResult[0];
+  const todayRevenue = todayCompleted * (clinicData.consultationFee || 0);
   const bookingUrl = `${
     process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in"
   }/${clinicData?.slug}`;
@@ -187,6 +188,10 @@ export default async function DashboardPage() {
   const greeting =
     hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
 
+  const displayName = authUser.name.startsWith("Dr.") || authUser.name.startsWith("Dr ")
+    ? authUser.name
+    : authUser.name.split(" ")[0];
+
   return (
     <StaggerContainer className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-5 sm:space-y-8 pb-safe bottom-nav-spacing lg:pb-8">
       {/* Header */}
@@ -194,7 +199,7 @@ export default async function DashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-              Good {greeting}, {authUser.name.split(" ")[0]} 👋
+              Good {greeting}, {displayName} 👋
             </h1>
             <p className="text-slate-500 mt-1 text-sm sm:text-base">
               {format(new Date(), "EEEE, MMMM d, yyyy")}
@@ -220,8 +225,15 @@ export default async function DashboardPage() {
 
       {/* Stats */}
       <FadeInUp>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
           {[
+            {
+              label: "Today's Revenue",
+              value: `₹${todayRevenue}`,
+              icon: TrendingUp,
+              bg: "bg-fuchsia-100",
+              text: "text-fuchsia-600",
+            },
             {
               label: "Today's Appointments",
               value: todayAppts.length,
@@ -254,7 +266,9 @@ export default async function DashboardPage() {
             <Card
               key={stat.label}
               className={`border-slate-100 shadow-sm hover:shadow-md transition-shadow ${
-                stat.label.includes("Overdue") && stat.value > 0
+                stat.label.includes("Overdue") ? "col-span-2 md:col-span-1 lg:col-span-1" : ""
+              } ${
+                stat.label.includes("Overdue") && overdueCount > 0
                   ? "ring-2 ring-red-500/20"
                   : ""
               }`}
@@ -265,7 +279,7 @@ export default async function DashboardPage() {
                 >
                   <stat.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${stat.text}`} />
                 </div>
-                <p className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight truncate">
                   {stat.value}
                 </p>
                 <p className="text-xs sm:text-sm font-medium text-slate-500 mt-1">
@@ -279,7 +293,7 @@ export default async function DashboardPage() {
 
       {/* Today's Appointments */}
       <FadeInUp>
-        <Card className="border-slate-100 shadow-sm overflow-hidden">
+        <Card className="border-slate-100 shadow-sm">
           <CardHeader className="bg-white border-b border-slate-50 py-4 px-4 sm:px-6">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base sm:text-lg font-semibold tracking-tight text-slate-900">
@@ -308,7 +322,7 @@ export default async function DashboardPage() {
                 {todayAppts.map((appt) => (
                   <div
                     key={appt.id}
-                    className="p-4 sm:p-5 flex items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors"
+                    className="p-4 sm:p-5 flex items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors last:rounded-b-2xl"
                   >
                     {/* Left: Avatar + Info */}
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0">

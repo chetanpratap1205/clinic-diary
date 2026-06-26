@@ -16,6 +16,8 @@ import {
   AlertTriangle,
   Users,
   Repeat,
+  BarChart3,
+  Settings2,
 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { logoutDoctor } from "@/app/dashboard/actions";
@@ -35,6 +37,7 @@ const navItems = [
   { href: "/dashboard/calendar", label: "Calendar", icon: Calendar },
   { href: "/dashboard/patients", label: "Patients", icon: Users },
   { href: "/dashboard/follow-ups", label: "Follow-ups", icon: Repeat },
+  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
 ];
 
 export function Sidebar({
@@ -119,6 +122,20 @@ export function Sidebar({
 
       {/* Footer Actions */}
       <div className="p-3 border-t border-slate-100 bg-slate-50/50">
+        <Link
+          href="/dashboard/settings"
+          onClick={() => setMobileOpen(false)}
+          className={cn(
+            "flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border border-transparent mb-1",
+            pathname.startsWith("/dashboard/settings")
+              ? "text-slate-900 bg-slate-100"
+              : "text-slate-600 hover:bg-white hover:shadow-sm hover:text-slate-900 hover:border-slate-200"
+          )}
+          aria-label="Clinic settings"
+        >
+          <Settings2 className="w-4 h-4 flex-shrink-0 text-slate-500" />
+          Settings
+        </Link>
         <a
           href={`/book/${clinicSlug}`}
           target="_blank"
@@ -215,8 +232,8 @@ export function Sidebar({
 
       {/* ─── MOBILE: Bottom Navigation Bar ─────────────────────── */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/70 z-40 pb-safe">
-        <div className="flex items-center justify-around px-2 h-16">
-          {navItems.map((item) => {
+        <div className="flex items-center justify-around px-1 h-16">
+          {navItems.slice(0, 4).map((item) => {
             const active = pathname === item.href;
             return (
               <Link
@@ -252,22 +269,28 @@ export function Sidebar({
             );
           })}
 
-          {/* Logout button — opens confirmation modal */}
-          <button
-            onClick={() => setShowLogoutModal(true)}
-            disabled={isPending}
-            className="flex flex-col items-center justify-center gap-1 flex-1 h-full rounded-xl text-slate-400 hover:text-red-500 transition-colors disabled:opacity-50"
-            aria-label="Sign out of your account"
-          >
-            {isPending ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <LogOut className="w-5 h-5" />
+          {/* Settings */}
+          <Link
+            href="/dashboard/settings"
+            className={cn(
+              "flex flex-col items-center justify-center gap-1 flex-1 h-full rounded-xl transition-all duration-200 relative",
+              pathname.startsWith("/dashboard/settings") ? "text-slate-900" : "text-slate-400"
             )}
-            <span className="text-[10px] font-semibold tracking-tight">
-              Logout
-            </span>
-          </button>
+            style={pathname.startsWith("/dashboard/settings") ? { color: themeColor } : {}}
+            aria-label="Settings"
+          >
+            {pathname.startsWith("/dashboard/settings") && (
+              <motion.div
+                layoutId="bottom-nav-active"
+                className="absolute inset-x-2 top-2 bottom-2 rounded-xl"
+                style={{ backgroundColor: themeColor, opacity: 0.08 }}
+                initial={false}
+                transition={{ type: "spring", stiffness: 400, damping: 35 }}
+              />
+            )}
+            <Settings2 className="w-5 h-5" />
+            <span className="text-[10px] font-semibold tracking-tight">Settings</span>
+          </Link>
         </div>
       </div>
 

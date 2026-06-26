@@ -14,6 +14,8 @@ interface SettingsData {
   address: string | null;
   phone: string;
   themeColor: string | null;
+  about?: string | null;
+  logoUrl?: string | null;
 }
 
 export async function updateClinicSettings(data: SettingsData) {
@@ -33,6 +35,8 @@ export async function updateClinicSettings(data: SettingsData) {
         address: data.address,
         phone: data.phone,
         themeColor: data.themeColor,
+        about: data.about,
+        logoUrl: data.logoUrl,
       })
       .where(eq(clinics.id, user.clinicId));
 
@@ -77,5 +81,45 @@ export async function updateClinicAvailability(availabilityData: any[]) {
   } catch (error) {
     console.error("Failed to update availability:", error);
     return { error: "Failed to save availability. Please try again." };
+  }
+}
+
+export async function addHoliday(date: string) {
+  try {
+    const user = await getAuthUser();
+    if (!user || !user.clinicId) return { error: "Unauthorized" };
+
+    const { availabilityOverrides } = await import("@/db/schema");
+    await db.insert(availabilityOverrides).values({
+      clinicId: user.clinicId,
+      date,
+      isClosed: true,
+    });
+
+    revalidatePath("/dashboard/settings");
+    revalidatePath(`/book`);
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to add holiday:", error);
+    return { error: "Failed to add holiday" };
+  }
+}
+
+export async function removeHoliday(id: string) {
+  try {
+    const user = await getAuthUser();
+    if (!user || !user.clinicId) return { error: "Unauthorized" };
+
+    const { availabilityOverrides } = await import("@/db/schema");
+    await db.delete(availabilityOverrides).where(
+      eq(availabilityOverrides.id, id)
+    );
+
+    revalidatePath("/dashboard/settings");
+    revalidatePath(`/book`);
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to remove holiday:", error);
+    return { error: "Failed to remove holiday" };
   }
 }

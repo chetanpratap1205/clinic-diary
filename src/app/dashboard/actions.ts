@@ -45,6 +45,7 @@ export async function completeAppointmentWithNotes(data: {
   appointmentId: string;
   patientId: string | null;
   complaint: string;
+  diagnosis?: string;
   treatment: string;
   followUpDays: number | "none";
 }) {
@@ -66,13 +67,14 @@ export async function completeAppointmentWithNotes(data: {
       );
 
     // 2. Add visit notes
-    if (data.patientId && (data.complaint || data.treatment)) {
+    if (data.patientId && (data.complaint || data.diagnosis || data.treatment)) {
       const { visitNotes } = await import("@/db/schema");
       await db.insert(visitNotes).values({
         clinicId: authUser.clinicId,
         patientId: data.patientId,
         appointmentId: data.appointmentId,
         complaint: data.complaint || null,
+        diagnosis: data.diagnosis || null,
         treatment: data.treatment || null,
         followUpRequired: data.followUpDays !== "none",
       });

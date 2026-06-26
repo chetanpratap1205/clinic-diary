@@ -93,7 +93,8 @@ export async function createBooking(
   dateStr: string,
   timeStr: string,
   patientName: string,
-  patientPhone: string
+  patientPhone: string,
+  patientEmail?: string
 ) {
   try {
     // 0. Find or create patient
@@ -129,6 +130,7 @@ export async function createBooking(
       patientId,
       patientName,
       patientPhone,
+      patientEmail: patientEmail || null,
       appointmentDate: dateStr,
       appointmentTime: timeStr,
       status: "confirmed",

@@ -31,6 +31,7 @@ export function AppointmentActions({
 
   const [notesData, setNotesData] = useState({
     complaint: "",
+    diagnosis: "",
     treatment: "",
     followUpDays: "none" as number | "none",
   });
@@ -60,6 +61,7 @@ export function AppointmentActions({
         appointmentId,
         patientId,
         complaint: notesData.complaint,
+        diagnosis: notesData.diagnosis,
         treatment: notesData.treatment,
         followUpDays: notesData.followUpDays,
       });
@@ -163,6 +165,19 @@ export function AppointmentActions({
                 value={notesData.complaint}
                 onChange={(e) => setNotesData(prev => ({ ...prev, complaint: e.target.value }))}
                 placeholder="E.g. Fever for 3 days"
+                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Diagnosis <span className="text-slate-400 font-normal">(Optional)</span>
+              </label>
+              <input
+                type="text"
+                value={notesData.diagnosis}
+                onChange={(e) => setNotesData(prev => ({ ...prev, diagnosis: e.target.value }))}
+                placeholder="E.g. Viral Fever"
                 className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
               />
             </div>

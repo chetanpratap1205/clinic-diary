@@ -23,6 +23,8 @@ const settingsSchema = z.object({
     .string()
     .regex(/^#([0-9A-F]{3}){1,2}$/i, "Invalid hex color")
     .nullable(),
+  about: z.string().nullable().optional(),
+  logoUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
 });
 
 type SettingsData = z.infer<typeof settingsSchema>;
@@ -36,6 +38,8 @@ interface SettingsClientProps {
     address: string | null;
     phone: string;
     themeColor: string | null;
+    about?: string | null;
+    logoUrl?: string | null;
   };
   slug: string;
 }
@@ -68,6 +72,8 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
       address: initialData.address || "",
       phone: initialData.phone || "",
       themeColor: initialData.themeColor || "#0ea5e9",
+      about: initialData.about || "",
+      logoUrl: initialData.logoUrl || "",
     },
   });
 
@@ -177,6 +183,33 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
                   className="h-11 rounded-xl text-base"
                 />
               </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="logo-url" className="text-sm font-semibold text-slate-700">
+                  Logo URL (Optional)
+                </label>
+                <Input
+                  id="logo-url"
+                  {...register("logoUrl")}
+                  placeholder="https://example.com/logo.png"
+                  className="h-11 rounded-xl text-base"
+                />
+                {errors.logoUrl && (
+                  <p className="text-xs text-red-500">{errors.logoUrl.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="about" className="text-sm font-semibold text-slate-700">
+                  About Clinic
+                </label>
+                <textarea
+                  id="about"
+                  {...register("about")}
+                  placeholder="Brief description of your clinic or practice..."
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-slate-900/20 resize-none h-24"
+                />
+              </div>
 
               {/* Theme Color */}
               <div className="space-y-4 pt-4 border-t border-slate-100">
@@ -273,10 +306,11 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
 
               <div className="p-5 text-center flex-shrink-0">
                 <motion.div
-                  className="w-16 h-16 mx-auto rounded-2xl shadow-md flex items-center justify-center text-white text-2xl font-bold mb-3"
+                  className="w-16 h-16 mx-auto rounded-2xl shadow-md flex items-center justify-center text-white text-2xl font-bold mb-3 bg-center bg-cover bg-no-repeat overflow-hidden relative"
                   animate={{ backgroundColor: themeColor }}
+                  style={{ backgroundImage: watchedFields.logoUrl ? `url(${watchedFields.logoUrl})` : "none" }}
                 >
-                  {watchedFields.name?.[0]?.toUpperCase() || "C"}
+                  {!watchedFields.logoUrl && (watchedFields.name?.[0]?.toUpperCase() || "C")}
                 </motion.div>
                 <h2 className="text-lg font-bold text-slate-900 tracking-tight">
                   {watchedFields.name || "Clinic Name"}
@@ -288,6 +322,14 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
                   {watchedFields.specialty || "Specialty"}
                 </p>
               </div>
+              
+              {watchedFields.about && (
+                <div className="px-4 mb-4">
+                  <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm text-xs text-slate-500 line-clamp-3">
+                    {watchedFields.about}
+                  </div>
+                </div>
+              )}
 
               <div className="px-4 flex-1">
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">

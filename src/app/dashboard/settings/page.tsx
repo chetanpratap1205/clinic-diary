@@ -1,10 +1,11 @@
 import { db } from "@/db";
-import { clinics, availability } from "@/db/schema";
+import { clinics, availability, availabilityOverrides } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { SettingsClient } from "./settings-client";
 import { AvailabilityClient } from "./availability-client";
+import { HolidayClient } from "./holiday-client";
 
 export const metadata = {
   title: "Settings | Dashboard",
@@ -37,6 +38,11 @@ export default async function SettingsPage() {
     .from(availability)
     .where(eq(availability.clinicId, user.clinicId));
 
+  const initialHolidays = await db
+    .select()
+    .from(availabilityOverrides)
+    .where(eq(availabilityOverrides.clinicId, user.clinicId));
+
   const initialData = {
     name: clinic.name,
     doctorName: clinic.doctorName,
@@ -45,6 +51,8 @@ export default async function SettingsPage() {
     address: clinic.address,
     phone: clinic.phone,
     themeColor: clinic.themeColor,
+    about: clinic.about,
+    logoUrl: clinic.logoUrl,
   };
 
   return (
@@ -58,6 +66,7 @@ export default async function SettingsPage() {
       
       <div className="pt-2 sm:pt-4">
         <AvailabilityClient initialAvailability={clinicAvailability} />
+        <HolidayClient initialHolidays={initialHolidays} />
       </div>
     </div>
   );

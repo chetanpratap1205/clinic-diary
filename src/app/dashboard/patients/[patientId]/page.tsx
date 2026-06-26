@@ -114,16 +114,23 @@ export default async function PatientProfilePage(props: { params: Promise<{ pati
               ) : (
                 <div className="divide-y divide-slate-100">
                   {visitHistory.map((appt) => (
-                    <div key={appt.id} className="p-4 sm:p-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
-                      <div>
-                        <p className="font-medium text-slate-900 text-sm">
-                          {format(new Date(appt.appointmentDate), "MMM d, yyyy")}
-                        </p>
-                        <p className="text-xs text-slate-500 mt-1">
-                          {appt.appointmentTime.slice(0, 5)}
-                        </p>
+                    <div key={appt.id} className="p-4 sm:p-5 flex flex-col gap-2 hover:bg-slate-50/50 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-slate-900 text-sm">
+                            {format(new Date(appt.appointmentDate), "MMM d, yyyy")}
+                          </p>
+                          <p className="text-xs text-slate-500 mt-1">
+                            {appt.appointmentTime.slice(0, 5)}
+                          </p>
+                        </div>
+                        {getStatusBadge(appt.status)}
                       </div>
-                      {getStatusBadge(appt.status)}
+                      {appt.notes && (
+                        <p className="text-xs text-slate-600 bg-white p-2.5 rounded-lg border border-slate-100 shadow-sm mt-1">
+                          {appt.notes}
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>
