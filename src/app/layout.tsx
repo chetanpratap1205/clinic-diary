@@ -63,9 +63,28 @@ export const metadata: Metadata = {
   },
 };
 
+import Script from "next/script";
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
+      <head>
+        {/* Google tag (gtag.js) */}
+        <Script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-Y3BEDYTXTW"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-Y3BEDYTXTW');
+          `}
+        </Script>
+      </head>
       <body className="bg-slate-50 text-slate-900 antialiased min-h-screen font-sans selection:bg-teal-100 selection:text-teal-900">
         {/* Skip to main content — accessibility */}
         <a

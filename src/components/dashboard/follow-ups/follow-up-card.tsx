@@ -20,10 +20,14 @@ interface FollowUpCardProps {
       phone: string;
     };
   };
+  clinic: {
+    name: string;
+    slug: string;
+  };
   variant: "overdue" | "today" | "upcoming";
 }
 
-export function FollowUpCard({ followUp, variant }: FollowUpCardProps) {
+export function FollowUpCard({ followUp, variant, clinic }: FollowUpCardProps) {
   const router = useRouter();
   const [isMarking, setIsMarking] = useState(false);
 
@@ -47,7 +51,8 @@ export function FollowUpCard({ followUp, variant }: FollowUpCardProps) {
   };
 
   const handleWhatsApp = () => {
-    const text = `Hi ${followUp.patient.name}, this is a reminder from your doctor. Your follow-up visit was scheduled around ${format(new Date(followUp.dueDate), "MMM d, yyyy")}. Please call us at your convenience to schedule your appointment.`;
+    const bookingLink = `${process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in"}/book/${clinic.slug}`;
+    const text = `Hi ${followUp.patient.name}, this is a reminder from ${clinic.name}. Your follow-up visit was scheduled around ${format(new Date(followUp.dueDate), "MMM d, yyyy")}. Please book your slot at your convenience using our online portal: ${bookingLink}`;
     const url = `https://wa.me/91${followUp.patient.phone}?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank");
   };

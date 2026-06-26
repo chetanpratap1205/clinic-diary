@@ -112,22 +112,31 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Social Proof Strip */}
+      {/* Premium Value Strip */}
       <section className="py-8 border-y border-slate-200/50 bg-white/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap justify-center gap-8 sm:gap-16 items-center text-center">
           <div className="flex flex-col items-center gap-1">
-            <span className="text-2xl font-bold text-slate-800">500+</span>
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Clinics Onboarded</span>
+            <div className="flex items-center gap-2 text-slate-800 mb-1">
+              <Shield className="w-5 h-5 text-teal-600" />
+              <span className="text-xl font-bold">Secure Architecture</span>
+            </div>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Built on Modern Cloud Tech</span>
           </div>
           <div className="hidden sm:block w-px h-8 bg-slate-200" />
           <div className="flex flex-col items-center gap-1">
-            <span className="text-2xl font-bold text-slate-800">₹10M+</span>
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Monthly Consultations</span>
+            <div className="flex items-center gap-2 text-slate-800 mb-1">
+              <TrendingUp className="w-5 h-5 text-indigo-600" />
+              <span className="text-xl font-bold">Revenue Focused</span>
+            </div>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Maximize Patient Throughput</span>
           </div>
           <div className="hidden sm:block w-px h-8 bg-slate-200" />
           <div className="flex flex-col items-center gap-1">
-            <span className="text-2xl font-bold text-slate-800">Zero</span>
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Double Bookings</span>
+            <div className="flex items-center gap-2 text-slate-800 mb-1">
+              <Star className="w-5 h-5 text-orange-600" />
+              <span className="text-xl font-bold">Premium Brand</span>
+            </div>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Elevate Patient Experience</span>
           </div>
         </div>
       </section>
@@ -369,55 +378,47 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* The Strategic Advantage (Replacing Fake Testimonials) */}
       <section className="py-20 px-4 sm:px-6 bg-slate-50 border-t border-slate-200">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4 tracking-tight">Trusted by Top Practitioners</h2>
+          <div className="text-center mb-16 max-w-3xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4 tracking-tight">The Dual Engine of Growth</h2>
+            <p className="text-slate-500 text-lg">Doctor Diary isn&apos;t just a calendar. It&apos;s a strategic asset engineered to drive measurable clinic profitability while simultaneously elevating your practice&apos;s brand perception in the market.</p>
           </div>
+          
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 relative">
-              <div className="text-teal-600 mb-4 flex gap-1">
-                <Star className="w-5 h-5 fill-current" />
-                <Star className="w-5 h-5 fill-current" />
-                <Star className="w-5 h-5 fill-current" />
-                <Star className="w-5 h-5 fill-current" />
-                <Star className="w-5 h-5 fill-current" />
+            {/* Profit Focus */}
+            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50 rounded-bl-[100px] -z-10 transition-transform group-hover:scale-110" />
+              <div className="w-12 h-12 bg-teal-100 rounded-2xl flex items-center justify-center text-teal-700 mb-6">
+                <TrendingUp className="w-6 h-6" />
               </div>
-              <p className="text-slate-700 text-lg italic mb-6">
-                &quot;Doctor Diary completely transformed our clinic. We went from chaotic mornings to everything being neatly organized. Our revenue is up 30% because our slots are always fully utilized and no-shows are basically zero.&quot;
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">Direct Revenue Optimization</h3>
+              <p className="text-slate-600 mb-6 leading-relaxed">
+                Every missed appointment is irretrievably lost revenue. By deploying aggressive, automated WhatsApp reminder sequences and frictionless 24/7 self-service booking, Doctor Diary systematically plugs the leaks in your schedule. 
               </p>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center text-teal-700 font-bold text-lg">
-                  AS
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-900">Dr. Amit Sharma</h4>
-                  <p className="text-sm text-slate-500">Chief Cardiologist, HeartCare Clinic</p>
-                </div>
-              </div>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-2 text-slate-700 font-medium"><CheckCircle className="w-5 h-5 text-teal-500" /> Maximize daily billable hours</li>
+                <li className="flex items-center gap-2 text-slate-700 font-medium"><CheckCircle className="w-5 h-5 text-teal-500" /> Eliminate administrative bottlenecks</li>
+                <li className="flex items-center gap-2 text-slate-700 font-medium"><CheckCircle className="w-5 h-5 text-teal-500" /> Accelerate patient acquisition loops</li>
+              </ul>
             </div>
 
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 relative">
-              <div className="text-teal-600 mb-4 flex gap-1">
-                <Star className="w-5 h-5 fill-current" />
-                <Star className="w-5 h-5 fill-current" />
-                <Star className="w-5 h-5 fill-current" />
-                <Star className="w-5 h-5 fill-current" />
-                <Star className="w-5 h-5 fill-current" />
+            {/* Brand Focus */}
+            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-[100px] -z-10 transition-transform group-hover:scale-110" />
+              <div className="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-700 mb-6">
+                <Star className="w-6 h-6" />
               </div>
-              <p className="text-slate-700 text-lg italic mb-6">
-                &quot;The WhatsApp reminders are an absolute game changer. Patients love how easy it is to book on their phones. My front desk finally has time to actually greet patients instead of being glued to the phone.&quot;
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">Premium Brand Authority</h3>
+              <p className="text-slate-600 mb-6 leading-relaxed">
+                Your patient&apos;s experience begins long before they enter your waiting room. A seamless, modern digital booking interface signals that your clinic utilizes state-of-the-art technology and respects their time.
               </p>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold text-lg">
-                  PP
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-900">Dr. Priya Patel</h4>
-                  <p className="text-sm text-slate-500">Dermatologist & Founder, SkinGlow</p>
-                </div>
-              </div>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-2 text-slate-700 font-medium"><CheckCircle className="w-5 h-5 text-indigo-500" /> Project an enterprise-grade digital presence</li>
+                <li className="flex items-center gap-2 text-slate-700 font-medium"><CheckCircle className="w-5 h-5 text-indigo-500" /> Stand out against legacy-system competitors</li>
+                <li className="flex items-center gap-2 text-slate-700 font-medium"><CheckCircle className="w-5 h-5 text-indigo-500" /> Cultivate high-end patient loyalty</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -473,7 +474,7 @@ export default function HomePage() {
             <Link href="/privacy" className="hover:text-teal-700 transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-teal-700 transition-colors">Terms of Service</Link>
             <Link href="/refund" className="hover:text-teal-700 transition-colors">Refund Policy</Link>
-            <a href="mailto:support@naturexpress.com" className="hover:text-teal-700 transition-colors">Contact Support</a>
+            <a href="mailto:support@doctor.naturexpress.in" className="hover:text-teal-700 transition-colors">Contact Support</a>
           </div>
           <p className="text-sm font-medium text-slate-400">
             © {new Date().getFullYear()} NatureXpress. All rights reserved.

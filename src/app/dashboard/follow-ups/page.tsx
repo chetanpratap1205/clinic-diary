@@ -1,6 +1,6 @@
 import { getAuthUser } from "@/lib/auth";
 import { db } from "@/db";
-import { followUps, patients } from "@/db/schema";
+import { followUps, patients, clinics } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { format, differenceInDays } from "date-fns";
@@ -11,6 +11,14 @@ import { Calendar, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
 export default async function FollowUpsDashboardPage() {
   const authUser = await getAuthUser();
   if (!authUser?.clinicId) redirect("/login");
+
+  const clinicResult = await db
+    .select()
+    .from(clinics)
+    .where(eq(clinics.id, authUser.clinicId))
+    .limit(1);
+    
+  const clinicData = clinicResult[0];
 
   const pendingFollowUps = await db
     .select({
@@ -96,7 +104,7 @@ export default async function FollowUpsDashboardPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {dueToday.map((fu) => (
-                <FollowUpCard key={fu.id} followUp={fu} variant="today" />
+                <FollowUpCard key={fu.id} followUp={fu} variant="today" clinic={{ name: clinicData.name, slug: clinicData.slug }} />
               ))}
             </div>
           )}
@@ -127,7 +135,7 @@ export default async function FollowUpsDashboardPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {overdue.map((fu) => (
-                <FollowUpCard key={fu.id} followUp={fu} variant="overdue" />
+                <FollowUpCard key={fu.id} followUp={fu} variant="overdue" clinic={{ name: clinicData.name, slug: clinicData.slug }} />
               ))}
             </div>
           )}
@@ -158,7 +166,7 @@ export default async function FollowUpsDashboardPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {upcoming.map((fu) => (
-                <FollowUpCard key={fu.id} followUp={fu} variant="upcoming" />
+                <FollowUpCard key={fu.id} followUp={fu} variant="upcoming" clinic={{ name: clinicData.name, slug: clinicData.slug }} />
               ))}
             </div>
           )}

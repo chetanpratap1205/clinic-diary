@@ -30,44 +30,49 @@ export default function RefundPolicy() {
             Our Services are billed on a subscription basis (e.g., monthly, annually). You will be billed in advance on a recurring and periodic basis (each period is called a "Billing Cycle"). At the end of each Billing Cycle, your Subscription will automatically renew under the exact same conditions unless you cancel it or NatureXpress cancels it.
           </p>
 
-          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">2. Non-Refundable Subscriptions</h2>
+          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">2. 30-Day Money-Back Guarantee</h2>
           <p>
-            <strong>All sales are final.</strong> Because Doctor Diary provides access to an immediate digital software platform with substantial infrastructure costs, <strong>we do not provide refunds or credits for any partial-month subscription periods or unused software.</strong>
-          </p>
-          <p>
-            If you cancel your subscription, you will retain access to the Service until the end of your current paid Billing Cycle. No pro-rated refunds will be issued for the remainder of the billing period.
+            We stand behind Doctor Diary. If you are a new subscriber and are not satisfied with the Service for any reason within the first 30 days of your initial paid subscription, you may request a full refund. This guarantee applies only to your first subscription period and must be requested within 30 days of your initial upgrade to a paid plan.
           </p>
 
-          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">3. Cancellation Process</h2>
+          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">3. Non-Refundable Subscriptions (After 30 Days)</h2>
+          <p>
+            Except for the 30-day money-back guarantee for new subscribers, <strong>all sales are final.</strong> Because Doctor Diary provides access to an immediate digital software platform with substantial infrastructure costs, <strong>we do not provide refunds or credits for any partial-month subscription periods or unused software after the initial 30-day window.</strong>
+          </p>
+          <p>
+            If you cancel your subscription after the initial 30 days, you will retain access to the Service until the end of your current paid Billing Cycle. No pro-rated refunds will be issued for the remainder of the billing period.
+          </p>
+
+          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">4. Cancellation Process</h2>
           <p>
             You may cancel your Subscription renewal either through your online account management page or by contacting NatureXpress customer support team. Cancellation requests must be made before the next billing date to avoid being charged for the subsequent Billing Cycle.
           </p>
           <p>
-            Once a charge has been processed for a new Billing Cycle, it is strictly non-refundable, and your cancellation will apply to the following cycle.
+            Once a charge has been processed for a new Billing Cycle (outside of the 30-day guarantee window), it is strictly non-refundable, and your cancellation will apply to the following cycle.
           </p>
 
-          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">4. Exceptions (At Our Sole Discretion)</h2>
+          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">5. Exceptions (At Our Sole Discretion)</h2>
           <p>
-            Refunds are strictly not permitted except in the following limited circumstances, subject to our absolute and sole discretion:
+            Outside of the 30-day guarantee, refunds are strictly not permitted except in the following limited circumstances, subject to our absolute and sole discretion:
           </p>
           <ul className="list-disc pl-6 mb-4 space-y-2">
             <li>Duplicate charges resulting from a technical billing error on our end.</li>
             <li>In the event that we terminate your service without cause prior to the end of your billing cycle (a pro-rated refund may be issued).</li>
           </ul>
 
-          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">5. Chargebacks and Payment Disputes</h2>
+          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">6. Chargebacks and Payment Disputes</h2>
           <p>
             If you initiate a chargeback or payment dispute with your credit card company or bank, we reserve the right to immediately suspend or terminate your account. Fraudulent chargebacks may result in your account being permanently banned, and we reserve the right to dispute the chargeback and recover associated fees. Please contact our support team to resolve billing issues before initiating a dispute.
           </p>
 
-          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">6. Changes to Pricing</h2>
+          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">7. Changes to Pricing</h2>
           <p>
             NatureXpress, in its sole discretion and at any time, may modify the Subscription fees for the Subscriptions. Any Subscription fee change will become effective at the end of the then-current Billing Cycle. We will provide you with reasonable prior notice of any change in Subscription fees to give you an opportunity to terminate your Subscription before such change becomes effective.
           </p>
 
-          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">7. Contact Us</h2>
+          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">8. Contact Us</h2>
           <p>
-            If you have questions about billing, cancellations, or this Policy, please contact our support team at billing@naturexpress.com.
+            If you have questions about billing, cancellations, or this Policy, please contact our support team at billing@doctor.naturexpress.in.
           </p>
         </div>
       </div>

@@ -205,11 +205,11 @@ export default function SignupPage() {
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="At least 6 characters"
+                    placeholder="At least 8 characters"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    minLength={6}
+                    minLength={8}
                     autoComplete="new-password"
                     className="h-11 pr-10 text-base transition-all duration-200 focus:ring-teal-500/20"
                   />
@@ -226,7 +226,7 @@ export default function SignupPage() {
                     )}
                   </button>
                 </div>
-                <p className="text-xs text-slate-400">Minimum 6 characters required</p>
+                <p className="text-xs text-slate-400">Minimum 8 characters required</p>
               </div>
 
               <Button

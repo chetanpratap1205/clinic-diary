@@ -183,7 +183,7 @@ export default async function DashboardPage() {
   const todayRevenue = todayCompleted * (clinicData.consultationFee || 0);
   const bookingUrl = `${
     process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in"
-  }/${clinicData?.slug}`;
+  }/book/${clinicData?.slug}`;
 
 
   const displayName = authUser.name.startsWith("Dr.") || authUser.name.startsWith("Dr ")
@@ -390,7 +390,7 @@ export default async function DashboardPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {dueTodayFollowUps.map((fu) => (
-                  <FollowUpCard key={fu.id} followUp={fu} variant="today" />
+                  <FollowUpCard key={fu.id} followUp={fu} variant="today" clinic={{ name: clinicData.name, slug: clinicData.slug }} />
                 ))}
               </div>
             )}

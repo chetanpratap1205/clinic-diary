@@ -67,7 +67,7 @@ export default function TermsOfService() {
 
           <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">6. Indemnification</h2>
           <p>
-            You agree to defend, indemnify and hold harmless NatureXpress and its licensee and licensors, and their employees, contractors, agents, officers and directors, from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, and expenses (including but not limited to attorney's fees), resulting from or arising out of a) your use and access of the Service, by you or any person using your account and password; b) a breach of these Terms; or c) any claims brought by your patients related to data privacy, missed appointments, or medical malpractice.
+            You agree to defend, indemnify and hold harmless NatureXpress and its licensee and licensors, and their employees, contractors, agents, officers and directors, from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, and expenses (including but not limited to attorney's fees), resulting from or arising out of a) your use and access of the Service, by you or any person using your account and password; b) a breach of these Terms; or c) any claims brought by your patients related to data privacy, missed appointments, or medical malpractice, except to the extent such claims arise directly from NatureXpress's gross negligence or willful misconduct.
           </p>
 
           <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">7. Termination</h2>
@@ -80,7 +80,7 @@ export default function TermsOfService() {
 
           <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">8. Governing Law</h2>
           <p>
-            These Terms shall be governed and construed in accordance with the laws of the jurisdiction in which NatureXpress is headquartered, without regard to its conflict of law provisions.
+            These Terms shall be governed and construed in accordance with the laws of New Delhi, India, without regard to its conflict of law provisions.
           </p>
           <p>
             Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights. If any provision of these Terms is held to be invalid or unenforceable by a court, the remaining provisions of these Terms will remain in effect.
@@ -93,7 +93,7 @@ export default function TermsOfService() {
 
           <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">10. Contact Us</h2>
           <p>
-            If you have any questions about these Terms, please contact us at support@naturexpress.com.
+            If you have any questions about these Terms, please contact us at support@doctor.naturexpress.in.
           </p>
         </div>
       </div>

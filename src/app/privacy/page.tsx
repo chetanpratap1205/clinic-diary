@@ -30,7 +30,7 @@ export default function PrivacyPolicy() {
             <strong>A. Information provided by Clinics/Practitioners:</strong> When you register for an account, we collect your name, clinic name, email address, phone number, billing information, and professional credentials.
           </p>
           <p>
-            <strong>B. Information provided by Patients:</strong> When patients book appointments through the Services, we collect their name, phone number, appointment details, and any notes they provide. <strong>Important Notice to Clinics:</strong> As a clinic, you act as the Data Controller for your patients' data. We act solely as a Data Processor. It is the clinic's strict responsibility to ensure that any collection of patient data complies with local healthcare privacy regulations (such as HIPAA in the US, GDPR in Europe, or equivalent local laws).
+            <strong>B. Information provided by Patients:</strong> When patients book appointments through the Services, we collect their name, phone number, appointment details, and any notes they provide. <strong>Important Notice to Clinics:</strong> Under the Digital Personal Data Protection Act, 2023 (DPDP Act) of India, you (the clinic) act as the Data Fiduciary for your patients' data. NatureXpress acts solely as a Data Processor on your behalf. It is the clinic's strict responsibility to obtain necessary consent and ensure that any collection of patient data complies with the DPDP Act and other applicable healthcare privacy regulations.
           </p>
           <p>
             <strong>C. Automatically Collected Information:</strong> We collect certain data automatically, such as IP addresses, browser types, device information, and usage patterns (e.g., pages visited, clicks) to improve our Services.
@@ -65,9 +65,9 @@ export default function PrivacyPolicy() {
             Doctor Diary is a scheduling and practice management tool, not a medical records system. We strongly advise against storing sensitive health information (PHI/ePHI) within our platform unless strictly necessary for booking purposes. Clinics assume all liability for the type of data they request from patients through our platform.
           </p>
 
-          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">6. Your Rights</h2>
+          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">6. Your Rights & DPDP Act Compliance</h2>
           <p>
-            Depending on your jurisdiction, you may have the right to access, update, or delete your personal information. If you wish to exercise these rights, please contact us. Note that we may retain certain information as required by law or for legitimate business purposes.
+            In accordance with the Digital Personal Data Protection Act, 2023 (DPDP Act), Data Principals (users and patients) have the right to access, correct, update, or erase their personal data. If you are a Clinic, you can manage this directly in your account. If you are a Patient, you must contact your respective Clinic (the Data Fiduciary) to exercise these rights, and we will assist the Clinic in fulfilling your request.
           </p>
 
           <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">7. Changes to This Privacy Policy</h2>
@@ -77,7 +77,7 @@ export default function PrivacyPolicy() {
 
           <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">8. Contact Us</h2>
           <p>
-            If you have any questions about this Privacy Policy, please contact us at support@naturexpress.com.
+            If you have any questions about this Privacy Policy, please contact us at support@doctor.naturexpress.in.
           </p>
         </div>
       </div>

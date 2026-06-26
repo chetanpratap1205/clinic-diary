@@ -36,7 +36,7 @@ export default async function BookingLayout({
         style={{ backgroundColor: clinic.themeColor ?? "#0ea5e9" }}
       />
 
-      <main className="flex-1 w-full max-w-lg mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:py-10">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-8 sm:px-6 sm:py-12">
         {children}
       </main>
 
