@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { clinics } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { Sidebar } from "@/components/dashboard/sidebar";
+import { QuoteFooter } from "@/components/dashboard/quote-footer";
 import type { ReactNode } from "react";
 
 export default async function DashboardLayout({
@@ -43,8 +44,11 @@ export default async function DashboardLayout({
       />
       {/* Main content: offset for desktop sidebar, top header on mobile, bottom nav on mobile */}
       <div className="lg:pl-64">
-        <div className="pt-14 lg:pt-0 pb-20 lg:pb-0 min-h-screen">
-          {children}
+        <div className="pt-14 lg:pt-0 pb-20 lg:pb-0 min-h-screen flex flex-col">
+          <div className="flex-1">
+            {children}
+          </div>
+          <QuoteFooter />
         </div>
       </div>
     </div>

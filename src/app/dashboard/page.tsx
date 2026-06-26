@@ -16,6 +16,7 @@ import {
   FadeInUp,
   FadeIn,
 } from "@/components/dashboard/dashboard-animations";
+import { Greeting } from "@/components/dashboard/greeting";
 
 function getStatusBadge(status: string) {
   const map: Record<string, { label: string; className: string }> = {
@@ -184,9 +185,6 @@ export default async function DashboardPage() {
     process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in"
   }/${clinicData?.slug}`;
 
-  const hour = new Date().getHours();
-  const greeting =
-    hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
 
   const displayName = authUser.name.startsWith("Dr.") || authUser.name.startsWith("Dr ")
     ? authUser.name
@@ -197,14 +195,7 @@ export default async function DashboardPage() {
       {/* Header */}
       <FadeInUp>
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-              Good {greeting}, {displayName} 👋
-            </h1>
-            <p className="text-slate-500 mt-1 text-sm sm:text-base">
-              {format(new Date(), "EEEE, MMMM d, yyyy")}
-            </p>
-          </div>
+          <Greeting displayName={displayName} />
         </div>
       </FadeInUp>
 
