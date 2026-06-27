@@ -21,6 +21,7 @@ export const clinics = pgTable("clinics", {
   phone: text("phone").notNull(),
   logoUrl: text("logo_url"),
   consultationFee: integer("consultation_fee").default(0),
+  averageConsultationMinutes: integer("average_consultation_minutes").default(15).notNull(),
   themeColor: text("theme_color").default("#0ea5e9"),
   address: text("address"),
   about: text("about"),
@@ -95,7 +96,10 @@ export const appointments = pgTable(
     patientEmail: text("patient_email"),
     appointmentDate: date("appointment_date").notNull(),
     appointmentTime: time("appointment_time").notNull(),
-    status: text("status").notNull().default("confirmed"), // confirmed/cancelled/completed/no_show
+    status: text("status").notNull().default("confirmed"), // confirmed/cancelled/completed/no_show/checked_in/in_consultation
+    checkInTime: timestamp("check_in_time"),
+    consultationStartTime: timestamp("consultation_start_time"),
+    consultationEndTime: timestamp("consultation_end_time"),
     notes: text("notes"),
     cancelToken: text("cancel_token"),
     rescheduleToken: text("reschedule_token"),
@@ -194,6 +198,21 @@ export const subscriptions = pgTable("subscriptions", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// ─── Payment Logs (one row per successful Razorpay payment) ───────────────────
+export const paymentLogs = pgTable("payment_logs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  clinicId: uuid("clinic_id")
+    .notNull()
+    .references(() => clinics.id, { onDelete: "cascade" }),
+  razorpayOrderId: text("razorpay_order_id").notNull(),
+  razorpayPaymentId: text("razorpay_payment_id").notNull(),
+  planId: text("plan_id").notNull(),       // monthly / quarterly / yearly
+  planName: text("plan_name").notNull(),   // "1 Month" / "3 Months" / "12 Months"
+  amountPaise: integer("amount_paise").notNull(), // amount in paise (e.g. 129900)
+  status: text("status").notNull().default("paid"),
+  paidAt: timestamp("paid_at").defaultNow().notNull(),
+});
+
 // ─── Type Exports ──────────────────────────────────────────────────────────────
 export type Clinic = typeof clinics.$inferSelect;
 export type NewClinic = typeof clinics.$inferInsert;
@@ -211,3 +230,5 @@ export type NewVisitNote = typeof visitNotes.$inferInsert;
 export type ReminderLog = typeof reminderLogs.$inferSelect;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type NewSubscription = typeof subscriptions.$inferInsert;
+export type PaymentLog = typeof paymentLogs.$inferSelect;
+export type NewPaymentLog = typeof paymentLogs.$inferInsert;

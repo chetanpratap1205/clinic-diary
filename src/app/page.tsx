@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InstallButton } from "@/components/pwa-provider";
+import { PremiumIcon } from "@/components/ui/premium-icon";
 
 export default function HomePage() {
   return (
@@ -74,7 +75,7 @@ export default function HomePage() {
           <div
             className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-md border border-teal-100/50 text-teal-800 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold mb-8 shadow-sm animate-slide-up"
           >
-            <TrendingUp className="w-4 h-4 text-teal-600 flex-shrink-0" />
+            <TrendingUp strokeWidth={1.5} className="w-4 h-4 text-teal-600 flex-shrink-0" />
             <span>Maximize Clinic Revenue & Eliminate No-Shows</span>
           </div>
           <h1
@@ -157,8 +158,8 @@ export default function HomePage() {
               { metric: "<30s", label: "Patient Booking Time", icon: Zap, color: "text-orange-600", bg: "bg-orange-50" },
             ].map((stat, i) => (
               <div key={i} className="p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-lg transition-all text-center group">
-                <div className={`w-12 h-12 mx-auto rounded-xl flex items-center justify-center mb-4 ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
-                  <stat.icon className="w-6 h-6" />
+                <div className="mb-4 flex justify-center group-hover:scale-110 transition-transform">
+                  <PremiumIcon Icon={stat.icon} variant="glass" size="lg" />
                 </div>
                 <h3 className="text-4xl font-bold text-slate-900 mb-2">{stat.metric}</h3>
                 <p className="text-sm font-medium text-slate-500">{stat.label}</p>
@@ -238,7 +239,9 @@ export default function HomePage() {
             {/* Feature 1 - Large */}
             <div className="md:col-span-2 bg-slate-50 border border-slate-200 rounded-3xl p-8 sm:p-10 hover:shadow-lg transition-all group overflow-hidden relative">
               <div className="absolute -right-10 -top-10 w-40 h-40 bg-teal-100 rounded-full blur-2xl group-hover:bg-teal-200 transition-colors" />
-              <MessageSquare className="w-10 h-10 text-teal-700 mb-6 relative z-10" />
+              <div className="mb-6 relative z-10">
+                <PremiumIcon Icon={MessageSquare} variant="success" size="xl" />
+              </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-3 relative z-10">Smart WhatsApp Automations</h3>
               <p className="text-slate-600 text-lg max-w-md relative z-10">
                 Stop manually calling patients. Our system automatically sends instant booking confirmations, 24-hour reminders, and 1-hour follow-ups directly to their WhatsApp.
@@ -248,7 +251,9 @@ export default function HomePage() {
             {/* Feature 2 - Small */}
             <div className="bg-slate-50 border border-slate-200 rounded-3xl p-8 sm:p-10 hover:shadow-lg transition-all group relative overflow-hidden">
                <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-indigo-100 rounded-full blur-2xl group-hover:bg-indigo-200 transition-colors" />
-              <Shield className="w-10 h-10 text-indigo-700 mb-6 relative z-10" />
+              <div className="mb-6 relative z-10">
+                <PremiumIcon Icon={Shield} variant="purple" size="xl" />
+              </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3 relative z-10">Zero Double Bookings</h3>
               <p className="text-slate-600 relative z-10">
                 Database-level unique constraints ensure that even if two patients click book at the exact same millisecond, only one gets the slot.
@@ -258,7 +263,9 @@ export default function HomePage() {
             {/* Feature 3 - Small */}
             <div className="bg-slate-50 border border-slate-200 rounded-3xl p-8 sm:p-10 hover:shadow-lg transition-all group relative overflow-hidden">
               <div className="absolute -left-10 -top-10 w-32 h-32 bg-orange-100 rounded-full blur-2xl group-hover:bg-orange-200 transition-colors" />
-              <Star className="w-10 h-10 text-orange-600 mb-6 relative z-10" />
+              <div className="mb-6 relative z-10">
+                <PremiumIcon Icon={Star} variant="warning" size="xl" />
+              </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3 relative z-10">Branded Booking Link</h3>
               <p className="text-slate-600 relative z-10">
                 Share your beautiful, personalized booking page on Instagram, WhatsApp, or Google My Business. Look premium from the first click.
@@ -268,7 +275,9 @@ export default function HomePage() {
             {/* Feature 4 - Large */}
             <div className="md:col-span-2 bg-slate-900 rounded-3xl p-8 sm:p-10 shadow-2xl overflow-hidden relative group">
               <div className="absolute right-0 bottom-0 w-64 h-64 bg-teal-900/50 rounded-full blur-3xl" />
-              <BarChart3 className="w-10 h-10 text-teal-400 mb-6 relative z-10" />
+              <div className="mb-6 relative z-10">
+                <PremiumIcon Icon={BarChart3} variant="solid" size="xl" />
+              </div>
               <h3 className="text-2xl font-bold text-white mb-3 relative z-10">Executive Analytics Dashboard</h3>
               <p className="text-slate-300 text-lg max-w-md relative z-10">
                 See your clinic&apos;s pulse at a glance. Track daily revenue, patient retention, slot utilization, and receptionist performance in real-time.
@@ -390,8 +399,8 @@ export default function HomePage() {
             {/* Profit Focus */}
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50 rounded-bl-[100px] -z-10 transition-transform group-hover:scale-110" />
-              <div className="w-12 h-12 bg-teal-100 rounded-2xl flex items-center justify-center text-teal-700 mb-6">
-                <TrendingUp className="w-6 h-6" />
+              <div className="mb-6">
+                <PremiumIcon Icon={TrendingUp} variant="success" size="lg" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-4">Direct Revenue Optimization</h3>
               <p className="text-slate-600 mb-6 leading-relaxed">
@@ -407,8 +416,8 @@ export default function HomePage() {
             {/* Brand Focus */}
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-[100px] -z-10 transition-transform group-hover:scale-110" />
-              <div className="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-700 mb-6">
-                <Star className="w-6 h-6" />
+              <div className="mb-6">
+                <PremiumIcon Icon={Star} variant="purple" size="lg" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-4">Premium Brand Authority</h3>
               <p className="text-slate-600 mb-6 leading-relaxed">

@@ -6,21 +6,57 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { UsageMetrics } from "./UsageMetrics";
+import { format, differenceInDays } from "date-fns";
 
-export function BillingOverview() {
-  // Mock data for the demonstration
-  const activePlan = {
-    name: "3 Months Plan",
-    price: "₹1299",
-    status: "active",
-    renewalDate: "July 26, 2026",
-    daysUntilRenewal: 30, // For alert demonstration, let's say 3 days if we want to show it, or keep it normal
-  };
+type Subscription = {
+  id: string;
+  planId: string;
+  status: string;
+  currentPeriodStart: Date | null;
+  currentPeriodEnd: Date | null;
+};
 
-  const isRenewalSoon = activePlan.daysUntilRenewal <= 5;
+interface BillingOverviewProps {
+  activeSub: Subscription | null;
+  appointmentCount: number;
+  totalPaid: number;
+}
+
+const PLANS = {
+  monthly: { price: "₹499", name: "1 Month Plan", duration: "/ month" },
+  quarterly: { price: "₹1299", name: "3 Months Plan", duration: "/ 3 months" },
+  yearly: { price: "₹4999", name: "12 Months Plan", duration: "/ 12 months" },
+};
+
+export function BillingOverview({ activeSub, appointmentCount, totalPaid }: BillingOverviewProps) {
+  const planDetails = activeSub ? PLANS[activeSub.planId as keyof typeof PLANS] : null;
+
+  const renewalDate = activeSub?.currentPeriodEnd
+    ? format(new Date(activeSub.currentPeriodEnd), "MMMM dd, yyyy")
+    : null;
+
+  const daysUntilRenewal = activeSub?.currentPeriodEnd
+    ? differenceInDays(new Date(activeSub.currentPeriodEnd), new Date())
+    : null;
+
+  const isRenewalSoon = daysUntilRenewal !== null && daysUntilRenewal <= 5 && daysUntilRenewal >= 0;
+  const isExpired = daysUntilRenewal !== null && daysUntilRenewal < 0;
 
   return (
     <div className="space-y-6">
+      {/* Alert for expired plan */}
+      {isExpired && (
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+          <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Plan Expired</AlertTitle>
+            <AlertDescription>
+              Your {planDetails?.name} expired on {renewalDate}. Please renew immediately to avoid disruption of services.
+            </AlertDescription>
+          </Alert>
+        </motion.div>
+      )}
+
       {/* Alert for upcoming renewal */}
       {isRenewalSoon && (
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
@@ -28,7 +64,7 @@ export function BillingOverview() {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Renewal Approaching</AlertTitle>
             <AlertDescription>
-              Your {activePlan.name} is set to renew in {activePlan.daysUntilRenewal} days on {activePlan.renewalDate}.
+              Your {planDetails?.name} is set to renew in {daysUntilRenewal} days on {renewalDate}.
             </AlertDescription>
           </Alert>
         </motion.div>
@@ -44,35 +80,63 @@ export function BillingOverview() {
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle className="text-xl text-gray-900">Current Plan</CardTitle>
-                  <CardDescription className="mt-1">You are currently on the {activePlan.name}</CardDescription>
+                  <CardDescription className="mt-1">
+                    {activeSub ? `You are currently on the ${planDetails?.name}` : "You don't have an active subscription"}
+                  </CardDescription>
                 </div>
-                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-0 flex gap-1 items-center px-3 py-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  Active
-                </Badge>
+                {activeSub && activeSub.status === "active" && (
+                  <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-0 flex gap-1 items-center px-3 py-1">
+                    <CheckCircle2 className="w-3 h-3" />
+                    Active
+                  </Badge>
+                )}
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex items-baseline gap-2 mb-6">
-                <span className="text-4xl font-bold tracking-tight text-gray-900">{activePlan.price}</span>
-                <span className="text-sm font-medium text-gray-500">/ 3 months</span>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-sm text-gray-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                  <Calendar className="w-4 h-4 text-sky-500" />
-                  <span>Next billing date: <strong className="text-gray-900">{activePlan.renewalDate}</strong></span>
+              {activeSub ? (
+                <>
+                  <div className="flex items-baseline gap-2 mb-8">
+                    <span className="text-5xl font-black tracking-tight text-gray-900 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
+                      {planDetails?.price}
+                    </span>
+                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{planDetails?.duration}</span>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 text-sm text-gray-700 bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-sky-100/50 shadow-sm transition-all hover:shadow-md">
+                      <div className="bg-sky-100 p-2 rounded-lg text-sky-600">
+                        <Calendar className="w-4 h-4" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Next billing date</span>
+                        <span className="font-semibold">{renewalDate}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-gray-700 bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-sky-100/50 shadow-sm transition-all hover:shadow-md">
+                      <div className="bg-emerald-100 p-2 rounded-lg text-emerald-600">
+                        <CreditCard className="w-4 h-4" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Payment method</span>
+                        <span className="font-semibold">Razorpay</span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="py-12 flex flex-col items-center justify-center text-center text-slate-500 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 mt-4">
+                  <div className="bg-slate-100 p-4 rounded-full mb-4">
+                    <Sparkles className="w-8 h-8 text-slate-400" />
+                  </div>
+                  <h4 className="text-lg font-semibold text-slate-700 mb-1">No Active Plan</h4>
+                  <p className="max-w-[250px] text-sm">Upgrade to a premium plan to unlock all features and grow your clinic.</p>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-gray-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                  <CreditCard className="w-4 h-4 text-sky-500" />
-                  <span>Payment method: <strong className="text-gray-900">Razorpay</strong></span>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4, delay: 0.2 }}>
-          <UsageMetrics />
+          <UsageMetrics planId={activeSub?.planId || "free"} appointmentCount={appointmentCount} totalPaid={totalPaid} />
         </motion.div>
       </div>
     </div>

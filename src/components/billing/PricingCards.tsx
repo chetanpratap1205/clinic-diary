@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Check, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PremiumIcon } from "@/components/ui/premium-icon";
 import { toast } from "sonner";
 import Script from "next/script";
 
@@ -52,8 +53,11 @@ const plans = [
   },
 ];
 
-export function PricingCards() {
+const PLAN_RANKS: Record<string, number> = { monthly: 1, quarterly: 2, yearly: 3 };
+
+export function PricingCards({ activePlanId }: { activePlanId?: string }) {
   const [loading, setLoading] = useState<string | null>(null);
+  const activeRank = activePlanId ? PLAN_RANKS[activePlanId] || 0 : 0;
 
   const handleSubscribe = async (planId: string) => {
     try {
@@ -148,7 +152,7 @@ export function PricingCards() {
           >
             {plan.popular && (
               <div className="absolute -top-4 left-0 right-0 mx-auto w-fit rounded-full bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-1 text-sm font-medium text-white flex items-center gap-1 shadow-md">
-                <Sparkles className="w-4 h-4" />
+                <Sparkles strokeWidth={1.5} className="w-4 h-4" />
                 Best Value
               </div>
             )}
@@ -166,7 +170,7 @@ export function PricingCards() {
             <ul className="mb-8 flex-1 space-y-4">
               {plan.features.map((feature, i) => (
                 <li key={i} className="flex items-center gap-3">
-                  <Check className="h-5 w-5 text-sky-500 flex-shrink-0" />
+                  <Check strokeWidth={1.5} className="h-5 w-5 text-sky-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700">{feature}</span>
                 </li>
               ))}
@@ -174,17 +178,25 @@ export function PricingCards() {
 
             <Button
               onClick={() => handleSubscribe(plan.id)}
-              disabled={loading === plan.id}
+              disabled={loading === plan.id || activePlanId === plan.id}
               className={`w-full py-6 text-base font-semibold rounded-xl transition-all ${
-                plan.popular 
-                ? "bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 shadow-md hover:shadow-lg" 
-                : "bg-gray-900 hover:bg-gray-800"
+                activePlanId === plan.id
+                ? "bg-slate-100 text-slate-500 hover:bg-slate-100 cursor-not-allowed border border-slate-200 shadow-none"
+                : (PLAN_RANKS[plan.id] || 0) < activeRank
+                ? "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 shadow-sm"
+                : plan.popular 
+                ? "bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white shadow-md hover:shadow-lg border-none" 
+                : "bg-gray-900 hover:bg-gray-800 text-white border-none"
               }`}
             >
               {loading === plan.id ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
+              ) : activePlanId === plan.id ? (
+                "Current Plan"
+              ) : (PLAN_RANKS[plan.id] || 0) < activeRank ? (
+                "Downgrade"
               ) : (
-                "Get Started"
+                "Upgrade Now"
               )}
             </Button>
           </motion.div>
@@ -197,8 +209,8 @@ export function PricingCards() {
         transition={{ delay: 0.6, duration: 0.5 }}
         className="mt-16 mx-auto max-w-2xl text-center p-6 bg-gradient-to-b from-sky-50/50 to-white rounded-3xl border border-sky-100 shadow-sm"
       >
-        <div className="flex items-center justify-center gap-2 text-sky-600 mb-3">
-          <ShieldCheck className="h-8 w-8" />
+        <div className="mb-4 flex justify-center">
+          <PremiumIcon Icon={ShieldCheck} variant="default" size="xl" />
         </div>
         <h4 className="text-xl font-semibold text-gray-900 mb-2">100% Money-Back Guarantee</h4>
         <p className="text-gray-600">

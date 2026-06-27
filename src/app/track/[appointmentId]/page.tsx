@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { appointments, clinics } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { TrackingClient } from "./tracking-client";
 
@@ -51,5 +51,15 @@ export default async function TrackingPage({ params }: { params: Promise<{ appoi
 
   const clinic = clinicResult[0];
 
-  return <TrackingClient appointment={appointment} clinic={clinic} />;
+  const todayAppts = await db
+    .select()
+    .from(appointments)
+    .where(
+      and(
+        eq(appointments.clinicId, appointment.clinicId),
+        eq(appointments.appointmentDate, appointment.appointmentDate)
+      )
+    );
+
+  return <TrackingClient appointment={appointment} clinic={clinic} todayAppts={todayAppts} />;
 }

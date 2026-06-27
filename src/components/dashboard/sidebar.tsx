@@ -19,12 +19,14 @@ import {
   BarChart3,
   Settings2,
   CreditCard,
+  ListOrdered,
 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { logoutDoctor } from "@/app/dashboard/actions";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { PremiumIcon } from "@/components/ui/premium-icon";
 
 interface SidebarProps {
   clinicName: string;
@@ -35,6 +37,7 @@ interface SidebarProps {
 
 const navItems = [
   { href: "/dashboard", label: "Today", icon: LayoutDashboard },
+  { href: "/dashboard/queue", label: "Queue", icon: ListOrdered },
   { href: "/dashboard/calendar", label: "Calendar", icon: Calendar },
   { href: "/dashboard/patients", label: "Patients", icon: Users },
   { href: "/dashboard/follow-ups", label: "Follow-ups", icon: Repeat },
@@ -114,7 +117,7 @@ export function Sidebar({
                 )}
                 style={active ? { color: themeColor } : {}}
               >
-                <item.icon className="w-4 h-4 flex-shrink-0" />
+                <item.icon strokeWidth={1.5} className="w-4 h-4 flex-shrink-0" />
                 {item.label}
               </div>
             </Link>
@@ -135,7 +138,7 @@ export function Sidebar({
           )}
           aria-label="Clinic settings"
         >
-          <Settings2 className="w-4 h-4 flex-shrink-0 text-slate-500" />
+          <Settings2 strokeWidth={1.5} className="w-4 h-4 flex-shrink-0 text-slate-500" />
           Settings
         </Link>
         <a
@@ -145,7 +148,7 @@ export function Sidebar({
           className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-white hover:shadow-sm hover:text-slate-900 transition-all border border-transparent hover:border-slate-200"
           aria-label="View your public booking page"
         >
-          <ExternalLink className="w-4 h-4 flex-shrink-0 text-sky-600" />
+          <ExternalLink strokeWidth={1.5} className="w-4 h-4 flex-shrink-0 text-sky-600" />
           View Booking Page
         </a>
         <button
@@ -157,7 +160,7 @@ export function Sidebar({
           {isPending ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <LogOut className="w-4 h-4 flex-shrink-0" />
+            <LogOut strokeWidth={1.5} className="w-4 h-4 flex-shrink-0" />
           )}
           Sign Out
         </button>
@@ -189,7 +192,7 @@ export function Sidebar({
             className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
             aria-label="View booking page"
           >
-            <ExternalLink className="w-4 h-4" />
+            <ExternalLink strokeWidth={1.5} className="w-4 h-4" />
           </a>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -199,9 +202,9 @@ export function Sidebar({
             aria-controls="mobile-sidebar"
           >
             {mobileOpen ? (
-              <X className="w-5 h-5 text-slate-600" />
+              <X strokeWidth={1.5} className="w-5 h-5 text-slate-600" />
             ) : (
-              <Menu className="w-5 h-5 text-slate-600" />
+              <Menu strokeWidth={1.5} className="w-5 h-5 text-slate-600" />
             )}
           </button>
         </div>
@@ -259,6 +262,7 @@ export function Sidebar({
                   />
                 )}
                 <item.icon
+                  strokeWidth={1.5}
                   className={cn(
                     "w-5 h-5 transition-transform duration-200",
                     active && "scale-110"
@@ -290,7 +294,7 @@ export function Sidebar({
                 transition={{ type: "spring", stiffness: 400, damping: 35 }}
               />
             )}
-            <Settings2 className="w-5 h-5" />
+            <Settings2 strokeWidth={1.5} className="w-5 h-5" />
             <span className="text-[10px] font-semibold tracking-tight">Settings</span>
           </Link>
         </div>
@@ -322,8 +326,8 @@ export function Sidebar({
               <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden">
                 <div className="h-1 bg-gradient-to-r from-slate-300 to-slate-400" />
                 <div className="p-6">
-                  <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-4">
-                    <AlertTriangle className="w-7 h-7 text-slate-500" />
+                  <div className="mb-4 flex justify-center">
+                    <PremiumIcon Icon={AlertTriangle} variant="destructive" size="xl" />
                   </div>
                   <h2 className="text-lg font-bold text-slate-900 text-center mb-2">
                     Sign out?

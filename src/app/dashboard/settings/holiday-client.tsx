@@ -7,6 +7,7 @@ import { addHoliday, removeHoliday } from "./actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PremiumIcon } from "@/components/ui/premium-icon";
 import { Loader2, CalendarX2, Trash2 } from "lucide-react";
 
 export function HolidayClient({
@@ -47,8 +48,8 @@ export function HolidayClient({
   return (
     <Card className="border-slate-100 shadow-sm rounded-2xl sm:rounded-3xl overflow-hidden mt-6">
       <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-4 px-4 sm:px-6">
-        <CardTitle className="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
-          <CalendarX2 className="w-5 h-5 text-slate-500" /> Holidays & Blocked Dates
+        <CardTitle className="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-3">
+          <PremiumIcon Icon={CalendarX2} variant="default" size="sm" /> Holidays & Blocked Dates
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4 sm:p-6 space-y-5">
@@ -74,8 +75,11 @@ export function HolidayClient({
 
         <div className="space-y-2 pt-2">
           {sortedHolidays.length === 0 ? (
-            <div className="text-sm text-slate-500 text-center py-6 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-              No holidays added. You are available on all configured working hours.
+            <div className="flex flex-col items-center justify-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+              <PremiumIcon Icon={CalendarX2} variant="glass" size="lg" className="mb-3" />
+              <p className="text-sm text-slate-500 text-center">
+                No holidays added. You are available on all configured working hours.
+              </p>
             </div>
           ) : (
             sortedHolidays.map((holiday) => (
@@ -92,7 +96,7 @@ export function HolidayClient({
                   className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                   aria-label="Remove holiday"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 strokeWidth={1.5} className="w-4 h-4" />
                 </button>
               </div>
             ))

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppointmentActions } from "@/components/dashboard/appointment-actions";
 import { Calendar, Phone, Clock, TrendingUp, AlertCircle, Check } from "lucide-react";
 import { CopyLinkButton } from "@/components/dashboard/copy-link-button";
+import { PremiumIcon } from "@/components/ui/premium-icon";
 import { FollowUpCard } from "@/components/dashboard/follow-ups/follow-up-card";
 import Link from "next/link";
 import {
@@ -222,36 +223,31 @@ export default async function DashboardPage() {
               label: "Today's Revenue",
               value: `₹${todayRevenue}`,
               icon: TrendingUp,
-              bg: "bg-fuchsia-100",
-              text: "text-fuchsia-600",
+              variant: "purple",
             },
             {
               label: "Today's Appointments",
               value: todayAppts.length,
               icon: Calendar,
-              bg: "bg-sky-100",
-              text: "text-sky-600",
+              variant: "default",
             },
             {
               label: "Completed Today",
               value: todayCompleted,
               icon: Check,
-              bg: "bg-emerald-100",
-              text: "text-emerald-600",
+              variant: "success",
             },
             {
               label: "Follow-ups Due",
               value: dueTodayCount,
               icon: Clock,
-              bg: "bg-amber-100",
-              text: "text-amber-600",
+              variant: "warning",
             },
             {
               label: "Overdue Follow-ups",
               value: overdueCount,
               icon: AlertCircle,
-              bg: "bg-red-100",
-              text: "text-red-600",
+              variant: "destructive",
             },
           ].map((stat) => (
             <Card
@@ -265,10 +261,8 @@ export default async function DashboardPage() {
               }`}
             >
               <CardContent className="p-4 sm:p-5">
-                <div
-                  className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${stat.bg} flex items-center justify-center mb-3 sm:mb-4`}
-                >
-                  <stat.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${stat.text}`} />
+                <div className="mb-3 sm:mb-4">
+                  <PremiumIcon Icon={stat.icon} variant={stat.variant as any} size="md" />
                 </div>
                 <p className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight truncate">
                   {stat.value}
@@ -298,8 +292,8 @@ export default async function DashboardPage() {
           <CardContent className="p-0">
             {todayAppts.length === 0 ? (
               <FadeIn className="text-center py-12 sm:py-16">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="w-7 h-7 sm:w-8 sm:h-8 text-slate-300" />
+                <div className="mb-4">
+                  <PremiumIcon Icon={Calendar} variant="glass" size="xl" className="mx-auto" />
                 </div>
                 <p className="text-slate-600 font-medium text-base sm:text-lg">
                   No appointments today
@@ -334,13 +328,13 @@ export default async function DashboardPage() {
                         </div>
                         <div className="flex items-center gap-3 mt-1">
                           <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                            <Clock strokeWidth={1.5} className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                             <p className="text-xs text-slate-500 font-semibold">
                               {formatTimeDisplay(appt.appointmentTime as string)}
                             </p>
                           </div>
                           <div className="hidden sm:flex items-center gap-1">
-                            <Phone className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                            <Phone strokeWidth={1.5} className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                             <p className="text-xs text-slate-500 font-medium">
                               {appt.patientPhone}
                             </p>
@@ -370,10 +364,8 @@ export default async function DashboardPage() {
         <Card className="border-slate-100 shadow-sm overflow-hidden bg-gradient-to-br from-amber-50/30 to-white">
           <CardHeader className="bg-transparent border-b border-slate-100/50 py-4 px-4 sm:px-6">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base sm:text-lg font-semibold tracking-tight text-slate-900 flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
-                  <Calendar className="w-4 h-4 text-amber-700" />
-                </div>
+              <CardTitle className="text-base sm:text-lg font-semibold tracking-tight text-slate-900 flex items-center gap-3">
+                <PremiumIcon Icon={Calendar} variant="warning" size="sm" />
                 Follow-ups Due Today
               </CardTitle>
               <Link href="/dashboard/follow-ups" className="text-xs sm:text-sm font-medium text-sky-600 hover:text-sky-700 transition-colors">
@@ -384,7 +376,7 @@ export default async function DashboardPage() {
           <CardContent className="p-4 sm:p-6">
             {dueTodayFollowUps.length === 0 ? (
               <div className="text-center py-6">
-                <Check className="w-8 h-8 text-amber-300 mx-auto mb-2" />
+                <Check strokeWidth={1.5} className="w-8 h-8 text-amber-300 mx-auto mb-2" />
                 <p className="text-slate-600 font-medium text-sm">No follow-ups due today</p>
               </div>
             ) : (

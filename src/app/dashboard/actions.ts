@@ -21,10 +21,15 @@ export async function updateAppointmentStatus(appointmentId: string, status: str
   }
 
   try {
+    const updateData: any = { status };
+    if (status === "checked_in") updateData.checkInTime = new Date();
+    else if (status === "in_consultation") updateData.consultationStartTime = new Date();
+    else if (status === "completed") updateData.consultationEndTime = new Date();
+
     // Only allow update if appointment belongs to doctor's clinic
     await db
       .update(appointments)
-      .set({ status })
+      .set(updateData)
       .where(
         and(
           eq(appointments.id, appointmentId),
@@ -55,10 +60,10 @@ export async function completeAppointmentWithNotes(data: {
   }
 
   try {
-    // 1. Update appointment status
+    // 1. Update appointment status and timestamp
     await db
       .update(appointments)
-      .set({ status: "completed" })
+      .set({ status: "completed", consultationEndTime: new Date() })
       .where(
         and(
           eq(appointments.id, data.appointmentId),

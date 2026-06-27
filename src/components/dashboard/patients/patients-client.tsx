@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { Search, User, Phone, CalendarDays, Activity } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { PremiumIcon } from "@/components/ui/premium-icon";
 import Link from "next/link";
 
 interface PatientWithStats {
@@ -34,7 +35,7 @@ export function PatientsClient({ patients }: { patients: PatientWithStats[] }) {
       {/* Search Bar - Floating Style */}
       <div className="relative max-w-xl">
         <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-          <Search className="w-5 h-5 text-slate-400" />
+          <Search strokeWidth={1.5} className="w-5 h-5 text-slate-400" />
         </div>
         <input
           type="text"
@@ -50,8 +51,8 @@ export function PatientsClient({ patients }: { patients: PatientWithStats[] }) {
         {filtered.length === 0 ? (
           <Card className="border-slate-100 shadow-sm border-dashed bg-white/50">
             <CardContent className="flex flex-col items-center justify-center py-16 sm:py-24">
-              <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 shadow-inner">
-                <User className="w-8 h-8 text-slate-300" />
+              <div className="mb-4">
+                <PremiumIcon Icon={User} variant="glass" size="xl" />
               </div>
               <p className="text-slate-900 font-bold text-lg">
                 {search ? "No patients found" : "No patients yet"}
@@ -86,7 +87,7 @@ export function PatientsClient({ patients }: { patients: PatientWithStats[] }) {
                         </p>
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-slate-500">
                           <div className="flex items-center gap-1.5">
-                            <Phone className="w-3.5 h-3.5 flex-shrink-0" />
+                            <Phone strokeWidth={1.5} className="w-3.5 h-3.5 flex-shrink-0" />
                             <span className="text-xs font-medium">{patient.phone}</span>
                           </div>
                           {patient.age && (
@@ -101,13 +102,13 @@ export function PatientsClient({ patients }: { patients: PatientWithStats[] }) {
 
                     <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 text-sky-700 bg-sky-50 px-2.5 py-1 rounded-lg">
-                        <Activity className="w-3.5 h-3.5 flex-shrink-0" />
+                        <Activity strokeWidth={1.5} className="w-3.5 h-3.5 flex-shrink-0" />
                         <span className="text-[11px] font-bold">
                           {patient.visitCount} Visit{patient.visitCount !== 1 ? 's' : ''}
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-400 font-semibold flex items-center gap-1.5">
-                        <CalendarDays className="w-3.5 h-3.5" />
+                        <CalendarDays strokeWidth={1.5} className="w-3.5 h-3.5" />
                         Added {format(new Date(patient.createdAt), "MMM d, yy")}
                       </p>
                     </div>

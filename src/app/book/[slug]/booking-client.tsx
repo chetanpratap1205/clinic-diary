@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { format, addDays, startOfToday, isSameDay } from "date-fns";
-import { getAvailableSlots, createBooking } from "./actions";
+import { getAvailableSlots, createBooking, findPatientAppointment } from "./actions";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,6 +23,7 @@ import {
   ArrowRight,
   Sparkles,
   CalendarCheck,
+  Search,
 } from "lucide-react";
 
 interface ClinicData {
@@ -57,6 +58,7 @@ function formatTimeDisplay(time: string): string {
 }
 
 export function BookingClient({ clinic }: { clinic: ClinicData }) {
+  const [mode, setMode] = useState<"book" | "track">("book");
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [selectedDate, setSelectedDate] = useState<Date>(startOfToday());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -69,6 +71,9 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
     time: string;
   } | null>(null);
   const router = useRouter();
+
+  const [trackPhone, setTrackPhone] = useState("");
+  const [isTracking, setIsTracking] = useState(false);
 
   const themeColor = clinic.themeColor ?? "#0ea5e9";
   const doctorFirstName = stripDrPrefix(clinic.doctorName);
@@ -87,7 +92,7 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
   );
 
   useEffect(() => {
-    if (step === 1 || step === 2) {
+    if (mode === "book" && (step === 1 || step === 2)) {
       setIsLoadingSlots(true);
       getAvailableSlots(clinic.id, format(selectedDate, "yyyy-MM-dd"))
         .then((res) => {
@@ -95,7 +100,7 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
         })
         .finally(() => setIsLoadingSlots(false));
     }
-  }, [selectedDate, clinic.id, step]);
+  }, [selectedDate, clinic.id, step, mode]);
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
@@ -106,6 +111,24 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time);
     setStep(3);
+  };
+
+  const handleTrackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!/^[6-9]\d{9}$/.test(trackPhone)) {
+      toast.error("Please enter a valid 10-digit mobile number");
+      return;
+    }
+    
+    setIsTracking(true);
+    const res = await findPatientAppointment(clinic.id, trackPhone);
+    setIsTracking(false);
+    
+    if (res.error) {
+      toast.error(res.error);
+    } else if (res.appointmentId) {
+      router.push(`/track/${res.appointmentId}`);
+    }
   };
 
   const onSubmit = (data: BookingData) => {
@@ -228,7 +251,7 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
       animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
       exit={{ opacity: 0, x: -20, filter: "blur(4px)" }}
       transition={{ duration: 0.3 }}
-      className="space-y-6"
+      className="space-y-6 pt-2"
     >
       <div>
         <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Select a Date</h2>
@@ -276,7 +299,7 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
       animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
       exit={{ opacity: 0, x: 20, filter: "blur(4px)" }}
       transition={{ duration: 0.3 }}
-      className="space-y-6"
+      className="space-y-6 pt-2"
     >
       <div>
         <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Available Times</h2>
@@ -324,7 +347,7 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
       animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
       exit={{ opacity: 0, x: 20, filter: "blur(4px)" }}
       transition={{ duration: 0.3 }}
-      className="space-y-6"
+      className="space-y-6 pt-2"
     >
       <div>
         <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Your Details</h2>
@@ -425,9 +448,66 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
     </motion.div>
   );
 
+  const renderTrackView = () => (
+    <motion.div
+      key="track"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6 pt-2"
+    >
+      <div className="text-center py-6">
+        <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center bg-slate-50 border border-slate-100 mb-4">
+          <Search className="w-8 h-8 text-slate-400" />
+        </div>
+        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Track Your Appointment</h2>
+        <p className="text-slate-500 mt-2 max-w-sm mx-auto leading-relaxed">
+          Already booked a slot? Enter your mobile number to view your live queue status.
+        </p>
+      </div>
+
+      <form onSubmit={handleTrackSubmit} className="space-y-5">
+        <div className="space-y-2">
+          <label htmlFor="track-phone" className="text-sm font-bold text-slate-700 flex items-center gap-2">
+            <Phone className="w-4 h-4 text-slate-400" /> Mobile Number
+          </label>
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-slate-400">+91</span>
+            <Input
+              id="track-phone"
+              type="tel"
+              placeholder="9876543210"
+              value={trackPhone}
+              onChange={(e) => setTrackPhone(e.target.value)}
+              required
+              className="h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all pl-12 focus-visible:ring-slate-200"
+            />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={isTracking || trackPhone.length !== 10}
+          className="w-full h-14 rounded-2xl text-white font-bold text-base shadow-lg transition-all hover:opacity-90 active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100"
+          style={{ backgroundColor: themeColor }}
+        >
+          {isTracking ? (
+            <Loader2 className="w-6 h-6 animate-spin" />
+          ) : (
+            <>
+              Find Appointment
+              <ArrowRight className="w-5 h-5 ml-1" />
+            </>
+          )}
+        </button>
+      </form>
+    </motion.div>
+  );
+
   return (
     <div className="w-full">
-      {step > 1 && (
+      {mode === "book" && step > 1 && (
         <button
           onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)}
           className="flex items-center gap-1.5 text-sm font-bold text-slate-400 hover:text-slate-800 transition-colors mb-4 px-2 py-1 bg-white rounded-lg shadow-sm border border-slate-100 w-fit"
@@ -437,37 +517,68 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
       )}
 
       <Card className="border-0 shadow-2xl rounded-3xl overflow-hidden bg-white ring-1 ring-slate-900/5 relative min-h-[500px]">
-        {/* Progress Bar Header */}
-        <div className="h-1.5 w-full bg-slate-100">
-          <motion.div
-            className="h-full"
-            style={{ backgroundColor: themeColor }}
-            initial={{ width: "33%" }}
-            animate={{ width: `${(step / 3) * 100}%` }}
-            transition={{ duration: 0.5, ease: "anticipate" }}
-          />
-        </div>
-        
-        {/* Step indicators */}
-        <div className="absolute top-6 right-6 flex items-center gap-2">
-          {[1, 2, 3].map((s) => (
-            <div
-              key={s}
-              className="rounded-full transition-all duration-500 ease-out"
-              style={{
-                width: s === step ? "24px" : "8px",
-                height: "8px",
-                backgroundColor: s <= step ? themeColor : "#f1f5f9",
-              }}
-            />
-          ))}
+        {/* View Toggle (Book vs Track) */}
+        <div className="flex border-b border-slate-100 bg-slate-50/50">
+          <button
+            onClick={() => setMode("book")}
+            className={`flex-1 py-4 text-sm font-bold transition-all relative ${
+              mode === "book" ? "text-slate-900 bg-white" : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            Book Appointment
+            {mode === "book" && (
+              <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5" style={{ backgroundColor: themeColor }} />
+            )}
+          </button>
+          <button
+            onClick={() => setMode("track")}
+            className={`flex-1 py-4 text-sm font-bold transition-all relative ${
+              mode === "track" ? "text-slate-900 bg-white" : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            Track Queue
+            {mode === "track" && (
+              <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5" style={{ backgroundColor: themeColor }} />
+            )}
+          </button>
         </div>
 
-        <CardContent className="p-6 sm:p-8 pt-8">
+        {/* Progress Bar Header (Only for Book Mode) */}
+        {mode === "book" && (
+          <div className="h-1 w-full bg-slate-100 relative overflow-hidden">
+            <motion.div
+              className="absolute top-0 bottom-0 left-0"
+              style={{ backgroundColor: themeColor }}
+              initial={{ width: "33%" }}
+              animate={{ width: `${(step / 3) * 100}%` }}
+              transition={{ duration: 0.5, ease: "anticipate" }}
+            />
+          </div>
+        )}
+        
+        {/* Step indicators (Only for Book Mode) */}
+        {mode === "book" && (
+          <div className="absolute top-[68px] right-6 flex items-center gap-2 z-10">
+            {[1, 2, 3].map((s) => (
+              <div
+                key={s}
+                className="rounded-full transition-all duration-500 ease-out"
+                style={{
+                  width: s === step ? "24px" : "8px",
+                  height: "8px",
+                  backgroundColor: s <= step ? themeColor : "#f1f5f9",
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        <CardContent className="p-6 sm:p-8 pt-4">
           <AnimatePresence mode="wait">
-            {step === 1 && renderStep1()}
-            {step === 2 && renderStep2()}
-            {step === 3 && renderStep3()}
+            {mode === "book" && step === 1 && renderStep1()}
+            {mode === "book" && step === 2 && renderStep2()}
+            {mode === "book" && step === 3 && renderStep3()}
+            {mode === "track" && renderTrackView()}
           </AnimatePresence>
         </CardContent>
       </Card>

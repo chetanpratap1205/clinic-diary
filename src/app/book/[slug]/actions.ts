@@ -191,3 +191,50 @@ export async function createBooking(
     return { error: "Failed to create booking. Please try again." };
   }
 }
+
+export async function findPatientAppointment(clinicId: string, phone: string) {
+  try {
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+    
+    // 1. Try to find an appointment for today
+    let appts = await db
+      .select({ id: appointments.id })
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.clinicId, clinicId),
+          eq(appointments.patientPhone, phone),
+          eq(appointments.appointmentDate, todayStr)
+        )
+      )
+      .limit(1);
+
+    if (appts.length > 0) {
+      return { appointmentId: appts[0].id };
+    }
+
+    // 2. If no appointment today, find the first upcoming appointment
+    appts = await db
+      .select({ id: appointments.id })
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.clinicId, clinicId),
+          eq(appointments.patientPhone, phone),
+          ne(appointments.status, "cancelled"),
+          ne(appointments.status, "completed"),
+          ne(appointments.status, "no_show")
+        )
+      )
+      .limit(1);
+
+    if (appts.length > 0) {
+      return { appointmentId: appts[0].id };
+    }
+
+    return { error: "No active appointments found for this mobile number." };
+  } catch (error) {
+    console.error("Failed to find appointment:", error);
+    return { error: "Something went wrong. Please try again." };
+  }
+}
