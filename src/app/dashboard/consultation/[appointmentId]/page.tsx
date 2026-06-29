@@ -1,6 +1,6 @@
 import { getAuthUser } from "@/lib/auth";
 import { db } from "@/db";
-import { appointments, visitNotes, patients } from "@/db/schema";
+import { appointments, visitNotes, patients, clinics } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { ConsultationClient } from "./consultation-client";
@@ -31,6 +31,12 @@ export default async function ConsultationPage(props: { params: Promise<{ appoin
     .where(eq(patients.id, appointment.patientId))
     .limit(1);
 
+  const [clinic] = await db
+    .select()
+    .from(clinics)
+    .where(eq(clinics.id, appointment.clinicId))
+    .limit(1);
+
   const pastVisits = await db
     .select({
       note: visitNotes,
@@ -47,6 +53,7 @@ export default async function ConsultationPage(props: { params: Promise<{ appoin
         appointment={appointment}
         patient={patient}
         pastVisits={pastVisits}
+        clinic={clinic}
       />
     </div>
   );

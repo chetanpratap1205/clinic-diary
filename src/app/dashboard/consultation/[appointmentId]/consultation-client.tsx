@@ -14,9 +14,10 @@ interface ConsultationClientProps {
   appointment: Appointment;
   patient: Patient;
   pastVisits: { note: VisitNote; date: string }[];
+  clinic: any;
 }
 
-export function ConsultationClient({ appointment, patient, pastVisits }: ConsultationClientProps) {
+export function ConsultationClient({ appointment, patient, pastVisits, clinic }: ConsultationClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -124,7 +125,13 @@ export function ConsultationClient({ appointment, patient, pastVisits }: Consult
               >
                 <Printer className="w-4 h-4" /> Print Prescription
               </Button>
-              <WhatsAppShareButton patientName={patient.name} trackingUrl={`/track/${appointment.id}`} />
+              <WhatsAppShareButton 
+                patientName={patient.name} 
+                patientPhone={patient.phone}
+                clinicName={clinic.name}
+                doctorName={clinic.doctorName}
+                trackingUrl={`/track/${appointment.id}`} 
+              />
             </div>
             
             <Button 

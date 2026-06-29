@@ -1,6 +1,6 @@
 import { getAuthUser } from "@/lib/auth";
 import { db } from "@/db";
-import { patients, appointments, followUps } from "@/db/schema";
+import { patients, appointments, followUps, clinics } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { format } from "date-fns";
@@ -49,6 +49,12 @@ export default async function PatientProfilePage(props: { params: Promise<{ pati
     .limit(1);
 
   if (!patient) redirect("/dashboard/patients");
+
+  const [clinic] = await db
+    .select()
+    .from(clinics)
+    .where(eq(clinics.id, authUser.clinicId))
+    .limit(1);
 
   const visitHistory = await db
     .select()
@@ -115,6 +121,9 @@ export default async function PatientProfilePage(props: { params: Promise<{ pati
             {todayAppointment && (
               <WhatsAppShareButton 
                 patientName={patient.name} 
+                patientPhone={patient.phone}
+                clinicName={clinic.name}
+                doctorName={clinic.doctorName}
                 trackingUrl={`/track/${todayAppointment.id}`} 
               />
             )}

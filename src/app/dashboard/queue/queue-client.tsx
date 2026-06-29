@@ -139,7 +139,13 @@ export function QueueClient({ initialAppointments, clinic }: QueueClientProps) {
             </div>
           </div>
           <div className="scale-[0.8] origin-top-right -mt-1 -mr-1">
-            <WhatsAppShareButton patientName={appt.patientName} trackingUrl={`/track/${appt.id}`} />
+            <WhatsAppShareButton 
+              patientName={appt.patientName} 
+              patientPhone={appt.patientPhone}
+              clinicName={clinic.name}
+              doctorName={clinic.doctorName}
+              trackingUrl={`/track/${appt.id}`} 
+            />
           </div>
         </div>
 

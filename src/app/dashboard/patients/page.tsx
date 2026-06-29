@@ -1,6 +1,6 @@
 import { getAuthUser } from "@/lib/auth";
 import { db } from "@/db";
-import { patients, appointments, subscriptions } from "@/db/schema";
+import { patients, appointments, subscriptions, clinics } from "@/db/schema";
 import { eq, desc, count, and } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { Plus } from "lucide-react";
@@ -11,6 +11,12 @@ import { PatientsClient } from "@/components/dashboard/patients/patients-client"
 export default async function PatientsPage() {
   const authUser = await getAuthUser();
   if (!authUser?.clinicId) redirect("/login");
+
+  const [clinic] = await db
+    .select()
+    .from(clinics)
+    .where(eq(clinics.id, authUser.clinicId))
+    .limit(1);
 
   // Fetch patients with their visit count and last visit date
   const patientsWithStats = await db
@@ -108,7 +114,7 @@ export default async function PatientsPage() {
       </FadeInUp>
 
       <FadeInUp>
-        <PatientsClient patients={patientsWithStats} />
+        <PatientsClient patients={patientsWithStats} clinic={clinic} />
       </FadeInUp>
     </StaggerContainer>
   );

@@ -5,7 +5,11 @@ import { Button } from "@/components/ui/button";
 
 interface WhatsAppShareButtonProps {
   patientName: string;
-  trackingUrl: string;
+  patientPhone?: string | null;
+  trackingUrl?: string;
+  clinicName?: string;
+  doctorName?: string;
+  textOverride?: string;
 }
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -20,11 +24,28 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-export function WhatsAppShareButton({ patientName, trackingUrl }: WhatsAppShareButtonProps) {
+export function WhatsAppShareButton({ patientName, patientPhone, trackingUrl, clinicName, doctorName, textOverride }: WhatsAppShareButtonProps) {
   const handleShare = () => {
-    const fullTrackingUrl = trackingUrl.startsWith('http') ? trackingUrl : `${window.location.origin}${trackingUrl}`;
-    const text = `Hello ${patientName},\n\nYour registration is complete. You can track your queue status and required details here: ${fullTrackingUrl}\n\nThank you!`;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    let text = textOverride;
+    
+    if (!text) {
+      const fullTrackingUrl = trackingUrl 
+        ? (trackingUrl.startsWith('http') ? trackingUrl : `${window.location.origin}${trackingUrl}`) 
+        : "";
+      
+      if (clinicName && doctorName && fullTrackingUrl) {
+        text = `Hello ${patientName},\n\nYour appointment at ${clinicName} with ${doctorName} is confirmed! You can track your live queue status here: ${fullTrackingUrl}\n\nThank you!`;
+      } else if (fullTrackingUrl) {
+        text = `Hello ${patientName},\n\nYour registration is complete. You can track your queue status and required details here: ${fullTrackingUrl}\n\nThank you!`;
+      } else {
+        text = `Hello ${patientName},\n\nGreetings from ${clinicName || "our clinic"}!`;
+      }
+    }
+
+    const whatsappUrl = patientPhone 
+      ? `https://wa.me/91${patientPhone.replace(/\D/g, '')}?text=${encodeURIComponent(text!)}`
+      : `https://wa.me/?text=${encodeURIComponent(text!)}`;
+      
     window.open(whatsappUrl, "_blank");
   };
 

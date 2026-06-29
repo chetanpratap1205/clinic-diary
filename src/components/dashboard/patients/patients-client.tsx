@@ -18,7 +18,7 @@ interface PatientWithStats {
   visitCount: number;
 }
 
-export function PatientsClient({ patients }: { patients: PatientWithStats[] }) {
+export function PatientsClient({ patients, clinic }: { patients: PatientWithStats[], clinic: any }) {
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
@@ -129,7 +129,7 @@ export function PatientsClient({ patients }: { patients: PatientWithStats[] }) {
                      <span className="text-[10px] font-bold">Call</span>
                    </a>
                    <a 
-                     href={`https://wa.me/91${patient.phone.replace(/\D/g,'')}`} 
+                     href={`https://wa.me/91${patient.phone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hi ${patient.name}, this is a message from ${clinic.name}. You can book your next appointment using our online portal: ${(process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in")}/book/${clinic.slug}`)}`}
                      target="_blank" rel="noopener noreferrer"
                      className="flex-1 flex flex-col items-center justify-center p-2 rounded-xl text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
                      onClick={(e) => e.stopPropagation()}
