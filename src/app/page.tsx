@@ -303,16 +303,17 @@ export default function HomePage() {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto items-center">
-            {/* Free Tier */}
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto items-center">
+            {/* 1 Month Tier */}
             <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 rounded-3xl p-8 hover:bg-slate-800 transition-colors">
-              <h3 className="text-xl font-semibold text-slate-200 mb-2">Free Plan</h3>
-              <p className="text-sm text-slate-400 mb-6 min-h-[40px]">Perfect for exploring the platform.</p>
+              <h3 className="text-xl font-semibold text-slate-200 mb-2">1 Month</h3>
+              <p className="text-sm text-slate-400 mb-6 min-h-[40px]">Perfect for getting started.</p>
               <div className="mb-6 flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-white">₹0</span>
+                <span className="text-4xl font-bold text-white">₹499</span>
+                <span className="text-slate-400 text-sm">/ mo</span>
               </div>
               <ul className="space-y-4 mb-8">
-                {["Up to 5 Patients", "Basic Analytics", "Booking Link"].map((feat, i) => (
+                {["Unlimited Patients", "Unlimited Appointments", "SMS & Email Reminders", "Basic Analytics", "Standard Support"].map((feat, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-300 text-sm">
                     <Check className="w-4 h-4 text-teal-400 flex-shrink-0" /> {feat}
                   </li>
@@ -320,16 +321,41 @@ export default function HomePage() {
               </ul>
               <Link href="/signup" className="block w-full">
                 <Button variant="outline" className="w-full rounded-xl bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white h-12">
-                  Get Started Free
+                  Start Free Trial
                 </Button>
               </Link>
             </div>
 
-            {/* Popular Tier */}
-            <div className="bg-gradient-to-b from-teal-900/80 to-slate-800/90 backdrop-blur-md border border-teal-500/30 rounded-3xl p-8 transform md:scale-105 shadow-2xl shadow-teal-900/50 relative">
+            {/* 3 Months Tier */}
+            <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 rounded-3xl p-8 hover:bg-slate-800 transition-colors">
+              <h3 className="text-xl font-semibold text-slate-200 mb-2">3 Months</h3>
+              <p className="text-sm text-slate-400 mb-6 min-h-[40px]">Great for growing clinics.</p>
+              <div className="mb-6 flex items-baseline gap-2">
+                <span className="text-4xl font-bold text-white">₹1,299</span>
+                <span className="text-slate-400 text-sm">/ 3 mo</span>
+              </div>
+              <div className="mb-6 inline-block bg-slate-700/50 text-slate-300 text-xs font-semibold px-2.5 py-1 rounded-lg border border-slate-600/50">
+                Works out to just ₹433/month
+              </div>
+              <ul className="space-y-4 mb-8">
+                {["Everything in 1 Month", "Priority Support", "Advanced Analytics", "Custom Branding"].map((feat, i) => (
+                  <li key={i} className="flex items-center gap-3 text-slate-300 text-sm">
+                    <Check className="w-4 h-4 text-teal-400 flex-shrink-0" /> {feat}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/signup" className="block w-full">
+                <Button variant="outline" className="w-full rounded-xl bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white h-12">
+                  Start Free Trial
+                </Button>
+              </Link>
+            </div>
+
+            {/* 12 Months Tier - Make it popular */}
+            <div className="bg-gradient-to-b from-teal-900/80 to-slate-800/90 backdrop-blur-md border border-teal-500/30 rounded-3xl p-8 transform md:scale-105 shadow-2xl shadow-teal-900/50 relative z-10">
               <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-teal-400 to-emerald-500 rounded-t-3xl" />
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                Most Popular
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
+                Best Value
               </div>
               <h3 className="text-xl font-semibold text-white mb-2">12 Months</h3>
               <p className="text-sm text-teal-200/70 mb-6 min-h-[40px]">Maximum ROI for established clinics.</p>
@@ -341,7 +367,7 @@ export default function HomePage() {
                 Works out to just ₹416/month
               </div>
               <ul className="space-y-4 mb-8">
-                {["Unlimited Patients & Appointments", "Automated WhatsApp Reminders", "Advanced Analytics", "Zero Double Bookings", "Priority Support"].map((feat, i) => (
+                {["Everything in 3 Months", "Dedicated Account Manager", "Early Access to Features", "Premium Onboarding"].map((feat, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-200 text-sm">
                     <CheckCircle className="w-4 h-4 text-teal-400 flex-shrink-0" /> {feat}
                   </li>
@@ -349,39 +375,36 @@ export default function HomePage() {
               </ul>
               <Link href="/signup" className="block w-full">
                 <Button className="w-full rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold h-12 shadow-lg shadow-teal-500/25">
-                  Start Your Practice
-                </Button>
-              </Link>
-            </div>
-
-            {/* Monthly Tier */}
-            <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 rounded-3xl p-8 hover:bg-slate-800 transition-colors">
-              <h3 className="text-xl font-semibold text-slate-200 mb-2">1 Month</h3>
-              <p className="text-sm text-slate-400 mb-6 min-h-[40px]">Flexibility to grow at your pace.</p>
-              <div className="mb-6 flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-white">₹499</span>
-                <span className="text-slate-400 text-sm">/ mo</span>
-              </div>
-              <ul className="space-y-4 mb-8">
-                {["Unlimited Patients & Appointments", "Automated WhatsApp Reminders", "Standard Analytics", "Zero Double Bookings"].map((feat, i) => (
-                  <li key={i} className="flex items-center gap-3 text-slate-300 text-sm">
-                    <Check className="w-4 h-4 text-teal-400 flex-shrink-0" /> {feat}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/signup" className="block w-full">
-                <Button variant="outline" className="w-full rounded-xl bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white h-12">
-                  Go Monthly
+                  Start Free Trial
                 </Button>
               </Link>
             </div>
           </div>
           
-          <div className="mt-16 text-center max-w-2xl mx-auto p-6 rounded-2xl bg-slate-800/30 border border-slate-700/50 flex flex-col sm:flex-row items-center gap-4 justify-center">
-            <Shield className="w-8 h-8 text-teal-500" />
-            <div className="text-left">
-              <h4 className="text-white font-semibold">100% Money-Back Guarantee</h4>
-              <p className="text-sm text-slate-400">If you don't see an increase in patient turnout within 30 days, we'll refund your money. No questions asked.</p>
+          {/* Free In-Clinic Demo Banner */}
+          <div className="mt-16 max-w-4xl mx-auto p-8 sm:p-10 rounded-3xl bg-gradient-to-r from-teal-900/40 to-slate-800/60 border border-teal-500/30 flex flex-col sm:flex-row items-center gap-8 relative overflow-hidden shadow-2xl">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500/20 rounded-full blur-[60px]" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-500/20 rounded-full blur-[60px]" />
+            
+            <div className="flex-shrink-0 w-20 h-20 rounded-2xl bg-teal-500/20 flex items-center justify-center border border-teal-500/30 text-teal-400 relative z-10">
+              <Users className="w-10 h-10" />
+            </div>
+            
+            <div className="text-center sm:text-left relative z-10 flex-1">
+              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+                Want to see it in action? <span className="text-teal-400">Get a Free Demo</span>
+              </h3>
+              <p className="text-slate-300 text-base sm:text-lg mb-6 sm:mb-0 max-w-xl">
+                Our team will visit your clinic, demonstrate how the platform increases revenue, and set up your system for absolutely free. 
+              </p>
+            </div>
+            
+            <div className="flex-shrink-0 relative z-10">
+              <Link href="/signup">
+                <Button className="bg-white text-teal-950 hover:bg-slate-100 font-bold px-8 h-14 rounded-xl shadow-xl shadow-white/10 whitespace-nowrap">
+                  Book Free Visit
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

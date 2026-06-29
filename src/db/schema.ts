@@ -96,6 +96,7 @@ export const appointments = pgTable(
     patientEmail: text("patient_email"),
     appointmentDate: date("appointment_date").notNull(),
     appointmentTime: time("appointment_time").notNull(),
+    tokenNumber: integer("token_number"),
     status: text("status").notNull().default("confirmed"), // confirmed/cancelled/completed/no_show/checked_in/in_consultation
     checkInTime: timestamp("check_in_time"),
     consultationStartTime: timestamp("consultation_start_time"),
@@ -161,6 +162,7 @@ export const visitNotes = pgTable("visit_notes", {
     .notNull()
     .references(() => appointments.id, { onDelete: "cascade" }),
   complaint: text("complaint"),
+  vitals: text("vitals"),
   diagnosis: text("diagnosis"),
   treatment: text("treatment"),
   followUpRequired: boolean("follow_up_required").default(false),

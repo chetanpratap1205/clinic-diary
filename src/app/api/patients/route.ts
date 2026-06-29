@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { patients, subscriptions } from "@/db/schema";
-import { eq, and, ilike, or, count } from "drizzle-orm";
+import { patients, subscriptions, appointments } from "@/db/schema";
+import { eq, and, ilike, or, count, max } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
+import { format } from "date-fns";
 
 export async function GET(req: NextRequest) {
   try {
@@ -113,6 +114,37 @@ export async function POST(req: NextRequest) {
         address: address || null,
       })
       .returning();
+
+    if (body.addToQueue) {
+      const now = new Date();
+      const appointmentDate = format(now, 'yyyy-MM-dd');
+      const appointmentTime = format(now, 'HH:mm:ss');
+
+      // Calculate token number
+      const todayAppointments = await db
+        .select({ maxToken: max(appointments.tokenNumber) })
+        .from(appointments)
+        .where(
+          and(
+            eq(appointments.clinicId, authUser.clinicId),
+            eq(appointments.appointmentDate, appointmentDate)
+          )
+        );
+      const nextToken = (todayAppointments[0]?.maxToken || 0) + 1;
+
+      await db.insert(appointments).values({
+        clinicId: authUser.clinicId,
+        patientId: newPatient.id,
+        patientName: newPatient.name,
+        patientPhone: newPatient.phone,
+        appointmentDate,
+        appointmentTime,
+        tokenNumber: nextToken,
+        status: "checked_in",
+        checkInTime: now,
+        notes: "Added from quick walk-in registration",
+      });
+    }
 
     return NextResponse.json({ patient: newPatient });
   } catch (err) {

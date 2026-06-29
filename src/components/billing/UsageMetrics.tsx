@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Users, CalendarDays, Info, IndianRupee } from "lucide-react";
+import { Users, CalendarDays, Info, IndianRupee, Infinity as InfinityIcon } from "lucide-react";
 
 interface UsageMetricsProps {
   planId: string;
@@ -86,19 +86,31 @@ export function UsageMetrics({ planId, appointmentCount, totalPaid }: UsageMetri
                   </div>
                   {metric.name}
                 </div>
-                <div className="text-slate-500 text-xs font-medium bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
-                  <span className={isNearLimit ? "text-red-600 font-bold" : "text-slate-900 font-bold text-sm"}>
+                <div className="text-slate-500 text-xs font-medium bg-slate-50 px-2 py-1 rounded-md border border-slate-100 flex items-center gap-1.5">
+                  <span className={isNearLimit ? "text-red-600 font-bold text-sm" : "text-slate-900 font-bold text-sm"}>
                     {metric.used}
-                  </span>{" "}
-                  {metric.isUnlimited ? metric.unit : `/ ${metric.limit} ${metric.unit}`}
+                  </span>
+                  {metric.isUnlimited ? (
+                    <span className="flex items-center text-emerald-600 font-bold bg-emerald-100/50 px-1.5 py-0.5 rounded text-xs gap-0.5">
+                      <InfinityIcon className="w-3.5 h-3.5" />
+                      {metric.unit}
+                    </span>
+                  ) : (
+                    `/ ${metric.limit} ${metric.unit}`
+                  )}
                 </div>
               </div>
-              <Progress value={percentage} indicatorColor={progressColor} className="h-2.5 bg-slate-100 rounded-full" />
-              {isNearLimit && (
-                <p className="text-xs font-medium text-red-500 flex items-center gap-1.5 mt-1 bg-red-50 px-2 py-1 rounded-md w-fit">
-                  <Info className="w-3.5 h-3.5" />
-                  Approaching plan limit. Consider upgrading.
-                </p>
+              
+              {!metric.isUnlimited && (
+                <>
+                  <Progress value={percentage} indicatorColor={progressColor} className="h-2.5 bg-slate-100 rounded-full" />
+                  {isNearLimit && (
+                    <p className="text-xs font-medium text-red-500 flex items-center gap-1.5 mt-1 bg-red-50 px-2 py-1 rounded-md w-fit">
+                      <Info className="w-3.5 h-3.5" />
+                      Approaching plan limit. Consider upgrading.
+                    </p>
+                  )}
+                </>
               )}
             </div>
           );

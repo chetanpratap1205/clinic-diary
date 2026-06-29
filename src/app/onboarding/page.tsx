@@ -79,23 +79,27 @@ export default function OnboardingWizard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      {/* Ambient background glows */}
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-sky-200/50 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-emerald-200/40 rounded-full blur-[120px] pointer-events-none" />
+      
+      <div className="w-full max-w-2xl relative z-10">
         {/* Progress Tracker */}
         <div className="mb-8 flex justify-center items-center gap-4">
           {steps.map((step, index) => (
             <div key={step.id} className="flex items-center gap-2">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm transition-colors duration-300 ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-300 ${
                   index <= currentStep
-                    ? "bg-sky-600 text-white shadow-md"
-                    : "bg-slate-200 text-slate-500"
+                    ? "bg-sky-600 text-white shadow-md shadow-sky-600/20 scale-110"
+                    : "bg-white text-slate-400 shadow-sm border border-slate-200"
                 }`}
               >
                 {index < currentStep ? <CheckCircle2 className="w-5 h-5" /> : index + 1}
               </div>
               <span
-                className={`text-sm font-medium ${
+                className={`text-sm font-bold transition-colors duration-300 ${
                   index <= currentStep ? "text-slate-900" : "text-slate-400"
                 }`}
               >
@@ -103,7 +107,7 @@ export default function OnboardingWizard() {
               </span>
               {index < steps.length - 1 && (
                 <div
-                  className={`w-12 h-1 rounded-full ${
+                  className={`w-12 h-1 rounded-full transition-colors duration-300 ${
                     index < currentStep ? "bg-sky-600" : "bg-slate-200"
                   }`}
                 />
@@ -112,7 +116,7 @@ export default function OnboardingWizard() {
           ))}
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
+        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white">
           <div className="p-8">
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
@@ -135,63 +139,63 @@ export default function OnboardingWizard() {
                     >
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div className="space-y-2">
-                          <Label htmlFor="name">Clinic Name</Label>
+                          <Label htmlFor="name" className="font-semibold text-slate-700">Clinic Name</Label>
                           <Input
                             id="name"
                             placeholder="e.g. City Care Clinic"
                             {...register("name")}
-                            className={errors.name ? "border-red-500" : ""}
+                            className={`h-12 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors focus:shadow-none focus:border-slate-300 ${errors.name ? "border-red-500" : ""}`}
                           />
                           {errors.name && (
-                            <p className="text-sm text-red-500">{errors.name.message}</p>
+                            <p className="text-sm text-red-500 font-medium">{errors.name.message}</p>
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="doctorName">Doctor Name</Label>
+                          <Label htmlFor="doctorName" className="font-semibold text-slate-700">Doctor Name</Label>
                           <Input
                             id="doctorName"
                             placeholder="e.g. Dr. A. Sharma"
                             {...register("doctorName")}
-                            className={errors.doctorName ? "border-red-500" : ""}
+                            className={`h-12 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors focus:shadow-none focus:border-slate-300 ${errors.doctorName ? "border-red-500" : ""}`}
                           />
                           {errors.doctorName && (
-                            <p className="text-sm text-red-500">{errors.doctorName.message}</p>
+                            <p className="text-sm text-red-500 font-medium">{errors.doctorName.message}</p>
                           )}
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="specialty">Specialty</Label>
+                        <Label htmlFor="specialty" className="font-semibold text-slate-700">Specialty</Label>
                         <Input
                           id="specialty"
                           placeholder="e.g. Cardiologist, General Physician"
                           {...register("specialty")}
-                          className={errors.specialty ? "border-red-500" : ""}
+                          className={`h-12 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors focus:shadow-none focus:border-slate-300 ${errors.specialty ? "border-red-500" : ""}`}
                         />
                         {errors.specialty && (
-                          <p className="text-sm text-red-500">{errors.specialty.message}</p>
+                          <p className="text-sm text-red-500 font-medium">{errors.specialty.message}</p>
                         )}
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="slug">Public Booking URL</Label>
-                        <div className="flex items-center">
-                          <div className="bg-slate-100 text-slate-500 px-3 py-2 rounded-l-md border border-r-0 border-slate-200 text-sm whitespace-nowrap">
+                        <Label htmlFor="slug" className="font-semibold text-slate-700">Public Booking URL</Label>
+                        <div className={`flex items-center shadow-inner bg-slate-50/50 rounded-xl overflow-hidden focus-within:bg-white focus-within:ring-2 focus-within:ring-slate-900/10 focus-within:border-slate-300 transition-all border ${errors.slug ? "border-red-500" : "border-slate-200"}`}>
+                          <div className="px-3 py-3 text-slate-400 text-sm whitespace-nowrap bg-transparent select-none font-medium">
                             {(process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in").replace("https://", "")}/
                           </div>
                           <Input
                             id="slug"
                             placeholder="dr-sharma"
                             {...register("slug")}
-                            className={`rounded-l-none ${errors.slug ? "border-red-500" : ""}`}
+                            className="border-0 bg-transparent focus-visible:ring-0 px-0 h-12 text-base font-semibold text-slate-900 shadow-none rounded-none"
                           />
                         </div>
                         {errors.slug && (
-                          <p className="text-sm text-red-500">{errors.slug.message}</p>
+                          <p className="text-sm text-red-500 font-medium">{errors.slug.message}</p>
                         )}
                         {!errors.slug && slugValue && (
-                          <p className="text-sm text-emerald-600">
-                            Looking good! Patients will book here.
+                          <p className="text-sm text-emerald-600 font-medium flex items-center gap-1">
+                            <CheckCircle2 className="w-4 h-4" /> Looking good! Patients will book here.
                           </p>
                         )}
                       </div>
@@ -208,32 +212,32 @@ export default function OnboardingWizard() {
                       className="space-y-5 absolute w-full"
                     >
                       <div className="space-y-2">
-                        <Label htmlFor="phone">Clinic Phone Number</Label>
+                        <Label htmlFor="phone" className="font-semibold text-slate-700">Clinic Phone Number</Label>
                         <Input
                           id="phone"
                           placeholder="e.g. 9876543210"
                           {...register("phone")}
-                          className={errors.phone ? "border-red-500" : ""}
+                          className={`h-12 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors focus:shadow-none focus:border-slate-300 ${errors.phone ? "border-red-500" : ""}`}
                         />
                         {errors.phone && (
-                          <p className="text-sm text-red-500">{errors.phone.message}</p>
+                          <p className="text-sm text-red-500 font-medium">{errors.phone.message}</p>
                         )}
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-slate-500 font-medium">
                           Used for sending appointment reminders to you and your patients.
                         </p>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="consultationFee">Consultation Fee (₹)</Label>
+                        <Label htmlFor="consultationFee" className="font-semibold text-slate-700">Consultation Fee (₹)</Label>
                         <Input
                           id="consultationFee"
                           type="number"
                           placeholder="500"
                           {...register("consultationFee", { valueAsNumber: true })}
-                          className={errors.consultationFee ? "border-red-500" : ""}
+                          className={`h-12 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors focus:shadow-none focus:border-slate-300 ${errors.consultationFee ? "border-red-500" : ""}`}
                         />
                         {errors.consultationFee && (
-                          <p className="text-sm text-red-500">{errors.consultationFee.message}</p>
+                          <p className="text-sm text-red-500 font-medium">{errors.consultationFee.message}</p>
                         )}
                       </div>
                       

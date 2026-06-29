@@ -5,6 +5,7 @@ import { eq, and, asc } from "drizzle-orm";
 import { format } from "date-fns";
 import { redirect } from "next/navigation";
 import { QueueClient } from "./queue-client";
+import { QueueQuickAdd } from "./queue-quick-add";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +45,8 @@ export default async function QueuePage() {
           Manage today's appointments in real-time. Patients track this automatically.
         </p>
       </div>
+
+      <QueueQuickAdd />
 
       <QueueClient
         initialAppointments={todayAppts}

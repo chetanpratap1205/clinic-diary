@@ -146,7 +146,7 @@ export function TrackingClient({
 
   const waitingRoom = allAppts
     .filter(a => a.status === "checked_in")
-    .sort((a, b) => new Date(a.checkInTime || 0).getTime() - new Date(b.checkInTime || 0).getTime());
+    .sort((a, b) => (a.tokenNumber || 0) - (b.tokenNumber || 0));
 
   // Calculate Clinic Delay
   let delayMinutes = 0;
@@ -297,10 +297,13 @@ export function TrackingClient({
               style={{ borderTop: `4px solid ${themeColor}` }}
             >
                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Physical Queue</p>
-                  <motion.p key={queuePosition} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-black text-slate-900 tracking-tight">
-                    {queuePosition === 0 ? "You're Next" : `${queuePosition} ahead`}
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Your Token</p>
+                  <motion.p key={appointment.tokenNumber} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-black text-slate-900 tracking-tight">
+                    {appointment.tokenNumber ? `#${appointment.tokenNumber}` : "-"}
                   </motion.p>
+                  <p className="text-[10px] text-slate-500 mt-1 font-medium">
+                    {currentlyServing?.tokenNumber ? `Serving: #${currentlyServing.tokenNumber}` : "Serving: None"}
+                  </p>
                </div>
                <div className="text-right">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Est. Wait</p>

@@ -34,11 +34,15 @@ export async function generateMetadata({
 
   const ogImageUrl = `${BASE_URL}/api/og?${ogParams.toString()}`;
 
+  const displayDoctorName = clinic.doctorName?.trim().startsWith("Dr.") 
+    ? clinic.doctorName 
+    : `Dr. ${clinic.doctorName || "Doctor Name"}`;
+
   return {
     title: `Book Appointment | ${clinic.name}`,
-    description: `Book a consultation with Dr. ${clinic.doctorName} at ${clinic.name}. Online appointments available. No signup required.`,
+    description: `Book a consultation with ${displayDoctorName} at ${clinic.name}. Online appointments available. No signup required.`,
     openGraph: {
-      title: `Book with Dr. ${clinic.doctorName} — ${clinic.name}`,
+      title: `Book with ${displayDoctorName} — ${clinic.name}`,
       description: `Fast, easy online appointment booking at ${clinic.name}. No signup required.`,
       images: [{ url: ogImageUrl, width: 1200, height: 630, alt: `Book appointment at ${clinic.name}` }],
       url: `${BASE_URL}/book/${slug}`,
@@ -46,7 +50,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `Book with Dr. ${clinic.doctorName} — ${clinic.name}`,
+      title: `Book with ${displayDoctorName} — ${clinic.name}`,
       description: `Fast, easy online appointment booking. No signup required.`,
       images: [ogImageUrl],
     },
@@ -71,6 +75,9 @@ export default async function BookingPage({
 
   const clinic = clinicResult[0];
   const themeColor = clinic.themeColor ?? "#0ea5e9";
+  const displayDoctorName = clinic.doctorName?.trim().startsWith("Dr.") 
+    ? clinic.doctorName 
+    : `Dr. ${clinic.doctorName || "Doctor Name"}`;
 
   return (
     <div className="w-full flex flex-col lg:grid lg:grid-cols-12 gap-10 lg:gap-16">
@@ -93,7 +100,7 @@ export default async function BookingPage({
               </h1>
               <div className="flex items-center gap-2 mt-2">
                 <Badge variant="secondary" className="bg-slate-100 text-slate-700 hover:bg-slate-200 text-sm font-semibold">
-                  Dr. {clinic.doctorName}
+                  {displayDoctorName}
                 </Badge>
                 {clinic.specialty && (
                   <span className="text-slate-500 text-sm font-medium">
@@ -109,24 +116,24 @@ export default async function BookingPage({
           </p>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}15` }}>
-                <Info className="w-5 h-5" style={{ color: themeColor }} />
+            <div className="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white shadow-sm flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-inner bg-slate-50" style={{ color: themeColor }}>
+                <Info className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Fee</p>
-                <p className="font-semibold text-slate-900">₹{clinic.consultationFee}</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Fee</p>
+                <p className="font-bold text-slate-900 text-lg">₹{clinic.consultationFee}</p>
               </div>
             </div>
             
             {clinic.phone && (
-              <a href={`tel:${clinic.phone}`} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex items-start gap-3 hover:border-slate-200 transition-colors group">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-slate-50 group-hover:bg-slate-100 transition-colors">
-                  <Phone className="w-5 h-5 text-slate-500" />
+              <a href={`tel:${clinic.phone}`} className="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white shadow-sm flex items-start gap-3 hover:bg-white/80 transition-all group">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-inner bg-slate-50 text-slate-500 group-hover:text-slate-700 transition-colors">
+                  <Phone className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Contact</p>
-                  <p className="font-semibold text-slate-900">{clinic.phone}</p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Contact</p>
+                  <p className="font-bold text-slate-900">{clinic.phone}</p>
                 </div>
               </a>
             )}
@@ -134,20 +141,27 @@ export default async function BookingPage({
         </div>
 
         {clinic.address && (
-          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+          <div className="bg-white/60 backdrop-blur-md rounded-2xl p-5 border border-white shadow-sm">
             <div className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-slate-400 mt-0.5 flex-shrink-0" />
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-inner bg-slate-50 text-slate-400">
+                <MapPin className="w-5 h-5" />
+              </div>
               <div>
-                <p className="text-sm font-semibold text-slate-900">Clinic Location</p>
-                <p className="text-sm text-slate-500 mt-1 leading-relaxed">{clinic.address}</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Location</p>
+                <p className="text-sm font-semibold text-slate-900 mt-0.5 leading-relaxed">{clinic.address}</p>
               </div>
             </div>
           </div>
         )}
 
-        <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
-          <div className="absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-10" style={{ backgroundColor: themeColor }} />
-          <div className="absolute -left-6 -bottom-6 w-24 h-24 rounded-full opacity-10" style={{ backgroundColor: themeColor }} />
+        <div 
+          className="rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden"
+          style={{ 
+            backgroundColor: "#0f172a", // slate-900 base
+            backgroundImage: `radial-gradient(circle at top right, ${themeColor}40, transparent 40%), radial-gradient(circle at bottom left, ${themeColor}60, transparent 40%)`
+          }}
+        >
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
           <div className="relative z-10 space-y-4">
             <div className="flex items-center gap-2 text-yellow-400">
               <Star className="w-5 h-5 fill-current" />
@@ -160,12 +174,12 @@ export default async function BookingPage({
               "Booking was completely seamless. I didn't have to wait on the phone, and the reminder system was super helpful."
             </p>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold text-slate-300">
+              <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center font-bold text-white shadow-inner">
                 P
               </div>
               <div>
                 <p className="font-semibold text-sm">Verified Patient</p>
-                <p className="text-xs text-slate-400">Recent Visit</p>
+                <p className="text-xs text-white/60">Recent Visit</p>
               </div>
             </div>
           </div>

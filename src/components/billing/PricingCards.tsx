@@ -11,7 +11,7 @@ import Script from "next/script";
 const plans = [
   {
     id: "monthly",
-    name: "Monthly",
+    name: "1 Month",
     price: "₹499",
     duration: "per month",
     description: "Perfect for getting started",

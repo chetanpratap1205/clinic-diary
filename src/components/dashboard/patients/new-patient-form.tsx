@@ -18,6 +18,7 @@ export function NewPatientForm() {
     age: "",
     gender: "",
     address: "",
+    addToQueue: true,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -166,6 +167,23 @@ export function NewPatientForm() {
                 placeholder="City/Area details"
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500/50 transition-all placeholder:text-slate-400 resize-none"
               />
+            </div>
+
+            {/* Quick Actions */}
+            <div className="pt-2">
+              <label className="flex items-center gap-3 p-4 border border-indigo-100 bg-indigo-50/50 rounded-xl cursor-pointer hover:bg-indigo-50 transition-colors">
+                <input
+                  type="checkbox"
+                  name="addToQueue"
+                  checked={formData.addToQueue}
+                  onChange={(e) => setFormData(prev => ({ ...prev, addToQueue: e.target.checked }))}
+                  className="w-5 h-5 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500/20"
+                />
+                <div>
+                  <div className="font-medium text-slate-900 text-sm">Add to Today's Queue</div>
+                  <div className="text-xs text-slate-500 mt-0.5">Automatically checks the patient in for a visit right now.</div>
+                </div>
+              </label>
             </div>
           </div>
 

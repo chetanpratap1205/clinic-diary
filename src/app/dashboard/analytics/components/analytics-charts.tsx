@@ -1,15 +1,13 @@
 "use client";
 
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -34,10 +32,12 @@ interface AnalyticsChartsProps {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  confirmed: "#3b82f6", // blue
-  completed: "#10b981", // emerald
-  cancelled: "#ef4444", // red
-  no_show: "#f59e0b", // amber
+  confirmed: "#0ea5e9",
+  completed: "#10b981",
+  cancelled: "#f43f5e",
+  no_show: "#f59e0b",
+  in_consultation: "#8b5cf6",
+  checked_in: "#3b82f6",
 };
 
 export function AnalyticsCharts({ dailyData, statusData, themeColor = "#0ea5e9" }: AnalyticsChartsProps) {
@@ -58,20 +58,30 @@ export function AnalyticsCharts({ dailyData, statusData, themeColor = "#0ea5e9" 
         {hasData ? (
           <div className="h-[350px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={dailyData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+              <AreaChart data={dailyData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="colorAppointments" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={themeColor} stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor={themeColor} stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                 <XAxis 
                   dataKey="date" 
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12, fill: "#6b7280" }}
+                  tick={{ fontSize: 12, fill: "#64748b", fontWeight: 500 }}
                   dy={10}
                 />
                 <YAxis 
                   yAxisId="left"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12, fill: "#6b7280" }}
+                  tick={{ fontSize: 12, fill: "#64748b", fontWeight: 500 }}
                   dx={-10}
                 />
                 <YAxis 
@@ -79,34 +89,37 @@ export function AnalyticsCharts({ dailyData, statusData, themeColor = "#0ea5e9" 
                   orientation="right"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12, fill: "#6b7280" }}
+                  tick={{ fontSize: 12, fill: "#64748b", fontWeight: 500 }}
                   dx={10}
                 />
                 <Tooltip 
-                  contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                  labelStyle={{ fontWeight: 'bold', color: '#111827', marginBottom: '4px' }}
+                  contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', backgroundColor: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(8px)' }}
+                  labelStyle={{ fontWeight: '800', color: '#0f172a', marginBottom: '8px' }}
                 />
-                <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                <Line 
+                <Legend wrapperStyle={{ paddingTop: '20px', fontWeight: 600, color: '#475569' }} />
+                <Area 
                   yAxisId="left"
                   type="monotone" 
                   name="Appointments"
                   dataKey="appointments" 
                   stroke={themeColor} 
-                  strokeWidth={3}
-                  activeDot={{ r: 6 }}
-                  dot={false}
+                  fillOpacity={1}
+                  fill="url(#colorAppointments)"
+                  strokeWidth={4}
+                  activeDot={{ r: 6, strokeWidth: 0, fill: themeColor }}
                 />
-                <Line 
+                <Area 
                   yAxisId="right"
                   type="monotone" 
                   name="Revenue (₹)"
                   dataKey="revenue" 
                   stroke="#10b981" 
-                  strokeWidth={3}
-                  dot={false}
+                  fillOpacity={1}
+                  fill="url(#colorRevenue)"
+                  strokeWidth={4}
+                  activeDot={{ r: 6, strokeWidth: 0, fill: '#10b981' }}
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         ) : (
@@ -148,13 +161,15 @@ export function AnalyticsCharts({ dailyData, statusData, themeColor = "#0ea5e9" 
                 </Pie>
                 <Tooltip 
                   formatter={(value: any) => [`${value} appointments`, 'Count']}
-                  contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
+                  contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                  itemStyle={{ fontWeight: 600 }}
                 />
                 <Legend 
                   layout="horizontal" 
                   verticalAlign="bottom" 
                   align="center"
-                  formatter={(value: string) => <span className="capitalize">{value.replace('_', ' ')}</span>}
+                  formatter={(value: string) => <span className="capitalize font-medium text-slate-600">{value.replace('_', ' ')}</span>}
+                  wrapperStyle={{ paddingTop: '20px' }}
                 />
               </PieChart>
             </ResponsiveContainer>

@@ -42,7 +42,8 @@ export default async function PatientsPage() {
       patients.address,
       patients.createdAt
     )
-    .orderBy(desc(patients.createdAt));
+    .orderBy(desc(patients.createdAt))
+    .limit(500);
 
   // Check subscription status
   const activeSubs = await db
@@ -89,17 +90,17 @@ export default async function PatientsPage() {
           {!isLimitReached ? (
             <Link
               href="/dashboard/patients/new"
-              className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-md shadow-sky-500/20 hover:shadow-lg hover:shadow-sky-500/30 hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-md shadow-slate-900/10 hover:shadow-xl hover:-translate-y-0.5 hover:ring-4 ring-slate-900/5 text-sm sm:text-base"
             >
-              <Plus className="w-4 h-4" />
+              <Plus strokeWidth={2.5} className="w-4 h-4" />
               Add Patient
             </Link>
           ) : (
             <button
               disabled
-              className="inline-flex items-center justify-center gap-2 bg-slate-100 text-slate-400 px-5 py-2.5 rounded-xl font-semibold cursor-not-allowed"
+              className="inline-flex items-center justify-center gap-2 bg-slate-100 text-slate-400 px-6 py-3 rounded-2xl font-bold cursor-not-allowed text-sm sm:text-base"
             >
-              <Plus className="w-4 h-4" />
+              <Plus strokeWidth={2.5} className="w-4 h-4" />
               Add Patient
             </button>
           )}

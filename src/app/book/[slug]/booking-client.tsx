@@ -258,7 +258,7 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
         <p className="text-slate-500 mt-1">Choose your preferred day for the consultation.</p>
       </div>
 
-      <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-4 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-3 min-[400px]:grid-cols-4 sm:grid-cols-5 gap-3">
         {next14Days.map((date) => {
           const isSelected = isSameDay(date, selectedDate);
           const isToday = isSameDay(date, today);
@@ -266,12 +266,19 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
             <button
               key={date.toISOString()}
               onClick={() => handleDateSelect(date)}
-              className={`flex flex-col items-center justify-center h-[90px] rounded-2xl border-2 transition-all duration-200 active:scale-[0.97] ${
+              className={`flex flex-col items-center justify-center h-[90px] rounded-2xl border transition-all duration-200 active:scale-[0.97] relative overflow-hidden ${
                 isSelected
-                  ? "border-transparent text-white shadow-lg shadow-black/5"
-                  : "border-slate-100 bg-white text-slate-600 hover:border-slate-200 hover:bg-slate-50"
+                  ? "border-transparent text-white shadow-lg"
+                  : "border-slate-200/60 bg-slate-50/50 text-slate-500 hover:border-slate-300 hover:bg-slate-50"
               }`}
-              style={isSelected ? { backgroundColor: themeColor } : {}}
+              style={
+                isSelected 
+                  ? { 
+                      backgroundColor: themeColor,
+                      backgroundImage: `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}dd 100%)`
+                    } 
+                  : {}
+              }
             >
               <span className={`text-[10px] font-bold uppercase tracking-wider ${isSelected ? 'opacity-90' : 'text-slate-400'}`}>
                 {format(date, "EEE")}
@@ -388,8 +395,8 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
             id="patient-name"
             placeholder="E.g. Rahul Sharma"
             {...register("patientName")}
-            className={`h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all ${
-              errors.patientName ? "border-red-400 focus-visible:ring-red-300" : "focus-visible:ring-slate-200"
+            className={`h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all shadow-inner focus:shadow-none focus:border-slate-300 ${
+              errors.patientName ? "border-red-400 focus-visible:ring-red-300" : "focus-visible:ring-slate-900/10"
             }`}
           />
           {errors.patientName && <p className="text-xs text-red-500 font-medium px-1">{errors.patientName.message}</p>}
@@ -406,8 +413,8 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
               type="tel"
               placeholder="9876543210"
               {...register("patientPhone")}
-              className={`h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all pl-12 ${
-                errors.patientPhone ? "border-red-400 focus-visible:ring-red-300" : "focus-visible:ring-slate-200"
+              className={`h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all shadow-inner focus:shadow-none focus:border-slate-300 pl-12 ${
+                errors.patientPhone ? "border-red-400 focus-visible:ring-red-300" : "focus-visible:ring-slate-900/10"
               }`}
             />
           </div>
@@ -423,8 +430,8 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
             type="email"
             placeholder="your@email.com"
             {...register("patientEmail")}
-            className={`h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all ${
-              errors.patientEmail ? "border-red-400 focus-visible:ring-red-300" : "focus-visible:ring-slate-200"
+            className={`h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all shadow-inner focus:shadow-none focus:border-slate-300 ${
+              errors.patientEmail ? "border-red-400 focus-visible:ring-red-300" : "focus-visible:ring-slate-900/10"
             }`}
           />
         </div>
@@ -432,8 +439,11 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full h-14 rounded-2xl text-white font-bold text-base shadow-lg transition-all hover:opacity-90 active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100"
-          style={{ backgroundColor: themeColor }}
+          className="w-full h-14 rounded-2xl text-white font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100"
+          style={{ 
+            backgroundColor: themeColor,
+            backgroundImage: `linear-gradient(to right, ${themeColor}, ${themeColor}dd)`
+          }}
         >
           {isPending ? (
             <Loader2 className="w-6 h-6 animate-spin" />
@@ -481,7 +491,7 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
               value={trackPhone}
               onChange={(e) => setTrackPhone(e.target.value)}
               required
-              className="h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all pl-12 focus-visible:ring-slate-200"
+              className="h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all shadow-inner focus:shadow-none focus:border-slate-300 pl-12 focus-visible:ring-slate-900/10"
             />
           </div>
         </div>
@@ -489,8 +499,11 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
         <button
           type="submit"
           disabled={isTracking || trackPhone.length !== 10}
-          className="w-full h-14 rounded-2xl text-white font-bold text-base shadow-lg transition-all hover:opacity-90 active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100"
-          style={{ backgroundColor: themeColor }}
+          className="w-full h-14 rounded-2xl text-white font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100"
+          style={{ 
+            backgroundColor: themeColor,
+            backgroundImage: `linear-gradient(to right, ${themeColor}, ${themeColor}dd)`
+          }}
         >
           {isTracking ? (
             <Loader2 className="w-6 h-6 animate-spin" />
@@ -518,28 +531,28 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
 
       <Card className="border-0 shadow-2xl rounded-3xl overflow-hidden bg-white ring-1 ring-slate-900/5 relative min-h-[500px]">
         {/* View Toggle (Book vs Track) */}
-        <div className="flex border-b border-slate-100 bg-slate-50/50">
+        <div className="p-1.5 bg-slate-100/80 backdrop-blur-md rounded-2xl m-4 sm:m-6 mb-2 flex gap-1 relative z-10">
           <button
             onClick={() => setMode("book")}
-            className={`flex-1 py-4 text-sm font-bold transition-all relative ${
-              mode === "book" ? "text-slate-900 bg-white" : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+            className={`flex-1 py-3 text-sm font-bold transition-all relative rounded-xl ${
+              mode === "book" ? "text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
             }`}
           >
-            Book Appointment
             {mode === "book" && (
-              <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5" style={{ backgroundColor: themeColor }} />
+              <motion.div layoutId="activeTab" className="absolute inset-0 bg-white rounded-xl" transition={{ type: "spring", stiffness: 400, damping: 30 }} />
             )}
+            <span className="relative z-10">Book Appointment</span>
           </button>
           <button
             onClick={() => setMode("track")}
-            className={`flex-1 py-4 text-sm font-bold transition-all relative ${
-              mode === "track" ? "text-slate-900 bg-white" : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+            className={`flex-1 py-3 text-sm font-bold transition-all relative rounded-xl ${
+              mode === "track" ? "text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
             }`}
           >
-            Track Queue
             {mode === "track" && (
-              <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5" style={{ backgroundColor: themeColor }} />
+              <motion.div layoutId="activeTab" className="absolute inset-0 bg-white rounded-xl" transition={{ type: "spring", stiffness: 400, damping: 30 }} />
             )}
+            <span className="relative z-10">Track Queue</span>
           </button>
         </div>
 

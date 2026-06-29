@@ -172,41 +172,37 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
           </p>
         </div>
         
-        <div className="flex items-center gap-2 bg-card p-1 rounded-lg border shadow-sm">
-          <Filter className="w-4 h-4 text-muted-foreground ml-2" />
-          {/* We'll use a simple form to handle native routing with next/navigation but since Server Component we can just render Links */}
-          <div className="flex bg-muted/50 rounded-md p-1">
-            <Link 
-              href="?period=7d" 
-              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${period === '7d' ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              7 Days
-            </Link>
-            <Link 
-              href="?period=30d" 
-              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${period === '30d' ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              30 Days
-            </Link>
-            <Link 
-              href="?period=this_year" 
-              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${period === 'this_year' ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              This Year
-            </Link>
-            <Link 
-              href="?period=last_year" 
-              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${period === 'last_year' ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              Last Year
-            </Link>
-            <Link 
-              href="?period=all_time" 
-              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${period === 'all_time' ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              All Time
-            </Link>
-          </div>
+        <div className="flex items-center gap-2 bg-slate-200/50 p-1 rounded-xl shadow-inner h-auto inline-flex overflow-x-auto no-scrollbar w-full md:w-auto">
+          <Link 
+            href="?period=7d" 
+            className={`px-4 py-2 text-sm rounded-lg transition-all whitespace-nowrap ${period === '7d' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900 font-medium'}`}
+          >
+            7 Days
+          </Link>
+          <Link 
+            href="?period=30d" 
+            className={`px-4 py-2 text-sm rounded-lg transition-all whitespace-nowrap ${period === '30d' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900 font-medium'}`}
+          >
+            30 Days
+          </Link>
+          <Link 
+            href="?period=this_year" 
+            className={`px-4 py-2 text-sm rounded-lg transition-all whitespace-nowrap ${period === 'this_year' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900 font-medium'}`}
+          >
+            This Year
+          </Link>
+          <Link 
+            href="?period=last_year" 
+            className={`px-4 py-2 text-sm rounded-lg transition-all whitespace-nowrap ${period === 'last_year' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900 font-medium'}`}
+          >
+            Last Year
+          </Link>
+          <Link 
+            href="?period=all_time" 
+            className={`px-4 py-2 text-sm rounded-lg transition-all whitespace-nowrap ${period === 'all_time' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900 font-medium'}`}
+          >
+            All Time
+          </Link>
         </div>
       </div>
 

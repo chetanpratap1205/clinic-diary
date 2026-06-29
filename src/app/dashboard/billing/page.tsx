@@ -75,10 +75,10 @@ export default async function BillingPage() {
       </div>
       
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="bg-white border border-slate-200 p-1 shadow-sm h-auto">
-          <TabsTrigger value="overview" className="text-base px-6 py-2.5 data-[state=active]:bg-sky-50 data-[state=active]:text-sky-700 data-[state=active]:shadow-none">Overview</TabsTrigger>
-          <TabsTrigger value="plans" className="text-base px-6 py-2.5 data-[state=active]:bg-sky-50 data-[state=active]:text-sky-700 data-[state=active]:shadow-none">Upgrade Plan</TabsTrigger>
-          <TabsTrigger value="history" className="text-base px-6 py-2.5 data-[state=active]:bg-sky-50 data-[state=active]:text-sky-700 data-[state=active]:shadow-none">Invoices</TabsTrigger>
+        <TabsList className="bg-slate-200/50 p-1 shadow-inner h-auto rounded-xl inline-flex w-full sm:w-auto overflow-x-auto no-scrollbar">
+          <TabsTrigger value="overview" className="text-base px-6 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm font-medium transition-all whitespace-nowrap">Overview</TabsTrigger>
+          <TabsTrigger value="plans" className="text-base px-6 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm font-medium transition-all whitespace-nowrap">Upgrade Plan</TabsTrigger>
+          <TabsTrigger value="history" className="text-base px-6 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm font-medium transition-all whitespace-nowrap">Invoices</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4 outline-none">

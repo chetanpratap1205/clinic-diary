@@ -15,7 +15,8 @@ const BASE_URL =
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  // Removed userScalable: false — WCAG 1.4.4 accessibility requirement
+  maximumScale: 1,
+  userScalable: false,
   themeColor: "#0f766e",
   viewportFit: "cover",
 };

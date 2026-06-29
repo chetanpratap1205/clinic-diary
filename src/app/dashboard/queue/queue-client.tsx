@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { updateAppointmentStatus } from "@/app/dashboard/actions";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,6 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Appointment, Clinic } from "@/db/schema";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { WhatsAppShareButton } from "@/components/dashboard/patients/whatsapp-share-button";
 
 interface QueueClientProps {
   initialAppointments: Appointment[];
@@ -24,6 +26,7 @@ function formatTimeDisplay(time: string): string {
 }
 
 export function QueueClient({ initialAppointments, clinic }: QueueClientProps) {
+  const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
   const [isPending, startTransition] = useTransition();
 
@@ -87,8 +90,7 @@ export function QueueClient({ initialAppointments, clinic }: QueueClientProps) {
   const checkedIn = appointments
     .filter((a) => a.status === "checked_in")
     .sort(
-      (a, b) =>
-        new Date(a.checkInTime || 0).getTime() - new Date(b.checkInTime || 0).getTime()
+      (a, b) => (a.tokenNumber || 0) - (b.tokenNumber || 0)
     );
 
   const inConsultation = appointments
@@ -125,8 +127,9 @@ export function QueueClient({ initialAppointments, clinic }: QueueClientProps) {
         )}
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-600 font-bold text-sm">
-              {appt.patientName[0]?.toUpperCase()}
+            <div className="w-11 h-11 rounded-[1.1rem] bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center flex-shrink-0 text-slate-800 border border-slate-300/50 shadow-inner relative overflow-hidden">
+               <div className="absolute inset-0 bg-white/50"></div>
+               <span className="font-black text-lg tracking-tighter relative z-10"><span className="text-slate-400 font-medium text-sm mr-0.5">#</span>{appt.tokenNumber || "-"}</span>
             </div>
             <div>
               <p className="font-bold text-slate-900 text-sm">{appt.patientName}</p>
@@ -135,48 +138,53 @@ export function QueueClient({ initialAppointments, clinic }: QueueClientProps) {
               </div>
             </div>
           </div>
+          <div className="scale-[0.8] origin-top-right -mt-1 -mr-1">
+            <WhatsAppShareButton patientName={appt.patientName} trackingUrl={`/track/${appt.id}`} />
+          </div>
         </div>
 
         {/* Actions based on status */}
-        <div className="flex gap-2 mt-1">
+        <div className="flex gap-2 mt-1 w-full">
           {appt.status === "confirmed" && (
             <>
               <button
                 onClick={() => handleStatusChange(appt.id, "checked_in")}
                 disabled={isPending}
-                className="flex-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1"
+                className="flex-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white min-h-[44px] rounded-xl text-xs font-bold tracking-wide transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
               >
-                <Check className="w-3 h-3" /> Mark Arrived
+                <Check className="w-4 h-4" /> Mark Arrived
               </button>
               <button
                  onClick={() => handleStatusChange(appt.id, "no_show")}
                  disabled={isPending}
-                 className="px-3 bg-red-50 text-red-600 hover:bg-red-100 py-2 rounded-xl text-xs font-semibold transition-colors"
-                 title="No Show"
+                 className="px-4 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white min-h-[44px] rounded-xl transition-all flex items-center justify-center active:scale-[0.98]"
+                 title="Cancel Appointment"
               >
-                <X className="w-3 h-3" />
+                <X className="w-4 h-4" />
               </button>
             </>
           )}
 
           {appt.status === "checked_in" && (
             <button
-              onClick={() => handleStatusChange(appt.id, "in_consultation")}
+              onClick={async () => {
+                await handleStatusChange(appt.id, "in_consultation");
+                router.push(`/dashboard/consultation/${appt.id}`);
+              }}
               disabled={isPending}
-              className="w-full bg-sky-50 text-sky-700 hover:bg-sky-100 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1"
+              className="w-full bg-sky-50 text-sky-700 hover:opacity-90 min-h-[44px] rounded-xl text-xs font-bold tracking-wide transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
               style={{ color: clinic.themeColor || "#0ea5e9", backgroundColor: `${clinic.themeColor || "#0ea5e9"}15` }}
             >
-              <Play className="w-3 h-3" /> Start Consult
+              <Play className="w-4 h-4 fill-current" /> Start Consult
             </button>
           )}
 
           {appt.status === "in_consultation" && (
             <button
-              onClick={() => handleStatusChange(appt.id, "completed")}
-              disabled={isPending}
-              className="w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1"
+              onClick={() => router.push(`/dashboard/consultation/${appt.id}`)}
+              className="w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white min-h-[44px] rounded-xl text-xs font-bold tracking-wide transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
             >
-              <CheckCircle2 className="w-3 h-3" /> Complete
+              <Play className="w-4 h-4 fill-current" /> Resume Consult
             </button>
           )}
           
@@ -208,12 +216,12 @@ export function QueueClient({ initialAppointments, clinic }: QueueClientProps) {
           {items.length === 0 && (
              <motion.div 
                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-               className="flex-1 flex flex-col items-center justify-center text-slate-400 text-xs py-10"
+               className="flex-1 flex flex-col items-center justify-center text-slate-400 text-sm py-12 px-4 text-center border-2 border-dashed border-slate-200/60 rounded-2xl bg-white/50"
              >
-               <div className="w-12 h-12 bg-white rounded-2xl border border-slate-100 flex items-center justify-center mb-3">
-                 <Activity className="w-5 h-5 opacity-20" />
+               <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mb-3 shadow-sm border border-slate-100">
+                 <Icon className="w-5 h-5 text-slate-300" />
                </div>
-               No patients here
+               <p className="font-medium text-slate-500">No patients here</p>
              </motion.div>
           )}
         </AnimatePresence>
@@ -222,8 +230,8 @@ export function QueueClient({ initialAppointments, clinic }: QueueClientProps) {
   );
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar snap-x">
-      <div className="snap-start min-w-[300px] flex-1">
+    <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar snap-x lg:snap-none">
+      <div className="snap-start min-w-[85vw] sm:min-w-[320px] lg:min-w-0 lg:flex-1">
         <Column 
           title="Scheduled" 
           count={scheduled.length} 
@@ -232,7 +240,7 @@ export function QueueClient({ initialAppointments, clinic }: QueueClientProps) {
           colorClass="text-slate-400"
         />
       </div>
-      <div className="snap-start min-w-[300px] flex-1">
+      <div className="snap-start min-w-[85vw] sm:min-w-[320px] lg:min-w-0 lg:flex-1">
         <Column 
           title="Waiting" 
           count={checkedIn.length} 
@@ -241,7 +249,7 @@ export function QueueClient({ initialAppointments, clinic }: QueueClientProps) {
           colorClass="text-indigo-500"
         />
       </div>
-      <div className="snap-start min-w-[300px] flex-1">
+      <div className="snap-start min-w-[85vw] sm:min-w-[320px] lg:min-w-0 lg:flex-1">
         <Column 
           title="In Consult" 
           count={inConsultation.length} 
@@ -250,7 +258,7 @@ export function QueueClient({ initialAppointments, clinic }: QueueClientProps) {
           colorClass="text-sky-500"
         />
       </div>
-      <div className="snap-start min-w-[300px] flex-1">
+      <div className="snap-start min-w-[85vw] sm:min-w-[320px] lg:min-w-0 lg:flex-1">
         <Column 
           title="Done" 
           count={completed.length} 

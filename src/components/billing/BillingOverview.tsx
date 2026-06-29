@@ -72,63 +72,64 @@ export function BillingOverview({ activeSub, appointmentCount, totalPaid }: Bill
 
       <div className="grid gap-6 md:grid-cols-2">
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4, delay: 0.1 }}>
-          <Card className="relative overflow-hidden border-sky-100 shadow-sm h-full">
-            <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-              <Sparkles className="w-32 h-32 text-sky-500" />
-            </div>
-            <CardHeader className="pb-4">
+          <Card className="relative overflow-hidden border-0 shadow-xl shadow-slate-900/10 h-full bg-gradient-to-br from-slate-900 via-slate-800 to-sky-900 text-white">
+            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none"></div>
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-sky-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob pointer-events-none"></div>
+            <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000 pointer-events-none"></div>
+            
+            <CardHeader className="pb-4 relative z-10">
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle className="text-xl text-gray-900">Current Plan</CardTitle>
-                  <CardDescription className="mt-1">
+                  <CardTitle className="text-xl text-white font-bold tracking-tight">Current Plan</CardTitle>
+                  <CardDescription className="mt-1 text-slate-300 font-medium">
                     {activeSub ? `You are currently on the ${planDetails?.name}` : "You don't have an active subscription"}
                   </CardDescription>
                 </div>
                 {activeSub && activeSub.status === "active" && (
-                  <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-0 flex gap-1 items-center px-3 py-1">
-                    <CheckCircle2 className="w-3 h-3" />
+                  <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex gap-1.5 items-center px-3 py-1 shadow-inner backdrop-blur-md">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
                     Active
                   </Badge>
                 )}
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative z-10">
               {activeSub ? (
                 <>
                   <div className="flex items-baseline gap-2 mb-8">
-                    <span className="text-5xl font-black tracking-tight text-gray-900 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
+                    <span className="text-5xl font-black tracking-tight text-white drop-shadow-sm">
                       {planDetails?.price}
                     </span>
-                    <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{planDetails?.duration}</span>
+                    <span className="text-sm font-semibold text-slate-300 uppercase tracking-wider">{planDetails?.duration}</span>
                   </div>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3 text-sm text-gray-700 bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-sky-100/50 shadow-sm transition-all hover:shadow-md">
-                      <div className="bg-sky-100 p-2 rounded-lg text-sky-600">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-4 text-sm text-slate-200 bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 shadow-sm transition-all hover:bg-white/15">
+                      <div className="bg-white/20 p-2.5 rounded-xl text-white shadow-inner">
                         <Calendar className="w-4 h-4" />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Next billing date</span>
-                        <span className="font-semibold">{renewalDate}</span>
+                        <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-0.5">Next billing date</span>
+                        <span className="font-semibold text-white tracking-wide">{renewalDate}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 text-sm text-gray-700 bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-sky-100/50 shadow-sm transition-all hover:shadow-md">
-                      <div className="bg-emerald-100 p-2 rounded-lg text-emerald-600">
+                    <div className="flex items-center gap-4 text-sm text-slate-200 bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 shadow-sm transition-all hover:bg-white/15">
+                      <div className="bg-white/20 p-2.5 rounded-xl text-white shadow-inner">
                         <CreditCard className="w-4 h-4" />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Payment method</span>
-                        <span className="font-semibold">Razorpay</span>
+                        <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-0.5">Payment method</span>
+                        <span className="font-semibold text-white tracking-wide">Razorpay</span>
                       </div>
                     </div>
                   </div>
                 </>
               ) : (
-                <div className="py-12 flex flex-col items-center justify-center text-center text-slate-500 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 mt-4">
-                  <div className="bg-slate-100 p-4 rounded-full mb-4">
-                    <Sparkles className="w-8 h-8 text-slate-400" />
+                <div className="py-12 flex flex-col items-center justify-center text-center text-slate-300 bg-white/5 backdrop-blur-sm rounded-2xl border border-dashed border-white/20 mt-4 shadow-inner">
+                  <div className="bg-white/10 p-4 rounded-full mb-4">
+                    <Sparkles className="w-8 h-8 text-slate-200" />
                   </div>
-                  <h4 className="text-lg font-semibold text-slate-700 mb-1">No Active Plan</h4>
-                  <p className="max-w-[250px] text-sm">Upgrade to a premium plan to unlock all features and grow your clinic.</p>
+                  <h4 className="text-lg font-bold text-white mb-1">No Active Plan</h4>
+                  <p className="max-w-[250px] text-sm font-medium">Upgrade to a premium plan to unlock all features and grow your clinic.</p>
                 </div>
               )}
             </CardContent>

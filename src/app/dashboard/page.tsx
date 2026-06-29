@@ -81,9 +81,16 @@ export default async function DashboardPage() {
     "yyyy-MM-dd"
   );
 
-  // ✅ Parallelized — all 4 queries run simultaneously
-  const [todayAppts, weekApptsResult, weekNoShowsResult, clinicResult] =
-    await Promise.all([
+  // ✅ Parallelized — all queries run simultaneously
+  const [
+    todayAppts, 
+    weekApptsResult, 
+    weekNoShowsResult, 
+    clinicResult,
+    overdueFollowUpsResult,
+    dueTodayFollowUps,
+    dueTodayCountResult
+  ] = await Promise.all([
       db
         .select()
         .from(appointments)
@@ -123,52 +130,52 @@ export default async function DashboardPage() {
         .from(clinics)
         .where(eq(clinics.id, authUser.clinicId))
         .limit(1),
+
+      db
+        .select({ count: count() })
+        .from(followUps)
+        .where(
+          and(
+            eq(followUps.clinicId, authUser.clinicId),
+            eq(followUps.status, "pending"),
+            lt(followUps.dueDate, today)
+          )
+        ),
+
+      db
+        .select({
+          id: followUps.id,
+          dueDate: followUps.dueDate,
+          status: followUps.status,
+          notes: followUps.notes,
+          patient: {
+            id: patients.id,
+            name: patients.name,
+            phone: patients.phone,
+          }
+        })
+        .from(followUps)
+        .innerJoin(patients, eq(followUps.patientId, patients.id))
+        .where(
+          and(
+            eq(followUps.clinicId, authUser.clinicId),
+            eq(followUps.status, "pending"),
+            eq(followUps.dueDate, today)
+          )
+        )
+        .limit(3),
+
+      db
+        .select({ count: count() })
+        .from(followUps)
+        .where(
+          and(
+            eq(followUps.clinicId, authUser.clinicId),
+            eq(followUps.status, "pending"),
+            eq(followUps.dueDate, today)
+          )
+        )
     ]);
-
-  const overdueFollowUpsResult = await db
-    .select({ count: count() })
-    .from(followUps)
-    .where(
-      and(
-        eq(followUps.clinicId, authUser.clinicId),
-        eq(followUps.status, "pending"),
-        lt(followUps.dueDate, today)
-      )
-    );
-
-  const dueTodayFollowUps = await db
-    .select({
-      id: followUps.id,
-      dueDate: followUps.dueDate,
-      status: followUps.status,
-      notes: followUps.notes,
-      patient: {
-        id: patients.id,
-        name: patients.name,
-        phone: patients.phone,
-      }
-    })
-    .from(followUps)
-    .innerJoin(patients, eq(followUps.patientId, patients.id))
-    .where(
-      and(
-        eq(followUps.clinicId, authUser.clinicId),
-        eq(followUps.status, "pending"),
-        eq(followUps.dueDate, today)
-      )
-    )
-    .limit(3);
-
-  const dueTodayCountResult = await db
-    .select({ count: count() })
-    .from(followUps)
-    .where(
-      and(
-        eq(followUps.clinicId, authUser.clinicId),
-        eq(followUps.status, "pending"),
-        eq(followUps.dueDate, today)
-      )
-    );
 
   const overdueCount = overdueFollowUpsResult[0]?.count ?? 0;
   const dueTodayCount = dueTodayCountResult[0]?.count ?? 0;
@@ -180,8 +187,12 @@ export default async function DashboardPage() {
     (a) => a.status === "completed"
   ).length;
 
+  const validRevenueAppts = todayAppts.filter(
+    (a) => !["cancelled", "no_show"].includes(a.status)
+  ).length;
+
   const clinicData = clinicResult[0];
-  const todayRevenue = todayCompleted * (clinicData.consultationFee || 0);
+  const todayRevenue = validRevenueAppts * (clinicData.consultationFee || 0);
   const bookingUrl = `${
     process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in"
   }/book/${clinicData?.slug}`;
