@@ -81,17 +81,31 @@ export default async function SettingsPage() {
             <div className="absolute -top-32 -right-32 w-64 h-64 bg-emerald-500/20 rounded-full blur-[64px] pointer-events-none transition-transform duration-1000 group-hover:scale-110"></div>
             <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-sky-500/20 rounded-full blur-[64px] pointer-events-none transition-transform duration-1000 group-hover:scale-110"></div>
             
-            <div className="flex-1 text-center lg:text-left z-10 w-full">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] sm:text-xs font-black tracking-widest uppercase mb-4 shadow-inner">
-                <Sparkles className="w-3.5 h-3.5" />
-                Premium Partnership
+            <div className="flex-1 z-10 w-full flex flex-col sm:flex-row items-center lg:items-start gap-6 lg:gap-8">
+              {/* Profile Photo */}
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.15)] flex-shrink-0 group-hover:scale-105 transition-transform duration-500">
+                <img 
+                  src="/chetan_profile_photo.png" 
+                  alt="Founder" 
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-white mb-3 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
-                Founder Direct Access <ShieldCheck className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
-              </h3>
-              <p className="text-slate-400 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto lg:mx-0 font-medium">
-                We believe in building true, lasting partnerships with our doctors. If you ever need a custom feature built, face any technical issue, or just want to share feedback to improve the platform, you have a direct line to me.
-              </p>
+
+              <div className="text-center sm:text-left flex-1">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] sm:text-xs font-black tracking-widest uppercase mb-3 shadow-inner">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Premium Partnership
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-extrabold text-white mb-1 flex items-center justify-center sm:justify-start gap-2 sm:gap-3">
+                  Founder Direct Access <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
+                </h3>
+                <p className="text-emerald-400/90 text-xs sm:text-sm font-bold tracking-wide mb-3.5">
+                  Chetan Pratap &bull; MBA in Innovation, Entrepreneurship & Venture Development
+                </p>
+                <p className="text-slate-400 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto sm:mx-0 font-medium">
+                  We believe in building true, lasting partnerships with our doctors. If you ever need a custom feature built, face any technical issue, or just want to share feedback to improve the platform, you have a direct line to me.
+                </p>
+              </div>
             </div>
 
             <div className="flex-shrink-0 z-10 w-full sm:w-auto flex flex-col items-center">
