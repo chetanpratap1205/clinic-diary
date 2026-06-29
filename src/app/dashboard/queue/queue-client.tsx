@@ -310,45 +310,4 @@ export function QueueClient({ initialAppointments, clinic }: QueueClientProps) {
       </div>
     </div>
   );
-
-  return (
-    <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar snap-x lg:snap-none">
-      <div className="snap-start min-w-[85vw] sm:min-w-[320px] lg:min-w-0 lg:flex-1">
-        <Column 
-          title="Scheduled" 
-          count={scheduled.length} 
-          items={scheduled} 
-          icon={Clock} 
-          colorClass="text-slate-400"
-        />
-      </div>
-      <div className="snap-start min-w-[85vw] sm:min-w-[320px] lg:min-w-0 lg:flex-1">
-        <Column 
-          title="Waiting" 
-          count={checkedIn.length} 
-          items={checkedIn} 
-          icon={User} 
-          colorClass="text-indigo-500"
-        />
-      </div>
-      <div className="snap-start min-w-[85vw] sm:min-w-[320px] lg:min-w-0 lg:flex-1">
-        <Column 
-          title="In Consult" 
-          count={inConsultation.length} 
-          items={inConsultation} 
-          icon={Play} 
-          colorClass="text-sky-500"
-        />
-      </div>
-      <div className="snap-start min-w-[85vw] sm:min-w-[320px] lg:min-w-0 lg:flex-1">
-        <Column 
-          title="Done" 
-          count={completed.length} 
-          items={completed} 
-          icon={CheckCircle2} 
-          colorClass="text-emerald-500"
-        />
-      </div>
-    </div>
-  );
 }
