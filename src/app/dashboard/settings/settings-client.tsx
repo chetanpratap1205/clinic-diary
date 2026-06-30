@@ -25,6 +25,7 @@ const settingsSchema = z.object({
     .nullable(),
   about: z.string().nullable().optional(),
   logoUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
+  googleMapsUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
 });
 
 type SettingsData = z.infer<typeof settingsSchema>;
@@ -40,6 +41,7 @@ interface SettingsClientProps {
     themeColor: string | null;
     about?: string | null;
     logoUrl?: string | null;
+    googleMapsUrl?: string | null;
   };
   slug: string;
 }
@@ -74,6 +76,7 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
       themeColor: initialData.themeColor || "#0ea5e9",
       about: initialData.about || "",
       logoUrl: initialData.logoUrl || "",
+      googleMapsUrl: initialData.googleMapsUrl || "",
     },
   });
 
@@ -200,6 +203,24 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
                 />
                 {errors.logoUrl && (
                   <p className="text-xs text-red-500">{errors.logoUrl.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="google-maps-url" className="text-sm font-semibold text-slate-700 flex items-center justify-between">
+                  <span>Google Maps Embed URL (Optional)</span>
+                </label>
+                <Input
+                  id="google-maps-url"
+                  {...register("googleMapsUrl")}
+                  placeholder="https://www.google.com/maps/embed?pb=..."
+                  className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  Go to Google Maps → Share → Embed a map, and copy the <code className="bg-slate-100 px-1 py-0.5 rounded">src="..."</code> link.
+                </p>
+                {errors.googleMapsUrl && (
+                  <p className="text-xs text-red-500">{errors.googleMapsUrl.message}</p>
                 )}
               </div>
 

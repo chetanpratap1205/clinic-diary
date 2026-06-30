@@ -13,6 +13,7 @@ const settingsSchema = z.object({
   consultationFee: z.number().min(0).optional(),
   themeColor: z.string().optional(),
   address: z.string().optional(),
+  googleMapsUrl: z.string().optional().or(z.literal("")),
   about: z.string().optional(),
   workingDays: z.array(z.number().min(0).max(6)).optional(),
   startTime: z.string().optional(),

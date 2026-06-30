@@ -10,9 +10,14 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface AppointmentActionsProps {
   appointmentId: string;
@@ -25,7 +30,6 @@ export function AppointmentActions({
   patientId,
   currentStatus,
 }: AppointmentActionsProps) {
-  const [open, setOpen] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -37,8 +41,6 @@ export function AppointmentActions({
   });
 
   function updateStatus(status: string) {
-    setOpen(false);
-    
     if (status === "completed") {
       setShowCompleteModal(true);
       return;
@@ -80,22 +82,22 @@ export function AppointmentActions({
       label: "Completed",
       status: "completed",
       icon: Check,
-      color: "text-emerald-600",
-      bg: "hover:bg-emerald-50",
+      color: "text-emerald-600 focus:text-emerald-700",
+      bg: "focus:bg-emerald-50",
     },
     {
       label: "No Show",
       status: "no_show",
       icon: AlertCircle,
-      color: "text-amber-600",
-      bg: "hover:bg-amber-50",
+      color: "text-amber-600 focus:text-amber-700",
+      bg: "focus:bg-amber-50",
     },
     {
       label: "Cancel",
       status: "cancelled",
       icon: X,
-      color: "text-red-600",
-      bg: "hover:bg-red-50",
+      color: "text-red-600 focus:text-red-700",
+      bg: "focus:bg-red-50",
     },
   ].filter(
     (a) => a.status !== currentStatus && currentStatus !== "cancelled"
@@ -109,45 +111,28 @@ export function AppointmentActions({
   return (
     <>
       <div className="relative">
-        <button
-          onClick={() => setOpen(!open)}
-          className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-all focus:outline-none focus:ring-2 focus:ring-sky-500/30 active:scale-95"
-          aria-label="Appointment actions"
-          aria-expanded={open}
-        >
-          <MoreHorizontal className="w-4 h-4" />
-        </button>
-
-        <AnimatePresence>
-          {open && (
-            <>
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setOpen(false)}
-              />
-              <motion.div
-                initial={{ opacity: 0, scale: 0.92, y: -8 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.92, y: -8 }}
-                transition={{ duration: 0.12, ease: "easeOut" }}
-                className="absolute right-0 top-11 z-20 bg-white rounded-2xl border border-slate-200/70 shadow-2xl shadow-slate-900/10 overflow-hidden min-w-[160px]"
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-all focus:outline-none focus:ring-2 focus:ring-sky-500/30 active:scale-95"
+              aria-label="Appointment actions"
+            >
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40 rounded-2xl border-slate-200/70 shadow-2xl p-1.5">
+            {actions.map((action) => (
+              <DropdownMenuItem
+                key={action.status}
+                onClick={() => updateStatus(action.status)}
+                className={`flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl transition-colors font-medium cursor-pointer ${action.color} ${action.bg}`}
               >
-                <div className="p-1.5">
-                  {actions.map((action) => (
-                    <button
-                      key={action.status}
-                      onClick={() => updateStatus(action.status)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl transition-colors font-medium ${action.color} ${action.bg}`}
-                    >
-                      <action.icon className="w-4 h-4 flex-shrink-0" />
-                      {action.label}
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
+                <action.icon className="w-4 h-4 flex-shrink-0" />
+                {action.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <Dialog open={showCompleteModal} onOpenChange={setShowCompleteModal}>

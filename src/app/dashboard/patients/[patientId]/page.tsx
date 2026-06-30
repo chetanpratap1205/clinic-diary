@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StaggerContainer, FadeInUp } from "@/components/dashboard/dashboard-animations";
 import { NewFollowUpButton } from "@/components/dashboard/patients/new-follow-up-button";
+import { CheckInWalkInButton } from "@/components/dashboard/patients/check-in-walk-in-button";
 import { WhatsAppShareButton } from "@/components/dashboard/patients/whatsapp-share-button";
 
 function getStatusBadge(status: string) {
@@ -118,7 +119,7 @@ export default async function PatientProfilePage(props: { params: Promise<{ pati
           </div>
           
           <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap z-10 mt-2 sm:mt-0">
-            {todayAppointment && (
+            {todayAppointment ? (
               <WhatsAppShareButton 
                 patientName={patient.name} 
                 patientPhone={patient.phone}
@@ -126,6 +127,8 @@ export default async function PatientProfilePage(props: { params: Promise<{ pati
                 doctorName={clinic.doctorName}
                 trackingUrl={`/track/${todayAppointment.id}`} 
               />
+            ) : (
+              <CheckInWalkInButton patientId={patient.id} />
             )}
             <NewFollowUpButton patientId={patient.id} />
           </div>

@@ -37,6 +37,32 @@ export async function updateAppointmentStatus(appointmentId: string, status: str
         )
       );
 
+    // Sync linked follow-up if applicable
+    const { followUps } = await import("@/db/schema");
+    if (status === "completed") {
+      await db
+        .update(followUps)
+        .set({ status: "completed", completedAt: new Date() })
+        .where(
+          and(
+            eq(followUps.appointmentId, appointmentId),
+            eq(followUps.clinicId, authUser.clinicId),
+            eq(followUps.status, "checked_in")
+          )
+        );
+    } else if (status === "cancelled" || status === "no_show") {
+      await db
+        .update(followUps)
+        .set({ status: status === "no_show" ? "missed" : "cancelled" })
+        .where(
+          and(
+            eq(followUps.appointmentId, appointmentId),
+            eq(followUps.clinicId, authUser.clinicId),
+            eq(followUps.status, "checked_in")
+          )
+        );
+    }
+
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/calendar");
     return { success: true };
@@ -71,6 +97,19 @@ export async function completeAppointmentWithNotes(data: {
         )
       );
 
+    // 1.5 Auto-complete any follow-up that generated this appointment
+    const { followUps } = await import("@/db/schema");
+    await db
+      .update(followUps)
+      .set({ status: "completed", completedAt: new Date() })
+      .where(
+        and(
+          eq(followUps.appointmentId, data.appointmentId),
+          eq(followUps.clinicId, authUser.clinicId),
+          eq(followUps.status, "checked_in")
+        )
+      );
+
     // 2. Add visit notes
     if (data.patientId && (data.complaint || data.diagnosis || data.treatment)) {
       const { visitNotes } = await import("@/db/schema");
@@ -87,7 +126,6 @@ export async function completeAppointmentWithNotes(data: {
 
     // 3. Schedule follow-up if requested
     if (data.patientId && data.followUpDays !== "none") {
-      const { followUps } = await import("@/db/schema");
       const d = new Date();
       d.setDate(d.getDate() + data.followUpDays);
       const dueDateStr = d.toISOString().split("T")[0];
@@ -95,7 +133,7 @@ export async function completeAppointmentWithNotes(data: {
       await db.insert(followUps).values({
         clinicId: authUser.clinicId,
         patientId: data.patientId,
-        appointmentId: data.appointmentId,
+        appointmentId: data.appointmentId, // This points to the originating appointment
         dueDate: dueDateStr,
         status: "pending",
         notes: data.complaint ? `Follow-up for: ${data.complaint}` : null,
@@ -109,5 +147,51 @@ export async function completeAppointmentWithNotes(data: {
   } catch (error) {
     console.error("Failed to complete appointment:", error);
     return { error: "Failed to complete appointment" };
+  }
+}
+
+export async function checkInWalkIn(patientId: string) {
+  const authUser = await getAuthUser();
+  if (!authUser?.clinicId) {
+    return { error: "Unauthorized" };
+  }
+
+  try {
+    const { patients } = await import("@/db/schema");
+    const [patient] = await db
+      .select()
+      .from(patients)
+      .where(
+        and(
+          eq(patients.id, patientId),
+          eq(patients.clinicId, authUser.clinicId)
+        )
+      )
+      .limit(1);
+
+    if (!patient) return { error: "Patient not found" };
+
+    const { format } = await import("date-fns");
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+    const timeStr = format(new Date(), "HH:mm:ss");
+
+    await db.insert(appointments).values({
+      clinicId: authUser.clinicId,
+      patientId: patient.id,
+      patientName: patient.name,
+      patientPhone: patient.phone,
+      appointmentDate: todayStr,
+      appointmentTime: timeStr,
+      status: "checked_in",
+      checkInTime: new Date(),
+      notes: "Walk-in patient",
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath(`/dashboard/patients/${patientId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to check in walk-in:", error);
+    return { error: "Failed to check in walk-in" };
   }
 }

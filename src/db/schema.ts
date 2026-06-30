@@ -24,6 +24,7 @@ export const clinics = pgTable("clinics", {
   averageConsultationMinutes: integer("average_consultation_minutes").default(15).notNull(),
   themeColor: text("theme_color").default("#0ea5e9"),
   address: text("address"),
+  googleMapsUrl: text("google_maps_url"),
   about: text("about"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

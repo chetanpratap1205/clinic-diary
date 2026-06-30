@@ -54,6 +54,7 @@ export default async function SettingsPage() {
     themeColor: clinic.themeColor,
     about: clinic.about,
     logoUrl: clinic.logoUrl,
+    googleMapsUrl: clinic.googleMapsUrl,
   };
 
   return (

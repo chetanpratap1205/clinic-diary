@@ -78,7 +78,7 @@ export function NewFollowUpButton({ patientId }: { patientId: string }) {
         <form onSubmit={handleSubmit} className="space-y-5 pt-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">When?</label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {presetDays.map((d) => (
                 <button
                   key={d}
@@ -99,7 +99,7 @@ export function NewFollowUpButton({ patientId }: { patientId: string }) {
               <button
                 type="button"
                 onClick={() => setDays("custom")}
-                className={`w-full py-2 text-sm font-medium rounded-xl border transition-colors ${
+                className={`w-full py-2.5 text-sm font-medium rounded-xl border transition-colors ${
                   days === "custom"
                     ? "bg-sky-50 border-sky-200 text-sky-700"
                     : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
@@ -114,7 +114,8 @@ export function NewFollowUpButton({ patientId }: { patientId: string }) {
                   min={new Date().toISOString().split("T")[0]}
                   value={customDate}
                   onChange={(e) => setCustomDate(e.target.value)}
-                  className="mt-2 w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                  className="mt-3 block w-full px-4 py-3 bg-white text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 shadow-sm appearance-none"
+                  style={{ minHeight: "3rem" }}
                 />
               )}
             </div>

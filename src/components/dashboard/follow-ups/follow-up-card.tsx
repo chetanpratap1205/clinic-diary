@@ -37,12 +37,12 @@ export function FollowUpCard({ followUp, variant, clinic }: FollowUpCardProps) {
       const res = await fetch(`/api/follow-ups/${followUp.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "completed" }),
+        body: JSON.stringify({ status: "checked_in" }),
       });
 
       if (!res.ok) throw new Error("Failed to update status");
 
-      toast.success("Follow-up marked as completed");
+      toast.success("Patient checked in successfully");
       router.refresh();
     } catch (error: any) {
       toast.error(error.message);
@@ -136,7 +136,7 @@ export function FollowUpCard({ followUp, variant, clinic }: FollowUpCardProps) {
             className="flex-1 flex items-center justify-center gap-1.5 py-3 px-3 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-slate-900/10 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 disabled:opacity-50"
           >
             <CheckCircle2 className="w-4 h-4" />
-            {isMarking ? "Saving..." : "Done"}
+            {isMarking ? "Saving..." : "Check In"}
           </button>
         </div>
       </CardContent>

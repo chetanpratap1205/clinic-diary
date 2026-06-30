@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { followUps } from "@/db/schema";
+import { followUps, appointments, patients } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
+import { format } from "date-fns";
 
 export async function PATCH(
   req: NextRequest,
@@ -18,16 +19,64 @@ export async function PATCH(
     const body = await req.json();
     const { status } = body;
 
-    if (!status || !["pending", "completed", "missed"].includes(status)) {
+    // Added checked_in and cancelled to the allowed statuses
+    if (!status || !["pending", "checked_in", "completed", "missed", "cancelled"].includes(status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+
+    let appointmentIdToLink: string | null = null;
+
+    // If marked as checked_in (Check In), create an Appointment first so we can link it
+    if (status === "checked_in") {
+      const [followUpRecord] = await db
+        .select()
+        .from(followUps)
+        .where(eq(followUps.id, id))
+        .limit(1);
+
+      if (followUpRecord) {
+        const [patient] = await db
+          .select()
+          .from(patients)
+          .where(eq(patients.id, followUpRecord.patientId))
+          .limit(1);
+
+        if (patient) {
+          const todayStr = format(new Date(), "yyyy-MM-dd");
+          const timeStr = format(new Date(), "HH:mm:ss");
+
+          const [newAppt] = await db.insert(appointments).values({
+            clinicId: authUser.clinicId,
+            patientId: patient.id,
+            patientName: patient.name,
+            patientPhone: patient.phone,
+            appointmentDate: todayStr,
+            appointmentTime: timeStr,
+            status: "checked_in",
+            checkInTime: new Date(),
+            notes: "Auto-generated from Follow-up Check In",
+          }).returning({ id: appointments.id });
+
+          if (newAppt) {
+            appointmentIdToLink = newAppt.id;
+          }
+        }
+      }
+    }
+
+    // Update follow-up status and link appointment if created
+    const updateData: any = { 
+      status,
+      completedAt: status === "completed" ? new Date() : null,
+    };
+
+    if (appointmentIdToLink) {
+      updateData.appointmentId = appointmentIdToLink;
     }
 
     const [updated] = await db
       .update(followUps)
-      .set({ 
-        status,
-        completedAt: status === "completed" ? new Date() : null,
-      })
+      .set(updateData)
       .where(
         and(
           eq(followUps.id, id),
@@ -46,3 +95,4 @@ export async function PATCH(
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
+
