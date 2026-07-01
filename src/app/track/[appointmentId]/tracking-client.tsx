@@ -23,6 +23,8 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import type { Appointment, Clinic } from "@/db/schema";
 import Link from "next/link";
+import { formatTimeDisplay } from "@/lib/format";
+import { getClinicDelay, getEstimatedStart } from "@/lib/queue-logic";
 
 interface TrackingClientProps {
   appointment: Appointment;
@@ -30,9 +32,11 @@ interface TrackingClientProps {
   todayAppts?: Appointment[];
 }
 
-async function cancelAppointment(appointmentId: string) {
+async function cancelAppointment(appointmentId: string, cancelToken?: string | null) {
   const res = await fetch(`/api/appointments/${appointmentId}/cancel`, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ cancelToken }),
   });
   return res.ok;
 }
@@ -41,13 +45,7 @@ function stripDrPrefix(name: string): string {
   return name.replace(/^dr\.?\s*/i, "").trim();
 }
 
-function formatTimeDisplay(time: string): string {
-  const t = time.slice(0, 5);
-  const [h, m] = t.split(":").map(Number);
-  const ampm = h >= 12 ? "PM" : "AM";
-  const displayH = h % 12 || 12;
-  return `${displayH}:${m.toString().padStart(2, "0")} ${ampm}`;
-}
+
 
 function buildDirectionsUrl(clinic: Clinic): string {
   const parts = [clinic.name, clinic.address].filter(Boolean).join(", ");
@@ -129,7 +127,7 @@ export function TrackingClient({
 
   const handleCancel = () => {
     startTransition(async () => {
-      const ok = await cancelAppointment(appointment.id);
+      const ok = await cancelAppointment(appointment.id, appointment.cancelToken);
       if (ok) {
         setAllAppts((prev) => prev.map((a) => (a.id === appointment.id ? { ...a, status: "cancelled" } : a)));
         setShowCancelModal(false);
@@ -148,43 +146,15 @@ export function TrackingClient({
     .filter(a => a.status === "checked_in")
     .sort((a, b) => (a.tokenNumber || 0) - (b.tokenNumber || 0));
 
-  // Calculate Clinic Delay
-  let delayMinutes = 0;
-  if (currentlyServing) {
-     const servingDate = new Date(`${currentlyServing.appointmentDate}T${currentlyServing.appointmentTime}`);
-     const diffMins = Math.floor((now.getTime() - servingDate.getTime()) / 60000);
-     if (diffMins > 0) delayMinutes = diffMins;
-  } else if (waitingRoom.length > 0) {
-     const firstWaiting = waitingRoom[0];
-     const waitingDate = new Date(`${firstWaiting.appointmentDate}T${firstWaiting.appointmentTime}`);
-     const diffMins = Math.floor((now.getTime() - waitingDate.getTime()) / 60000);
-     if (diffMins > 0) delayMinutes = diffMins;
-  }
+  const delayMinutes = getClinicDelay(allAppts, now);
+  const { estimatedStart, isDelayed, waitMins } = getEstimatedStart(appointment, delayMinutes, now);
 
-  // Adjust for "At Home" (confirmed)
-  let expectedDelay = delayMinutes;
-  let adjustedTimeStr = formatTimeDisplay(appointment.appointmentTime);
-  let isDelayed = false;
-
-  if (isConfirmed && expectedDelay >= 10) { // only show delay if > 10 mins late
-      isDelayed = true;
-      const myTime = new Date(`${appointment.appointmentDate}T${appointment.appointmentTime}`);
-      myTime.setMinutes(myTime.getMinutes() + expectedDelay);
-      adjustedTimeStr = format(myTime, "h:mm a");
-  }
-
-  // Calculate physical wait for "Waiting Room" (checked_in)
+  const adjustedTimeStr = format(estimatedStart, "h:mm a");
+  const expectedDelay = delayMinutes;
+  
   const myIndex = waitingRoom.findIndex(a => a.id === appointment.id);
   const queuePosition = myIndex >= 0 ? myIndex : 0;
-  const avgMins = clinic.averageConsultationMinutes ?? 15;
-  let remainingInConsult = avgMins;
-  if (currentlyServing && currentlyServing.consultationStartTime) {
-      const elapsed = Math.floor((now.getTime() - new Date(currentlyServing.consultationStartTime).getTime()) / 60000);
-      remainingInConsult = Math.max(0, avgMins - elapsed);
-  } else if (!currentlyServing) {
-      remainingInConsult = 0;
-  }
-  const estimatedWaitMins = (queuePosition * avgMins) + remainingInConsult;
+  const estimatedWaitMins = waitMins;
 
   return (
     <>
@@ -403,6 +373,42 @@ export function TrackingClient({
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* ──── Visit Summary ──── */}
+        <AnimatePresence>
+          {isCompleted && (appointment as any).visitNote && (
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+              <Card className="border-0 shadow-lg rounded-3xl overflow-hidden bg-white">
+                <CardContent className="p-5">
+                  <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-4">
+                    <Sparkles className="w-5 h-5 text-indigo-500" /> Visit Summary
+                  </h2>
+                  <div className="space-y-4">
+                    {((appointment as any).visitNote.diagnosis) && (
+                      <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Diagnosis</p>
+                        <p className="text-sm font-semibold text-slate-800">{ (appointment as any).visitNote.diagnosis }</p>
+                      </div>
+                    )}
+                    {((appointment as any).visitNote.treatment) && (
+                      <div className="bg-blue-50/50 rounded-2xl p-4 border border-blue-100/50">
+                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Prescription & Treatment</p>
+                        <p className="text-sm font-semibold text-blue-900">{ (appointment as any).visitNote.treatment }</p>
+                      </div>
+                    )}
+                    {((appointment as any).visitNote.vitals || (appointment as any).visitNote.complaint) && (
+                      <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Doctor's Notes</p>
+                        {((appointment as any).visitNote.complaint) && <p className="text-sm text-slate-600 mb-1"><span className="font-semibold text-slate-700">Complaint:</span> { (appointment as any).visitNote.complaint }</p>}
+                        {((appointment as any).visitNote.vitals) && <p className="text-sm text-slate-600"><span className="font-semibold text-slate-700">Vitals:</span> { (appointment as any).visitNote.vitals }</p>}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ──── Action Buttons ──── */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="grid grid-cols-2 gap-3">

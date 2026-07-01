@@ -16,6 +16,7 @@ interface SettingsData {
   themeColor: string | null;
   about?: string | null;
   logoUrl?: string | null;
+  googleMapsUrl?: string | null;
 }
 
 export async function updateClinicSettings(data: SettingsData) {
@@ -37,6 +38,7 @@ export async function updateClinicSettings(data: SettingsData) {
         themeColor: data.themeColor,
         about: data.about,
         logoUrl: data.logoUrl,
+        googleMapsUrl: data.googleMapsUrl,
       })
       .where(eq(clinics.id, user.clinicId));
 
@@ -59,20 +61,22 @@ export async function updateClinicAvailability(availabilityData: any[]) {
 
     const { availability } = await import("@/db/schema");
 
-    // Clear existing
-    await db.delete(availability).where(eq(availability.clinicId, user.clinicId));
+    await db.transaction(async (tx) => {
+      // Clear existing
+      await tx.delete(availability).where(eq(availability.clinicId, user.clinicId!));
 
-    // Insert new
-    if (availabilityData.length > 0) {
-      const recordsToInsert = availabilityData.map(a => ({
-        clinicId: user.clinicId!,
-        dayOfWeek: a.dayOfWeek,
-        startTime: a.startTime,
-        endTime: a.endTime,
-        slotDurationMinutes: a.slotDurationMinutes,
-      }));
-      await db.insert(availability).values(recordsToInsert);
-    }
+      // Insert new
+      if (availabilityData.length > 0) {
+        const recordsToInsert = availabilityData.map(a => ({
+          clinicId: user.clinicId!,
+          dayOfWeek: a.dayOfWeek,
+          startTime: a.startTime,
+          endTime: a.endTime,
+          slotDurationMinutes: a.slotDurationMinutes,
+        }));
+        await tx.insert(availability).values(recordsToInsert);
+      }
+    });
 
     revalidatePath("/dashboard/settings");
     revalidatePath(`/book`);
@@ -111,8 +115,12 @@ export async function removeHoliday(id: string) {
     if (!user || !user.clinicId) return { error: "Unauthorized" };
 
     const { availabilityOverrides } = await import("@/db/schema");
+    const { and } = await import("drizzle-orm");
     await db.delete(availabilityOverrides).where(
-      eq(availabilityOverrides.id, id)
+      and(
+        eq(availabilityOverrides.id, id),
+        eq(availabilityOverrides.clinicId, user.clinicId)
+      )
     );
 
     revalidatePath("/dashboard/settings");

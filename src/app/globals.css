@@ -3,12 +3,37 @@
 @theme {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+
+  /* Premium Medical SaaS Palette */
+  --color-primary-50: #effdf8;
+  --color-primary-100: #d7faec;
+  --color-primary-200: #b0f4d8;
+  --color-primary-300: #7ae6c1;
+  --color-primary-400: #42d1a5;
+  --color-primary-500: #1cb589;
+  --color-primary-600: #10916c;
+  --color-primary-700: #0d7559;
+  --color-primary-800: #0e5c47;
+  --color-primary-900: #0d4c3c;
+  --color-primary-950: #062b23;
+
+  --color-surface-50: #fbfcfd;
+  --color-surface-100: #f3f5f8;
+  --color-surface-200: #e6eaef;
+  --color-surface-300: #d1d8e1;
+  --color-surface-400: #b1bccb;
+  --color-surface-500: #93a1b3;
+  --color-surface-600: #778498;
+  --color-surface-700: #626c7f;
+  --color-surface-800: #515969;
+  --color-surface-900: #464d59;
+  --color-surface-950: #2c3039;
 }
 
 @layer base {
   :root {
-    --background: 248 250 252;
-    --foreground: 15 23 42;
+    --background: var(--color-surface-50);
+    --foreground: var(--color-surface-950);
     /* Safe area insets for iPhone notch/home bar */
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -84,11 +109,11 @@
 
   /* ---- Glass morphism ---- */
   .glass {
-    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-sm;
+    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)];
   }
 
   .glass-dark {
-    @apply bg-slate-900/70 backdrop-blur-md border border-slate-700/30 shadow-sm;
+    @apply bg-surface-950/70 backdrop-blur-xl border border-surface-800/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)];
   }
 
   /* ---- Scrollbar utilities ---- */
@@ -98,6 +123,17 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* ---- Viewport Height Fallbacks ---- */
+  .min-h-screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .h-screen {
+    height: 100vh;
+    height: 100dvh;
   }
 
   .scrollbar-thin {

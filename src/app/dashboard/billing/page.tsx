@@ -87,7 +87,7 @@ export default async function BillingPage() {
         
         <TabsContent value="plans" className="outline-none">
           <div className="py-6">
-            <PricingCards activePlanId={activeSub?.status === "active" ? activeSub.planId : undefined} />
+            <PricingCards activePlanId={activeSub?.status === "active" ? activeSub.planId : undefined} adminName={authUser.name} />
           </div>
         </TabsContent>
         

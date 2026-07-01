@@ -21,9 +21,9 @@ export function QueueQuickAdd() {
     
     setIsSearching(true);
     try {
-      const res = await fetch(`/api/patients?search=${phone}`);
+      const res = await fetch(`/api/patients?search=${phone}&t=${Date.now()}`, { cache: "no-store" });
       const data = await res.json();
-      const match = data.patients?.find((p: any) => p.phone === phone);
+      const match = data.patients?.find((p: any) => p.phone && p.phone.replace(/\D/g, '') === phone);
       
       if (match) {
         setSearchResult(match);
@@ -58,7 +58,10 @@ export function QueueQuickAdd() {
             body: formData,
           });
           
-          if (!res.ok) throw new Error("Failed to add to queue");
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.message || data.error || "Failed to add to queue");
+          }
           
           toast.success("Added to queue!");
           setPhone("");
@@ -75,7 +78,10 @@ export function QueueQuickAdd() {
           body: JSON.stringify(payload),
         });
 
-        if (!res.ok) throw new Error("Failed to create patient");
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.message || data.error || "Failed to create patient");
+        }
         
         toast.success("Patient created and added to queue!");
         setPhone("");
@@ -98,8 +104,11 @@ export function QueueQuickAdd() {
             type="tel"
             placeholder="Search patient by mobile number..."
             value={phone}
+            maxLength={10}
+            pattern="[0-9]*"
             onChange={(e) => {
-              setPhone(e.target.value);
+              const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+              setPhone(val);
               setSearchResult(null);
             }}
             className="w-full pl-12 pr-4 py-3 bg-transparent border-none text-slate-800 text-sm focus:outline-none focus:ring-0 placeholder:text-slate-400 font-medium"

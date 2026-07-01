@@ -149,6 +149,22 @@ export async function createBooking(
       patientId = newPatient.id;
     }
 
+    const { desc } = await import("drizzle-orm");
+    const [latestAppt] = await db
+      .select({ tokenNumber: appointments.tokenNumber })
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.clinicId, clinicId),
+          eq(appointments.appointmentDate, dateStr)
+        )
+      )
+      .orderBy(desc(appointments.tokenNumber))
+      .limit(1);
+      
+    const nextToken = (latestAppt?.tokenNumber || 0) + 1;
+    const cancelToken = crypto.randomUUID();
+
     // Insert the appointment and return the ID
     const [newAppointment] = await db.insert(appointments).values({
       clinicId,
@@ -159,6 +175,8 @@ export async function createBooking(
       appointmentDate: dateStr,
       appointmentTime: timeStr,
       status: "confirmed",
+      tokenNumber: nextToken,
+      cancelToken,
     }).returning({ id: appointments.id });
 
     // Fetch clinic details for the notification

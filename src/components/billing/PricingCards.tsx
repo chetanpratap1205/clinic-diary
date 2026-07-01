@@ -55,7 +55,12 @@ const plans = [
 
 const PLAN_RANKS: Record<string, number> = { monthly: 1, quarterly: 2, yearly: 3 };
 
-export function PricingCards({ activePlanId }: { activePlanId?: string }) {
+interface PricingCardsProps {
+  activePlanId?: string;
+  adminName?: string;
+}
+
+export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
   const [loading, setLoading] = useState<string | null>(null);
   const activeRank = activePlanId ? PLAN_RANKS[activePlanId] || 0 : 0;
 
@@ -103,7 +108,7 @@ export function PricingCards({ activePlanId }: { activePlanId?: string }) {
           }
         },
         prefill: {
-          name: "Clinic Admin",
+          name: adminName || "Clinic Admin",
           // email: "admin@clinic.com",
           // contact: "9999999999"
         },

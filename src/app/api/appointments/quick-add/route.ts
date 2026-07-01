@@ -23,11 +23,42 @@ export async function POST(req: NextRequest) {
 
     const now = new Date();
     const appointmentDate = format(now, 'yyyy-MM-dd');
-    const appointmentTime = format(now, 'HH:mm:ss');
+
+    // Fetch next available slot according to clinic's schedule settings
+    const { getAvailableSlotsForDate } = await import("@/lib/slots");
+    const slots = await getAvailableSlotsForDate(authUser.clinicId, appointmentDate);
+    
+    // Find the first available slot that is >= current time
+    const currentTimeStr = format(now, 'HH:mm');
+    const futureSlots = slots.filter(s => s.available && s.time >= currentTimeStr);
+    
+    let appointmentTime = format(now, 'HH:mm:ss');
+    if (futureSlots.length > 0) {
+      appointmentTime = futureSlots[0].time + ":00"; // format as HH:mm:ss
+    } else {
+      // If no future slots are available (fully booked), we just append them to the very end 
+      // of the last booked slot or use current time if empty
+      const todayAppointmentsData = await db
+        .select()
+        .from(appointments)
+        .where(
+          and(
+            eq(appointments.clinicId, authUser.clinicId),
+            eq(appointments.appointmentDate, appointmentDate)
+          )
+        );
+      if (todayAppointmentsData.length > 0) {
+        const { getWalkInTimeSlot } = await import("@/lib/queue-logic");
+        const { clinics } = await import("@/db/schema");
+        const [clinicResult] = await db.select().from(clinics).where(eq(clinics.id, authUser.clinicId));
+        const avgConsultMins = clinicResult?.averageConsultationMinutes ?? 15;
+        appointmentTime = getWalkInTimeSlot(todayAppointmentsData, now, avgConsultMins);
+      }
+    }
 
     // Calculate token number
-    const todayAppointments = await db
-      .select({ maxToken: max(appointments.tokenNumber) })
+    const todayAppointmentsDataForToken = await db
+      .select()
       .from(appointments)
       .where(
         and(
@@ -35,8 +66,8 @@ export async function POST(req: NextRequest) {
           eq(appointments.appointmentDate, appointmentDate)
         )
       );
-      
-    const nextToken = (todayAppointments[0]?.maxToken || 0) + 1;
+    const maxTokenData = todayAppointmentsDataForToken.reduce((max, curr) => Math.max(max, curr.tokenNumber || 0), 0);
+    const nextToken = maxTokenData + 1;
 
     const [newAppointment] = await db
       .insert(appointments)

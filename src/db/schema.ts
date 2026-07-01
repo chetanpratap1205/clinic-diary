@@ -76,6 +76,7 @@ export const patients = pgTable(
     age: integer("age"),
     gender: text("gender"),
     address: text("address"),
+    medicalNotes: text("medical_notes"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [

@@ -22,13 +22,21 @@ export async function generateMetadata({ params }: { params: Promise<{ appointme
 
 export default async function TrackingPage({ params }: { params: Promise<{ appointmentId: string }> }) {
   const { appointmentId } = await params;
-  let apptResult;
+  let apptResult: any[] = [];
   try {
-    apptResult = await db
-      .select()
+    const { visitNotes } = await import("@/db/schema");
+    const [apptData] = await db
+      .select({ appt: appointments, note: visitNotes })
       .from(appointments)
+      .leftJoin(visitNotes, eq(appointments.id, visitNotes.appointmentId))
       .where(eq(appointments.id, appointmentId))
       .limit(1);
+    
+    if (apptData) {
+      apptResult = [{ ...apptData.appt, visitNote: apptData.note }];
+    } else {
+      apptResult = [];
+    }
   } catch {
     notFound();
   }

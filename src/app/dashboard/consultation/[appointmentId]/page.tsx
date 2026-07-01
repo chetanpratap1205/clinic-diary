@@ -5,7 +5,9 @@ import { eq, and, desc } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { ConsultationClient } from "./consultation-client";
 
-export default async function ConsultationPage(props: { params: Promise<{ appointmentId: string }> }) {
+export default async function ConsultationPage(props: {
+  params: Promise<{ appointmentId: string }>;
+}) {
   const params = await props.params;
   const authUser = await getAuthUser();
   if (!authUser?.clinicId) redirect("/login");
@@ -40,7 +42,7 @@ export default async function ConsultationPage(props: { params: Promise<{ appoin
   const pastVisits = await db
     .select({
       note: visitNotes,
-      date: appointments.appointmentDate
+      date: appointments.appointmentDate,
     })
     .from(visitNotes)
     .innerJoin(appointments, eq(visitNotes.appointmentId, appointments.id))
@@ -48,8 +50,20 @@ export default async function ConsultationPage(props: { params: Promise<{ appoin
     .orderBy(desc(visitNotes.createdAt));
 
   return (
-    <div className="max-w-7xl mx-auto h-[calc(100vh-64px)] flex flex-col p-4">
-      <ConsultationClient 
+    // Mobile: full screen minus top header (56px) and bottom nav (64px)
+    // Desktop: full screen minus desktop header (64px)
+    <div
+      className="
+        /* mobile */
+        h-[calc(100dvh-56px-64px)]
+        /* desktop */
+        lg:h-[calc(100dvh-64px)]
+        flex flex-col
+        lg:p-4 lg:max-w-7xl lg:mx-auto
+        overflow-hidden
+      "
+    >
+      <ConsultationClient
         appointment={appointment}
         patient={patient}
         pastVisits={pastVisits}

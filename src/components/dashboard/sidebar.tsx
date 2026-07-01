@@ -67,7 +67,7 @@ export function Sidebar({
     });
   };
 
-  const SidebarContent = () => (
+  const SidebarContent = ({ layoutPrefix }: { layoutPrefix: string }) => (
     <div className="flex flex-col h-full bg-white pb-safe">
       {/* Logo */}
       <div className="p-4 sm:p-5 border-b border-slate-100/60 bg-white/50 backdrop-blur-md">
@@ -105,7 +105,7 @@ export function Sidebar({
             >
               {active && (
                 <motion.div
-                  layoutId="sidebar-active"
+                  layoutId={`${layoutPrefix}-sidebar-active`}
                   className="absolute inset-0 rounded-xl bg-slate-100/80"
                   initial={false}
                   transition={{ type: "spring", stiffness: 350, damping: 30 }}
@@ -113,7 +113,7 @@ export function Sidebar({
               )}
               {active && (
                 <motion.div
-                  layoutId="sidebar-active-indicator"
+                  layoutId={`${layoutPrefix}-sidebar-active-indicator`}
                   className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full"
                   style={{ backgroundColor: themeColor }}
                   initial={false}
@@ -247,7 +247,7 @@ export function Sidebar({
         )}
         aria-hidden={!mobileOpen}
       >
-        <SidebarContent />
+        <SidebarContent layoutPrefix="mobile" />
       </div>
 
       {/* ─── MOBILE: Bottom Navigation Bar ─────────────────────── */}
@@ -290,17 +290,19 @@ export function Sidebar({
             );
           })}
 
-          {/* Settings */}
-          <Link
-            href="/dashboard/settings"
+          {/* More Menu Toggle */}
+          <button
+            onClick={() => setMobileOpen(true)}
             className={cn(
               "flex flex-col items-center justify-center gap-1 flex-1 h-full rounded-xl transition-all duration-200 relative",
-              pathname.startsWith("/dashboard/settings") ? "text-slate-900" : "text-slate-400"
+              mobileOpen || ["/dashboard/follow-ups", "/dashboard/billing", "/dashboard/analytics", "/dashboard/settings"].some(p => pathname.startsWith(p)) 
+                ? "text-slate-900" 
+                : "text-slate-400"
             )}
-            style={pathname.startsWith("/dashboard/settings") ? { color: themeColor } : {}}
-            aria-label="Settings"
+            style={mobileOpen || ["/dashboard/follow-ups", "/dashboard/billing", "/dashboard/analytics", "/dashboard/settings"].some(p => pathname.startsWith(p)) ? { color: themeColor } : {}}
+            aria-label="More"
           >
-            {pathname.startsWith("/dashboard/settings") && (
+            {(mobileOpen || ["/dashboard/follow-ups", "/dashboard/billing", "/dashboard/analytics", "/dashboard/settings"].some(p => pathname.startsWith(p))) && (
               <motion.div
                 layoutId="bottom-nav-active"
                 className="absolute inset-x-2 top-2 bottom-2 rounded-xl"
@@ -309,15 +311,15 @@ export function Sidebar({
                 transition={{ type: "spring", stiffness: 400, damping: 35 }}
               />
             )}
-            <Settings2 strokeWidth={1.5} className="w-5 h-5" />
-            <span className="text-[10px] font-semibold tracking-tight">Settings</span>
-          </Link>
+            <Menu strokeWidth={1.5} className="w-5 h-5" />
+            <span className="text-[10px] font-semibold tracking-tight">More</span>
+          </button>
         </div>
       </div>
 
       {/* ─── DESKTOP: Fixed Sidebar ──────────────────────────────── */}
       <div className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 bg-white border-r border-slate-200 z-10 shadow-sm">
-        <SidebarContent />
+        <SidebarContent layoutPrefix="desktop" />
       </div>
 
       {/* ─── LOGOUT CONFIRMATION MODAL ──────────────────────────── */}

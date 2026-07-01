@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { appointments, visitNotes } from "@/db/schema";
+import { appointments, visitNotes, followUps } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 
@@ -49,14 +49,35 @@ export async function POST(
       followUpRequired: followUpRequired || false,
     });
 
-    // 2. Mark appointment as completed
+    // 2. Schedule follow-up if requested
+    if (followUpRequired && body.followUpDays) {
+      const d = new Date();
+      d.setDate(d.getDate() + Number(body.followUpDays));
+      const dueDateStr = d.toISOString().split("T")[0];
+
+      await db.insert(followUps).values({
+        clinicId: authUser.clinicId,
+        patientId: appointment.patientId,
+        appointmentId,
+        dueDate: dueDateStr,
+        status: "pending",
+        notes: complaint ? `Follow-up for: ${complaint}` : null,
+      });
+    }
+
+    // 3. Mark appointment as completed
     await db
       .update(appointments)
       .set({
         status: "completed",
         consultationEndTime: now,
       })
-      .where(eq(appointments.id, appointmentId));
+      .where(
+        and(
+          eq(appointments.id, appointmentId),
+          eq(appointments.clinicId, authUser.clinicId)
+        )
+      );
 
     return NextResponse.json({ success: true });
   } catch (err) {

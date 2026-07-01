@@ -50,6 +50,7 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
     endDate = endOfYear(lastYear);
   } else if (period === "all_time") {
     startDate = new Date(2000, 0, 1); // effectively all time
+    endDate = new Date(2099, 11, 31);
   }
 
   const startDateStr = format(startDate, "yyyy-MM-dd");
@@ -153,12 +154,11 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
   }));
 
   const dailyData = Object.entries(dailyMap)
+    .sort(([dateA], [dateB]) => new Date(dateA).getTime() - new Date(dateB).getTime())
     .map(([date, stats]) => ({
       date: format(parseISO(date), "MMM dd"),
       ...stats
-    }))
-    // Sort by actual date
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }));
 
   // If period is large, maybe group by week/month, but for now daily is fine for Recharts since it scales
   

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
 import { db } from "@/db";
 import { patients, subscriptions, appointments } from "@/db/schema";
 import { eq, and, ilike, or, count, max } from "drizzle-orm";

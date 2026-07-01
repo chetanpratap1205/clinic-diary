@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { appointments, reminderLogs, clinics, followUps, patients } from "@/db/schema";
-import { eq, and, ne, lte } from "drizzle-orm";
+import { eq, and, ne, lte, gte } from "drizzle-orm";
 import { sendNotification } from "@/lib/notifications";
 import { parseISO, differenceInMinutes, addHours } from "date-fns";
 
@@ -31,10 +31,21 @@ export async function GET(request: Request) {
     const upcomingAppts = await db
       .select()
       .from(appointments)
-      .where(ne(appointments.status, "cancelled")); // Simplification: we'll filter dates in memory
+      .where(
+        and(
+          ne(appointments.status, "cancelled"),
+          gte(appointments.appointmentDate, todayStr),
+          lte(appointments.appointmentDate, cutoffStr)
+        )
+      );
 
-    // Pre-fetch all reminder logs to check idempotency efficiently
-    const allLogs = await db.select().from(reminderLogs);
+    // Pre-fetch reminder logs for these specific appointments only
+    const upcomingApptIds = upcomingAppts.map(a => a.id);
+    let allLogs: any[] = [];
+    if (upcomingApptIds.length > 0) {
+      const { inArray } = await import("drizzle-orm");
+      allLogs = await db.select().from(reminderLogs).where(inArray(reminderLogs.appointmentId, upcomingApptIds));
+    }
     
     // Group logs by appointmentId for fast lookup
     const logsByAppt = allLogs.reduce((acc: any, log) => {

@@ -21,22 +21,22 @@ import { PremiumIcon } from "@/components/ui/premium-icon";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-slate-50 relative overflow-hidden font-sans selection:bg-teal-100 selection:text-teal-900">
+    <div className="min-h-screen bg-surface-50 relative overflow-hidden font-sans selection:bg-primary-100 selection:text-primary-950">
       {/* Premium Background Elements */}
-      <div className="absolute top-0 inset-x-0 h-[800px] bg-gradient-to-b from-teal-50/90 via-slate-50/50 to-transparent -z-10" />
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-teal-200/20 blur-[120px] -z-10 animate-pulse" style={{ animationDuration: '4s' }} />
+      <div className="absolute top-0 inset-x-0 h-[800px] bg-gradient-to-b from-primary-50/90 via-surface-50/50 to-transparent -z-10" />
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary-200/20 blur-[120px] -z-10 animate-pulse" style={{ animationDuration: '4s' }} />
       <div className="absolute top-[20%] right-[-5%] w-[40%] h-[40%] rounded-full bg-indigo-200/20 blur-[120px] -z-10 animate-pulse" style={{ animationDuration: '5s' }} />
 
       {/* Navigation */}
       <nav className="glass sticky top-0 z-50 border-b border-slate-200/50 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 animate-fade-in">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-600 to-teal-800 flex items-center justify-center shadow-sm flex-shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-sm flex-shrink-0">
               <Activity className="w-5 h-5 text-white" strokeWidth={2.5} />
             </div>
-            <span className="font-bold text-slate-900 text-lg sm:text-xl tracking-tight">
+            <span className="font-bold text-surface-950 text-lg sm:text-xl tracking-tight">
               Doctor Diary{" "}
-              <span className="font-medium text-slate-400 text-xs sm:text-sm ml-1 hidden sm:inline-block">
+              <span className="font-medium text-surface-500 text-xs sm:text-sm ml-1 hidden sm:inline-block">
                 by NatureXpress
               </span>
             </span>
@@ -52,7 +52,7 @@ export default function HomePage() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="font-medium text-sm h-9 px-4 hidden sm:inline-flex text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                className="font-medium text-sm h-9 px-4 hidden sm:inline-flex text-surface-600 hover:text-surface-950 hover:bg-surface-100"
               >
                 Sign In
               </Button>
@@ -60,7 +60,7 @@ export default function HomePage() {
             <Link href="/signup">
               <Button
                 size="sm"
-                className="bg-teal-700 hover:bg-teal-800 text-white shadow-lg shadow-teal-700/20 transition-all font-medium text-sm h-9 px-5 rounded-full"
+                className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-600/20 transition-all font-medium text-sm h-9 px-5 rounded-full"
               >
                 Start Free Trial
               </Button>
@@ -73,17 +73,17 @@ export default function HomePage() {
       <section className="pt-20 pb-16 sm:pt-28 sm:pb-24 px-4 sm:px-6 relative">
         <div className="max-w-5xl mx-auto text-center">
           <div
-            className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-md border border-teal-100/50 text-teal-800 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold mb-8 shadow-sm animate-slide-up"
+            className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-md border border-primary-200/50 text-primary-800 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold mb-8 shadow-sm animate-slide-up"
           >
-            <TrendingUp strokeWidth={1.5} className="w-4 h-4 text-teal-600 flex-shrink-0" />
+            <TrendingUp strokeWidth={1.5} className="w-4 h-4 text-primary-600 flex-shrink-0" />
             <span>Maximize Clinic Revenue & Eliminate No-Shows</span>
           </div>
           <h1
-            className="text-4xl sm:text-6xl lg:text-7xl font-bold text-slate-900 mb-6 tracking-tight animate-slide-up leading-[1.1]"
+            className="text-4xl sm:text-6xl lg:text-7xl font-bold text-surface-950 mb-6 tracking-tight animate-slide-up leading-[1.1]"
             style={{ animationDelay: "100ms" }}
           >
             Stop Losing Patients to <br className="hidden sm:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 via-teal-500 to-indigo-600">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 via-primary-400 to-indigo-500">
               Busy Phone Lines.
             </span>
           </h1>
@@ -100,14 +100,14 @@ export default function HomePage() {
             <Link href="/signup" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="w-full sm:w-auto bg-teal-700 hover:bg-teal-800 shadow-xl shadow-teal-700/25 group h-14 px-8 text-base font-semibold rounded-full"
+                className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 shadow-xl shadow-primary-600/25 group h-14 px-8 text-base font-semibold rounded-full"
               >
                 Start Your Free Setup
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <div className="flex items-center gap-2 text-sm font-medium text-slate-500 mt-2 sm:mt-0">
-              <CheckCircle className="w-4 h-4 text-teal-600" /> No credit card required
+            <div className="flex items-center gap-2 text-sm font-medium text-surface-500 mt-2 sm:mt-0">
+              <CheckCircle className="w-4 h-4 text-primary-500" /> No credit card required
             </div>
           </div>
         </div>
@@ -224,62 +224,62 @@ export default function HomePage() {
 
       {/* Bento Grid Features */}
       <section id="features" className="py-20 sm:py-32 px-4 sm:px-6 relative bg-white">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-teal-50/50 rounded-[100px] blur-3xl -z-10" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-primary-50/50 rounded-[100px] blur-3xl -z-10" />
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16 max-w-3xl mx-auto">
-            <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 mb-6 tracking-tight">
+            <h2 className="text-3xl sm:text-5xl font-bold text-surface-950 mb-6 tracking-tight">
               Enterprise Power. <br/> Start-up Simplicity.
             </h2>
-            <p className="text-slate-500 text-lg">
+            <p className="text-surface-500 text-lg">
               Everything you need to run a high-volume, modern clinic without the IT headaches.
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Feature 1 - Large */}
-            <div className="md:col-span-2 bg-slate-50 border border-slate-200 rounded-3xl p-8 sm:p-10 hover:shadow-lg transition-all group overflow-hidden relative">
-              <div className="absolute -right-10 -top-10 w-40 h-40 bg-teal-100 rounded-full blur-2xl group-hover:bg-teal-200 transition-colors" />
+            <div className="md:col-span-2 bg-surface-50 border border-surface-200 rounded-3xl p-8 sm:p-10 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all group overflow-hidden relative">
+              <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary-100 rounded-full blur-2xl group-hover:bg-primary-200 transition-colors" />
               <div className="mb-6 relative z-10">
                 <PremiumIcon Icon={MessageSquare} variant="success" size="xl" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-3 relative z-10">Smart WhatsApp Automations</h3>
-              <p className="text-slate-600 text-lg max-w-md relative z-10">
+              <h3 className="text-2xl font-bold text-surface-950 mb-3 relative z-10">Smart WhatsApp Automations</h3>
+              <p className="text-surface-600 text-lg max-w-md relative z-10">
                 Stop manually calling patients. Our system automatically sends instant booking confirmations, 24-hour reminders, and 1-hour follow-ups directly to their WhatsApp.
               </p>
             </div>
 
             {/* Feature 2 - Small */}
-            <div className="bg-slate-50 border border-slate-200 rounded-3xl p-8 sm:p-10 hover:shadow-lg transition-all group relative overflow-hidden">
+            <div className="bg-surface-50 border border-surface-200 rounded-3xl p-8 sm:p-10 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all group relative overflow-hidden">
                <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-indigo-100 rounded-full blur-2xl group-hover:bg-indigo-200 transition-colors" />
               <div className="mb-6 relative z-10">
                 <PremiumIcon Icon={Shield} variant="purple" size="xl" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3 relative z-10">Zero Double Bookings</h3>
-              <p className="text-slate-600 relative z-10">
+              <h3 className="text-xl font-bold text-surface-950 mb-3 relative z-10">Zero Double Bookings</h3>
+              <p className="text-surface-600 relative z-10">
                 Database-level unique constraints ensure that even if two patients click book at the exact same millisecond, only one gets the slot.
               </p>
             </div>
 
             {/* Feature 3 - Small */}
-            <div className="bg-slate-50 border border-slate-200 rounded-3xl p-8 sm:p-10 hover:shadow-lg transition-all group relative overflow-hidden">
+            <div className="bg-surface-50 border border-surface-200 rounded-3xl p-8 sm:p-10 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all group relative overflow-hidden">
               <div className="absolute -left-10 -top-10 w-32 h-32 bg-orange-100 rounded-full blur-2xl group-hover:bg-orange-200 transition-colors" />
               <div className="mb-6 relative z-10">
                 <PremiumIcon Icon={Star} variant="warning" size="xl" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3 relative z-10">Branded Booking Link</h3>
-              <p className="text-slate-600 relative z-10">
+              <h3 className="text-xl font-bold text-surface-950 mb-3 relative z-10">Branded Booking Link</h3>
+              <p className="text-surface-600 relative z-10">
                 Share your beautiful, personalized booking page on Instagram, WhatsApp, or Google My Business. Look premium from the first click.
               </p>
             </div>
 
             {/* Feature 4 - Large */}
-            <div className="md:col-span-2 bg-slate-900 rounded-3xl p-8 sm:p-10 shadow-2xl overflow-hidden relative group">
-              <div className="absolute right-0 bottom-0 w-64 h-64 bg-teal-900/50 rounded-full blur-3xl" />
+            <div className="md:col-span-2 bg-surface-950 rounded-3xl p-8 sm:p-10 shadow-2xl overflow-hidden relative group">
+              <div className="absolute right-0 bottom-0 w-64 h-64 bg-primary-900/50 rounded-full blur-3xl" />
               <div className="mb-6 relative z-10">
                 <PremiumIcon Icon={BarChart3} variant="solid" size="xl" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-3 relative z-10">Executive Analytics Dashboard</h3>
-              <p className="text-slate-300 text-lg max-w-md relative z-10">
+              <p className="text-surface-300 text-lg max-w-md relative z-10">
                 See your clinic&apos;s pulse at a glance. Track daily revenue, patient retention, slot utilization, and receptionist performance in real-time.
               </p>
             </div>
@@ -288,93 +288,93 @@ export default function HomePage() {
       </section>
 
       {/* Pricing & ROI Section */}
-      <section id="pricing" className="py-20 sm:py-32 px-4 sm:px-6 relative bg-slate-900 overflow-hidden">
+      <section id="pricing" className="py-20 sm:py-32 px-4 sm:px-6 relative bg-surface-950 overflow-hidden">
         {/* Background glow effects */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-500/20 rounded-full blur-[100px] -z-10 translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/20 rounded-full blur-[100px] -z-10 -translate-x-1/2 translate-y-1/2" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-500/15 rounded-full blur-[100px] -z-10 translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/15 rounded-full blur-[100px] -z-10 -translate-x-1/2 translate-y-1/2" />
         
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16 max-w-3xl mx-auto">
             <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6 tracking-tight">
-              An Investment That <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400">Pays For Itself.</span>
+              An Investment That <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-indigo-400">Pays For Itself.</span>
             </h2>
-            <p className="text-slate-400 text-lg">
+            <p className="text-surface-400 text-lg">
               The average clinic using Doctor Diary sees a <strong className="text-white">₹25,000 to ₹50,000</strong> increase in monthly revenue just by eliminating no-shows and filling empty slots.
             </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto items-center">
             {/* 1 Month Tier */}
-            <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 rounded-3xl p-8 hover:bg-slate-800 transition-colors">
-              <h3 className="text-xl font-semibold text-slate-200 mb-2">1 Month</h3>
-              <p className="text-sm text-slate-400 mb-6 min-h-[40px]">Perfect for getting started.</p>
+            <div className="bg-surface-900/50 backdrop-blur-md border border-surface-800/50 rounded-3xl p-8 hover:bg-surface-900 transition-colors">
+              <h3 className="text-xl font-semibold text-surface-100 mb-2">1 Month</h3>
+              <p className="text-sm text-surface-400 mb-6 min-h-[40px]">Perfect for getting started.</p>
               <div className="mb-6 flex items-baseline gap-2">
                 <span className="text-4xl font-bold text-white">₹499</span>
-                <span className="text-slate-400 text-sm">/ mo</span>
+                <span className="text-surface-400 text-sm">/ mo</span>
               </div>
               <ul className="space-y-4 mb-8">
                 {["Unlimited Patients", "Unlimited Appointments", "SMS & Email Reminders", "Basic Analytics", "Standard Support"].map((feat, i) => (
-                  <li key={i} className="flex items-center gap-3 text-slate-300 text-sm">
-                    <Check className="w-4 h-4 text-teal-400 flex-shrink-0" /> {feat}
+                  <li key={i} className="flex items-center gap-3 text-surface-300 text-sm">
+                    <Check className="w-4 h-4 text-primary-400 flex-shrink-0" /> {feat}
                   </li>
                 ))}
               </ul>
               <Link href="/signup" className="block w-full">
-                <Button variant="outline" className="w-full rounded-xl bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white h-12">
+                <Button variant="outline" className="w-full rounded-xl bg-transparent border-surface-700 text-surface-300 hover:bg-surface-800 hover:text-white h-12">
                   Start Free Trial
                 </Button>
               </Link>
             </div>
 
             {/* 3 Months Tier */}
-            <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 rounded-3xl p-8 hover:bg-slate-800 transition-colors">
-              <h3 className="text-xl font-semibold text-slate-200 mb-2">3 Months</h3>
-              <p className="text-sm text-slate-400 mb-6 min-h-[40px]">Great for growing clinics.</p>
+            <div className="bg-surface-900/50 backdrop-blur-md border border-surface-800/50 rounded-3xl p-8 hover:bg-surface-900 transition-colors">
+              <h3 className="text-xl font-semibold text-surface-100 mb-2">3 Months</h3>
+              <p className="text-sm text-surface-400 mb-6 min-h-[40px]">Great for growing clinics.</p>
               <div className="mb-6 flex items-baseline gap-2">
                 <span className="text-4xl font-bold text-white">₹1,299</span>
-                <span className="text-slate-400 text-sm">/ 3 mo</span>
+                <span className="text-surface-400 text-sm">/ 3 mo</span>
               </div>
-              <div className="mb-6 inline-block bg-slate-700/50 text-slate-300 text-xs font-semibold px-2.5 py-1 rounded-lg border border-slate-600/50">
+              <div className="mb-6 inline-block bg-surface-800/50 text-surface-300 text-xs font-semibold px-2.5 py-1 rounded-lg border border-surface-700/50">
                 Works out to just ₹433/month
               </div>
               <ul className="space-y-4 mb-8">
                 {["Everything in 1 Month", "Priority Support", "Advanced Analytics", "Custom Branding"].map((feat, i) => (
-                  <li key={i} className="flex items-center gap-3 text-slate-300 text-sm">
-                    <Check className="w-4 h-4 text-teal-400 flex-shrink-0" /> {feat}
+                  <li key={i} className="flex items-center gap-3 text-surface-300 text-sm">
+                    <Check className="w-4 h-4 text-primary-400 flex-shrink-0" /> {feat}
                   </li>
                 ))}
               </ul>
               <Link href="/signup" className="block w-full">
-                <Button variant="outline" className="w-full rounded-xl bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white h-12">
+                <Button variant="outline" className="w-full rounded-xl bg-transparent border-surface-700 text-surface-300 hover:bg-surface-800 hover:text-white h-12">
                   Start Free Trial
                 </Button>
               </Link>
             </div>
 
             {/* 12 Months Tier - Make it popular */}
-            <div className="bg-gradient-to-b from-teal-900/80 to-slate-800/90 backdrop-blur-md border border-teal-500/30 rounded-3xl p-8 transform md:scale-105 shadow-2xl shadow-teal-900/50 relative z-10">
-              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-teal-400 to-emerald-500 rounded-t-3xl" />
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
+            <div className="bg-gradient-to-b from-primary-900/80 to-surface-900/90 backdrop-blur-md border border-primary-500/30 rounded-3xl p-8 transform md:scale-105 shadow-2xl shadow-primary-900/40 relative z-10">
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary-400 to-indigo-500 rounded-t-3xl" />
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary-500 to-indigo-500 text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider whitespace-nowrap shadow-sm">
                 Best Value
               </div>
               <h3 className="text-xl font-semibold text-white mb-2">12 Months</h3>
-              <p className="text-sm text-teal-200/70 mb-6 min-h-[40px]">Maximum ROI for established clinics.</p>
+              <p className="text-sm text-primary-100/70 mb-6 min-h-[40px]">Maximum ROI for established clinics.</p>
               <div className="mb-6 flex items-baseline gap-2">
                 <span className="text-4xl font-bold text-white">₹4,999</span>
-                <span className="text-slate-400 text-sm">/ yr</span>
+                <span className="text-surface-400 text-sm">/ yr</span>
               </div>
-              <div className="mb-6 inline-block bg-teal-950/50 text-teal-300 text-xs font-semibold px-2.5 py-1 rounded-lg border border-teal-800/50">
+              <div className="mb-6 inline-block bg-primary-950/50 text-primary-200 text-xs font-semibold px-2.5 py-1 rounded-lg border border-primary-800/50">
                 Works out to just ₹416/month
               </div>
               <ul className="space-y-4 mb-8">
                 {["Everything in 3 Months", "Dedicated Account Manager", "Early Access to Features", "Premium Onboarding"].map((feat, i) => (
-                  <li key={i} className="flex items-center gap-3 text-slate-200 text-sm">
-                    <CheckCircle className="w-4 h-4 text-teal-400 flex-shrink-0" /> {feat}
+                  <li key={i} className="flex items-center gap-3 text-surface-100 text-sm">
+                    <CheckCircle className="w-4 h-4 text-primary-400 flex-shrink-0" /> {feat}
                   </li>
                 ))}
               </ul>
               <Link href="/signup" className="block w-full">
-                <Button className="w-full rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold h-12 shadow-lg shadow-teal-500/25">
+                <Button className="w-full rounded-xl bg-primary-500 hover:bg-primary-400 text-surface-950 font-bold h-12 shadow-[0_8px_30px_rgb(28,181,137,0.3)]">
                   Start Free Trial
                 </Button>
               </Link>
@@ -382,26 +382,26 @@ export default function HomePage() {
           </div>
           
           {/* Free In-Clinic Demo Banner */}
-          <div className="mt-16 max-w-4xl mx-auto p-8 sm:p-10 rounded-3xl bg-gradient-to-r from-teal-900/40 to-slate-800/60 border border-teal-500/30 flex flex-col sm:flex-row items-center gap-8 relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500/20 rounded-full blur-[60px]" />
+          <div className="mt-16 max-w-4xl mx-auto p-8 sm:p-10 rounded-3xl bg-gradient-to-r from-primary-900/40 to-surface-900/60 border border-primary-500/30 flex flex-col sm:flex-row items-center gap-8 relative overflow-hidden shadow-2xl">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-primary-500/20 rounded-full blur-[60px]" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-500/20 rounded-full blur-[60px]" />
             
-            <div className="flex-shrink-0 w-20 h-20 rounded-2xl bg-teal-500/20 flex items-center justify-center border border-teal-500/30 text-teal-400 relative z-10">
+            <div className="flex-shrink-0 w-20 h-20 rounded-2xl bg-primary-500/20 flex items-center justify-center border border-primary-500/30 text-primary-400 relative z-10">
               <Users className="w-10 h-10" />
             </div>
             
             <div className="text-center sm:text-left relative z-10 flex-1">
               <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-                Want to see it in action? <span className="text-teal-400">Get a Free Demo</span>
+                Want to see it in action? <span className="text-primary-400">Get a Free Demo</span>
               </h3>
-              <p className="text-slate-300 text-base sm:text-lg mb-6 sm:mb-0 max-w-xl">
+              <p className="text-surface-300 text-base sm:text-lg mb-6 sm:mb-0 max-w-xl">
                 Our team will visit your clinic, demonstrate how the platform increases revenue, and set up your system for absolutely free. 
               </p>
             </div>
             
             <div className="flex-shrink-0 relative z-10">
               <Link href="/signup">
-                <Button className="bg-white text-teal-950 hover:bg-slate-100 font-bold px-8 h-14 rounded-xl shadow-xl shadow-white/10 whitespace-nowrap">
+                <Button className="bg-white text-primary-950 hover:bg-surface-50 font-bold px-8 h-14 rounded-xl shadow-[0_8px_30px_rgb(255,255,255,0.15)] whitespace-nowrap">
                   Book Free Visit
                 </Button>
               </Link>
@@ -458,31 +458,31 @@ export default function HomePage() {
 
       {/* CTA Section */}
       <section className="py-20 sm:py-32 px-4 sm:px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-slate-900 -z-20" />
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-900/60 to-slate-900/90 -z-10" />
+        <div className="absolute inset-0 bg-surface-950 -z-20" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-900/60 to-surface-950/90 -z-10" />
         
         {/* Abstract decorative element */}
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-teal-600/20 rounded-full blur-[120px] -z-10 translate-x-1/3 -translate-y-1/3" />
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary-600/20 rounded-full blur-[120px] -z-10 translate-x-1/3 -translate-y-1/3" />
         
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight">
             Ready to upgrade your practice?
           </h2>
-          <p className="text-teal-50 text-lg sm:text-xl mb-10 max-w-2xl mx-auto font-medium leading-relaxed opacity-90">
+          <p className="text-primary-50 text-lg sm:text-xl mb-10 max-w-2xl mx-auto font-medium leading-relaxed opacity-90">
             Join the top 1% of digital-first clinics. Set up your account in 5 minutes, share your link, and let the system fill your calendar.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link href="/signup" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="w-full sm:w-auto bg-white text-slate-900 hover:bg-slate-100 h-14 px-10 text-base font-bold shadow-2xl shadow-teal-900/50 rounded-full"
+                className="w-full sm:w-auto bg-white text-surface-950 hover:bg-surface-50 h-14 px-10 text-base font-bold shadow-[0_8px_30px_rgb(255,255,255,0.1)] rounded-full"
               >
                 Create Your Clinic — Free
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
           </div>
-          <p className="text-slate-400 text-sm mt-6">
+          <p className="text-surface-400 text-sm mt-6">
             Full access. No credit card required to start.
           </p>
         </div>

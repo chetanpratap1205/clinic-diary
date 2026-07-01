@@ -14,6 +14,14 @@ export async function POST(
       return NextResponse.json({ error: "Invalid appointment ID" }, { status: 400 });
     }
 
+    let cancelToken: string | undefined;
+    try {
+      const body = await _req.json();
+      cancelToken = body.cancelToken;
+    } catch {
+      // allow empty body
+    }
+
     // Verify the appointment exists and is cancellable
     const existing = await db
       .select({ 
@@ -21,6 +29,7 @@ export async function POST(
         status: appointments.status,
         clinicId: appointments.clinicId,
         appointmentDate: appointments.appointmentDate,
+        cancelToken: appointments.cancelToken,
       })
       .from(appointments)
       .where(eq(appointments.id, appointmentId))
@@ -31,6 +40,10 @@ export async function POST(
     }
 
     const appt = existing[0];
+
+    if (appt.cancelToken && appt.cancelToken !== cancelToken) {
+      return NextResponse.json({ error: "Unauthorized to cancel this appointment" }, { status: 401 });
+    }
 
     // Cannot cancel appointments that are already terminal or in progress
     if (["cancelled", "completed", "in_consultation"].includes(appt.status)) {

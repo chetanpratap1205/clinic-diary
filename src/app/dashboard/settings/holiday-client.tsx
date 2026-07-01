@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { addHoliday, removeHoliday } from "./actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ export function HolidayClient({
 }) {
   const [isPending, startTransition] = useTransition();
   const [date, setDate] = useState("");
+  const router = useRouter();
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +30,7 @@ export function HolidayClient({
       else {
         toast.success("Holiday added!");
         setDate("");
+        router.refresh();
       }
     });
   };
@@ -36,7 +39,10 @@ export function HolidayClient({
     startTransition(async () => {
       const res = await removeHoliday(id);
       if (res.error) toast.error(res.error);
-      else toast.success("Holiday removed!");
+      else {
+        toast.success("Holiday removed!");
+        router.refresh();
+      }
     });
   };
 

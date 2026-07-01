@@ -47,7 +47,7 @@ export async function updateAppointmentStatus(appointmentId: string, status: str
           and(
             eq(followUps.appointmentId, appointmentId),
             eq(followUps.clinicId, authUser.clinicId),
-            eq(followUps.status, "checked_in")
+            eq(followUps.status, "pending")
           )
         );
     } else if (status === "cancelled" || status === "no_show") {
@@ -58,7 +58,7 @@ export async function updateAppointmentStatus(appointmentId: string, status: str
           and(
             eq(followUps.appointmentId, appointmentId),
             eq(followUps.clinicId, authUser.clinicId),
-            eq(followUps.status, "checked_in")
+            eq(followUps.status, "pending")
           )
         );
     }
@@ -106,7 +106,7 @@ export async function completeAppointmentWithNotes(data: {
         and(
           eq(followUps.appointmentId, data.appointmentId),
           eq(followUps.clinicId, authUser.clinicId),
-          eq(followUps.status, "checked_in")
+          eq(followUps.status, "pending")
         )
       );
 
@@ -175,6 +175,21 @@ export async function checkInWalkIn(patientId: string) {
     const todayStr = format(new Date(), "yyyy-MM-dd");
     const timeStr = format(new Date(), "HH:mm:ss");
 
+    const { desc } = await import("drizzle-orm");
+    const [latestAppt] = await db
+      .select({ tokenNumber: appointments.tokenNumber })
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.clinicId, authUser.clinicId),
+          eq(appointments.appointmentDate, todayStr)
+        )
+      )
+      .orderBy(desc(appointments.tokenNumber))
+      .limit(1);
+      
+    const nextToken = (latestAppt?.tokenNumber || 0) + 1;
+
     await db.insert(appointments).values({
       clinicId: authUser.clinicId,
       patientId: patient.id,
@@ -185,6 +200,7 @@ export async function checkInWalkIn(patientId: string) {
       status: "checked_in",
       checkInTime: new Date(),
       notes: "Walk-in patient",
+      tokenNumber: nextToken,
     });
 
     revalidatePath("/dashboard");

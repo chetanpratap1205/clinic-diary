@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import { Toaster as SonnerToaster } from "sonner";
-import { Toaster } from "@/components/ui/toaster";
 import { PWAProvider } from "@/components/pwa-provider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -16,7 +15,6 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  userScalable: false,
   themeColor: "#0f766e",
   viewportFit: "cover",
 };
@@ -98,7 +96,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           {children}
         </div>
         <PWAProvider />
-        <Toaster />
         <SonnerToaster position="top-center" richColors />
       </body>
     </html>

@@ -18,32 +18,34 @@ import {
   FadeIn,
 } from "@/components/dashboard/dashboard-animations";
 import { Greeting } from "@/components/dashboard/greeting";
+import { NowServingBanner } from "@/components/dashboard/now-serving-banner";
+import { formatTimeDisplay } from "@/lib/format";
 
 function getStatusBadge(status: string) {
   const map: Record<string, { label: string; className: string }> = {
     confirmed: {
       label: "Confirmed",
-      className: "bg-sky-100 text-sky-700 hover:bg-sky-100",
+      className: "bg-primary-50 text-primary-700 border border-primary-200/50 shadow-sm hover:bg-primary-100",
     },
     checked_in: {
       label: "Checked In",
-      className: "bg-indigo-100 text-indigo-700 hover:bg-indigo-100",
+      className: "bg-indigo-50 text-indigo-700 border border-indigo-200/50 shadow-sm hover:bg-indigo-100",
     },
     in_consultation: {
       label: "In Consult",
-      className: "bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-100",
+      className: "bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200/50 shadow-sm hover:bg-fuchsia-100",
     },
     completed: {
       label: "Completed",
-      className: "bg-emerald-100 text-emerald-700 hover:bg-emerald-100",
+      className: "bg-emerald-50 text-emerald-700 border border-emerald-200/50 shadow-sm hover:bg-emerald-100",
     },
     cancelled: {
       label: "Cancelled",
-      className: "bg-red-100 text-red-700 hover:bg-red-100",
+      className: "bg-red-50 text-red-700 border border-red-200/50 shadow-sm hover:bg-red-100",
     },
     no_show: {
       label: "No Show",
-      className: "bg-amber-100 text-amber-700 hover:bg-amber-100",
+      className: "bg-amber-50 text-amber-700 border border-amber-200/50 shadow-sm hover:bg-amber-100",
     },
   };
 
@@ -59,13 +61,6 @@ function getStatusBadge(status: string) {
   );
 }
 
-function formatTimeDisplay(time: string): string {
-  const t = time.slice(0, 5);
-  const [h, m] = t.split(":").map(Number);
-  const ampm = h >= 12 ? "PM" : "AM";
-  const displayH = h % 12 || 12;
-  return `${displayH}:${m.toString().padStart(2, "0")} ${ampm}`;
-}
 
 export default async function DashboardPage() {
   const authUser = await getAuthUser();
@@ -188,7 +183,7 @@ export default async function DashboardPage() {
   ).length;
 
   const validRevenueAppts = todayAppts.filter(
-    (a) => !["cancelled", "no_show"].includes(a.status)
+    (a) => a.status === "completed"
   ).length;
 
   const clinicData = clinicResult[0];
@@ -211,14 +206,18 @@ export default async function DashboardPage() {
         </div>
       </FadeInUp>
 
+      <FadeInUp>
+        <NowServingBanner clinicId={authUser.clinicId} initialAppointments={todayAppts} themeColor={clinicData.themeColor || "#0ea5e9"} />
+      </FadeInUp>
+
       {/* Booking Link Banner */}
       <FadeInUp>
-        <div className="bg-gradient-to-r from-sky-50 to-blue-50/50 border border-sky-100 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+        <div className="bg-gradient-to-r from-surface-50 to-surface-100/50 border border-surface-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_4px_20px_rgb(0,0,0,0.02)]">
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-sky-900">
+            <p className="text-sm font-semibold text-surface-900">
               Your Patient Booking Link
             </p>
-            <p className="text-xs sm:text-sm text-sky-600/80 mt-0.5 font-mono truncate">
+            <p className="text-xs sm:text-sm text-surface-600 mt-0.5 font-mono truncate">
               {bookingUrl}
             </p>
           </div>
@@ -263,7 +262,7 @@ export default async function DashboardPage() {
           ].map((stat) => (
             <Card
               key={stat.label}
-              className={`border-slate-100 shadow-sm hover:shadow-md transition-shadow ${
+              className={`border-surface-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all bg-white ${
                 stat.label.includes("Overdue") ? "col-span-2 md:col-span-1 lg:col-span-1" : ""
               } ${
                 stat.label.includes("Overdue") && overdueCount > 0
@@ -275,10 +274,10 @@ export default async function DashboardPage() {
                 <div className="mb-3 sm:mb-4">
                   <PremiumIcon Icon={stat.icon} variant={stat.variant as any} size="md" />
                 </div>
-                <p className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight truncate">
+                <p className="text-2xl sm:text-3xl font-bold text-surface-950 tracking-tight truncate">
                   {stat.value}
                 </p>
-                <p className="text-xs sm:text-sm font-medium text-slate-500 mt-1">
+                <p className="text-xs sm:text-sm font-medium text-surface-500 mt-1">
                   {stat.label}
                 </p>
               </CardContent>
@@ -289,13 +288,13 @@ export default async function DashboardPage() {
 
       {/* Today's Appointments */}
       <FadeInUp>
-        <Card className="border-slate-100 shadow-sm">
-          <CardHeader className="bg-white border-b border-slate-50 py-4 px-4 sm:px-6">
+        <Card className="border-surface-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] bg-white">
+          <CardHeader className="bg-white border-b border-surface-100/50 py-4 px-4 sm:px-6">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base sm:text-lg font-semibold tracking-tight text-slate-900">
+              <CardTitle className="text-base sm:text-lg font-semibold tracking-tight text-surface-950">
                 Today&apos;s Appointments
               </CardTitle>
-              <span className="text-xs sm:text-sm font-medium text-slate-400 bg-slate-50 px-2 sm:px-2.5 py-1 rounded-md">
+              <span className="text-xs sm:text-sm font-medium text-surface-500 bg-surface-50 border border-surface-100 px-2 sm:px-2.5 py-1 rounded-md">
                 {format(new Date(), "MMM d")}
               </span>
             </div>
@@ -306,25 +305,25 @@ export default async function DashboardPage() {
                 <div className="mb-4">
                   <PremiumIcon Icon={Calendar} variant="glass" size="xl" className="mx-auto" />
                 </div>
-                <p className="text-slate-600 font-medium text-base sm:text-lg">
+                <p className="text-surface-600 font-medium text-base sm:text-lg">
                   No appointments today
                 </p>
-                <p className="text-slate-400 text-sm mt-1">
+                <p className="text-surface-400 text-sm mt-1">
                   Share your booking link to get started
                 </p>
               </FadeIn>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-surface-100">
                 {todayAppts.map((appt) => (
                   <div
                     key={appt.id}
-                    className="p-4 sm:p-5 flex items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors last:rounded-b-2xl"
+                    className="p-4 sm:p-5 flex items-center justify-between gap-3 hover:bg-surface-50/80 transition-colors last:rounded-b-2xl"
                   >
                     {/* Left: Avatar + Info */}
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                       {/* Avatar */}
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-sky-100 to-blue-50 flex items-center justify-center flex-shrink-0 shadow-sm border border-sky-100">
-                        <span className="text-sky-700 font-bold text-xs sm:text-sm">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center flex-shrink-0 shadow-sm border border-primary-200/50">
+                        <span className="text-primary-700 font-bold text-xs sm:text-sm">
                           {appt.patientName[0]?.toUpperCase()}
                         </span>
                       </div>
@@ -332,21 +331,21 @@ export default async function DashboardPage() {
                       {/* Info */}
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-semibold text-slate-900 text-sm truncate">
+                          <p className="font-semibold text-surface-950 text-sm truncate">
                             {appt.patientName}
                           </p>
                           {getStatusBadge(appt.status)}
                         </div>
                         <div className="flex items-center gap-3 mt-1">
                           <div className="flex items-center gap-1">
-                            <Clock strokeWidth={1.5} className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                            <p className="text-xs text-slate-500 font-semibold">
+                            <Clock strokeWidth={1.5} className="w-3.5 h-3.5 text-surface-400 flex-shrink-0" />
+                            <p className="text-xs text-surface-500 font-semibold">
                               {formatTimeDisplay(appt.appointmentTime as string)}
                             </p>
                           </div>
                           <div className="hidden sm:flex items-center gap-1">
-                            <Phone strokeWidth={1.5} className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                            <p className="text-xs text-slate-500 font-medium">
+                            <Phone strokeWidth={1.5} className="w-3.5 h-3.5 text-surface-400 flex-shrink-0" />
+                            <p className="text-xs text-surface-500 font-medium">
                               {appt.patientPhone}
                             </p>
                           </div>
@@ -372,14 +371,14 @@ export default async function DashboardPage() {
 
       {/* Follow-ups Due Today */}
       <FadeInUp>
-        <Card className="border-slate-100 shadow-sm overflow-hidden bg-gradient-to-br from-amber-50/30 to-white">
-          <CardHeader className="bg-transparent border-b border-slate-100/50 py-4 px-4 sm:px-6">
+        <Card className="border-surface-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] overflow-hidden bg-gradient-to-br from-amber-50/20 to-white">
+          <CardHeader className="bg-transparent border-b border-surface-100/50 py-4 px-4 sm:px-6">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base sm:text-lg font-semibold tracking-tight text-slate-900 flex items-center gap-3">
+              <CardTitle className="text-base sm:text-lg font-semibold tracking-tight text-surface-950 flex items-center gap-3">
                 <PremiumIcon Icon={Calendar} variant="warning" size="sm" />
                 Follow-ups Due Today
               </CardTitle>
-              <Link href="/dashboard/follow-ups" className="text-xs sm:text-sm font-medium text-sky-600 hover:text-sky-700 transition-colors">
+              <Link href="/dashboard/follow-ups" className="text-xs sm:text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors">
                 View all ({dueTodayCount}) →
               </Link>
             </div>

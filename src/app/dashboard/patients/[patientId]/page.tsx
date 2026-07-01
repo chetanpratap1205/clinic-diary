@@ -12,6 +12,7 @@ import { StaggerContainer, FadeInUp } from "@/components/dashboard/dashboard-ani
 import { NewFollowUpButton } from "@/components/dashboard/patients/new-follow-up-button";
 import { CheckInWalkInButton } from "@/components/dashboard/patients/check-in-walk-in-button";
 import { WhatsAppShareButton } from "@/components/dashboard/patients/whatsapp-share-button";
+import { MedicalNotes } from "@/components/dashboard/patients/medical-notes";
 
 function getStatusBadge(status: string) {
   switch (status) {
@@ -57,11 +58,22 @@ export default async function PatientProfilePage(props: { params: Promise<{ pati
     .where(eq(clinics.id, authUser.clinicId))
     .limit(1);
 
-  const visitHistory = await db
-    .select()
+  const { visitNotes } = await import("@/db/schema");
+  
+  const visitHistoryRaw = await db
+    .select({
+      appt: appointments,
+      note: visitNotes,
+    })
     .from(appointments)
+    .leftJoin(visitNotes, eq(appointments.id, visitNotes.appointmentId))
     .where(eq(appointments.patientId, patient.id))
     .orderBy(desc(appointments.appointmentDate), desc(appointments.appointmentTime));
+
+  const visitHistory = visitHistoryRaw.map(row => ({
+    ...row.appt,
+    visitNote: row.note,
+  }));
 
   const followUpHistory = await db
     .select()
@@ -135,6 +147,10 @@ export default async function PatientProfilePage(props: { params: Promise<{ pati
         </div>
       </FadeInUp>
 
+      <FadeInUp>
+        <MedicalNotes patientId={patient.id} initialNotes={patient.medicalNotes as string | null} />
+      </FadeInUp>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mt-2">
         {/* Visit Timeline */}
         <FadeInUp>
@@ -179,6 +195,22 @@ export default async function PatientProfilePage(props: { params: Promise<{ pati
                             <p className="text-[13px] text-slate-600 bg-slate-50/80 pl-4 pr-3 py-2.5 rounded-md border border-slate-100/50 leading-relaxed italic">
                               "{appt.notes}"
                             </p>
+                          </div>
+                        )}
+                        {appt.visitNote && (
+                          <div className="mt-3 space-y-2 text-sm bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            {appt.visitNote.vitals && (
+                              <p><span className="font-semibold text-slate-700">Vitals:</span> {appt.visitNote.vitals}</p>
+                            )}
+                            {appt.visitNote.complaint && (
+                              <p><span className="font-semibold text-slate-700">Complaint:</span> {appt.visitNote.complaint}</p>
+                            )}
+                            {appt.visitNote.diagnosis && (
+                              <p><span className="font-semibold text-slate-700">Diagnosis:</span> {appt.visitNote.diagnosis}</p>
+                            )}
+                            {appt.visitNote.treatment && (
+                              <p><span className="font-semibold text-slate-700">Treatment:</span> {appt.visitNote.treatment}</p>
+                            )}
                           </div>
                         )}
                       </div>

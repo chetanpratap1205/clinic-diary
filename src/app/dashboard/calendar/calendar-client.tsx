@@ -4,6 +4,8 @@ import { useState } from "react";
 import { format, parseISO } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { formatTimeDisplay } from "@/lib/format";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar as CalendarIcon, Phone, Clock, AlertCircle } from "lucide-react";
@@ -44,15 +46,6 @@ function getStatusBadge(status: string) {
     default:
       return <Badge variant="secondary" className="rounded-full shadow-sm text-[10px] px-2 py-0.5 capitalize">{status.replace('_', ' ')}</Badge>;
   }
-}
-
-function formatTimeDisplay(time: string): string {
-  if (time === "00:00:00") return "Follow-up";
-  const t = time.slice(0, 5);
-  const [h, m] = t.split(":").map(Number);
-  const ampm = h >= 12 ? "PM" : "AM";
-  const displayH = h % 12 || 12;
-  return `${displayH}:${m.toString().padStart(2, "0")} ${ampm}`;
 }
 
 export function CalendarClient({ events }: CalendarClientProps) {

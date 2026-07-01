@@ -9,7 +9,7 @@ import { HolidayClient } from "./holiday-client";
 import { MessageCircle, Sparkles, ShieldCheck } from "lucide-react";
 
 export const metadata = {
-  title: "Settings | Dashboard",
+  title: "Your Website | Clinic Diary",
 };
 
 export default async function SettingsPage() {
@@ -58,15 +58,25 @@ export default async function SettingsPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6 max-w-6xl mx-auto pb-safe bottom-nav-spacing lg:pb-8">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 max-w-6xl mx-auto pb-safe bottom-nav-spacing lg:pb-8">
+      {/* Page Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Clinic Settings</h1>
-        <p className="text-slate-500 mt-1 text-sm sm:text-base">Manage your brand identity, public profile, and working hours.</p>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+          Your Clinic Website
+        </h1>
+        <p className="text-slate-500 mt-1 text-sm sm:text-base max-w-2xl">
+          You don&apos;t need a website — you have one. Everything below controls what your patients see when they find you online.
+        </p>
       </div>
 
       <SettingsClient initialData={initialData} slug={clinic.slug} />
-      
-      <div className="pt-2 sm:pt-4">
+
+      {/* Working Hours & Holidays */}
+      <div className="pt-2 sm:pt-4 space-y-6">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight mb-1">Availability</h2>
+          <p className="text-slate-500 text-sm">Set your working hours — patients can only book during these times.</p>
+        </div>
         <AvailabilityClient initialAvailability={clinicAvailability} />
         <HolidayClient initialHolidays={initialHolidays} />
       </div>
@@ -76,18 +86,18 @@ export default async function SettingsPage() {
         <div className="relative group overflow-hidden rounded-[2rem] bg-slate-900 p-[1px] shadow-2xl">
           {/* Animated Glow Border */}
           <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 via-sky-400 to-indigo-500 opacity-20 group-hover:opacity-40 transition-opacity duration-700 blur-xl"></div>
-          
+
           <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 lg:p-10 flex flex-col lg:flex-row items-center lg:items-start justify-between gap-8 lg:gap-12 overflow-hidden border border-slate-700/50">
             {/* Background ambient lighting */}
             <div className="absolute -top-32 -right-32 w-64 h-64 bg-emerald-500/20 rounded-full blur-[64px] pointer-events-none transition-transform duration-1000 group-hover:scale-110"></div>
             <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-sky-500/20 rounded-full blur-[64px] pointer-events-none transition-transform duration-1000 group-hover:scale-110"></div>
-            
+
             <div className="flex-1 z-10 w-full flex flex-col sm:flex-row items-center lg:items-start gap-6 lg:gap-8">
               {/* Profile Photo */}
               <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.15)] flex-shrink-0 group-hover:scale-105 transition-transform duration-500">
-                <img 
-                  src="/chetan_profile_photo.png" 
-                  alt="Founder" 
+                <img
+                  src="/chetan_profile_photo.png"
+                  alt="Founder"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -101,7 +111,7 @@ export default async function SettingsPage() {
                   Founder Direct Access <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
                 </h3>
                 <p className="text-emerald-400/90 text-xs sm:text-sm font-bold tracking-wide mb-3.5">
-                  Chetan Pratap &bull; MBA in Innovation, Entrepreneurship & Venture Development
+                  Chetan Pratap &bull; MBA in Innovation, Entrepreneurship &amp; Venture Development
                 </p>
                 <p className="text-slate-400 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto sm:mx-0 font-medium">
                   We believe in building true, lasting partnerships with our doctors. If you ever need a custom feature built, face any technical issue, or just want to share feedback to improve the platform, you have a direct line to me.
@@ -110,7 +120,7 @@ export default async function SettingsPage() {
             </div>
 
             <div className="flex-shrink-0 z-10 w-full sm:w-auto flex flex-col items-center">
-              <a 
+              <a
                 href="https://wa.me/918077170715?text=Hi%20Chetan,%20I'm%20using%20Clinic%20Diary%20and%20I'd%20like%20to..."
                 target="_blank"
                 rel="noopener noreferrer"

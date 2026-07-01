@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { availability, availabilityOverrides, appointments } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, ne } from "drizzle-orm";
 import { format, parse, addMinutes } from "date-fns";
 
 export interface TimeSlot {
@@ -58,6 +58,7 @@ export async function getAvailableSlotsForDate(
         eq(appointments.clinicId, clinicId),
         eq(appointments.appointmentDate, dateStr),
         // exclude cancelled
+        ne(appointments.status, "cancelled")
       )
     );
 

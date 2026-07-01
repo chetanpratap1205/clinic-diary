@@ -11,20 +11,8 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  Calendar,
-  Clock,
-  User,
-  Phone,
-  Mail,
-  ChevronLeft,
-  Loader2,
-  CheckCircle2,
-  ArrowRight,
-  Sparkles,
-  CalendarCheck,
-  Search,
-} from "lucide-react";
+import { Plus, X, Search, Clock, Calendar as CalendarIcon, CheckCircle2, ChevronRight, User, Loader2, Info, ArrowRight, Sparkles, AlertTriangle, CalendarCheck, Calendar, Phone, Mail, ChevronLeft } from "lucide-react";
+import { formatTimeDisplay } from "@/lib/format";
 
 interface ClinicData {
   id: string;
@@ -33,6 +21,10 @@ interface ClinicData {
   themeColor: string | null;
   consultationFee: number | null;
   slug: string;
+  specialty?: string | null;
+  address?: string | null;
+  about?: string | null;
+  logoUrl?: string | null;
 }
 
 const bookingSchema = z.object({
@@ -49,15 +41,16 @@ function stripDrPrefix(name: string): string {
   return name.replace(/^dr\.?\s*/i, "").trim();
 }
 
-function formatTimeDisplay(time: string): string {
-  const t = time.slice(0, 5);
-  const [h, m] = t.split(":").map(Number);
-  const ampm = h >= 12 ? "PM" : "AM";
-  const displayH = h % 12 || 12;
-  return `${displayH}:${m.toString().padStart(2, "0")} ${ampm}`;
-}
 
-export function BookingClient({ clinic }: { clinic: ClinicData }) {
+export function BookingClient({ 
+  clinic,
+  workingDays,
+  closedDates,
+}: { 
+  clinic: ClinicData;
+  workingDays: number[];
+  closedDates: string[];
+}) {
   const [mode, setMode] = useState<"book" | "track">("book");
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [selectedDate, setSelectedDate] = useState<Date>(startOfToday());
@@ -84,6 +77,7 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
     formState: { errors },
   } = useForm<BookingData>({
     resolver: zodResolver(bookingSchema),
+    shouldUnregister: false,
   });
 
   const today = startOfToday();
@@ -167,6 +161,21 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
     });
   };
 
+  const getGoogleCalendarUrl = () => {
+    if (!successData || !selectedTime) return "#";
+    const startStr = format(selectedDate, "yyyyMMdd") + "T" + selectedTime.replace(":", "") + "00";
+    const text = encodeURIComponent(`Appointment with Dr. ${doctorFirstName}`);
+    const details = encodeURIComponent(`Consultation at ${clinic.name}`);
+    const location = encodeURIComponent(clinic.name);
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${startStr}/${startStr}&details=${details}&location=${location}`;
+  };
+
+  const getIcsContent = () => {
+    if (!successData || !selectedTime) return "";
+    const startStr = format(selectedDate, "yyyyMMdd") + "T" + selectedTime.replace(":", "") + "00";
+    return `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:${startStr}\nSUMMARY:Appointment with Dr. ${doctorFirstName}\nDESCRIPTION:Consultation at ${clinic.name}\nLOCATION:${clinic.name}\nEND:VEVENT\nEND:VCALENDAR`;
+  };
+
   if (successData) {
     return (
       <motion.div
@@ -226,18 +235,42 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
               </div>
             </motion.div>
 
-            <motion.button
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              onClick={() => router.push(`/track/${successData.appointmentId}`)}
-              className="w-full max-w-md rounded-2xl text-white font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2 py-4"
-              style={{ backgroundColor: themeColor }}
+              className="w-full max-w-md flex flex-col gap-3"
             >
-              <Sparkles className="w-5 h-5" />
-              View Appointment Details
-              <ArrowRight className="w-5 h-5 ml-1" />
-            </motion.button>
+              <button
+                onClick={() => router.push(`/track/${successData.appointmentId}`)}
+                className="w-full rounded-2xl text-white font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2 py-4"
+                style={{ backgroundColor: themeColor }}
+              >
+                <Sparkles className="w-5 h-5" />
+                View Appointment Details
+                <ArrowRight className="w-5 h-5 ml-1" />
+              </button>
+
+              <div className="flex gap-3 w-full">
+                <a
+                  href={getGoogleCalendarUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 bg-white border border-slate-200 text-slate-700 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-50 transition-all active:scale-[0.98] shadow-sm"
+                >
+                  <Calendar className="w-4 h-4 text-slate-400" />
+                  Google Cal
+                </a>
+                <a
+                  href={`data:text/calendar;charset=utf8,${encodeURIComponent(getIcsContent())}`}
+                  download="appointment.ics"
+                  className="flex-1 bg-white border border-slate-200 text-slate-700 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-50 transition-all active:scale-[0.98] shadow-sm"
+                >
+                  <Calendar className="w-4 h-4 text-slate-400" />
+                  Apple Cal
+                </a>
+              </div>
+            </motion.div>
           </CardContent>
         </Card>
       </motion.div>
@@ -262,14 +295,21 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
         {next14Days.map((date) => {
           const isSelected = isSameDay(date, selectedDate);
           const isToday = isSameDay(date, today);
+          const dateStr = format(date, "yyyy-MM-dd");
+          const dayOfWeek = date.getDay();
+          const isWorkingDay = workingDays.includes(dayOfWeek) && !closedDates.includes(dateStr);
+
           return (
             <button
               key={date.toISOString()}
               onClick={() => handleDateSelect(date)}
-              className={`flex flex-col items-center justify-center h-[90px] rounded-2xl border transition-all duration-200 active:scale-[0.97] relative overflow-hidden ${
+              disabled={!isWorkingDay}
+              className={`flex flex-col items-center justify-center h-[90px] rounded-2xl border transition-all duration-200 relative overflow-hidden ${
                 isSelected
                   ? "border-transparent text-white shadow-lg"
-                  : "border-slate-200/60 bg-slate-50/50 text-slate-500 hover:border-slate-300 hover:bg-slate-50"
+                  : !isWorkingDay
+                  ? "border-slate-100 bg-slate-50 opacity-40 cursor-not-allowed"
+                  : "border-slate-200/60 bg-slate-50/50 text-slate-500 hover:border-slate-300 hover:bg-slate-50 active:scale-[0.97]"
               }`}
               style={
                 isSelected 
@@ -530,6 +570,30 @@ export function BookingClient({ clinic }: { clinic: ClinicData }) {
       )}
 
       <Card className="border-0 shadow-2xl rounded-3xl overflow-hidden bg-white ring-1 ring-slate-900/5 relative min-h-[500px]">
+        {/* Clinic Identity Strip — visible on mobile where hero is scrolled past */}
+        <div
+          className="flex items-center gap-3 px-4 sm:px-6 py-3 border-b border-slate-50"
+          style={{ background: `linear-gradient(to right, ${themeColor}08, transparent)` }}
+        >
+          <div
+            className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-sm font-black overflow-hidden bg-center bg-cover"
+            style={{
+              backgroundColor: themeColor,
+              backgroundImage: clinic.logoUrl ? `url(${clinic.logoUrl})` : "none",
+            }}
+          >
+            {!clinic.logoUrl && clinic.name[0]?.toUpperCase()}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-black text-slate-800 truncate">{clinic.name}</p>
+            <p className="text-[10px] text-slate-400 font-medium truncate">{doctorFirstName.startsWith("Dr.") ? doctorFirstName : `Dr. ${doctorFirstName}`}{clinic.specialty ? ` · ${clinic.specialty}` : ""}</p>
+          </div>
+          {clinic.consultationFee ? (
+            <span className="flex-shrink-0 text-xs font-bold px-2 py-1 rounded-lg text-white" style={{ backgroundColor: themeColor }}>
+              ₹{clinic.consultationFee}
+            </span>
+          ) : null}
+        </div>
         {/* View Toggle (Book vs Track) */}
         <div className="p-1.5 bg-slate-100/80 backdrop-blur-md rounded-2xl m-4 sm:m-6 mb-2 flex gap-1 relative z-10">
           <button

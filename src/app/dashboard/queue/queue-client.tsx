@@ -11,33 +11,34 @@ import type { Appointment, Clinic } from "@/db/schema";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { WhatsAppShareButton } from "@/components/dashboard/patients/whatsapp-share-button";
-
+import { formatTimeDisplay } from "@/lib/format";
+import { getClinicDelay, getEstimatedStart } from "@/lib/queue-logic";
 interface QueueClientProps {
   initialAppointments: Appointment[];
   clinic: Clinic;
 }
 
-function formatTimeDisplay(time: string): string {
-  const t = time.slice(0, 5);
-  const [h, m] = t.split(":").map(Number);
-  const ampm = h >= 12 ? "PM" : "AM";
-  const displayH = h % 12 || 12;
-  return `${displayH}:${m.toString().padStart(2, "0")} ${ampm}`;
-}
+
 
 const QueueCard = ({ 
   appt, 
   clinic, 
   isPending, 
   handleStatusChange, 
-  router 
+  router,
+  now,
+  delayMinutes
 }: { 
   appt: Appointment; 
   clinic: Clinic; 
   isPending: boolean;
   handleStatusChange: (id: string, status: string) => void;
   router: any;
+  now: Date;
+  delayMinutes: number;
 }) => {
+  const { estimatedStart, isDelayed, waitMins } = getEstimatedStart(appt, delayMinutes, now);
+  const adjustedTimeStr = format(estimatedStart, "h:mm a");
   return (
     <motion.div
       layout
@@ -63,6 +64,13 @@ const QueueCard = ({
             <p className="font-bold text-slate-900 text-sm">{appt.patientName}</p>
             <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
               <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatTimeDisplay(appt.appointmentTime)}</span>
+              {(appt.status === "checked_in" || appt.status === "confirmed") && (
+                <span className={cn("flex items-center gap-1 px-1.5 py-0.5 rounded-md font-semibold border",
+                  isDelayed ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-emerald-50 text-emerald-600 border-emerald-100"
+                )}>
+                  <Activity className="w-3 h-3" /> Est: {adjustedTimeStr}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -132,7 +140,7 @@ const QueueCard = ({
   );
 };
 
-const Column = ({ title, count, items, icon: Icon, colorClass, clinic, isPending, handleStatusChange, router }: any) => (
+const Column = ({ title, count, items, icon: Icon, colorClass, clinic, isPending, handleStatusChange, router, now, delayMinutes }: any) => (
   <div className="flex-1 min-w-[300px] flex flex-col gap-3 bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
     <div className="flex items-center justify-between mb-2 px-1">
       <h2 className="font-semibold text-slate-800 flex items-center gap-2 text-sm">
@@ -152,6 +160,8 @@ const Column = ({ title, count, items, icon: Icon, colorClass, clinic, isPending
             isPending={isPending} 
             handleStatusChange={handleStatusChange} 
             router={router} 
+            now={now}
+            delayMinutes={delayMinutes}
           />
         ))}
         {items.length === 0 && (
@@ -172,8 +182,16 @@ const Column = ({ title, count, items, icon: Icon, colorClass, clinic, isPending
 
 export function QueueClient({ initialAppointments, clinic }: QueueClientProps) {
   const router = useRouter();
+  type Tab = "Scheduled" | "Waiting" | "In Consult" | "Done";
+  const [activeTab, setActiveTab] = useState<Tab>("Waiting");
   const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
   const [isPending, startTransition] = useTransition();
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Supabase Realtime for instant updates across devices
   useEffect(() => {
@@ -254,59 +272,96 @@ export function QueueClient({ initialAppointments, clinic }: QueueClientProps) {
        return bTime - aTime; // descending
     });
 
+  const delayMinutes = getClinicDelay(appointments, now);
+
+  const tabs: { id: Tab, label: string, count: number }[] = [
+    { id: "Scheduled", label: "Scheduled", count: scheduled.length },
+    { id: "Waiting", label: "Waiting", count: checkedIn.length },
+    { id: "In Consult", label: "In Consult", count: inConsultation.length },
+    { id: "Done", label: "Done", count: completed.length },
+  ];
+
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar snap-x lg:snap-none">
-      <div className="snap-start min-w-[85vw] sm:min-w-[320px] lg:min-w-0 lg:flex-1">
-        <Column 
-          title="Scheduled" 
-          count={scheduled.length} 
-          items={scheduled} 
-          icon={Clock} 
-          colorClass="text-slate-400"
-          clinic={clinic}
-          isPending={isPending}
-          handleStatusChange={handleStatusChange}
-          router={router}
-        />
+    <div className="space-y-4">
+      {/* Mobile Tabs */}
+      <div className="lg:hidden flex overflow-x-auto gap-2 pb-2 hide-scrollbar">
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={cn(
+              "whitespace-nowrap px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm border",
+              activeTab === tab.id 
+                ? "bg-slate-900 text-white border-slate-900" 
+                : "bg-white text-slate-500 border-slate-200"
+            )}
+          >
+            {tab.label} <span className={cn("ml-1.5 px-1.5 py-0.5 rounded-md text-[10px]", activeTab === tab.id ? "bg-white/20" : "bg-slate-100")}>{tab.count}</span>
+          </button>
+        ))}
       </div>
-      <div className="snap-start min-w-[85vw] sm:min-w-[320px] lg:min-w-0 lg:flex-1">
-        <Column 
-          title="Waiting" 
-          count={checkedIn.length} 
-          items={checkedIn} 
-          icon={User} 
-          colorClass="text-indigo-500"
-          clinic={clinic}
-          isPending={isPending}
-          handleStatusChange={handleStatusChange}
-          router={router}
-        />
-      </div>
-      <div className="snap-start min-w-[85vw] sm:min-w-[320px] lg:min-w-0 lg:flex-1">
-        <Column 
-          title="In Consult" 
-          count={inConsultation.length} 
-          items={inConsultation} 
-          icon={Play} 
-          colorClass="text-sky-500"
-          clinic={clinic}
-          isPending={isPending}
-          handleStatusChange={handleStatusChange}
-          router={router}
-        />
-      </div>
-      <div className="snap-start min-w-[85vw] sm:min-w-[320px] lg:min-w-0 lg:flex-1">
-        <Column 
-          title="Done" 
-          count={completed.length} 
-          items={completed} 
-          icon={CheckCircle2} 
-          colorClass="text-emerald-500"
-          clinic={clinic}
-          isPending={isPending}
-          handleStatusChange={handleStatusChange}
-          router={router}
-        />
+
+      <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar lg:snap-none">
+        <div className={cn("min-w-full lg:min-w-0 lg:flex-1 transition-opacity", activeTab === "Scheduled" ? "block" : "hidden lg:block")}>
+          <Column 
+            title="Scheduled" 
+            count={scheduled.length} 
+            items={scheduled} 
+            icon={Clock} 
+            colorClass="text-slate-400"
+            clinic={clinic}
+            isPending={isPending}
+            handleStatusChange={handleStatusChange}
+            router={router}
+            now={now}
+            delayMinutes={delayMinutes}
+          />
+        </div>
+        <div className={cn("min-w-full lg:min-w-0 lg:flex-1 transition-opacity", activeTab === "Waiting" ? "block" : "hidden lg:block")}>
+          <Column 
+            title="Waiting" 
+            count={checkedIn.length} 
+            items={checkedIn} 
+            icon={User} 
+            colorClass="text-indigo-500"
+            clinic={clinic}
+            isPending={isPending}
+            handleStatusChange={handleStatusChange}
+            router={router}
+            now={now}
+            delayMinutes={delayMinutes}
+          />
+        </div>
+        <div className={cn("min-w-full lg:min-w-0 lg:flex-1 transition-opacity", activeTab === "In Consult" ? "block" : "hidden lg:block")}>
+          <Column 
+            title="In Consult" 
+            count={inConsultation.length} 
+            items={inConsultation} 
+            icon={Play} 
+            colorClass="text-sky-500"
+            clinic={clinic}
+            isPending={isPending}
+            handleStatusChange={handleStatusChange}
+            router={router}
+            now={now}
+            delayMinutes={delayMinutes}
+          />
+        </div>
+        <div className={cn("min-w-full lg:min-w-0 lg:flex-1 transition-opacity", activeTab === "Done" ? "block" : "hidden lg:block")}>
+          <Column 
+            title="Done" 
+            count={completed.length} 
+            items={completed} 
+            icon={CheckCircle2} 
+            colorClass="text-emerald-500"
+            clinic={clinic}
+            isPending={isPending}
+            handleStatusChange={handleStatusChange}
+            router={router}
+            now={now}
+            delayMinutes={delayMinutes}
+          />
+        </div>
       </div>
     </div>
   );
