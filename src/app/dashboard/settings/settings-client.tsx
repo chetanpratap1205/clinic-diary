@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition, useState } from "react";
+import { useTransition, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -103,12 +103,13 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
   const [copied, setCopied] = useState(false);
   const [logoError, setLogoError] = useState(false);
   const [showMapsGuide, setShowMapsGuide] = useState(false);
+  const [origin, setOrigin] = useState("https://doctor.naturexpress.in");
 
-  const BASE_URL =
-    typeof window !== "undefined"
-      ? window.location.origin
-      : "https://doctor.naturexpress.in";
-  const bookingUrl = `${BASE_URL}/book/${slug}`;
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+
+  const bookingUrl = `${origin}/book/${slug}`;
 
   const {
     register,
