@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Sparkles,
   AlertCircle,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -122,6 +123,18 @@ export function ConsultationClient({
           >
             <Printer className="w-4 h-4" />
             Print Prescription
+          </Button>
+          <Button
+            onClick={() => {
+              const url = `${window.location.origin}/review/${appointment.id}`;
+              navigator.clipboard.writeText(url);
+              toast.success("Review link copied to clipboard");
+            }}
+            variant="outline"
+            className="w-full h-12 rounded-2xl border-slate-200 font-semibold gap-2 text-slate-700"
+          >
+            <Star className="w-4 h-4 text-amber-500" />
+            Copy Review Link
           </Button>
           <WhatsAppShareButton
             patientName={patient.name}

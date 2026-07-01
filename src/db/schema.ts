@@ -217,6 +217,32 @@ export const paymentLogs = pgTable("payment_logs", {
   paidAt: timestamp("paid_at").defaultNow().notNull(),
 });
 
+// ─── Reviews (Patient feedback post-appointment) ───────────────────────────────
+export const reviews = pgTable(
+  "reviews",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    clinicId: uuid("clinic_id")
+      .notNull()
+      .references(() => clinics.id, { onDelete: "cascade" }),
+    patientId: uuid("patient_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
+    appointmentId: uuid("appointment_id")
+      .notNull()
+      .references(() => appointments.id, { onDelete: "cascade" }),
+    rating: integer("rating").notNull(), // 1 to 5
+    comment: text("comment"),
+    isVerified: boolean("is_verified").default(true).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    // One review per appointment
+    uniqueIndex("reviews_appointment_unique").on(table.appointmentId),
+    index("reviews_clinic_idx").on(table.clinicId),
+  ]
+);
+
 // ─── Type Exports ──────────────────────────────────────────────────────────────
 export type Clinic = typeof clinics.$inferSelect;
 export type NewClinic = typeof clinics.$inferInsert;
@@ -236,3 +262,5 @@ export type Subscription = typeof subscriptions.$inferSelect;
 export type NewSubscription = typeof subscriptions.$inferInsert;
 export type PaymentLog = typeof paymentLogs.$inferSelect;
 export type NewPaymentLog = typeof paymentLogs.$inferInsert;
+export type Review = typeof reviews.$inferSelect;
+export type NewReview = typeof reviews.$inferInsert;

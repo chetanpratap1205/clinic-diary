@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { clinics, availability, availabilityOverrides } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { clinics, availability, availabilityOverrides, reviews, appointments } from "@/db/schema";
+import { eq, desc, avg, count } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { BookingClient } from "./booking-client";
 import { ClinicLogo } from "./clinic-logo";
@@ -11,6 +11,7 @@ import {
   Navigation,
   Star,
   BadgeCheck,
+  ShieldCheck,
 } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -87,10 +88,34 @@ export default async function BookingPage({
     : `Dr. ${clinic.doctorName}`;
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in";
 
-  const [availRecords, overrideRecords] = await Promise.all([
+  const [availRecords, overrideRecords, clinicReviews, statsResult] = await Promise.all([
     db.select().from(availability).where(eq(availability.clinicId, clinic.id)),
     db.select().from(availabilityOverrides).where(eq(availabilityOverrides.clinicId, clinic.id)),
+    db
+      .select({
+        id: reviews.id,
+        rating: reviews.rating,
+        comment: reviews.comment,
+        createdAt: reviews.createdAt,
+        patientName: appointments.patientName,
+      })
+      .from(reviews)
+      .innerJoin(appointments, eq(reviews.appointmentId, appointments.id))
+      .where(eq(reviews.clinicId, clinic.id))
+      .orderBy(desc(reviews.createdAt))
+      .limit(5),
+    db
+      .select({
+        averageRating: avg(reviews.rating),
+        totalReviews: count(reviews.id),
+      })
+      .from(reviews)
+      .where(eq(reviews.clinicId, clinic.id)),
   ]);
+
+  const stats = statsResult[0];
+  const averageRating = stats?.averageRating ? Number(stats.averageRating).toFixed(1) : "0";
+  const totalReviews = stats?.totalReviews || 0;
 
   const workingDays = [...new Set(availRecords.map((a) => a.dayOfWeek))];
   const closedDates = [...new Set(overrideRecords.filter((o) => o.isClosed).map((o) => o.date as string))];
@@ -336,24 +361,76 @@ export default async function BookingPage({
             </section>
           )}
 
-          {/* Reviews note — honest, no fake data */}
+          {/* Reviews section — dynamic verified reviews */}
           <section>
             <div className="rounded-2xl border border-slate-100 bg-white shadow-sm p-5">
-              <div className="flex items-center gap-2 mb-2">
-                {[1,2,3,4,5].map(i => (
-                  <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                ))}
-                <span className="text-sm font-bold text-slate-700 ml-1">Patient Reviews</span>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Star
+                        key={i}
+                        className={`w-4 h-4 ${
+                          i <= Math.round(Number(averageRating))
+                            ? "fill-amber-400 text-amber-400"
+                            : "text-slate-200"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm font-bold text-slate-700 ml-1">Patient Reviews</span>
+                </div>
+                {totalReviews > 0 && (
+                  <span className="text-xs font-bold bg-amber-50 text-amber-600 px-2.5 py-1 rounded-full">
+                    {averageRating} ({totalReviews})
+                  </span>
+                )}
               </div>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                We&apos;re working on collecting verified patient reviews. After your visit, we&apos;d love to hear from you.
-              </p>
+
+              {totalReviews === 0 ? (
+                <p className="text-sm text-slate-500 leading-relaxed mb-4">
+                  We&apos;re collecting verified patient reviews. After your visit, you&apos;ll receive a link to share your experience.
+                </p>
+              ) : (
+                <div className="space-y-4 mb-5 divide-y divide-slate-50">
+                  {clinicReviews.map((review) => (
+                    <div key={review.id} className="pt-4 first:pt-0">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-700">{review.patientName.split(" ")[0]}</span>
+                          <span className="text-[10px] font-medium text-slate-400 flex items-center gap-0.5"><ShieldCheck className="w-3 h-3 text-emerald-500" /> Verified</span>
+                        </div>
+                        <span className="text-[10px] font-semibold text-slate-400">
+                          {new Date(review.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-0.5 mb-2">
+                         {[1, 2, 3, 4, 5].map((i) => (
+                            <Star
+                              key={i}
+                              className={`w-3 h-3 ${
+                                i <= review.rating
+                                  ? "fill-amber-400 text-amber-400"
+                                  : "text-slate-200"
+                              }`}
+                            />
+                          ))}
+                      </div>
+                      {review.comment && (
+                        <p className="text-sm text-slate-600 leading-relaxed">
+                          &quot;{review.comment}&quot;
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <a
                 href={`https://www.google.com/search?q=${encodeURIComponent(clinic.name + (clinic.address ? " " + clinic.address : ""))}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 inline-flex items-center gap-2 text-sm font-bold transition-colors hover:opacity-80"
-                style={{ color: themeColor }}
+                className="inline-flex items-center gap-2 text-xs font-bold transition-colors hover:opacity-80 text-slate-500"
               >
                 Search on Google →
               </a>
