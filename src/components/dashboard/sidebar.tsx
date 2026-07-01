@@ -67,7 +67,7 @@ export function Sidebar({
     });
   };
 
-  const SidebarContent = ({ layoutPrefix }: { layoutPrefix: string }) => (
+  const renderSidebarContent = (layoutPrefix: string) => (
     <div className="flex flex-col h-full bg-white pb-safe">
       {/* Logo */}
       <div className="p-4 sm:p-5 border-b border-slate-100/60 bg-white/50 backdrop-blur-md">
@@ -247,7 +247,7 @@ export function Sidebar({
         )}
         aria-hidden={!mobileOpen}
       >
-        <SidebarContent layoutPrefix="mobile" />
+        {renderSidebarContent("mobile")}
       </div>
 
       {/* ─── MOBILE: Bottom Navigation Bar ─────────────────────── */}
@@ -319,7 +319,7 @@ export function Sidebar({
 
       {/* ─── DESKTOP: Fixed Sidebar ──────────────────────────────── */}
       <div className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 bg-white border-r border-slate-200 z-10 shadow-sm">
-        <SidebarContent layoutPrefix="desktop" />
+        {renderSidebarContent("desktop")}
       </div>
 
       {/* ─── LOGOUT CONFIRMATION MODAL ──────────────────────────── */}

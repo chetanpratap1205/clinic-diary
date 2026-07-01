@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { db } from "@/db";
 import { clinicAdmins, clinics } from "@/db/schema";
@@ -9,9 +10,11 @@ export interface AuthUser {
   name: string;
   clinicId: string | null;
   clinicSlug: string | null;
+  clinicName: string | null;
+  themeColor: string | null;
 }
 
-export async function getAuthUser(): Promise<AuthUser | null> {
+export const getAuthUser = cache(async (): Promise<AuthUser | null> => {
   try {
     const supabase = await createClient();
     const { data: { user }, error } = await supabase.auth.getUser();
@@ -31,6 +34,8 @@ export async function getAuthUser(): Promise<AuthUser | null> {
         name: user.user_metadata?.name ?? "",
         clinicId: null,
         clinicSlug: null,
+        clinicName: null,
+        themeColor: null,
       };
     }
 
@@ -46,6 +51,8 @@ export async function getAuthUser(): Promise<AuthUser | null> {
       name: clinic[0]?.doctorName ?? "", 
       clinicId: clinic[0]?.id ?? null,
       clinicSlug: clinic[0]?.slug ?? null,
+      clinicName: clinic[0]?.name ?? null,
+      themeColor: clinic[0]?.themeColor ?? null,
     };
   } catch (err: any) {
     // Next.js uses exceptions to handle dynamic routing, so we must rethrow it
@@ -55,4 +62,4 @@ export async function getAuthUser(): Promise<AuthUser | null> {
     console.error("getAuthUser error:", err);
     return null;
   }
-}
+});

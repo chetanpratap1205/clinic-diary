@@ -155,7 +155,7 @@ export function ConsultationClient({
   }
 
   /* ─────────────── PATIENT INFO PANEL (reused on both layouts) ─ */
-  const PatientPanel = () => (
+  const renderPatientPanel = () => (
     <div className="flex flex-col gap-5 h-full">
       {/* Back link — desktop only (mobile has its own header) */}
       <Link
@@ -277,7 +277,7 @@ export function ConsultationClient({
   );
 
   /* ─────────────── CONSULTATION FORM (reused on both layouts) ── */
-  const ConsultForm = () => (
+  const renderConsultForm = () => (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center gap-3 mb-5 pb-4 border-b border-slate-100">
@@ -517,7 +517,7 @@ export function ConsultationClient({
 
         {/* Mobile tab content */}
         <div className="flex-1 overflow-y-auto min-h-0 px-4 py-4">
-          {mobileTab === "consult" ? <ConsultForm /> : <PatientPanel />}
+          {mobileTab === "consult" ? renderConsultForm() : renderPatientPanel()}
         </div>
       </div>
 
@@ -525,12 +525,12 @@ export function ConsultationClient({
       <div className="hidden lg:flex gap-6 h-full overflow-hidden">
         {/* Left: Patient history */}
         <div className="w-[320px] flex-shrink-0 bg-slate-50 rounded-3xl border border-slate-200 p-6 overflow-y-auto">
-          <PatientPanel />
+          {renderPatientPanel()}
         </div>
 
         {/* Right: Consultation form */}
         <div className="flex-1 bg-white rounded-3xl border border-slate-200 p-6 shadow-xl shadow-slate-200/40 flex flex-col overflow-hidden">
-          <ConsultForm />
+          {renderConsultForm()}
         </div>
       </div>
 
