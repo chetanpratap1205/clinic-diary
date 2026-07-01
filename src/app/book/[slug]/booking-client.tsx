@@ -53,6 +53,7 @@ export function BookingClient({
 }) {
   const [mode, setMode] = useState<"book" | "track">("book");
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [logoError, setLogoError] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(startOfToday());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
@@ -576,13 +577,19 @@ export function BookingClient({
           style={{ background: `linear-gradient(to right, ${themeColor}08, transparent)` }}
         >
           <div
-            className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-sm font-black overflow-hidden bg-center bg-cover"
-            style={{
-              backgroundColor: themeColor,
-              backgroundImage: clinic.logoUrl ? `url(${clinic.logoUrl})` : "none",
-            }}
+            className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-sm font-black overflow-hidden"
+            style={{ backgroundColor: themeColor }}
           >
-            {!clinic.logoUrl && clinic.name[0]?.toUpperCase()}
+            {clinic.logoUrl && !logoError ? (
+              <img
+                src={clinic.logoUrl}
+                alt={clinic.name}
+                className="w-full h-full object-cover"
+                onError={() => setLogoError(true)}
+              />
+            ) : (
+              clinic.name[0]?.toUpperCase()
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-black text-slate-800 truncate">{clinic.name}</p>

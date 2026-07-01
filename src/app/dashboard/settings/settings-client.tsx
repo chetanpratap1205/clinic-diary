@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition, useState, useRef } from "react";
+import { useTransition, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -426,26 +426,19 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
                   <div className="flex gap-3 items-start">
                     {/* Logo Preview */}
                     <div
-                      className="w-14 h-14 rounded-2xl flex-shrink-0 border-2 border-slate-200 flex items-center justify-center text-white font-black text-xl overflow-hidden bg-center bg-cover bg-no-repeat shadow-sm"
-                      style={{
-                        backgroundColor: themeColor,
-                        backgroundImage:
-                          watchedFields.logoUrl && !logoError
-                            ? `url(${watchedFields.logoUrl})`
-                            : "none",
-                      }}
+                      className="w-14 h-14 rounded-2xl flex-shrink-0 border-2 border-slate-200 flex items-center justify-center text-white font-black text-xl overflow-hidden shadow-sm"
+                      style={{ backgroundColor: themeColor }}
                     >
-                      {(!watchedFields.logoUrl || logoError) && (
-                        <span>{watchedFields.name?.[0]?.toUpperCase() || "C"}</span>
-                      )}
-                      {watchedFields.logoUrl && !logoError && (
+                      {watchedFields.logoUrl && !logoError ? (
                         <img
                           src={watchedFields.logoUrl}
-                          alt=""
-                          className="sr-only"
+                          alt={watchedFields.name || "logo"}
+                          className="w-full h-full object-cover"
                           onError={() => setLogoError(true)}
                           onLoad={() => setLogoError(false)}
                         />
+                      ) : (
+                        <span>{watchedFields.name?.[0]?.toUpperCase() || "C"}</span>
                       )}
                     </div>
                     <div className="flex-1 space-y-2">
@@ -560,18 +553,19 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
                   }}
                 >
                   <div className="flex items-center gap-3">
-                    {/* Mini Logo */}
+                    {/* Mini Logo — uses img tag with onError, never backgroundImage */}
                     <div
-                      className="w-14 h-14 rounded-2xl border-2 border-white/30 flex items-center justify-center text-white font-black text-lg flex-shrink-0 overflow-hidden bg-center bg-cover"
-                      style={{
-                        backgroundColor: `${themeColor}88`,
-                        backgroundImage:
-                          watchedFields.logoUrl && !logoError
-                            ? `url(${watchedFields.logoUrl})`
-                            : "none",
-                      }}
+                      className="w-14 h-14 rounded-2xl border-2 border-white/30 flex items-center justify-center text-white font-black text-lg flex-shrink-0 overflow-hidden"
+                      style={{ backgroundColor: `${themeColor}88` }}
                     >
-                      {(!watchedFields.logoUrl || logoError) && (
+                      {watchedFields.logoUrl && !logoError ? (
+                        <img
+                          src={watchedFields.logoUrl}
+                          alt={watchedFields.name || "logo"}
+                          className="w-full h-full object-cover"
+                          onError={() => setLogoError(true)}
+                        />
+                      ) : (
                         watchedFields.name?.[0]?.toUpperCase() || "C"
                       )}
                     </div>
