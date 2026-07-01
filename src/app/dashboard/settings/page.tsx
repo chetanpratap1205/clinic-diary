@@ -3,6 +3,7 @@ import { clinics, availability, availabilityOverrides } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import { SettingsClient } from "./settings-client";
 import { AvailabilityClient } from "./availability-client";
 import { HolidayClient } from "./holiday-client";
@@ -95,10 +96,12 @@ export default async function SettingsPage() {
             <div className="flex-1 z-10 w-full flex flex-col sm:flex-row items-center lg:items-start gap-6 lg:gap-8">
               {/* Profile Photo */}
               <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.15)] flex-shrink-0 group-hover:scale-105 transition-transform duration-500">
-                <img
+                <Image
                   src="/chetan_profile_photo.png"
                   alt="Founder"
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(max-width: 640px) 96px, 112px"
+                  className="object-cover"
                 />
               </div>
 

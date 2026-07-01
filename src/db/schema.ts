@@ -169,7 +169,10 @@ export const visitNotes = pgTable("visit_notes", {
   treatment: text("treatment"),
   followUpRequired: boolean("follow_up_required").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("visit_notes_appointment_idx").on(table.appointmentId),
+  index("visit_notes_patient_idx").on(table.patientId),
+]);
 
 // ─── Reminder Logs ─────────────────────────────────────────────────────────────
 export const reminderLogs = pgTable("reminder_logs", {
@@ -182,7 +185,9 @@ export const reminderLogs = pgTable("reminder_logs", {
   sentAt: timestamp("sent_at").defaultNow().notNull(),
   status: text("status").notNull().default("sent"), // sent/failed
   message: text("message"),
-});
+}, (table) => [
+  index("reminder_logs_appointment_idx").on(table.appointmentId),
+]);
 
 // ─── Subscriptions (Razorpay) ──────────────────────────────────────────────────
 export const subscriptions = pgTable("subscriptions", {
@@ -215,7 +220,9 @@ export const paymentLogs = pgTable("payment_logs", {
   amountPaise: integer("amount_paise").notNull(), // amount in paise (e.g. 129900)
   status: text("status").notNull().default("paid"),
   paidAt: timestamp("paid_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("payment_logs_clinic_idx").on(table.clinicId),
+]);
 
 // ─── Reviews (Patient feedback post-appointment) ───────────────────────────────
 export const reviews = pgTable(

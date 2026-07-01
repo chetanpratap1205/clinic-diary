@@ -4,6 +4,7 @@ import { useState, useEffect, useTransition } from "react";
 import { format, addDays, startOfToday, isSameDay } from "date-fns";
 import { getAvailableSlots, createBooking, findPatientAppointment } from "./actions";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
@@ -635,14 +636,16 @@ export function BookingClient({
           style={{ background: `linear-gradient(to right, ${themeColor}08, transparent)` }}
         >
           <div
-            className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-sm font-black overflow-hidden"
+            className="relative w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-sm font-black overflow-hidden"
             style={{ backgroundColor: themeColor }}
           >
             {isSafeImageUrl(clinic.logoUrl) && !logoError ? (
-              <img
+              <Image
                 src={clinic.logoUrl!}
                 alt={clinic.name}
-                className="w-full h-full object-cover"
+                fill
+                sizes="32px"
+                className="object-cover"
                 onError={() => setLogoError(true)}
               />
             ) : (

@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { appointments, clinics, patients, followUps } from "@/db/schema";
 import { eq, and, gte, lte, sql } from "drizzle-orm";
 import { StatCardsGrid, StatCard } from "./components/stat-cards";
-import { AnalyticsCharts } from "./components/analytics-charts";
+import { AnalyticsChartsDynamic as AnalyticsCharts } from "./components/analytics-charts-dynamic";
 import { Users, CalendarCheck, TrendingUp, Activity, Filter } from "lucide-react";
 import { format, subDays, startOfYear, endOfYear, subYears, parseISO } from "date-fns";
 import Link from "next/link";

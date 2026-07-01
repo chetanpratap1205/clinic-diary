@@ -187,7 +187,7 @@ export default async function DashboardPage() {
   ).length;
 
   const clinicData = clinicResult[0];
-  const todayRevenue = validRevenueAppts * (clinicData.consultationFee || 0);
+  const todayRevenue = validRevenueAppts * (clinicData?.consultationFee || 0);
   const bookingUrl = `${
     process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in"
   }/book/${clinicData?.slug}`;
@@ -207,7 +207,7 @@ export default async function DashboardPage() {
       </FadeInUp>
 
       <FadeInUp>
-        <NowServingBanner clinicId={authUser.clinicId} initialAppointments={todayAppts} themeColor={clinicData.themeColor || "#0ea5e9"} />
+        <NowServingBanner clinicId={authUser.clinicId} initialAppointments={todayAppts} themeColor={clinicData?.themeColor || "#0ea5e9"} />
       </FadeInUp>
 
       {/* Booking Link Banner */}
@@ -392,7 +392,7 @@ export default async function DashboardPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {dueTodayFollowUps.map((fu) => (
-                  <FollowUpCard key={fu.id} followUp={fu} variant="today" clinic={{ name: clinicData.name, slug: clinicData.slug }} />
+                  <FollowUpCard key={fu.id} followUp={fu} variant="today" clinic={{ name: clinicData?.name || "", slug: clinicData?.slug || "" }} />
                 ))}
               </div>
             )}

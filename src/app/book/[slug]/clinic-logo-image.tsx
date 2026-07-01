@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import Image from "next/image";
+
 interface ClinicLogoImageProps {
   logoUrl?: string | null;
   clinicName: string;
@@ -14,10 +16,12 @@ export function ClinicLogoImage({ logoUrl, clinicName, initial }: ClinicLogoImag
 
   if (logoUrl && !hasError) {
     return (
-      <img
+      <Image
         src={logoUrl}
         alt={clinicName}
-        className="w-full h-full object-cover"
+        fill
+        sizes="(max-width: 640px) 80px, 96px"
+        className="object-cover"
         onError={() => setHasError(true)}
       />
     );

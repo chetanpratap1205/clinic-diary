@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { appointments, clinics, reviews } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { ReviewForm } from "./review-form";
 import { CheckCircle2, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
@@ -61,11 +62,11 @@ export default async function ReviewPage({
         {/* Clinic Identity */}
         <div className="text-center mb-10">
           <div 
-            className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl font-black shadow-md mb-4 overflow-hidden"
+            className="relative w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl font-black shadow-md mb-4 overflow-hidden"
             style={{ backgroundColor: themeColor }}
           >
             {clinic?.logoUrl && clinic.logoUrl.match(/\.(png|jpg|jpeg|webp|gif|svg|avif)(\?.*)?$/i) ? (
-              <img src={clinic.logoUrl} alt={clinic.name} className="w-full h-full object-cover" />
+              <Image src={clinic.logoUrl} alt={clinic.name} fill sizes="64px" className="object-cover" />
             ) : (
               clinic?.name?.[0]?.toUpperCase() || "C"
             )}
