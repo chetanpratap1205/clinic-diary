@@ -1,8 +1,8 @@
 import { getAuthUser } from "@/lib/auth";
 import { db } from "@/db";
 import { appointments, clinics } from "@/db/schema";
-import { eq, and, asc } from "drizzle-orm";
-import { format } from "date-fns";
+import { eq, and, asc, or, lt, inArray } from "drizzle-orm";
+import { getClinicTodayDate } from "@/lib/timezone";
 import { redirect } from "next/navigation";
 import { QueueClient } from "./queue-client";
 import { QueueQuickAdd } from "./queue-quick-add";
@@ -13,7 +13,7 @@ export default async function QueuePage() {
   const authUser = await getAuthUser();
   if (!authUser?.clinicId) redirect("/login");
 
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = getClinicTodayDate();
 
   const [clinicDataResult, todayAppts] = await Promise.all([
     db
@@ -27,10 +27,16 @@ export default async function QueuePage() {
       .where(
         and(
           eq(appointments.clinicId, authUser.clinicId),
-          eq(appointments.appointmentDate, today)
+          or(
+            eq(appointments.appointmentDate, today),
+            and(
+              lt(appointments.appointmentDate, today),
+              inArray(appointments.status, ["confirmed", "checked_in", "in_consultation"])
+            )
+          )
         )
       )
-      .orderBy(asc(appointments.appointmentTime)),
+      .orderBy(asc(appointments.appointmentDate), asc(appointments.appointmentTime)),
   ]);
 
   const clinicData = clinicDataResult[0];
@@ -51,6 +57,7 @@ export default async function QueuePage() {
       <QueueClient
         initialAppointments={todayAppts}
         clinic={clinicData}
+        today={today}
       />
     </div>
   );

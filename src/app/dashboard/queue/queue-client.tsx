@@ -16,6 +16,7 @@ import { getClinicDelay, getEstimatedStart } from "@/lib/queue-logic";
 interface QueueClientProps {
   initialAppointments: Appointment[];
   clinic: Clinic;
+  today: string;
 }
 
 
@@ -180,7 +181,7 @@ const Column = ({ title, count, items, icon: Icon, colorClass, clinic, isPending
   </div>
 );
 
-export function QueueClient({ initialAppointments, clinic }: QueueClientProps) {
+export function QueueClient({ initialAppointments, clinic, today }: QueueClientProps) {
   const router = useRouter();
   type Tab = "Scheduled" | "Waiting" | "In Consult" | "Done";
   const [activeTab, setActiveTab] = useState<Tab>("Waiting");
@@ -213,7 +214,7 @@ export function QueueClient({ initialAppointments, clinic }: QueueClientProps) {
             );
           } else if (payload.eventType === "INSERT") {
             const newAppt = payload.new as Appointment;
-            if (newAppt.appointmentDate === format(new Date(), "yyyy-MM-dd")) {
+            if (newAppt.appointmentDate === today) {
               setAppointments((prev) => [...prev, newAppt]);
             }
           }

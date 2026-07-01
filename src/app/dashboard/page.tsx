@@ -2,7 +2,8 @@ import { getAuthUser } from "@/lib/auth";
 import { db } from "@/db";
 import { appointments, clinics, followUps, patients } from "@/db/schema";
 import { eq, and, gte, lte, count, lt } from "drizzle-orm";
-import { format, startOfWeek, endOfWeek } from "date-fns";
+import { format } from "date-fns";
+import { getClinicTodayDate, getClinicWeekStart, getClinicWeekEnd } from "@/lib/timezone";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -66,15 +67,9 @@ export default async function DashboardPage() {
   const authUser = await getAuthUser();
   if (!authUser?.clinicId) redirect("/login");
 
-  const today = format(new Date(), "yyyy-MM-dd");
-  const weekStart = format(
-    startOfWeek(new Date(), { weekStartsOn: 1 }),
-    "yyyy-MM-dd"
-  );
-  const weekEnd = format(
-    endOfWeek(new Date(), { weekStartsOn: 1 }),
-    "yyyy-MM-dd"
-  );
+  const today = getClinicTodayDate();
+  const weekStart = getClinicWeekStart();
+  const weekEnd = getClinicWeekEnd();
 
   // ✅ Parallelized — all queries run simultaneously
   const [
