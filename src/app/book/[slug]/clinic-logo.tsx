@@ -6,38 +6,52 @@ interface ClinicLogoProps {
   logoUrl?: string | null;
   clinicName: string;
   themeColor: string;
-  size?: "sm" | "md" | "lg";
+  /** hero = large circle; widget = small rounded square */
+  variant?: "hero" | "widget";
   className?: string;
 }
-
-const sizeMap = {
-  sm: "w-8 h-8 rounded-xl text-sm",
-  md: "w-14 h-14 rounded-2xl text-xl",
-  lg: "w-24 h-24 sm:w-28 sm:h-28 rounded-3xl text-3xl sm:text-4xl",
-};
 
 export function ClinicLogo({
   logoUrl,
   clinicName,
   themeColor,
-  size = "lg",
+  variant = "hero",
   className = "",
 }: ClinicLogoProps) {
   const [hasError, setHasError] = useState(false);
 
-  const sizeClass = sizeMap[size];
   const initial = clinicName?.[0]?.toUpperCase() || "C";
-
   const showImage = logoUrl && !hasError;
 
+  if (variant === "hero") {
+    return (
+      <div
+        className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white/30 shadow-2xl flex items-center justify-center font-black text-white text-3xl sm:text-4xl flex-shrink-0 overflow-hidden ${className}`}
+        style={{ backgroundColor: `${themeColor}99` }}
+      >
+        {showImage ? (
+          <img
+            src={logoUrl!}
+            alt={clinicName}
+            className="w-full h-full object-cover"
+            onError={() => setHasError(true)}
+          />
+        ) : (
+          <span>{initial}</span>
+        )}
+      </div>
+    );
+  }
+
+  // widget variant — small rounded square for the booking card header strip
   return (
     <div
-      className={`${sizeClass} flex-shrink-0 flex items-center justify-center font-black text-white shadow-2xl border-4 border-white/30 overflow-hidden ${className}`}
+      className={`w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-sm font-black overflow-hidden ${className}`}
       style={{ backgroundColor: themeColor }}
     >
       {showImage ? (
         <img
-          src={logoUrl}
+          src={logoUrl!}
           alt={clinicName}
           className="w-full h-full object-cover"
           onError={() => setHasError(true)}

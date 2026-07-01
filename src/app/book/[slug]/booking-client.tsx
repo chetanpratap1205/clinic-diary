@@ -41,6 +41,12 @@ function stripDrPrefix(name: string): string {
   return name.replace(/^dr\.?\s*/i, "").trim();
 }
 
+/** Only treat as image if URL ends with a known image extension */
+function isSafeImageUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  return /\.(png|jpg|jpeg|webp|gif|svg|avif)(\?.*)?$/i.test(url.trim());
+}
+
 
 export function BookingClient({ 
   clinic,
@@ -580,9 +586,9 @@ export function BookingClient({
             className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-sm font-black overflow-hidden"
             style={{ backgroundColor: themeColor }}
           >
-            {clinic.logoUrl && !logoError ? (
+            {isSafeImageUrl(clinic.logoUrl) && !logoError ? (
               <img
-                src={clinic.logoUrl}
+                src={clinic.logoUrl!}
                 alt={clinic.name}
                 className="w-full h-full object-cover"
                 onError={() => setLogoError(true)}
