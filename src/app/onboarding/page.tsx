@@ -444,60 +444,79 @@ export default function OnboardingPage() {
                   Your Booking Page Link
                 </p>
                 <p className="text-xs text-slate-400 mb-4">
-                  Patients will use this link to book appointments with you.
+                  Patients will use this link to book appointments.
                   Auto-filled from your name — you can change it.
                 </p>
 
-                <FieldGroup
-                  label=""
+                {/* Label */}
+                <Label
                   htmlFor="slug"
-                  icon={<Link2 className="w-3.5 h-3.5 text-slate-400" />}
-                  error={errors.slug?.message}
+                  className="text-sm font-semibold text-slate-700 flex items-center gap-1.5 mb-1.5"
                 >
-                  {/* URL preview pill */}
-                  <div
-                    className={`flex items-center rounded-xl border overflow-hidden transition-colors bg-slate-50 focus-within:bg-white focus-within:border-sky-400 ${
-                      errors.slug
-                        ? "border-red-400"
-                        : slugIsValid
-                        ? "border-emerald-400"
-                        : "border-slate-200"
-                    }`}
-                  >
-                    {/* Domain prefix */}
-                    <div className="pl-3 pr-1 py-3 text-slate-400 text-xs sm:text-sm whitespace-nowrap bg-transparent select-none font-medium flex-shrink-0 max-w-[45%] overflow-hidden text-ellipsis">
-                      {BASE_URL}/
-                    </div>
-                    <input
-                      id="slug"
-                      placeholder="dr-sharma"
-                      {...register("slug", {
-                        onChange: () => setSlugTouched(true),
-                      })}
-                      className="flex-1 h-12 bg-transparent outline-none text-sm sm:text-base font-semibold text-slate-900 pr-3 min-w-0"
-                    />
-                    {/* Inline status icon — no layout shift */}
-                    <div className="pr-3 flex-shrink-0">
-                      {slugIsValid && (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                      )}
-                      {errors.slug && (
-                        <AlertCircle className="w-4 h-4 text-red-400" />
-                      )}
-                    </div>
+                  <Link2 className="w-3.5 h-3.5 text-slate-400" />
+                  Your unique URL name
+                </Label>
+
+                {/* Clean slug input — no inline domain prefix */}
+                <div
+                  className={`flex items-center h-12 rounded-xl border bg-slate-50 transition-colors focus-within:bg-white focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-400/20 ${
+                    errors.slug
+                      ? "border-red-400"
+                      : slugIsValid
+                      ? "border-emerald-400"
+                      : "border-slate-200"
+                  }`}
+                >
+                  <input
+                    id="slug"
+                    placeholder="dr-sharma"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    {...register("slug", {
+                      onChange: () => setSlugTouched(true),
+                    })}
+                    className="flex-1 h-full px-4 bg-transparent outline-none text-base font-semibold text-slate-900 min-w-0"
+                  />
+                  {/* Status icon inside field — no layout shift */}
+                  <div className="pr-3 flex-shrink-0">
+                    {slugIsValid && (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    )}
+                    {errors.slug && (
+                      <AlertCircle className="w-4 h-4 text-red-400" />
+                    )}
                   </div>
-                  {/* Success hint — in flow, uses min-h in FieldGroup */}
-                  {!errors.slug && slugIsValid && (
-                    <p className="text-xs text-emerald-600 font-medium flex items-center gap-1 -mt-4 pb-1">
-                      <CheckCircle2 className="w-3 h-3" />
-                      Patients will book at{" "}
-                      <span className="font-bold">
-                        {BASE_URL}/{slugValue}
-                      </span>
+                </div>
+
+                {/* Error — always in flow */}
+                <div className="min-h-[20px] mt-1">
+                  {errors.slug && (
+                    <p className="text-xs text-red-500 font-medium flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                      {errors.slug.message}
                     </p>
                   )}
-                </FieldGroup>
+                </div>
+
+                {/* URL preview badge — separate block, full width, wraps on mobile */}
+                {slugValue && (
+                  <div
+                    className={`mt-1 flex items-start gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium ${
+                      slugIsValid
+                        ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                        : "bg-slate-50 border-slate-200 text-slate-500"
+                    }`}
+                  >
+                    <Link2 className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                    <span className="break-all leading-snug">
+                      {BASE_URL}/
+                      <span className="font-bold">{slugValue}</span>
+                    </span>
+                  </div>
+                )}
               </div>
+
 
               {/* ── Working Hours note ─────────────────────────────────── */}
               <div className="mt-4 p-4 bg-sky-50 rounded-2xl border border-sky-100">
