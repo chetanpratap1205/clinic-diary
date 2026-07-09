@@ -21,10 +21,10 @@ export function Greeting({ displayName }: { displayName: string }) {
 
   return (
     <div>
-      <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight transition-all flex items-center gap-3">
+      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight transition-all flex items-center gap-2 sm:gap-3 flex-wrap">
         Good {greeting}, {displayName}
         <div className="bg-sky-50 p-1.5 rounded-xl border border-sky-100/60 shadow-sm flex-shrink-0">
-          <Stethoscope className="w-5 h-5 sm:w-6 sm:h-6 text-sky-600" strokeWidth={2} />
+          <Stethoscope className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-sky-600" strokeWidth={2} />
         </div>
       </h1>
       <p className="text-slate-500 mt-1.5 text-sm sm:text-base font-medium transition-all flex items-center gap-1.5">

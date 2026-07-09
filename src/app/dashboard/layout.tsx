@@ -29,7 +29,7 @@ export default async function DashboardLayout({
       />
       {/* Main content: offset for desktop sidebar, top header on mobile, bottom nav on mobile */}
       <div className="lg:pl-64">
-        <div className="pt-14 lg:pt-0 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] lg:pb-0 min-h-screen flex flex-col">
+        <div className="pt-14 lg:pt-0 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0 min-h-screen flex flex-col">
           <div className="flex-1">
             {children}
           </div>

@@ -207,15 +207,14 @@ export default async function DashboardPage() {
 
       {/* Booking Link Banner */}
       <FadeInUp>
-        <div className="bg-gradient-to-r from-surface-50 to-surface-100/50 border border-surface-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_4px_20px_rgb(0,0,0,0.02)]">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-surface-900">
-              Your Patient Booking Link
-            </p>
-            <p className="text-xs sm:text-sm text-surface-600 mt-0.5 font-mono truncate">
-              {bookingUrl}
-            </p>
-          </div>
+        <div className="bg-gradient-to-r from-surface-50 to-surface-100/50 border border-surface-200 rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgb(0,0,0,0.02)]">
+          <p className="text-sm font-semibold text-surface-900 mb-1">
+            Your Patient Booking Link
+          </p>
+          {/* URL always wraps — never truncates on mobile */}
+          <p className="text-xs text-surface-500 font-mono break-all leading-relaxed mb-3">
+            {bookingUrl}
+          </p>
           <CopyLinkButton url={bookingUrl} />
         </div>
       </FadeInUp>

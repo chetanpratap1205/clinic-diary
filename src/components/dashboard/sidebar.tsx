@@ -194,7 +194,7 @@ export function Sidebar({
           >
             {clinicName[0]?.toUpperCase() ?? "N"}
           </div>
-          <span className="font-semibold text-slate-900 text-sm tracking-tight truncate max-w-[140px]">
+          <span className="font-semibold text-slate-900 text-sm tracking-tight truncate max-w-[160px]">
             {clinicName}
           </span>
         </Link>
@@ -251,7 +251,7 @@ export function Sidebar({
       </div>
 
       {/* ─── MOBILE: Bottom Navigation Bar ─────────────────────── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/70 z-40 pb-safe">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/70 z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <div className="flex items-center justify-around px-1 h-16">
           {navItems.slice(0, 4).map((item) => {
             const active = pathname === item.href;

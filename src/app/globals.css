@@ -162,7 +162,7 @@
 
   /* ---- Bottom nav safe spacing ---- */
   .bottom-nav-spacing {
-    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
