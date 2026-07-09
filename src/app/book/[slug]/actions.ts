@@ -24,11 +24,11 @@ export async function getAvailableSlots(clinicId: string, dateStr: string) {
       return { slots: [] };
     }
 
-    // 2. Get normal weekly availability
+    // 2. Get ALL sessions for this day (supports breaks: e.g. 10am-1pm + 4pm-8pm)
     const dateObj = parseISO(dateStr);
     const dayOfWeek = getDay(dateObj); // 0 = Sunday
 
-    const schedule = await db
+    const sessions = await db
       .select()
       .from(availability)
       .where(
@@ -36,31 +36,36 @@ export async function getAvailableSlots(clinicId: string, dateStr: string) {
           eq(availability.clinicId, clinicId),
           eq(availability.dayOfWeek, dayOfWeek)
         )
-      )
-      .limit(1);
+      );
 
-    // If no schedule for this day, assume closed
-    if (!schedule.length) {
+    // If no schedule for this day, clinic is closed
+    if (!sessions.length) {
       return { slots: [] };
     }
 
-    const { startTime, endTime, slotDurationMinutes } = schedule[0];
+    // 3. Generate slots for each session window and merge them
+    // Use the slotDurationMinutes from the first session (all sessions share same slot size)
+    const slotDurationMinutes = sessions[0].slotDurationMinutes;
+    const allSlots = new Set<string>();
 
-    // 3. Generate all possible slots
-    const slots: string[] = [];
-    const [startH, startM] = startTime.split(":").map(Number);
-    const [endH, endM] = endTime.split(":").map(Number);
+    for (const session of sessions) {
+      const [startH, startM] = session.startTime.split(":").map(Number);
+      const [endH, endM] = session.endTime.split(":").map(Number);
 
-    let current = new Date(dateObj);
-    current.setHours(startH, startM, 0, 0);
+      let current = new Date(dateObj);
+      current.setHours(startH, startM, 0, 0);
 
-    const end = new Date(dateObj);
-    end.setHours(endH, endM, 0, 0);
+      const end = new Date(dateObj);
+      end.setHours(endH, endM, 0, 0);
 
-    while (current < end) {
-      slots.push(format(current, "HH:mm"));
-      current = addMinutes(current, slotDurationMinutes);
+      while (current < end) {
+        allSlots.add(format(current, "HH:mm"));
+        current = addMinutes(current, slotDurationMinutes);
+      }
     }
+
+    // Sort slots chronologically
+    const slots = Array.from(allSlots).sort();
 
     // 4. Fetch existing appointments
     const existingAppts = await db
