@@ -4,62 +4,88 @@ import { inArray } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import QRCode from "qrcode";
 import { PrintButton } from "./print-button";
-import { PdfAutoDownloader } from "./pdf-auto-downloader";
+// PdfAutoDownloader removed — browser print (Ctrl+P → Save as PDF) is sufficient
 
 export const dynamic = "force-dynamic";
 
-// ─── Inline SVG Icons ────────────────────────────────────────────────────────
+// ─── Unified Modern Glass Icons (strokeWidth=2, same 20×20 viewport) ──────────
 const IconScan = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/>
-    <rect x="3" y="16" width="5" height="5" rx="1"/><line x1="16" y1="16" x2="21" y2="16"/>
-    <line x1="16" y1="19" x2="21" y2="19"/><line x1="16" y1="22" x2="21" y2="22"/>
-    <line x1="13" y1="3" x2="13" y2="8"/><line x1="13" y1="13" x2="13" y2="16"/>
-    <line x1="3" y1="13" x2="8" y2="13"/>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="6" height="6" rx="1.5"/>
+    <rect x="15" y="3" width="6" height="6" rx="1.5"/>
+    <rect x="3" y="15" width="6" height="6" rx="1.5"/>
+    <path d="M15 15h1.5M15 18h3M15 21h6M21 15v1.5M21 18v3"/>
+    <path d="M12 3v3M12 9v3M3 12h3M9 12h3"/>
   </svg>
 );
 const IconClock = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-    <circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <circle cx="12" cy="12" r="9"/>
+    <polyline points="12 7 12 12 16 14"/>
   </svg>
 );
 const IconTicket = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
     <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
-    <line x1="9" y1="12" x2="15" y2="12"/>
+    <path d="M9 11h6M9 14h4"/>
   </svg>
 );
-const IconCheck = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+const IconArrive = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
     <path d="M20 6 9 17l-5-5"/>
   </svg>
 );
 const IconCalendar = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
-    <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <rect x="3" y="4" width="18" height="18" rx="2"/>
+    <line x1="16" y1="2" x2="16" y2="6"/>
+    <line x1="8" y1="2" x2="8" y2="6"/>
+    <line x1="3" y1="10" x2="21" y2="10"/>
+    <path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/>
   </svg>
 );
 const IconSmile = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-    <circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <circle cx="12" cy="12" r="9"/>
+    <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+    <circle cx="9" cy="9.5" r="0.7" fill="currentColor" stroke="none"/>
+    <circle cx="15" cy="9.5" r="0.7" fill="currentColor" stroke="none"/>
+  </svg>
+);
+const IconPhone = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <rect x="5" y="2" width="14" height="20" rx="2"/>
+    <line x1="12" y1="18" x2="12.01" y2="18" strokeWidth="3"/>
   </svg>
 );
 const IconShield = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
   </svg>
 );
 const IconZap = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
   </svg>
 );
-const IconHeart = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+const IconNoApp = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+    <rect x="5" y="2" width="14" height="20" rx="2"/>
+    <path d="M9 7h6M9 11h4"/>
+    <circle cx="17" cy="17" r="5" fill="#064e3b" stroke="currentColor" strokeWidth="2"/>
+    <path d="M14.5 14.5l5 5M19.5 14.5l-5 5" stroke="currentColor" strokeWidth="2"/>
   </svg>
 );
+// IconStar removed — auth label removed per user request
+
+// ─── Hex color constants (avoids oklch inheritance from Tailwind v4) ──────────
+// Emerald palette (hex only — no oklch)
+const C = {
+  em400: "#34d399", em300: "#6ee7b7", em500: "#10b981", em900: "#064e3b",
+  tl400: "#2dd4bf",
+  yw400: "#facc15", yw300: "#fde047", yw500: "#eab308",
+  in300: "#a5b4fc", in400: "#818cf8", in500: "#6366f1", in900: "#1e1b4b",
+} as const;
 
 export default async function PrintQrPage({
   searchParams,
@@ -69,12 +95,23 @@ export default async function PrintQrPage({
   const sp = await searchParams;
   if (!sp.ids) redirect("/admin/qr");
 
-  const idsArray = sp.ids.split(",");
+  // Validate UUIDs to prevent Postgres crash on invalid input (like "YOUR_QR_ID")
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const idsArray = sp.ids.split(",").filter((id) => uuidRegex.test(id));
+  
+  if (idsArray.length === 0) {
+    return <div style={{ color: "#7f1d1d", background: "#fef2f2", padding: "20px", margin: "20px", borderRadius: "8px", border: "1px solid #fecaca", fontFamily: "sans-serif" }}><strong>Error:</strong> Invalid QR IDs provided in the URL. Please use a valid database UUID.</div>;
+  }
+
   const codes = await db
     .select({ id: qrCodes.id, code: qrCodes.code })
     .from(qrCodes)
     .where(inArray(qrCodes.id, idsArray))
     .orderBy(qrCodes.code);
+
+  if (codes.length === 0) {
+    return <div style={{ color: "#7f1d1d", background: "#fef2f2", padding: "20px", margin: "20px", borderRadius: "8px", border: "1px solid #fecaca", fontFamily: "sans-serif" }}><strong>Error:</strong> No QR codes found for the given IDs.</div>;
+  }
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://doctor.naturexpress.in";
 
@@ -82,9 +119,9 @@ export default async function PrintQrPage({
     codes.map(async (item) => {
       const url = `${baseUrl}/q/${item.code}`;
       const qrDataUri = await QRCode.toDataURL(url, {
-        width: 1400, // Even higher resolution
-        margin: 1,
-        color: { dark: "#080808", light: "#ffffff" },
+        width: 1600,
+        margin: 3,
+        color: { dark: "#060606", light: "#ffffff" },
         errorCorrectionLevel: "H",
       });
       return { ...item, url, qrDataUri };
@@ -95,47 +132,72 @@ export default async function PrintQrPage({
     <span style={{ fontFamily: "'Noto Sans Devanagari', 'Mangal', sans-serif" }}>{s}</span>
   );
 
+  // ─── Step data: Inside card ───────────────────────────────────────────────
+  const insideSteps = [
+    { Icon: IconScan,    bg: "rgba(52,211,153,0.18)",  border: "rgba(52,211,153,0.35)",  color: C.em400,  accentBar: C.em400,  en: "Scan QR with camera",        hi: "QR स्कैन करें" },
+    { Icon: IconClock,   bg: "rgba(234,179,8,0.18)",   border: "rgba(234,179,8,0.35)",   color: C.yw400,  accentBar: C.yw400,  en: "Choose your time slot",      hi: "समय चुनें" },
+    { Icon: IconTicket,  bg: "rgba(45,212,191,0.18)",  border: "rgba(45,212,191,0.35)",  color: C.tl400,  accentBar: C.tl400,  en: "Get instant token number",   hi: "टोकन नंबर मिलेगा" },
+    { Icon: IconArrive,  bg: "rgba(110,231,183,0.15)", border: "rgba(110,231,183,0.3)",  color: C.em300,  accentBar: C.em300,  en: "Arrive on time — no queue!", hi: "समय पर आएं — लाइन नहीं" },
+  ];
+
+  // ─── Step data: Outside card ──────────────────────────────────────────────
+  const outsideSteps = [
+    { Icon: IconScan,     bg: "rgba(165,180,252,0.18)", border: "rgba(165,180,252,0.35)", color: C.in300,  accentBar: C.in300,   en: "Scan QR with camera",            hi: "QR स्कैन करें" },
+    { Icon: IconCalendar, bg: "rgba(234,179,8,0.18)",   border: "rgba(234,179,8,0.35)",   color: C.yw400,  accentBar: C.yw400,   en: "Pick date & time slot",          hi: "दिन और समय चुनें" },
+    { Icon: IconTicket,   bg: "rgba(56,189,248,0.15)",  border: "rgba(56,189,248,0.32)",  color: "#38bdf8", accentBar: "#38bdf8", en: "Booking confirmed instantly",    hi: "बुकिंग पक्की हो जाएगी" },
+    { Icon: IconSmile,    bg: "rgba(217,70,239,0.15)",  border: "rgba(217,70,239,0.3)",   color: "#e879f9", accentBar: "#e879f9", en: "Come on your day — no queues!", hi: "तय समय पर आएं — लाइन नहीं" },
+  ];
+
   return (
     <>
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;500;600;700;800;900&display=swap" />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" />
 
       <style dangerouslySetInnerHTML={{ __html: `
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #0f172a; font-family: 'Poppins', Arial, sans-serif; }
+        /* ══════════════════════════════════════════════════════════
+           RESET — scoped to .print-root so Tailwind oklch vars
+           from globals.css cannot leak into this page's elements.
+           All color values here are explicit hex / rgba — ZERO
+           dependency on any CSS custom property from Tailwind v4.
+        ══════════════════════════════════════════════════════════ */
+        .print-root *, .print-root *::before, .print-root *::after {
+          box-sizing: border-box; margin: 0; padding: 0;
+          font-family: 'Inter', system-ui, sans-serif;
+        }
+        body { background: #0c0c0c; }
 
         @media print {
           @page { margin: 0; size: A4 portrait; }
-          body { 
-            -webkit-print-color-adjust: exact !important; 
-            print-color-adjust: exact !important; 
-            background: #ffffff !important; 
+          body {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            background: #ffffff !important;
           }
           .no-print { display: none !important; }
-          .a4-wrap { 
-            margin: 10mm auto !important; /* 10mm safe zone hardware margin */
-            box-shadow: none !important; 
-            page-break-after: always; 
-            break-after: page; 
+          .a4-wrap {
+            margin: 10mm auto !important;
+            box-shadow: none !important;
+            page-break-after: always;
+            break-after: page;
           }
         }
 
-        /* ─── A4 wrapper: 190×277mm (A4 minus 20mm safe borders) ─── */
+        /* ─── A4 wrapper ─── */
         .a4-wrap {
           width: 190mm;
           height: 277mm;
           margin: 24px auto;
           display: flex;
           flex-direction: column;
-          box-shadow: 0 30px 90px rgba(0,0,0,0.6);
+          box-shadow: 0 40px 120px rgba(0,0,0,0.7);
           overflow: hidden;
           position: relative;
-          background: #fff; /* Ensure it cuts off nicely against white */
+          background: #fff;
         }
 
-        /* ─── Each card: exactly half of wrapped A4 = 138.5mm tall ─── */
+        /* ─── Half card ─── */
         .half-card {
           width: 190mm;
           height: 138.5mm;
@@ -149,786 +211,676 @@ export default async function PrintQrPage({
           flex-grow: 0;
         }
 
-        /* ─── Full-bleed gradient layers ─── */
-        .grad-open {
+        /* ─── Gradients ─── */
+        .grad-inside {
           position: absolute; inset: 0;
           background:
-            radial-gradient(ellipse 80% 70% at 75% 50%, rgba(6,214,160,0.18) 0%, transparent 65%),
-            radial-gradient(ellipse 50% 90% at 5% 10%, rgba(2,44,34,0.9) 0%, transparent 55%),
-            linear-gradient(140deg, #011a12 0%, #022c22 25%, #053d2d 50%, #065f46 75%, #047857 100%);
+            radial-gradient(ellipse 65% 55% at 80% 45%, rgba(45,212,191,0.22) 0%, transparent 60%),
+            radial-gradient(ellipse 45% 80% at 8% 8%, rgba(6,78,59,0.92) 0%, transparent 50%),
+            linear-gradient(145deg, #012918 0%, #022c1e 20%, #044032 40%, #065f46 65%, #059669 85%, #0d9488 100%);
         }
-        .grad-closed {
+        .grad-outside {
           position: absolute; inset: 0;
           background:
-            radial-gradient(ellipse 80% 70% at 75% 55%, rgba(139,92,246,0.22) 0%, transparent 65%),
-            radial-gradient(ellipse 50% 90% at 5% 10%, rgba(9,9,40,0.95) 0%, transparent 55%),
-            linear-gradient(140deg, #07052a 0%, #0d0b3d 25%, #1a1551 50%, #27239a 75%, #3730a3 100%);
+            radial-gradient(ellipse 65% 55% at 80% 45%, rgba(99,102,241,0.28) 0%, transparent 60%),
+            radial-gradient(ellipse 45% 80% at 8% 8%, rgba(17,24,39,0.97) 0%, transparent 50%),
+            linear-gradient(145deg, #05051a 0%, #0a083c 22%, #12107a 44%, #1e1b4b 66%, #312e81 85%, #3730a3 100%);
         }
 
-        /* ─── Content layer sits above gradients ─── */
+        /* ─── Card content ─── */
         .card-content {
           position: relative;
           z-index: 5;
           display: flex;
           flex-direction: column;
           height: 100%;
-          padding: 4mm 8mm; /* Reduced to prevent large text overflow */
+          padding: 5mm 7mm 4mm 7mm;
         }
 
-        /* ─── TOP NAV BAR ─── */
-        .nav-bar {
+        /* ─── Decorative SVG helper ─── */
+        .deco { position: absolute; pointer-events: none; user-select: none; }
+
+        /* ─── Ambient QR glow ─── */
+        .qr-glow-inside {
+          position: absolute; right: -10mm; top: 50%;
+          transform: translateY(-50%);
+          width: 68mm; height: 68mm;
+          background: radial-gradient(ellipse, rgba(52,211,153,0.2) 0%, transparent 70%);
+          z-index: 1; pointer-events: none;
+        }
+        .qr-glow-outside {
+          position: absolute; right: -10mm; top: 50%;
+          transform: translateY(-50%);
+          width: 68mm; height: 68mm;
+          background: radial-gradient(ellipse, rgba(99,102,241,0.25) 0%, transparent 70%);
+          z-index: 1; pointer-events: none;
+        }
+
+        /* ════════════════════════════════════════════
+           HEADER STRIP
+        ════════════════════════════════════════════ */
+        .header-strip {
           display: flex;
           align-items: center;
           justify-content: space-between;
           flex-shrink: 0;
-          margin-bottom: 3mm; /* tighter */
+          margin-bottom: 3mm;
         }
-        .brand-block {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
+        .brand-block { display: flex; align-items: center; gap: 10px; }
         .brand-logo {
-          width: 60px; /* little more big logo */
-          height: 60px;
-          border-radius: 14px;
-          overflow: hidden;
-          flex-shrink: 0;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+          width: 36px; height: 36px;
+          border-radius: 9px; overflow: hidden; flex-shrink: 0;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.5), 0 0 0 1.5px rgba(255,255,255,0.12);
         }
         .brand-logo img { width: 100%; height: 100%; display: block; object-fit: cover; }
-        .brand-title {
-          font-family: 'Poppins', sans-serif;
-          font-weight: 900;
-          font-size: 28px; /* Bigger */
-          color: #fff;
-          line-height: 1;
-          letter-spacing: -0.5px;
+        .brand-name {
+          font-size: 19px; font-weight: 800;
+          color: #fff; line-height: 1; letter-spacing: -0.5px;
         }
-        .brand-sub {
-          font-family: 'Poppins', sans-serif;
-          font-size: 13px;
-          font-weight: 500;
-          color: rgba(255,255,255,0.6);
-          margin-top: 4px;
+        .brand-tagline {
+          font-size: 10px; font-weight: 500;
+          color: rgba(255,255,255,0.5); margin-top: 1px; letter-spacing: 0.3px;
         }
-
-        /* Status badges */
-        .badge-open {
-          display: flex; align-items: center; gap: 10px;
-          background: rgba(52,211,153,0.15);
-          border: 2px solid rgba(52,211,153,0.55);
-          border-radius: 99px;
-          padding: 8px 20px 8px 16px;
+        .header-badge {
+          border-radius: 20px;
+          padding: 4px 12px;
+          font-size: 10px; font-weight: 700;
+          letter-spacing: 1px; text-transform: uppercase; white-space: nowrap;
         }
-        .dot-open {
-          width: 14px; height: 14px; border-radius: 50%;
-          background: #34d399;
-          box-shadow: 0 0 0 4px rgba(52,211,153,0.35), 0 0 12px rgba(52,211,153,0.6);
-          flex-shrink: 0;
+        .header-badge-inside {
+          background: rgba(255,255,255,0.1);
+          border: 1px solid rgba(255,255,255,0.18);
+          color: #6ee7b7;
         }
-        .badge-open-text {
-          font-family: 'Poppins', sans-serif;
-          font-size: 14px; font-weight: 800;
-          color: #6ee7b7; letter-spacing: 1px;
-          text-transform: uppercase;
-          white-space: nowrap;
-        }
-        .badge-closed {
-          display: flex; align-items: center; gap: 10px;
-          background: rgba(167,139,250,0.15);
-          border: 2px solid rgba(167,139,250,0.5);
-          border-radius: 99px;
-          padding: 8px 20px 8px 16px;
-        }
-        .badge-closed-text {
-          font-family: 'Poppins', sans-serif;
-          font-size: 14px; font-weight: 800;
-          color: #c4b5fd; letter-spacing: 1px;
-          text-transform: uppercase;
-          white-space: nowrap;
+        .header-badge-outside {
+          background: rgba(255,255,255,0.08);
+          border: 1px solid rgba(255,255,255,0.15);
+          color: #a5b4fc;
         }
 
-        /* ─── MAIN ROW (left text + right QR) ─── */
-        .main-row {
+        /* ════════════════════════════════════════════
+           MAIN BODY — Left 47%, Arrow 6%, Right 47%
+        ════════════════════════════════════════════ */
+        .main-body {
           flex: 1;
           display: flex;
           flex-direction: row;
           align-items: stretch;
-          gap: 6mm; /* tighter */
           min-height: 0;
           overflow: hidden;
+          gap: 0;
+          position: relative;
         }
 
-        /* LEFT TEXT ZONE — 55% */
-        .text-col {
-          width: 55%; /* More horizontal space for text */
-          min-width: 0;
+        /* ─── LEFT COLUMN ─── */
+        .left-col {
+          width: 47%;
+          flex-shrink: 0;
           display: flex;
           flex-direction: column;
           justify-content: center;
-          overflow: hidden;
+          padding-right: 3mm;
         }
 
-        .section-label {
-          font-family: 'Poppins', sans-serif;
-          font-size: 12px; font-weight: 800;
-          letter-spacing: 2.5px;
-          text-transform: uppercase;
+        /* Benefit pill */
+        .benefit-pill {
+          display: inline-flex; align-items: center; gap: 5px;
+          border-radius: 99px; padding: 3px 10px;
+          font-size: 9px; font-weight: 700;
+          letter-spacing: 0.5px; text-transform: uppercase;
+          margin-bottom: 5px; width: fit-content;
+        }
+        .benefit-pill-inside {
+          background: rgba(234,179,8,0.2);
+          border: 1.5px solid rgba(234,179,8,0.5);
+          color: #fde047;
+        }
+        .benefit-pill-outside {
+          background: rgba(165,180,252,0.15);
+          border: 1.5px solid rgba(165,180,252,0.4);
+          color: #a5b4fc;
+        }
+
+        /* Headline */
+        .headline-primary {
+          font-size: 27px; font-weight: 900;
+          color: #ffffff; line-height: 1.05;
+          letter-spacing: -0.8px; margin-bottom: 3px;
+        }
+        .headline-accent-inside { color: #34d399; }
+        .headline-accent-outside { color: #a5b4fc; }
+
+        /* Hindi headline */
+        .headline-hindi {
+          font-family: 'Noto Sans Devanagari', 'Mangal', sans-serif;
+          font-weight: 700; font-size: 14.5px;
+          line-height: 1.55; letter-spacing: 0.2px;
+          color: rgba(255,255,255,0.72);
           margin-bottom: 6px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
         }
-        .label-open { color: rgba(110,231,183,0.85); }
-        .label-closed { color: rgba(196,181,253,0.85); }
 
-        .h1-en {
-          font-family: 'Poppins', sans-serif;
-          font-weight: 900;
-          font-size: 34px;
-          color: #ffffff;
-          line-height: 1.05;
-          letter-spacing: -1px;
-          margin-bottom: 2px; /* tighter */
+        /* Flow label */
+        .flow-label {
+          font-size: 9px; font-weight: 700;
+          letter-spacing: 1.5px; text-transform: uppercase;
+          color: rgba(255,255,255,0.38);
+          margin-bottom: 5px;
+          display: flex; align-items: center; gap: 5px;
         }
-        .h1-accent-open { color: #34d399; }
-        .h1-accent-closed { color: #a78bfa; }
-
-        .h1-hi {
-          font-family: 'Noto Sans Devanagari', 'Mangal', sans-serif;
-          font-weight: 800;
-          font-size: 25px;
-          line-height: 1.25;
-          margin-bottom: 6px; /* tighter */
-        }
-        .h1-hi-open { color: rgba(255,255,255,0.95); }
-        .h1-hi-closed { color: rgba(255,255,255,0.95); }
-
-        .subtext {
-          font-family: 'Poppins', sans-serif;
-          font-size: 12.5px;
-          color: rgba(255,255,255,0.6);
-          line-height: 1.5;
-          margin-bottom: 8px; /* tighter */
-        }
-        .subtext-hi {
-          font-family: 'Noto Sans Devanagari', 'Mangal', sans-serif;
-          font-size: 12px;
-          color: rgba(255,255,255,0.5);
-          display: block;
-          margin-top: 2px;
+        .flow-label::after {
+          content: ''; flex: 1; height: 1px;
+          background: rgba(255,255,255,0.13);
         }
 
         /* ─── STEPS ─── */
-        .steps { display: flex; flex-direction: column; gap: 5px; } /* tighter */
-        .step {
-          display: flex; align-items: center; gap: 12px;
+        .steps { display: flex; flex-direction: column; gap: 4px; }
+        .step-row {
+          display: flex; align-items: center; gap: 8px;
+          padding: 5px 8px; border-radius: 10px;
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.09);
+          position: relative; overflow: hidden;
         }
-        .step-icon-open {
-          width: 38px; height: 38px; border-radius: 12px;
+        /* Left accent bar — rendered as a real <div> child (avoids CSS custom property) */
+        .step-accent-bar {
+          position: absolute;
+          left: 0; top: 0; bottom: 0; width: 2.5px;
+          border-radius: 10px 0 0 10px;
+        }
+        .step-badge {
+          width: 24px; height: 24px; border-radius: 50%;
+          font-size: 12px; font-weight: 900;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
-          position: relative;
         }
-        .step-icon-closed {
-          width: 38px; height: 38px; border-radius: 12px;
+        .step-badge-inside { background: #34d399; color: #064e3b; box-shadow: 0 2px 8px rgba(52,211,153,0.4); }
+        .step-badge-outside { background: #818cf8; color: #fff; box-shadow: 0 2px 8px rgba(129,140,248,0.4); }
+        .step-icon-wrap {
+          width: 30px; height: 30px; border-radius: 8px;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
-          position: relative;
         }
-        .step-num-open {
-          position: absolute;
-          bottom: -4px; right: -5px;
-          width: 18px; height: 18px;
-          border-radius: 50%;
-          background: #34d399;
-          font-family: 'Poppins', sans-serif;
-          font-size: 11px; font-weight: 900;
-          color: #022c22;
-          display: flex; align-items: center; justify-content: center;
-          border: 2px solid #053d2d;
-        }
-        .step-num-closed {
-          position: absolute;
-          bottom: -4px; right: -5px;
-          width: 18px; height: 18px;
-          border-radius: 50%;
-          background: #a78bfa;
-          font-family: 'Poppins', sans-serif;
-          font-size: 11px; font-weight: 900;
-          color: #1a1551;
-          display: flex; align-items: center; justify-content: center;
-          border: 2px solid #0d0b3d;
-        }
-        .step-text { flex: 1; min-width: 0; }
+        .step-text-block { flex: 1; min-width: 0; }
         .step-en {
-          font-family: 'Poppins', sans-serif;
-          font-size: 14px; font-weight: 700;
-          color: #ffffff;
-          line-height: 1.15;
+          font-size: 12px; font-weight: 700;
+          color: #ffffff; line-height: 1.2;
         }
         .step-hi {
           font-family: 'Noto Sans Devanagari', 'Mangal', sans-serif;
-          font-size: 11.5px; font-weight: 600;
-          color: rgba(255,255,255,0.7);
-          line-height: 1.3;
+          font-size: 10px; font-weight: 600;
+          color: rgba(255,255,255,0.52);
+          line-height: 1.5; letter-spacing: 0.1px;
         }
 
-        /* RIGHT QR ZONE — 45% */
-        .qr-col {
-          width: 45%;
-          min-width: 0;
+        /* ─── ARROW CUE (between left and right) ─── */
+        .arrow-cue-col {
+          width: 6%;
+          flex-shrink: 0;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
+          gap: 4px;
+          opacity: 0.6;
+          z-index: 6;
+        }
+        .arrow-cue-label {
+          font-size: 7px; font-weight: 800;
+          letter-spacing: 2px; text-transform: uppercase;
+          writing-mode: vertical-rl;
+          transform: rotate(180deg);
+          color: rgba(255,255,255,0.45);
+        }
+        .arrow-cue-line {
+          width: 1px; height: 22px;
+          background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.45));
+        }
+
+        /* ─── RIGHT COLUMN: QR hero ─── */
+        .right-col {
+          width: 47%;
           flex-shrink: 0;
-          gap: 6px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 5px;
+          z-index: 6;
         }
 
-        /* SCAN ME banner */
-        .scan-me-banner-open {
+        /* CTA Banner — yellow for Inside */
+        .cta-banner-inside {
           width: 100%;
-          background: linear-gradient(90deg, rgba(52,211,153,0.3) 0%, rgba(16,185,129,0.2) 100%);
-          border: 2px solid rgba(52,211,153,0.6);
+          background: linear-gradient(90deg, #eab308 0%, #facc15 50%, #fde047 100%);
           border-radius: 12px 12px 0 0;
-          padding: 10px 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          box-shadow: 0 -4px 20px rgba(52,211,153,0.2);
+          padding: 7px 16px;
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          box-shadow: 0 -4px 24px rgba(234,179,8,0.4);
         }
-        .scan-me-banner-closed {
+        .cta-banner-inside-text {
+          font-size: 14px; font-weight: 900;
+          color: #422006; letter-spacing: 1.5px; text-transform: uppercase;
+        }
+        /* CTA Banner — indigo for Outside */
+        .cta-banner-outside {
           width: 100%;
-          background: linear-gradient(90deg, rgba(167,139,250,0.3) 0%, rgba(99,102,241,0.2) 100%);
-          border: 2px solid rgba(167,139,250,0.6);
+          background: linear-gradient(90deg, #312e81 0%, #4338ca 50%, #6366f1 100%);
+          border: 2px solid rgba(165,180,252,0.4); border-bottom: none;
           border-radius: 12px 12px 0 0;
-          padding: 10px 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          box-shadow: 0 -4px 20px rgba(167,139,250,0.2);
+          padding: 7px 16px;
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          box-shadow: 0 -4px 24px rgba(99,102,241,0.35);
         }
-        .scan-me-text-open {
-          font-family: 'Poppins', sans-serif;
-          font-size: 16px; font-weight: 900;
-          color: #6ee7b7;
-          letter-spacing: 3px;
-          text-transform: uppercase;
-        }
-        .scan-me-text-closed {
-          font-family: 'Poppins', sans-serif;
-          font-size: 16px; font-weight: 900;
-          color: #c4b5fd;
-          letter-spacing: 3px;
-          text-transform: uppercase;
+        .cta-banner-outside-text {
+          font-size: 14px; font-weight: 900;
+          color: #ffffff; letter-spacing: 1.5px; text-transform: uppercase;
         }
 
-        /* QR Frame */
-        .qr-frame-open {
-          width: 100%;
-          background: #ffffff;
-          border: 4px solid rgba(52,211,153,0.7);
-          border-top: none;
+        /* Floating QR Card */
+        .qr-card {
+          width: 100%; background: #ffffff;
           border-radius: 0 0 16px 16px;
-          padding: 10px;
+          padding: 10px 10px 8px 10px;
+          display: flex; flex-direction: column; align-items: center; gap: 6px;
+        }
+        .qr-card-inside {
           box-shadow:
-            0 0 40px rgba(52,211,153,0.5),
-            0 0 80px rgba(52,211,153,0.25),
-            0 0 120px rgba(52,211,153,0.15);
-          display: flex;
-          align-items: center;
-          justify-content: center;
+            0 8px 32px rgba(0,0,0,0.3),
+            0 0 0 3px rgba(52,211,153,0.5),
+            0 0 60px rgba(52,211,153,0.25);
         }
-        .qr-frame-closed {
-          width: 100%;
-          background: #ffffff;
-          border: 4px solid rgba(167,139,250,0.7);
-          border-top: none;
-          border-radius: 0 0 16px 16px;
-          padding: 10px;
+        .qr-card-outside {
           box-shadow:
-            0 0 40px rgba(167,139,250,0.6),
-            0 0 80px rgba(139,92,246,0.3),
-            0 0 120px rgba(99,102,241,0.15);
-          display: flex;
-          align-items: center;
-          justify-content: center;
+            0 8px 32px rgba(0,0,0,0.4),
+            0 0 0 3px rgba(129,140,248,0.5),
+            0 0 60px rgba(99,102,241,0.25);
         }
-        .qr-frame-open img,
-        .qr-frame-closed img {
-          display: block;
-          image-rendering: pixelated;
-          width: 100%;
-          height: auto;
+        .qr-image-wrap {
+          width: 100%; border-radius: 8px;
+          overflow: hidden; position: relative;
         }
+        .qr-image-wrap img {
+          display: block; image-rendering: pixelated;
+          width: 100%; height: auto;
+        }
+        /* Corner accent marks */
+        .qr-corner { position: absolute; width: 14px; height: 14px; border-style: solid; }
+        .qr-corner-tl-i { top: 4px; left: 4px;    border-width: 3px 0 0 3px; border-color: #10b981; }
+        .qr-corner-tr-i { top: 4px; right: 4px;   border-width: 3px 3px 0 0; border-color: #10b981; }
+        .qr-corner-bl-i { bottom: 4px; left: 4px; border-width: 0 0 3px 3px; border-color: #10b981; }
+        .qr-corner-br-i { bottom: 4px; right: 4px;border-width: 0 3px 3px 0; border-color: #10b981; }
+        .qr-corner-tl-o { top: 4px; left: 4px;    border-width: 3px 0 0 3px; border-color: #6366f1; }
+        .qr-corner-tr-o { top: 4px; right: 4px;   border-width: 3px 3px 0 0; border-color: #6366f1; }
+        .qr-corner-bl-o { bottom: 4px; left: 4px; border-width: 0 0 3px 3px; border-color: #6366f1; }
+        .qr-corner-br-o { bottom: 4px; right: 4px;border-width: 0 3px 3px 0; border-color: #6366f1; }
+        .qr-camera-hint {
+          font-size: 9px; font-weight: 600; color: #64748b;
+          display: flex; align-items: center; gap: 4px; margin-top: 0;
+        }
+        /* qr-auth-label removed */
 
-        .qr-info {
-          font-family: 'Poppins', sans-serif;
-          font-size: 12px;
-          color: rgba(255,255,255,0.6);
-          text-align: center;
-          line-height: 1.5;
-          margin-top: 2px;
-        }
-
-        .free-pill-open {
-          background: rgba(52,211,153,0.15);
-          border: 1.5px solid rgba(52,211,153,0.4);
-          border-radius: 99px;
-          padding: 6px 18px;
-          font-family: 'Poppins', sans-serif;
-          font-size: 12px; font-weight: 700;
-          color: #6ee7b7;
-          text-align: center;
-          white-space: nowrap;
-        }
-        .free-pill-closed {
-          background: rgba(167,139,250,0.15);
-          border: 1.5px solid rgba(167,139,250,0.4);
-          border-radius: 99px;
-          padding: 6px 18px;
-          font-family: 'Poppins', sans-serif;
-          font-size: 12px; font-weight: 700;
-          color: #c4b5fd;
-          text-align: center;
-          white-space: nowrap;
-        }
-
-        /* ─── BOTTOM TRUST BAR ─── */
-        .trust-bar {
+        /* ════════════════════════════════════════════
+           BOTTOM SECTION
+        ════════════════════════════════════════════ */
+        .bottom-section {
           flex-shrink: 0;
-          margin-top: 3mm; /* tighter */
-          border-top: 1.5px solid rgba(255,255,255,0.1);
-          padding-top: 3mm; /* tighter */
+          margin-top: 2mm;
           display: flex;
+          flex-direction: row;
           align-items: center;
-          justify-content: space-between;
+          gap: 4mm;
         }
-        .trust-items {
-          display: flex; align-items: center; gap: 18px;
-        }
+
+        /* Trust chips */
+        .trust-strip { display: flex; align-items: center; gap: 8px; flex: 1; flex-wrap: wrap; }
         .trust-chip {
-          display: flex; align-items: center; gap: 7px;
-          font-family: 'Poppins', sans-serif;
-          font-size: 11px; font-weight: 700;
-          color: rgba(255,255,255,0.7);
+          display: flex; align-items: center; gap: 4px;
+          font-size: 9px; font-weight: 700;
+          color: rgba(255,255,255,0.62);
+          background: rgba(255,255,255,0.07);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 6px; padding: 3px 8px;
+          white-space: nowrap;
         }
-        .trust-sep { color: rgba(255,255,255,0.2); font-size: 14px; }
-        .code-chip {
-          font-family: 'Poppins', sans-serif;
-          font-size: 11px; font-weight: 800;
-          letter-spacing: 2px;
-          color: rgba(255,255,255,0.4);
+        .trust-chip-i svg { color: #34d399; }
+        .trust-chip-o svg { color: #a5b4fc; }
+        .code-watermark {
+          font-size: 9px; font-weight: 700;
+          letter-spacing: 2px; color: rgba(255,255,255,0.18);
+          white-space: nowrap; flex-shrink: 0;
         }
 
-        /* ─── TAGLINE FOOTER ─── */
-        .tagline-bar {
+        /* ─── BLANK WRITE BOX ─── */
+        /* Plain empty space — doctor writes clinic details by hand */
+        .blank-box {
           flex-shrink: 0;
-          margin-top: 2mm; /* tighter */
-          border-radius: 12px;
-          padding: 8px 16px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-        .tagline-bar-open { background: rgba(52,211,153,0.12); }
-        .tagline-bar-closed { background: rgba(167,139,250,0.12); }
-        .tagline-icon-open {
-          color: #34d399; flex-shrink: 0;
-        }
-        .tagline-icon-closed {
-          color: #a78bfa; flex-shrink: 0;
-        }
-        .tagline-en {
-          font-family: 'Poppins', sans-serif;
-          font-size: 13px; font-weight: 800;
-          color: rgba(255,255,255,1);
-          line-height: 1.2;
-        }
-        .tagline-hi {
-          font-family: 'Noto Sans Devanagari', 'Mangal', sans-serif;
-          font-size: 11.5px; font-weight: 600;
-          color: rgba(255,255,255,0.7);
-          line-height: 1.3;
+          background: rgba(255,255,255,0.07);
+          border: 1.5px dashed rgba(255,255,255,0.2);
+          border-radius: 10px;
+          min-width: 52mm;
+          max-width: 58mm;
+          height: 28px;
         }
 
         /* ─── CUT DIVIDER ─── */
         .cut-divider {
           height: 0;
-          border-top: 2px dashed rgba(150,150,150,0.55);
-          position: relative;
-          flex-shrink: 0;
-          z-index: 20;
+          border-top: 2px dashed rgba(160,160,160,0.45);
+          position: relative; flex-shrink: 0; z-index: 20;
         }
         .cut-label {
           position: absolute; left: 50%; top: 50%;
           transform: translate(-50%, -50%);
-          background: #fff;
-          padding: 2px 18px;
-          font-family: 'Poppins', sans-serif;
-          font-size: 10px; font-weight: 700;
-          color: #64748b;
-          white-space: nowrap;
-          letter-spacing: 0.5px;
-          border-radius: 12px;
+          background: #fff; padding: 2px 16px;
+          font-size: 9px; font-weight: 700;
+          color: #94a3b8; white-space: nowrap;
+          letter-spacing: 0.5px; border-radius: 10px;
           border: 1px solid #e2e8f0;
         }
-
-        /* ─── Decorative SVG elements ─── */
-        .deco { position: absolute; pointer-events: none; user-select: none; }
       ` }} />
 
       {/* ══ ADMIN HEADER (no-print) ══════════════════════════════════ */}
       <div className="no-print" style={{
-        background: "linear-gradient(135deg,#07052a,#0d0b3d,#1a1551)",
-        borderBottom: "1px solid rgba(255,255,255,0.08)",
+        background: "linear-gradient(135deg,#012918,#022c1e,#064e3b)",
+        borderBottom: "1px solid rgba(52,211,153,0.15)",
         padding: "16px 32px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         position: "sticky", top: 0, zIndex: 100,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icon-192.png" alt="DD" style={{ width: 50, height: 50, borderRadius: 14, boxShadow: "0 4px 14px rgba(0,0,0,0.4)" }} />
+          <img src="/icon-192.png" alt="DD" style={{ width: 46, height: 46, borderRadius: 12, boxShadow: "0 4px 14px rgba(0,0,0,0.5), 0 0 0 2px rgba(52,211,153,0.3)" }} />
           <div>
-            <div style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 900, fontSize: 22, color: "#fff" }}>
-              Doctor Diary — Stunning QR Print 
+            <div style={{ fontFamily: "'Inter',sans-serif", fontWeight: 900, fontSize: 20, color: "#fff", letterSpacing: "-0.5px" }}>
+              Doctor Diary — QR Poster Print
             </div>
-            <div style={{ fontFamily: "'Poppins',sans-serif", fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>
-              Click "Print" &rarr; Destination: Save as PDF (or Select Printer) &rarr; Paper Size: A4.
+            <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>
+              Ctrl+P → Paper: <strong style={{color:"rgba(255,255,255,0.7)"}}>A4</strong> → Margins: <strong style={{color:"rgba(255,255,255,0.7)"}}>None</strong> → ✅ Background Graphics <strong style={{color:"#34d399"}}>ON</strong>
             </div>
           </div>
         </div>
-        <div className="flex gap-3">
-          <PdfAutoDownloader code={printItems.length === 1 ? printItems[0].code : undefined} isAutoDownload={sp.download === "true"} />
+        <div style={{ display: "flex", gap: 12 }}>
           <PrintButton />
         </div>
       </div>
 
       {/* ══ PRINT TIPS (no-print) ════════════════════════════════════ */}
       <div className="no-print" style={{
-        maxWidth: 760, margin: "24px auto 16px",
-        background: "rgba(245,158,11,0.1)", border: "2px solid rgba(245,158,11,0.3)",
-        borderRadius: 16, padding: "16px 24px",
-        fontFamily: "'Poppins',sans-serif", fontSize: 13, color: "#fde68a",
+        maxWidth: 780, margin: "20px auto 12px",
+        background: "rgba(52,211,153,0.07)", border: "1.5px solid rgba(52,211,153,0.22)",
+        borderRadius: 14, padding: "14px 24px",
+        fontFamily: "'Inter',sans-serif", fontSize: 13, color: "#6ee7b7",
         textAlign: "center", lineHeight: 1.65,
       }}>
-        <strong>Ctrl+P</strong> → Paper: <strong>A4</strong> → Margins: <strong>Default</strong> → ✅ <strong>Background Graphics ON</strong><br />
-        <span style={{ color: "rgba(253,230,138,0.7)", fontSize: 12 }}>
-          🟢 Green card inside clinic &nbsp;|&nbsp; 🟣 Blue card on the door outside. (Size optimized to never cut off borders!)
+        🟢 <strong>Top card</strong> — place <strong>inside</strong> the clinic (when open).&nbsp;&nbsp;
+        🔵 <strong>Bottom card</strong> — place <strong>on door</strong> (when clinic is closed).
+        <br />
+        <span style={{ color: "rgba(110,231,183,0.5)", fontSize: 11 }}>
+          The blank box at the bottom is for writing clinic details by hand after printing.
         </span>
       </div>
 
       {/* ══ PAGES ════════════════════════════════════════════════════ */}
-      {printItems.map((item) => (
-        <div key={item.id} className="a4-wrap">
+      <div className="print-root">
+        {printItems.map((item) => (
+          <div key={item.id} className="a4-wrap">
 
-          {/* ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
-              CARD 1 — INSIDE  (Clinic OPEN — Emerald)
-          ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ */}
-          <div className="half-card">
-            <div className="grad-open" />
+            {/* ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+                CARD 1 — INSIDE (Emerald)
+            ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ */}
+            <div className="half-card">
+              <div className="grad-inside" />
 
-            {/* Decorative: Medical cross watermark — top right */}
-            <svg className="deco" style={{ top: 0, right: 0, width: "52mm", height: "52mm", opacity: 0.055 }} viewBox="0 0 200 200">
-              <rect x="78" y="0" width="44" height="200" rx="10" fill="white"/>
-              <rect x="0" y="78" width="200" height="44" rx="10" fill="white"/>
-            </svg>
-            {/* Decorative: Concentric rings — bottom left */}
-            <svg className="deco" style={{ bottom: "-22mm", left: "-14mm", width: "60mm", height: "60mm", opacity: 0.06 }} viewBox="0 0 200 200">
-              <circle cx="100" cy="100" r="90" fill="none" stroke="white" strokeWidth="16"/>
-              <circle cx="100" cy="100" r="60" fill="none" stroke="white" strokeWidth="10"/>
-              <circle cx="100" cy="100" r="30" fill="none" stroke="white" strokeWidth="6"/>
-            </svg>
-            {/* Decorative: Dot matrix — center */}
-            <svg className="deco" style={{ top: "30mm", left: "50%", transform: "translateX(-50%)", width: "20mm", height: "18mm", opacity: 0.1 }} viewBox="0 0 80 72">
-              {[0,1,2,3].map(r => [0,1,2,3].map(c => (
-                <circle key={`${r}${c}`} cx={10+c*20} cy={10+r*18} r="3.5" fill="white"/>
-              )))}
-            </svg>
-            {/* Decorative: ECG line — bottom right */}
-            <svg className="deco" style={{ bottom: "11mm", right: 0, width: "70mm", height: "18mm", opacity: 0.07 }} viewBox="0 0 280 72" preserveAspectRatio="none">
-              <polyline points="0,36 35,36 48,8 62,66 76,36 110,36 124,18 140,54 155,36 280,36"
-                fill="none" stroke="white" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+              {/* Decorative: medical cross top-right only */}
+              <svg className="deco" style={{ top: 0, right: 0, width: "44mm", height: "44mm", opacity: 0.04 }} viewBox="0 0 200 200">
+                <rect x="78" y="0" width="44" height="200" rx="10" fill="white"/>
+                <rect x="0" y="78" width="200" height="44" rx="10" fill="white"/>
+              </svg>
+              {/* Decorative: ring arc bottom-left only */}
+              <svg className="deco" style={{ bottom: "-14mm", left: "-10mm", width: "46mm", height: "46mm", opacity: 0.05 }} viewBox="0 0 200 200">
+                <circle cx="100" cy="100" r="85" fill="none" stroke="white" strokeWidth="14"/>
+                <circle cx="100" cy="100" r="55" fill="none" stroke="white" strokeWidth="8"/>
+              </svg>
+              {/* Ambient QR glow */}
+              <div className="qr-glow-inside" />
 
-            <div className="card-content">
-              {/* NAV */}
-              <div className="nav-bar">
-                <div className="brand-block">
-                  <div className="brand-logo">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/icon-192.png" alt="Doctor Diary" />
+              <div className="card-content">
+                {/* HEADER */}
+                <div className="header-strip">
+                  <div className="brand-block">
+                    <div className="brand-logo">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="/icon-192.png" alt="Doctor Diary" />
+                    </div>
+                    <div>
+                      <div className="brand-name">Doctor Diary</div>
+                      <div className="brand-tagline">by NatureXpress · Skip the Queue</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="brand-title">Doctor Diary</div>
-                    <div className="brand-sub">by NatureXpress</div>
-                  </div>
+                  <div className="header-badge header-badge-inside">🔴 Clinic Open</div>
                 </div>
-                <div className="badge-open">
-                  <div className="dot-open" />
-                  <span className="badge-open-text">
-                    OPEN &nbsp;•&nbsp; {hi("क्लिनिक खुली है")}
-                  </span>
-                </div>
-              </div>
 
-              {/* MAIN ROW */}
-              <div className="main-row">
-                {/* LEFT */}
-                <div className="text-col">
-                  <div className="section-label label-open">
-                    <span>📋</span> Book Appointment &nbsp;•&nbsp; {hi("अपॉइंटमेंट बुक करें")}
-                  </div>
-
-                  <div className="h1-en">
-                    Skip The Queue!<br />
-                    <span className="h1-accent-open">Book Your Token</span>
-                  </div>
-                  <div className="h1-hi h1-hi-open">
-                    {hi("लाइन छोड़ें! अभी टोकन बुक करें")}
-                  </div>
-
-                  <div className="subtext">
-                    No waiting. Get your number online before you arrive.
-                    <span className="subtext-hi">{hi("घर बैठे नंबर लें, सही समय पर आएं।")}</span>
-                  </div>
-
-                  <div className="steps">
-                    {([
-                      { Icon: IconScan,     bg: "rgba(52,211,153,0.18)",  border: "rgba(52,211,153,0.45)",  color: "#34d399", en: "Scan QR with phone camera", hi: "फोन से QR स्कैन करें" },
-                      { Icon: IconClock,    bg: "rgba(251,191,36,0.15)",  border: "rgba(251,191,36,0.4)",   color: "#fbbf24", en: "Choose your time slot",      hi: "अपना समय चुनें" },
-                      { Icon: IconTicket,   bg: "rgba(96,165,250,0.15)",  border: "rgba(96,165,250,0.4)",   color: "#60a5fa", en: "Get instant token number",   hi: "तुरंत टोकन नंबर मिलेगा" },
-                      { Icon: IconCheck,    bg: "rgba(167,139,250,0.15)", border: "rgba(167,139,250,0.4)",  color: "#a78bfa", en: "Arrive on time — zero wait!", hi: "समय पर आएं — कोई लाइन नहीं!" },
-                    ] as const).map(({ Icon, bg, border, color, en, hi: hiText }, i) => (
-                      <div className="step" key={i}>
-                        <div className="step-icon-open" style={{ background: bg, border: `2px solid ${border}`, color }}>
-                          <Icon />
-                          <div className="step-num-open">{i + 1}</div>
+                {/* MAIN BODY */}
+                <div className="main-body">
+                  {/* LEFT */}
+                  <div className="left-col">
+                    <div className="benefit-pill benefit-pill-inside">⏱ Save 30–60 Min Waiting</div>
+                    <div className="headline-primary">
+                      BOOK YOUR<br />
+                      <span className="headline-accent-inside">TOKEN</span>
+                    </div>
+                    <div className="headline-hindi">{hi("टोकन बुक करें — लाइन छोड़ें")}</div>
+                    <div className="flow-label">How it works</div>
+                    <div className="steps">
+                      {insideSteps.map(({ Icon, bg, border, color, accentBar, en, hi: hiText }, i) => (
+                        <div className="step-row" key={i}>
+                          <div className="step-accent-bar" style={{ background: accentBar }} />
+                          <div className="step-badge step-badge-inside">{i + 1}</div>
+                          <div className="step-icon-wrap" style={{ background: bg, border: `1.5px solid ${border}`, color }}>
+                            <Icon />
+                          </div>
+                          <div className="step-text-block">
+                            <div className="step-en">{en}</div>
+                            <div className="step-hi">{hi(hiText)}</div>
+                          </div>
                         </div>
-                        <div className="step-text">
-                          <div className="step-en">{en}</div>
-                          <div className="step-hi">{hi(hiText)}</div>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                {/* RIGHT — QR */}
-                <div className="qr-col">
-                  <div className="scan-me-banner-open">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" strokeWidth="2.5" strokeLinecap="round">
-                      <rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/>
-                      <rect x="3" y="16" width="5" height="5" rx="1"/><line x1="16" y1="16" x2="21" y2="16"/>
-                      <line x1="16" y1="19" x2="21" y2="19"/>
+                  {/* ARROW CUE */}
+                  <div className="arrow-cue-col">
+                    <div className="arrow-cue-label">Scan</div>
+                    <div className="arrow-cue-line" />
+                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+                      <path d="M1 1L5 5L9 1" stroke="rgba(255,255,255,0.45)" strokeWidth="2" strokeLinecap="round"/>
                     </svg>
-                    <span className="scan-me-text-open">SCAN ME &nbsp;/&nbsp; {hi("स्कैन करें")}</span>
                   </div>
-                  <div className="qr-frame-open">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={item.qrDataUri} alt="Scan to book appointment" />
-                  </div>
-                  <div className="qr-info">
-                    📷 Any phone camera works &nbsp;•&nbsp; {hi("किसी भी फोन कैमरे से")}
-                  </div>
-                  <div className="free-pill-open">
-                    ⏰ Instant Booking &nbsp;•&nbsp; {hi("कभी भी बुक करें — 24×7")}
+
+                  {/* RIGHT — QR HERO */}
+                  <div className="right-col">
+                    {/* CTA Banner */}
+                    <div className="cta-banner-inside">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#422006" strokeWidth="2.5" strokeLinecap="round">
+                        <rect x="5" y="2" width="14" height="20" rx="2"/>
+                        <line x1="12" y1="18" x2="12.01" y2="18" strokeWidth="4"/>
+                      </svg>
+                      <span className="cta-banner-inside-text">📱 Scan Here</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#422006" strokeWidth="2.5" strokeLinecap="round">
+                        <rect x="5" y="2" width="14" height="20" rx="2"/>
+                        <line x1="12" y1="18" x2="12.01" y2="18" strokeWidth="4"/>
+                      </svg>
+                    </div>
+
+                    {/* Floating QR Card */}
+                    <div className="qr-card qr-card-inside">
+                      <div className="qr-image-wrap">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={item.qrDataUri} alt="Scan to book your token" />
+                        <div className="qr-corner qr-corner-tl-i" />
+                        <div className="qr-corner qr-corner-tr-i" />
+                        <div className="qr-corner qr-corner-bl-i" />
+                        <div className="qr-corner qr-corner-br-i" />
+                      </div>
+                      <div className="qr-camera-hint">
+                        <IconPhone />
+                        Any phone camera &nbsp;•&nbsp; {hi("किसी भी कैमरे से")}
+                      </div>
+                    </div>
+
+                    {/* Auth label removed — was overlapping */}
                   </div>
                 </div>
-              </div>
 
-              {/* TRUST */}
-              <div className="trust-bar">
-                <div className="trust-items">
-                  <span className="trust-chip">
-                    <span style={{ color: "#34d399" }}><IconShield /></span>
-                    Secure &amp; Free
-                  </span>
-                  <span className="trust-sep">|</span>
-                  <span className="trust-chip">
-                    <span style={{ color: "#fbbf24" }}><IconZap /></span>
-                    Instant Confirmation
-                  </span>
-                  <span className="trust-sep">|</span>
-                  <span className="trust-chip" style={{ fontFamily: "'Noto Sans Devanagari','Mangal',sans-serif" }}>
-                    ✅ {hi("हमेशा भरोसेमंद")}
-                  </span>
-                </div>
-                <span className="code-chip">#{item.code}</span>
-              </div>
+                {/* BOTTOM */}
+                <div className="bottom-section">
+                  {/* Trust badges */}
+                  <div className="trust-strip">
+                    <div className="trust-chip trust-chip-i"><IconShield /> Free</div>
+                    <div className="trust-chip trust-chip-i"><IconNoApp /> No App</div>
+                    <div className="trust-chip trust-chip-i"><IconZap /> Instant Token</div>
+                    <div className="code-watermark">#{item.code}</div>
+                  </div>
 
-              {/* TAGLINE */}
-              <div className="tagline-bar tagline-bar-open">
-                <span className="tagline-icon-open"><IconHeart /></span>
-                <div>
-                  <div className="tagline-en">Your health, your time — your choice!</div>
-                  <div className="tagline-hi">{hi("स्मार्ट बुकिंग, तनाव-मुक्त कल।")}</div>
+                  {/* Blank box — doctor handwrites clinic details after printing */}
+                  <div className="blank-box" />
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* ── CUT DIVIDER ─────────────────────────────── */}
-          <div className="cut-divider">
-            <div className="cut-label">✂ &nbsp;Cut here &nbsp;/&nbsp; {hi("यहाँ काटें")}</div>
-          </div>
+            {/* ── CUT DIVIDER ─────────────────────────────── */}
+            <div className="cut-divider">
+              <div className="cut-label">✂ &nbsp;Cut here &nbsp;/&nbsp; {hi("यहाँ काटें")}</div>
+            </div>
 
-          {/* ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
-              CARD 2 — OUTSIDE (Clinic CLOSED — Indigo)
-          ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ */}
-          <div className="half-card">
-            <div className="grad-closed" />
+            {/* ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+                CARD 2 — OUTSIDE (Indigo)
+            ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ */}
+            <div className="half-card">
+              <div className="grad-outside" />
 
-            {/* Decorative: moon/stars — top right */}
-            <svg className="deco" style={{ top: "2mm", right: "2mm", width: "48mm", height: "44mm", opacity: 0.08 }} viewBox="0 0 190 175">
-              <circle cx="125" cy="65" r="48" fill="none" stroke="white" strokeWidth="14"/>
-              <circle cx="152" cy="40" r="32" fill="#07052a"/>
-              <circle cx="25" cy="18" r="5" fill="white"/><circle cx="50" cy="8" r="3.5" fill="white"/>
-              <circle cx="12" cy="50" r="4" fill="white"/><circle cx="70" cy="22" r="3" fill="white"/>
-              <circle cx="10" cy="85" r="2.5" fill="white"/><circle cx="42" cy="72" r="2" fill="white"/>
-              <circle cx="80" cy="5" r="2" fill="white"/><circle cx="95" cy="30" r="1.5" fill="white"/>
-            </svg>
-            {/* Decorative: Concentric rings — bottom left */}
-            <svg className="deco" style={{ bottom: "-20mm", left: "-12mm", width: "58mm", height: "58mm", opacity: 0.065 }} viewBox="0 0 200 200">
-              <circle cx="100" cy="100" r="90" fill="none" stroke="white" strokeWidth="16"/>
-              <circle cx="100" cy="100" r="60" fill="none" stroke="white" strokeWidth="10"/>
-              <circle cx="100" cy="100" r="30" fill="none" stroke="white" strokeWidth="6"/>
-            </svg>
-            {/* Decorative: dot matrix — center */}
-            <svg className="deco" style={{ top: "30mm", left: "50%", transform: "translateX(-50%)", width: "20mm", height: "18mm", opacity: 0.1 }} viewBox="0 0 80 72">
-              {[0,1,2,3].map(r => [0,1,2,3].map(c => (
-                <circle key={`${r}${c}`} cx={10+c*20} cy={10+r*18} r="3.5" fill="white"/>
-              )))}
-            </svg>
-            {/* Decorative: clock — bottom right */}
-            <svg className="deco" style={{ bottom: "9mm", right: "6mm", width: "28mm", height: "28mm", opacity: 0.065 }} viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="44" fill="none" stroke="white" strokeWidth="8"/>
-              <line x1="50" y1="50" x2="50" y2="20" stroke="white" strokeWidth="6" strokeLinecap="round"/>
-              <line x1="50" y1="50" x2="72" y2="63" stroke="white" strokeWidth="5" strokeLinecap="round"/>
-              <circle cx="50" cy="50" r="5" fill="white"/>
-            </svg>
+              {/* Decorative: crescent top-right */}
+              <svg className="deco" style={{ top: "-4mm", right: "-4mm", width: "40mm", height: "36mm", opacity: 0.07 }} viewBox="0 0 160 145">
+                <circle cx="105" cy="58" r="44" fill="none" stroke="white" strokeWidth="12"/>
+                <circle cx="126" cy="37" r="30" fill="#05051a"/>
+                <circle cx="20" cy="15" r="3.5" fill="white"/>
+                <circle cx="45" cy="7" r="2.5" fill="white"/>
+                <circle cx="10" cy="46" r="3" fill="white"/>
+              </svg>
+              {/* Decorative: ring arc bottom-left */}
+              <svg className="deco" style={{ bottom: "-14mm", left: "-10mm", width: "46mm", height: "46mm", opacity: 0.05 }} viewBox="0 0 200 200">
+                <circle cx="100" cy="100" r="85" fill="none" stroke="white" strokeWidth="14"/>
+                <circle cx="100" cy="100" r="55" fill="none" stroke="white" strokeWidth="8"/>
+              </svg>
+              {/* Ambient glow */}
+              <div className="qr-glow-outside" />
 
-            <div className="card-content">
-              {/* NAV */}
-              <div className="nav-bar">
-                <div className="brand-block">
-                  <div className="brand-logo">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/icon-192.png" alt="Doctor Diary" />
+              <div className="card-content">
+                {/* HEADER */}
+                <div className="header-strip">
+                  <div className="brand-block">
+                    <div className="brand-logo">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="/icon-192.png" alt="Doctor Diary" />
+                    </div>
+                    <div>
+                      <div className="brand-name">Doctor Diary</div>
+                      <div className="brand-tagline">by NatureXpress · Skip the Queue</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="brand-title">Doctor Diary</div>
-                    <div className="brand-sub">by NatureXpress</div>
-                  </div>
+                  <div className="header-badge header-badge-outside">🔵 Book Next Visit</div>
                 </div>
-                <div className="badge-closed">
-                  <span className="badge-closed-text">
-                    CLOSED &nbsp;•&nbsp; {hi("क्लिनिक बंद है")}
-                  </span>
-                </div>
-              </div>
 
-              {/* MAIN ROW */}
-              <div className="main-row">
-                {/* LEFT */}
-                <div className="text-col">
-                  <div className="section-label label-closed">
-                    <span>🌙</span> Next Visit &nbsp;•&nbsp; {hi("अगली विज़िट")}
-                  </div>
-
-                  <div className="h1-en">
-                    Clinic Closed?<br />
-                    <span className="h1-accent-closed">Book Online Now!</span>
-                  </div>
-                  <div className="h1-hi h1-hi-closed">
-                    {hi("क्लिनिक बंद? कोई बात नहीं — ऑनलाइन बुकिंग करें!")}
-                  </div>
-
-                  <div className="subtext">
-                    Don't go back disappointed. Scan now to reserve your spot for when the clinic opens next.
-                  </div>
-
-                  <div className="steps">
-                    {([
-                      { Icon: IconScan,     bg: "rgba(167,139,250,0.18)", border: "rgba(167,139,250,0.4)",  color: "#c4b5fd", en: "Scan QR with phone camera", hi: "फोन से QR स्कैन करें" },
-                      { Icon: IconCalendar, bg: "rgba(99,102,241,0.18)",  border: "rgba(99,102,241,0.4)",   color: "#818cf8", en: "Pick date & time slot",    hi: "अगला दिन और समय चुनें" },
-                      { Icon: IconTicket,   bg: "rgba(56,189,248,0.15)",  border: "rgba(56,189,248,0.4)",   color: "#38bdf8", en: "Booking confirmed instantly", hi: "बुकिंग तुरंत पक्की होगी" },
-                      { Icon: IconSmile,    bg: "rgba(217,70,239,0.15)",  border: "rgba(217,70,239,0.4)",   color: "#e879f9", en: "Come on your day — no queues!", hi: "तय समय पर आएं — लाइन नहीं!" },
-                    ] as const).map(({ Icon, bg, border, color, en, hi: hiText }, i) => (
-                      <div className="step" key={i}>
-                        <div className="step-icon-closed" style={{ background: bg, border: `2px solid ${border}`, color }}>
-                          <Icon />
-                          <div className="step-num-closed">{i + 1}</div>
+                {/* MAIN BODY */}
+                <div className="main-body">
+                  {/* LEFT */}
+                  <div className="left-col">
+                    <div className="benefit-pill benefit-pill-outside">✨ Your Time Matters</div>
+                    <div className="headline-primary">
+                      CLINIC CLOSED?<br />
+                      <span className="headline-accent-outside">Book Online</span>
+                    </div>
+                    <div className="headline-hindi">{hi("ऑनलाइन बुकिंग — अगला दिन")}</div>
+                    <div className="flow-label">How it works</div>
+                    <div className="steps">
+                      {outsideSteps.map(({ Icon, bg, border, color, accentBar, en, hi: hiText }, i) => (
+                        <div className="step-row" key={i}>
+                          <div className="step-accent-bar" style={{ background: accentBar }} />
+                          <div className="step-badge step-badge-outside">{i + 1}</div>
+                          <div className="step-icon-wrap" style={{ background: bg, border: `1.5px solid ${border}`, color }}>
+                            <Icon />
+                          </div>
+                          <div className="step-text-block">
+                            <div className="step-en">{en}</div>
+                            <div className="step-hi">{hi(hiText)}</div>
+                          </div>
                         </div>
-                        <div className="step-text">
-                          <div className="step-en">{en}</div>
-                          <div className="step-hi">{hi(hiText)}</div>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                {/* RIGHT — QR */}
-                <div className="qr-col">
-                  <div className="scan-me-banner-closed">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" strokeWidth="2.5" strokeLinecap="round">
-                      <rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/>
-                      <rect x="3" y="16" width="5" height="5" rx="1"/><line x1="16" y1="16" x2="21" y2="16"/>
-                      <line x1="16" y1="19" x2="21" y2="19"/>
+                  {/* ARROW CUE */}
+                  <div className="arrow-cue-col">
+                    <div className="arrow-cue-label">Scan</div>
+                    <div className="arrow-cue-line" />
+                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+                      <path d="M1 1L5 5L9 1" stroke="rgba(255,255,255,0.45)" strokeWidth="2" strokeLinecap="round"/>
                     </svg>
-                    <span className="scan-me-text-closed">SCAN ME &nbsp;/&nbsp; {hi("स्कैन करें")}</span>
                   </div>
-                  <div className="qr-frame-closed">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={item.qrDataUri} alt="Scan to book appointment" />
-                  </div>
-                  <div className="qr-info">
-                    📷 Any phone camera works &nbsp;•&nbsp; {hi("किसी भी फोन कैमरे से")}
-                  </div>
-                  <div className="free-pill-closed">
-                    ⭐ Book 24×7 Anytime &nbsp;•&nbsp; {hi("कभी भी बुक करें")}
+
+                  {/* RIGHT — QR HERO */}
+                  <div className="right-col">
+                    {/* CTA Banner */}
+                    <div className="cta-banner-outside">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e0e7ff" strokeWidth="2.5" strokeLinecap="round">
+                        <rect x="5" y="2" width="14" height="20" rx="2"/>
+                        <line x1="12" y1="18" x2="12.01" y2="18" strokeWidth="4"/>
+                      </svg>
+                      <span className="cta-banner-outside-text">👇 Scan to Book</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e0e7ff" strokeWidth="2.5" strokeLinecap="round">
+                        <rect x="5" y="2" width="14" height="20" rx="2"/>
+                        <line x1="12" y1="18" x2="12.01" y2="18" strokeWidth="4"/>
+                      </svg>
+                    </div>
+
+                    {/* Floating QR Card */}
+                    <div className="qr-card qr-card-outside">
+                      <div className="qr-image-wrap">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={item.qrDataUri} alt="Scan to book your next visit" />
+                        <div className="qr-corner qr-corner-tl-o" />
+                        <div className="qr-corner qr-corner-tr-o" />
+                        <div className="qr-corner qr-corner-bl-o" />
+                        <div className="qr-corner qr-corner-br-o" />
+                      </div>
+                      <div className="qr-camera-hint">
+                        <IconPhone />
+                        Any phone camera &nbsp;•&nbsp; {hi("किसी भी कैमरे से")}
+                      </div>
+                    </div>
+
+                    {/* Auth label removed — was overlapping */}
                   </div>
                 </div>
-              </div>
 
-              {/* TRUST */}
-              <div className="trust-bar">
-                <div className="trust-items">
-                  <span className="trust-chip">
-                    <span style={{ color: "#34d399" }}><IconShield /></span>
-                    Secure &amp; Free
-                  </span>
-                  <span className="trust-sep">|</span>
-                  <span className="trust-chip">
-                    <span style={{ color: "#fbbf24" }}><IconZap /></span>
-                    Instant Confirmation
-                  </span>
-                  <span className="trust-sep">|</span>
-                  <span className="trust-chip" style={{ fontFamily: "'Noto Sans Devanagari','Mangal',sans-serif" }}>
-                    ✅ {hi("हमेशा भरोसेमंद")}
-                  </span>
-                </div>
-                <span className="code-chip">#{item.code}</span>
-              </div>
+                {/* BOTTOM */}
+                <div className="bottom-section">
+                  <div className="trust-strip">
+                    <div className="trust-chip trust-chip-o"><IconShield /> Free</div>
+                    <div className="trust-chip trust-chip-o"><IconNoApp /> No App</div>
+                    <div className="trust-chip trust-chip-o"><IconZap /> Instant Token</div>
+                    <div className="code-watermark">#{item.code}</div>
+                  </div>
 
-              {/* TAGLINE */}
-              <div className="tagline-bar tagline-bar-closed">
-                <span className="tagline-icon-closed"><IconHeart /></span>
-                <div>
-                  <div className="tagline-en">Your health, your time — your choice!</div>
-                  <div className="tagline-hi">{hi("स्मार्ट बुकिंग, तनाव-मुक्त कल।")}</div>
+                  {/* Blank box — doctor handwrites clinic details after printing */}
+                  <div className="blank-box" />
                 </div>
               </div>
             </div>
-          </div>
 
-        </div>
-      ))}
+          </div>
+        ))}
+      </div>
     </>
   );
 }
