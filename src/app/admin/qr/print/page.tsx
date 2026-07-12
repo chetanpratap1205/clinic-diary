@@ -4,6 +4,7 @@ import { inArray } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import QRCode from "qrcode";
 import { PrintButton } from "./print-button";
+import { PdfAutoDownloader } from "./pdf-auto-downloader";
 
 export const dynamic = "force-dynamic";
 
@@ -63,7 +64,7 @@ const IconHeart = () => (
 export default async function PrintQrPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ids?: string }>;
+  searchParams: Promise<{ ids?: string; download?: string }>;
 }) {
   const sp = await searchParams;
   if (!sp.ids) redirect("/admin/qr");
@@ -601,7 +602,10 @@ export default async function PrintQrPage({
             </div>
           </div>
         </div>
-        <PrintButton />
+        <div className="flex gap-3">
+          <PdfAutoDownloader code={printItems.length === 1 ? printItems[0].code : undefined} isAutoDownload={sp.download === "true"} />
+          <PrintButton />
+        </div>
       </div>
 
       {/* ══ PRINT TIPS (no-print) ════════════════════════════════════ */}
