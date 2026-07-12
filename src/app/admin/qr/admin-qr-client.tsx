@@ -168,11 +168,7 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
   };
 
   const downloadQrPdf = (id: string, code: string) => {
-    const url = `/api/admin/qr/download/${id}`;
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `qr-${code}.pdf`;
-    a.click();
+    window.open(`/admin/qr/print?ids=${id}`, "_blank");
   };
 
   const unprintedUnassignedCodes = codes.filter((c) => !c.clinicId && !c.printedAt);
