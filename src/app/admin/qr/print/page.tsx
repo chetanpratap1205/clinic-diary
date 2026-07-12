@@ -172,7 +172,7 @@ export default async function PrintQrPage({
           display: flex;
           flex-direction: column;
           height: 100%;
-          padding: 6mm 10mm; /* Increased padding */
+          padding: 4mm 8mm; /* Reduced to prevent large text overflow */
         }
 
         /* ─── TOP NAV BAR ─── */
@@ -181,7 +181,7 @@ export default async function PrintQrPage({
           align-items: center;
           justify-content: space-between;
           flex-shrink: 0;
-          margin-bottom: 5mm;
+          margin-bottom: 3mm; /* tighter */
         }
         .brand-block {
           display: flex;
@@ -189,8 +189,8 @@ export default async function PrintQrPage({
           gap: 12px;
         }
         .brand-logo {
-          width: 54px;
-          height: 54px;
+          width: 60px; /* little more big logo */
+          height: 60px;
           border-radius: 14px;
           overflow: hidden;
           flex-shrink: 0;
@@ -200,7 +200,7 @@ export default async function PrintQrPage({
         .brand-title {
           font-family: 'Poppins', sans-serif;
           font-weight: 900;
-          font-size: 24px;
+          font-size: 28px; /* Bigger */
           color: #fff;
           line-height: 1;
           letter-spacing: -0.5px;
@@ -255,14 +255,14 @@ export default async function PrintQrPage({
           display: flex;
           flex-direction: row;
           align-items: stretch;
-          gap: 10mm;
+          gap: 6mm; /* tighter */
           min-height: 0;
           overflow: hidden;
         }
 
-        /* LEFT TEXT ZONE — 50% */
+        /* LEFT TEXT ZONE — 55% */
         .text-col {
-          width: 50%;
+          width: 55%; /* More horizontal space for text */
           min-width: 0;
           display: flex;
           flex-direction: column;
@@ -290,7 +290,7 @@ export default async function PrintQrPage({
           color: #ffffff;
           line-height: 1.05;
           letter-spacing: -1px;
-          margin-bottom: 4px;
+          margin-bottom: 2px; /* tighter */
         }
         .h1-accent-open { color: #34d399; }
         .h1-accent-closed { color: #a78bfa; }
@@ -300,7 +300,7 @@ export default async function PrintQrPage({
           font-weight: 800;
           font-size: 25px;
           line-height: 1.25;
-          margin-bottom: 10px;
+          margin-bottom: 6px; /* tighter */
         }
         .h1-hi-open { color: rgba(255,255,255,0.95); }
         .h1-hi-closed { color: rgba(255,255,255,0.95); }
@@ -310,7 +310,7 @@ export default async function PrintQrPage({
           font-size: 12.5px;
           color: rgba(255,255,255,0.6);
           line-height: 1.5;
-          margin-bottom: 12px;
+          margin-bottom: 8px; /* tighter */
         }
         .subtext-hi {
           font-family: 'Noto Sans Devanagari', 'Mangal', sans-serif;
@@ -321,7 +321,7 @@ export default async function PrintQrPage({
         }
 
         /* ─── STEPS ─── */
-        .steps { display: flex; flex-direction: column; gap: 7px; }
+        .steps { display: flex; flex-direction: column; gap: 5px; } /* tighter */
         .step {
           display: flex; align-items: center; gap: 12px;
         }
@@ -375,9 +375,9 @@ export default async function PrintQrPage({
           line-height: 1.3;
         }
 
-        /* RIGHT QR ZONE — 50% */
+        /* RIGHT QR ZONE — 45% */
         .qr-col {
-          width: 50%;
+          width: 45%;
           min-width: 0;
           display: flex;
           flex-direction: column;
@@ -501,9 +501,9 @@ export default async function PrintQrPage({
         /* ─── BOTTOM TRUST BAR ─── */
         .trust-bar {
           flex-shrink: 0;
-          margin-top: 5mm;
+          margin-top: 3mm; /* tighter */
           border-top: 1.5px solid rgba(255,255,255,0.1);
-          padding-top: 4mm;
+          padding-top: 3mm; /* tighter */
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -528,7 +528,7 @@ export default async function PrintQrPage({
         /* ─── TAGLINE FOOTER ─── */
         .tagline-bar {
           flex-shrink: 0;
-          margin-top: 3mm;
+          margin-top: 2mm; /* tighter */
           border-radius: 12px;
           padding: 8px 16px;
           display: flex;
