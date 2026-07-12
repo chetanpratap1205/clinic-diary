@@ -177,20 +177,30 @@ export default async function PrintQrPage({
           }
           .no-print { display: none !important; }
           .a4-wrap {
-            margin: 10mm auto !important;
+            width: 210mm !important;
+            height: 297mm !important;
+            margin: 0 !important;
             box-shadow: none !important;
             page-break-after: always;
             break-after: page;
+            page-break-inside: avoid;
+            border: none !important;
+          }
+          .a4-wrap:last-child {
+            page-break-after: auto !important;
+            break-after: auto !important;
           }
         }
 
         /* ─── A4 wrapper ─── */
         .a4-wrap {
-          width: 190mm;
-          height: 277mm;
+          width: 210mm;
+          height: 297mm;
           margin: 24px auto;
           display: flex;
           flex-direction: column;
+          align-items: center;
+          justify-content: center;
           box-shadow: 0 40px 120px rgba(0,0,0,0.7);
           overflow: hidden;
           position: relative;
