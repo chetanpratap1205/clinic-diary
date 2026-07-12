@@ -224,6 +224,24 @@ export const paymentLogs = pgTable("payment_logs", {
   index("payment_logs_clinic_idx").on(table.clinicId),
 ]);
 
+// ─── QR Codes (Pre-printed redirect codes for field sales) ──────────────────
+export const qrCodes = pgTable(
+  "qr_codes",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    code: text("code").notNull().unique(),          // e.g. "Q-001", "CD-X4K2"
+    clinicId: uuid("clinic_id").references(() => clinics.id, { onDelete: "set null" }),
+    assignedAt: timestamp("assigned_at"),
+    printedAt: timestamp("printed_at"),
+    notes: text("notes"),                            // e.g. "Given to Dr. Sharma, Pune demo"
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("qr_codes_clinic_id_idx").on(table.clinicId),
+    index("qr_codes_code_idx").on(table.code),
+  ]
+);
+
 // ─── Reviews (Patient feedback post-appointment) ───────────────────────────────
 export const reviews = pgTable(
   "reviews",
@@ -271,3 +289,5 @@ export type PaymentLog = typeof paymentLogs.$inferSelect;
 export type NewPaymentLog = typeof paymentLogs.$inferInsert;
 export type Review = typeof reviews.$inferSelect;
 export type NewReview = typeof reviews.$inferInsert;
+export type QrCode = typeof qrCodes.$inferSelect;
+export type NewQrCode = typeof qrCodes.$inferInsert;

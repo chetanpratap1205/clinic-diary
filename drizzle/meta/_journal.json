@@ -8,6 +8,20 @@
       "when": 1782525394096,
       "tag": "0000_solid_tigra",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783807718869,
+      "tag": "0001_add_qr_codes",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783810133055,
+      "tag": "0002_add_qr_printed_at",
+      "breakpoints": true
     }
   ]
 }

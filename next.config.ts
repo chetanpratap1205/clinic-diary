@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ['pdfkit'], // Prevents pdfkit's node dependencies from breaking in Webpack
   images: {
     remotePatterns: [
       {

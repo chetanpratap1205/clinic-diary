@@ -7,6 +7,7 @@ import Image from "next/image";
 import { SettingsClient } from "./settings-client";
 import { AvailabilityClient } from "./availability-client";
 import { HolidayClient } from "./holiday-client";
+import { QrCodeWidget } from "@/components/dashboard/qr-code-widget";
 import { MessageCircle, Sparkles, ShieldCheck } from "lucide-react";
 
 export const metadata = {
@@ -71,6 +72,18 @@ export default async function SettingsPage() {
       </div>
 
       <SettingsClient initialData={initialData} slug={clinic.slug} />
+
+      {/* QR Code Widget */}
+      <div>
+        <h2 className="text-xl font-bold text-slate-900 tracking-tight mb-1">Your Booking QR Code</h2>
+        <p className="text-slate-500 text-sm mb-4">Physical QR card for your clinic — patients scan to book instantly.</p>
+        <QrCodeWidget
+          clinicId={clinic.id}
+          clinicName={clinic.name}
+          slug={clinic.slug}
+          themeColor={clinic.themeColor ?? "#0ea5e9"}
+        />
+      </div>
 
       {/* Working Hours & Holidays */}
       <div className="pt-2 sm:pt-4 space-y-6">
