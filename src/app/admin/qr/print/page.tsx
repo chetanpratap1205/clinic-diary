@@ -564,12 +564,22 @@ export default async function PrintQrPage({
         /* Plain empty space — doctor writes clinic details by hand */
         .blank-box {
           flex-shrink: 0;
-          background: rgba(255,255,255,0.07);
-          border: 1.5px dashed rgba(255,255,255,0.2);
-          border-radius: 10px;
-          min-width: 52mm;
-          max-width: 58mm;
-          height: 28px;
+          background: #ffffff;
+          border: 2px solid #cbd5e1;
+          border-radius: 6px;
+          min-width: 65mm;
+          height: 38px;
+          box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .blank-box::after {
+          content: "Clinic / Doctor Details";
+          font-size: 10px;
+          font-weight: 700;
+          color: #cbd5e1;
+          letter-spacing: 0.5px;
         }
 
         /* ─── CUT DIVIDER ─── */
