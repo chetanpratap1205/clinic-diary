@@ -1,7 +1,20 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
-const databaseUrl = process.env.DATABASE_URL;
+let databaseUrl = process.env.DATABASE_URL;
+
+if (databaseUrl && databaseUrl.includes("pooler.supabase.com")) {
+  // Automatically fix Supabase connection strings for Serverless (Vercel)
+  // 1. Swap session pooler (5432) for transaction pooler (6543)
+  if (databaseUrl.includes(":5432/postgres")) {
+    databaseUrl = databaseUrl.replace(":5432/postgres", ":6543/postgres");
+  }
+  // 2. Ensure pgbouncer is enabled
+  if (!databaseUrl.includes("pgbouncer=true")) {
+    const separator = databaseUrl.includes("?") ? "&" : "?";
+    databaseUrl += `${separator}pgbouncer=true&connection_limit=1`;
+  }
+}
 
 // We don't throw an error here immediately because Next.js evaluates this file during the build step.
 // If DATABASE_URL is missing, the Pool will naturally fail later when a connection is actually attempted.
