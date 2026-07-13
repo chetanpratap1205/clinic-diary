@@ -78,14 +78,14 @@ export default function HomePage() {
           </div>
           
           <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-white mb-6 tracking-tighter leading-[1.05]">
-            Stop Losing Revenue to <br className="hidden sm:block" />
+            Less Administration.<br className="hidden sm:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
-              Empty Chairs.
+              More Patient Care.
             </span>
           </h1>
           
           <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-            Fully automate your booking, eliminate no-shows with smart WhatsApp reminders, and watch your daily revenue grow effortlessly.
+            Help your clinic accept appointments online, reduce reception workload, and deliver a modern patient experience—all from one simple platform.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
@@ -131,15 +131,15 @@ export default function HomePage() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
-            {/* Feature 1: WhatsApp Automations */}
+            {/* Feature 1: One-Click WhatsApp */}
             <div className="md:col-span-2 bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 sm:p-10 relative overflow-hidden group">
               <div className="absolute right-0 top-0 w-[300px] h-[300px] bg-emerald-500/10 rounded-full blur-[80px] -z-10 group-hover:bg-emerald-500/20 transition-all" />
               <div className="mb-6">
                 <PremiumIcon Icon={MessageSquare} variant="glass" size="xl" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-3">Smart WhatsApp Automations</h3>
+              <h3 className="text-2xl font-bold text-white mb-3">One-Click WhatsApp Sharing</h3>
               <p className="text-slate-400 text-lg max-w-md mb-8">
-                Instantly eliminate no-shows. The system sends immediate booking confirmations, 24-hour reminders, and follow-up requests directly to patients' WhatsApp.
+                Instantly eliminate no-shows without paying for expensive APIs. Staff or doctors can send booking confirmations and live queue tracking links directly to patients' WhatsApp with a single tap.
               </p>
               
               {/* Mock UI */}
@@ -149,7 +149,7 @@ export default function HomePage() {
                 </div>
                 <p className="text-sm text-slate-300">
                   <strong className="text-emerald-400">Clinic Diary</strong><br/>
-                  Reminder: Your appointment with Dr. Sharma is tomorrow at 10:00 AM.
+                  Your appointment with Dr. Sharma is confirmed! Track your queue status here: doctor.naturexpress.in/track/123
                 </p>
               </div>
             </div>
@@ -252,7 +252,7 @@ export default function HomePage() {
                <ul className="space-y-6">
                  {[
                    "Patients book themselves online.",
-                   "System auto-reminds everyone via WhatsApp.",
+                   "Share live queue tracking via WhatsApp instantly.",
                    "Flawless queue management on a single iPad.",
                    "Complete digital records, zero paper."
                  ].map((item, i) => (
@@ -312,55 +312,47 @@ export default function HomePage() {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto items-center">
-            {/* 1 Month */}
-            <div className="bg-[#111] border border-white/10 rounded-3xl p-8 hover:bg-[#151515] transition-colors relative group">
-              <h3 className="text-xl font-semibold text-white mb-2">1 Month</h3>
-              <p className="text-sm text-slate-400 mb-6 min-h-[40px]">Perfect for getting started.</p>
-              <div className="mb-6 flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-white">₹499</span>
-                <span className="text-slate-500 text-sm">/ mo</span>
-              </div>
-              <ul className="space-y-4 mb-8">
-                {["Unlimited Patients", "Unlimited Appointments", "WhatsApp Reminders", "Basic Analytics"].map((feat, i) => (
-                  <li key={i} className="flex items-center gap-3 text-slate-300 text-sm">
-                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" /> {feat}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/signup" className="block w-full">
-                <Button variant="outline" className="w-full rounded-xl bg-transparent border-white/20 text-white hover:bg-white/10 h-12">
-                  Start Free Trial
-                </Button>
-              </Link>
+          <div className="mb-12 bg-gradient-to-r from-emerald-950/40 to-teal-900/40 border border-emerald-500/20 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-[0_0_30px_rgba(16,185,129,0.1)] max-w-4xl mx-auto">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] -z-10" />
+            <div>
+              <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                <PremiumIcon Icon={Star} variant="success" size="sm" />
+                FREE Premium Clinic Starter Kit <span className="text-emerald-400 text-sm font-semibold">(Worth ₹1,999)</span>
+              </h3>
+              <p className="text-slate-300 max-w-2xl text-sm">
+                Every new subscription includes our physical onboarding kit: Premium Reception QR Sticker, Digital Clinic Profile Setup, and Dedicated Staff Training. Everything you need to get patients booking online from Day 1.
+              </p>
             </div>
+          </div>
 
-            {/* 3 Months */}
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto items-center">
+            {/* Quarterly */}
             <div className="bg-[#111] border border-white/10 rounded-3xl p-8 hover:bg-[#151515] transition-colors relative group">
-              <h3 className="text-xl font-semibold text-white mb-2">3 Months</h3>
-              <p className="text-sm text-slate-400 mb-6 min-h-[40px]">Great for growing clinics.</p>
+              <h3 className="text-xl font-semibold text-white mb-2">Quarterly</h3>
+              <p className="text-sm text-slate-400 mb-6 min-h-[40px]">Perfect for getting started and testing the waters.</p>
               <div className="mb-6 flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-white">₹1,299</span>
+                <span className="text-5xl font-bold text-white">₹1,499</span>
                 <span className="text-slate-500 text-sm">/ 3 mo</span>
               </div>
               <div className="mb-6 inline-block bg-white/5 text-slate-300 text-xs font-semibold px-2.5 py-1 rounded-lg border border-white/10">
-                Works out to just ₹433/month
+                Works out to just ₹500/month
               </div>
               <ul className="space-y-4 mb-8">
-                {["Everything in 1 Month", "Priority Support", "Advanced Analytics", "Custom Branding"].map((feat, i) => (
+                {["One Complete Product", "Unlimited Patients & Appointments", "Free Premium Starter Kit", "Smart WhatsApp & SMS Ready", "Executive Analytics"].map((feat, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-300 text-sm">
                     <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" /> {feat}
                   </li>
                 ))}
               </ul>
+              <div className="text-xs text-slate-500 text-center mb-4 font-medium">GST calculated at checkout. Claim 18% ITC.</div>
               <Link href="/signup" className="block w-full">
-                <Button variant="outline" className="w-full rounded-xl bg-transparent border-white/20 text-white hover:bg-white/10 h-12">
-                  Start Free Trial
+                <Button variant="outline" className="w-full rounded-xl bg-transparent border-white/20 text-white hover:bg-white/10 h-14">
+                  Start Free Setup
                 </Button>
               </Link>
             </div>
 
-            {/* 12 Months - Enterprise Card */}
+            {/* Annual - Enterprise Card */}
             <div className="bg-gradient-to-b from-[#1a1a1a] to-[#0A0A0A] border border-emerald-500/50 rounded-3xl p-8 transform md:scale-105 shadow-[0_0_50px_rgba(16,185,129,0.15)] relative z-10 overflow-hidden">
               <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-400 to-teal-500" />
               <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl" />
@@ -369,25 +361,26 @@ export default function HomePage() {
                 Best Value
               </div>
               
-              <h3 className="text-xl font-semibold text-white mb-2">12 Months</h3>
+              <h3 className="text-xl font-semibold text-white mb-2">Annual</h3>
               <p className="text-sm text-emerald-200/70 mb-6 min-h-[40px]">Maximum ROI for established clinics.</p>
               <div className="mb-6 flex items-baseline gap-2">
-                <span className="text-5xl font-black text-white tracking-tighter">₹4,999</span>
+                <span className="text-6xl font-black text-white tracking-tighter">₹4,999</span>
                 <span className="text-slate-400 text-sm">/ yr</span>
               </div>
               <div className="mb-6 inline-block bg-emerald-500/10 text-emerald-400 text-xs font-semibold px-2.5 py-1 rounded-lg border border-emerald-500/20">
                 Works out to just ₹416/month
               </div>
               <ul className="space-y-4 mb-8 relative z-10">
-                {["Everything in 3 Months", "Dedicated Account Manager", "Free Digital Marketing Assets", "Premium Onboarding"].map((feat, i) => (
+                {["Everything in Quarterly", "Dedicated Account Manager", "Priority Support Channel", "Annual Performance Reviews"].map((feat, i) => (
                   <li key={i} className="flex items-center gap-3 text-white text-sm font-medium">
                     <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" /> {feat}
                   </li>
                 ))}
               </ul>
+              <div className="text-xs text-slate-400 text-center mb-4 relative z-10 font-medium">GST calculated at checkout. Claim 18% ITC.</div>
               <Link href="/signup" className="block w-full relative z-10">
                 <Button className="w-full rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold h-14 shadow-[0_0_20px_rgba(16,185,129,0.4)]">
-                  Start Free Trial
+                  Start Free Setup
                 </Button>
               </Link>
             </div>

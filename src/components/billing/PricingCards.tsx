@@ -10,50 +10,37 @@ import Script from "next/script";
 
 const plans = [
   {
-    id: "monthly",
-    name: "1 Month",
-    price: "₹499",
-    duration: "per month",
-    description: "Perfect for getting started",
-    features: [
-      "Unlimited Patients",
-      "Unlimited Appointments",
-      "SMS & Email Reminders",
-      "Basic Analytics",
-      "Standard Support",
-    ],
-  },
-  {
     id: "quarterly",
-    name: "3 Months",
-    price: "₹1299",
-    duration: "₹433/mo",
-    description: "Great for growing clinics",
+    name: "Quarterly",
+    price: "₹1,499",
+    duration: "per 3 months",
+    description: "Perfect for getting started and testing the waters.",
     features: [
-      "Everything in Monthly",
-      "Priority Support",
-      "Advanced Analytics",
-      "Custom Branding",
+      "One Complete Product",
+      "Unlimited Patients & Appointments",
+      "Free Premium Starter Kit",
+      "Smart WhatsApp & SMS Ready",
+      "Executive Analytics",
     ],
     popular: false,
   },
   {
     id: "yearly",
-    name: "12 Months",
-    price: "₹4999",
-    duration: "₹416/mo",
-    description: "Best value for established clinics",
+    name: "Annual",
+    price: "₹4,999",
+    duration: "per year",
+    description: "Maximum ROI for established clinics.",
     features: [
-      "Everything in 3 Months",
+      "Everything in Quarterly",
       "Dedicated Account Manager",
-      "Early Access to Features",
-      "Premium Onboarding",
+      "Priority Support Channel",
+      "Annual Performance Reviews",
     ],
     popular: true,
   },
 ];
 
-const PLAN_RANKS: Record<string, number> = { monthly: 1, quarterly: 2, yearly: 3 };
+const PLAN_RANKS: Record<string, number> = { quarterly: 1, yearly: 2 };
 
 interface PricingCardsProps {
   activePlanId?: string;
@@ -140,11 +127,11 @@ export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
           Simple, No Hidden Cost
         </h2>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Setup free. Cancel anytime. No long-term lock-in.
+          GST calculated at checkout. Claim 18% ITC. No long-term lock-in.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto items-center">
+      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto items-center">
         {plans.map((plan, idx) => (
           <motion.div
             key={plan.id}

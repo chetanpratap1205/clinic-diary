@@ -11,9 +11,8 @@ const razorpay = new Razorpay({
 });
 
 const PLANS = {
-  monthly: { amount: 499 * 100, name: "1 Month" },
-  quarterly: { amount: 1299 * 100, name: "3 Months" },
-  yearly: { amount: 4999 * 100, name: "12 Months" },
+  quarterly: { amount: Math.round(1499 * 1.18 * 100), name: "Quarterly" },
+  yearly: { amount: Math.round(4999 * 1.18 * 100), name: "Annual" },
 };
 
 export async function POST(req: NextRequest) {

@@ -169,6 +169,13 @@ export default async function DashboardPage() {
 
   const overdueCount = overdueFollowUpsResult[0]?.count ?? 0;
   const dueTodayCount = dueTodayCountResult[0]?.count ?? 0;
+  const weekApptsCount = weekApptsResult[0]?.count ?? 0;
+  const minutesSaved = weekApptsCount * 3;
+  const hoursSaved = Math.floor(minutesSaved / 60);
+  const remainingMinutes = minutesSaved % 60;
+  const timeSavedString = hoursSaved > 0 
+    ? `${hoursSaved} hr ${remainingMinutes > 0 ? `${remainingMinutes} min` : ''}`.trim()
+    : `${remainingMinutes} min`;
 
   const todayConfirmed = todayAppts.filter(
     (a) => a.status === "confirmed"
@@ -200,6 +207,24 @@ export default async function DashboardPage() {
           <Greeting displayName={displayName} />
         </div>
       </FadeInUp>
+
+      {weekApptsCount > 0 && (
+        <FadeInUp>
+          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(16,185,129,0.05)] flex items-start gap-4">
+            <div className="bg-emerald-100 p-2 rounded-xl mt-0.5">
+              <Clock className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-emerald-900 mb-1">
+                Value Report: This Week
+              </p>
+              <p className="text-sm text-emerald-700 leading-relaxed font-medium">
+                Doctor Diary managed <strong className="text-emerald-900">{weekApptsCount}</strong> bookings this week, saving your clinic approximately <strong className="text-emerald-900">{timeSavedString}</strong> of reception work.
+              </p>
+            </div>
+          </div>
+        </FadeInUp>
+      )}
 
       <FadeInUp>
         <NowServingBanner clinicId={authUser.clinicId} initialAppointments={todayAppts} themeColor={clinicData?.themeColor || "#0ea5e9"} />
