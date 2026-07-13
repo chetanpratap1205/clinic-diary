@@ -16,6 +16,7 @@ import {
   FileText,
   AlertCircle,
   Trash2,
+  StickyNote,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -195,6 +196,28 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
     });
   };
 
+  const handleBatchPrintStickers = () => {
+    if (unprintedUnassignedCodes.length === 0) return;
+    
+    startTransition(async () => {
+      const ids = unprintedUnassignedCodes.map(c => c.id);
+      const res = await fetch("/api/admin/qr", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      
+      if (res.ok) {
+        toast.success("Codes marked as printed!");
+        const idParams = ids.join(",");
+        window.open(`/admin/qr/print-stickers?ids=${idParams}`, "_blank");
+        await refresh();
+      } else {
+        toast.error("Failed to mark as printed");
+      }
+    });
+  };
+
   const filtered = codes.filter((c) => {
     const matchesSearch =
       !search ||
@@ -299,7 +322,15 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
               className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold px-4 py-2 rounded-xl transition-all disabled:opacity-50 active:scale-95 shadow-md shadow-teal-500/20"
             >
               <FileText className="w-4 h-4" />
-              Print Batch
+              Print Posters
+            </button>
+            <button
+              onClick={handleBatchPrintStickers}
+              disabled={isPending}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-4 py-2 rounded-xl transition-all disabled:opacity-50 active:scale-95 shadow-md shadow-indigo-500/20"
+            >
+              <StickyNote className="w-4 h-4" />
+              Print Stickers
             </button>
           </div>
         )}
@@ -438,9 +469,19 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
                   <button
                     onClick={() => downloadQrPdf(row.id, row.code)}
                     className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-teal-600 transition-all"
-                    title="Download PDF"
+                    title="Download Poster PDF"
                   >
                     <Download className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      window.open(`/admin/qr/print-stickers?ids=${row.id}&download=true`, "_blank");
+                    }}
+                    className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-all"
+                    title="Download Stickers PDF"
+                  >
+                    <StickyNote className="w-4 h-4" />
                   </button>
 
                   {row.clinicId ? (

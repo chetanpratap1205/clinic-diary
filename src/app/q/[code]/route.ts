@@ -58,8 +58,15 @@ export async function GET(
       );
     }
 
+    const urlObj = new URL(_req.url);
+    const src = urlObj.searchParams.get("src");
+
     // ✅ Everything good — redirect to booking page
-    return NextResponse.redirect(`${baseUrl}/book/${clinic.slug}`, 302);
+    let finalUrl = `${baseUrl}/book/${clinic.slug}`;
+    if (src === "sticker") {
+      finalUrl += `?utm_source=prescription-sticker`;
+    }
+    return NextResponse.redirect(finalUrl, 302);
   } catch (err) {
     console.error("[QR Redirect Error]", err);
     return NextResponse.redirect(`${baseUrl}/q/not-found`, 302);

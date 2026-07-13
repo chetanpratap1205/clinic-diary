@@ -99,7 +99,8 @@ export async function createBooking(
   timeStr: string,
   patientName: string,
   patientPhone: string,
-  patientEmail?: string
+  patientEmail?: string,
+  acquisitionSource?: string
 ) {
   try {
     // 0. Find or create patient
@@ -182,6 +183,7 @@ export async function createBooking(
       status: "confirmed",
       tokenNumber: nextToken,
       cancelToken,
+      acquisitionSource: acquisitionSource || null,
     }).returning({ id: appointments.id });
 
     // Fetch clinic details for the notification

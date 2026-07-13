@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -20,6 +21,7 @@ import {
   Settings2,
   CreditCard,
   ListOrdered,
+  TrendingUp,
 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { logoutDoctor } from "@/app/dashboard/actions";
@@ -43,6 +45,7 @@ const navItems = [
   { href: "/dashboard/follow-ups", label: "Follow-ups", icon: Repeat },
   { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/dashboard/growth", label: "Growth", icon: TrendingUp },
 ];
 
 export function Sidebar({
@@ -72,15 +75,8 @@ export function Sidebar({
       {/* Logo */}
       <div className="p-4 sm:p-5 border-b border-slate-100/60 bg-white/50 backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div
-            className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-inner bg-gradient-to-br flex-shrink-0"
-            style={{ 
-              backgroundColor: themeColor,
-              backgroundImage: `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}dd 100%)`,
-              boxShadow: `inset 0 2px 4px 0 rgba(255, 255, 255, 0.3), 0 2px 5px 0 ${themeColor}40`
-            }}
-          >
-            {clinicName[0]?.toUpperCase() ?? "N"}
+          <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 shadow-sm border border-slate-200">
+            <Image src="/icon-192.png" alt="Logo" width={40} height={40} className="w-full h-full object-cover" />
           </div>
           <div className="overflow-hidden">
             <p className="font-semibold text-sm text-slate-900 truncate tracking-tight">

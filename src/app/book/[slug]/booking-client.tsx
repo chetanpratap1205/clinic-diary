@@ -3,7 +3,7 @@
 import { useState, useEffect, useTransition } from "react";
 import { format, addDays, startOfToday, isSameDay } from "date-fns";
 import { getAvailableSlots, createBooking, findPatientAppointment } from "./actions";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -89,6 +89,8 @@ export function BookingClient({
     time: string;
   } | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const acquisitionSource = searchParams.get("source") || undefined;
 
   const [trackPhone, setTrackPhone] = useState("");
   const [isTracking, setIsTracking] = useState(false);
@@ -155,7 +157,8 @@ export function BookingClient({
         selectedTime,
         data.patientName,
         data.patientPhone,
-        data.patientEmail
+        data.patientEmail,
+        acquisitionSource
       );
       if (res.error) {
         toast.error(res.error);
@@ -318,7 +321,7 @@ export function BookingClient({
         <p className="text-slate-500 text-sm mt-1">Choose your preferred day for the consultation.</p>
       </div>
 
-      <div className="grid grid-cols-3 min-[400px]:grid-cols-4 sm:grid-cols-5 gap-2.5">
+      <div className="flex overflow-x-auto snap-x gap-3 pb-4 pt-1 -mx-5 px-5 sm:mx-0 sm:px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {next14Days.map((date) => {
           const isSelected = isSameDay(date, selectedDate);
           const isToday = isSameDay(date, today);
@@ -331,7 +334,7 @@ export function BookingClient({
               key={date.toISOString()}
               onClick={() => handleDateSelect(date)}
               disabled={!isWorkingDay}
-              className={`flex flex-col items-center justify-center h-[84px] rounded-2xl border transition-all duration-200 relative overflow-hidden ${
+              className={`flex-shrink-0 w-[72px] flex flex-col items-center justify-center h-[90px] rounded-2xl border transition-all duration-200 snap-center relative overflow-hidden ${
                 isSelected
                   ? "border-transparent text-white shadow-lg scale-[1.02]"
                   : !isWorkingDay
@@ -421,9 +424,9 @@ export function BookingClient({
                     <button
                       key={time}
                       onClick={() => handleTimeSelect(time)}
-                      className="py-3 px-2 rounded-xl border-2 border-slate-100 bg-white text-slate-700 font-bold text-xs hover:border-slate-300 hover:shadow-sm transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 group"
+                      className="py-3.5 px-2 rounded-2xl border-2 border-slate-100 bg-white text-slate-700 font-bold text-sm hover:border-slate-300 hover:shadow-md transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 group"
                     >
-                      <Clock className="w-3 h-3 text-slate-300 group-hover:text-slate-400 transition-colors" />
+                      <Clock className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-400 transition-colors" />
                       {formatTimeDisplay(time)}
                     </button>
                   ))}
@@ -486,7 +489,7 @@ export function BookingClient({
             id="patient-name"
             placeholder="E.g. Rahul Sharma"
             {...register("patientName")}
-            className={`h-12 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all shadow-inner focus:shadow-none focus:border-slate-300 ${
+            className={`h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all shadow-inner focus:shadow-none focus:border-slate-300 ${
               errors.patientName ? "border-red-400 focus-visible:ring-red-300" : "focus-visible:ring-slate-900/10"
             }`}
           />
@@ -504,7 +507,7 @@ export function BookingClient({
               type="tel"
               placeholder="9876543210"
               {...register("patientPhone")}
-              className={`h-12 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all shadow-inner focus:shadow-none focus:border-slate-300 pl-12 ${
+              className={`h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all shadow-inner focus:shadow-none focus:border-slate-300 pl-12 ${
                 errors.patientPhone ? "border-red-400 focus-visible:ring-red-300" : "focus-visible:ring-slate-900/10"
               }`}
             />
@@ -521,7 +524,7 @@ export function BookingClient({
             type="email"
             placeholder="your@email.com"
             {...register("patientEmail")}
-            className={`h-12 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all shadow-inner focus:shadow-none focus:border-slate-300 ${
+            className={`h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all shadow-inner focus:shadow-none focus:border-slate-300 ${
               errors.patientEmail ? "border-red-400 focus-visible:ring-red-300" : "focus-visible:ring-slate-900/10"
             }`}
           />
@@ -530,7 +533,7 @@ export function BookingClient({
         <button
           type="submit"
           disabled={isPending}
-          className="w-full h-12 rounded-2xl text-white font-bold text-sm shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] mt-2 flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100"
+          className="w-full h-14 rounded-2xl text-white font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100"
           style={{
             backgroundColor: themeColor,
             backgroundImage: `linear-gradient(to right, ${themeColor}, ${themeColor}cc)`,

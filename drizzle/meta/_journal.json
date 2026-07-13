@@ -22,6 +22,20 @@
       "when": 1783810133055,
       "tag": "0002_add_qr_printed_at",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1783897258761,
+      "tag": "0003_sweet_lily_hollister",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783900918973,
+      "tag": "0004_swift_butterfly",
+      "breakpoints": true
     }
   ]
 }

@@ -80,6 +80,7 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
       id: appointments.id,
       status: appointments.status,
       date: appointments.appointmentDate,
+      acquisitionSource: appointments.acquisitionSource,
     })
     .from(appointments)
     .where(
@@ -114,6 +115,15 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
   // For daily charts
   const dailyMap: Record<string, { appointments: number; revenue: number }> = {};
   
+  // For acquisition sources
+  const sourceCounts: Record<string, number> = {
+    qr_inside: 0,
+    qr_outside: 0,
+    sticker: 0,
+    direct_link: 0,
+    unknown: 0
+  };
+  
   appointmentsResult.forEach(app => {
     // Status breakdown
     statusCounts[app.status] = (statusCounts[app.status] || 0) + 1;
@@ -121,6 +131,10 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
     if (app.status === "completed") {
       completedCount++;
     }
+
+    // Source breakdown
+    const source = app.acquisitionSource || "unknown";
+    sourceCounts[source] = (sourceCounts[source] || 0) + 1;
 
     // Daily breakdown
     const dateStr = app.date;
@@ -152,6 +166,21 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
     name,
     value,
   }));
+
+  const sourceLabels: Record<string, string> = {
+    qr_inside: "In-Clinic Poster",
+    qr_outside: "Outside Poster",
+    sticker: "Desk Sticker",
+    direct_link: "Direct Link",
+    unknown: "Unknown",
+  };
+
+  const sourceData = Object.entries(sourceCounts)
+    .filter(([_, value]) => value > 0)
+    .map(([name, value]) => ({
+      name: sourceLabels[name] || name,
+      value,
+    }));
 
   const dailyData = Object.entries(dailyMap)
     .sort(([dateA], [dateB]) => new Date(dateA).getTime() - new Date(dateB).getTime())
@@ -240,6 +269,7 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
       <AnalyticsCharts 
         dailyData={dailyData} 
         statusData={statusData} 
+        sourceData={sourceData}
         themeColor={clinic.themeColor!} 
       />
     </div>

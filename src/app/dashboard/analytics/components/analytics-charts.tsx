@@ -28,6 +28,7 @@ interface StatusStats {
 interface AnalyticsChartsProps {
   dailyData: DailyStats[];
   statusData: StatusStats[];
+  sourceData?: StatusStats[];
   themeColor?: string;
 }
 
@@ -40,11 +41,12 @@ const STATUS_COLORS: Record<string, string> = {
   checked_in: "#3b82f6",
 };
 
-export function AnalyticsCharts({ dailyData, statusData, themeColor = "#0ea5e9" }: AnalyticsChartsProps) {
+export function AnalyticsCharts({ dailyData, statusData, sourceData = [], themeColor = "#0ea5e9" }: AnalyticsChartsProps) {
   // If there's no data, we should still show something empty or fallback
   const hasData = dailyData.length > 0 || statusData.length > 0;
 
   return (
+    <>
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Revenue & Appointments Trend */}
       <div className="lg:col-span-2 rounded-xl border bg-card text-card-foreground shadow-sm p-6 flex flex-col gap-4">
@@ -181,5 +183,58 @@ export function AnalyticsCharts({ dailyData, statusData, themeColor = "#0ea5e9" 
         )}
       </div>
     </div>
+
+      {sourceData && sourceData.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-6 flex flex-col gap-4 lg:col-span-1">
+            <div>
+              <h3 className="font-semibold leading-none tracking-tight">Acquisition Channels</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Where your patients are coming from.
+              </p>
+            </div>
+            
+            <div className="h-[300px] w-full mt-auto mb-auto">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={sourceData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {sourceData.map((entry, index) => {
+                      const colors = ["#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#64748b"];
+                      return (
+                        <Cell 
+                          key={`cell-source-${index}`} 
+                          fill={colors[index % colors.length]} 
+                        />
+                      );
+                    })}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value: any) => [`${value} patients`, 'Count']}
+                    contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                    itemStyle={{ fontWeight: 600 }}
+                  />
+                  <Legend 
+                    layout="horizontal" 
+                    verticalAlign="bottom" 
+                    align="center"
+                    formatter={(value: string) => <span className="font-medium text-slate-600">{value}</span>}
+                    wrapperStyle={{ paddingTop: '20px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

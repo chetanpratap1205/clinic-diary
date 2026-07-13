@@ -106,6 +106,7 @@ export const appointments = pgTable(
     notes: text("notes"),
     cancelToken: text("cancel_token"),
     rescheduleToken: text("reschedule_token"),
+    acquisitionSource: text("acquisition_source"), // qr_inside, qr_outside, sticker, etc.
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [
@@ -268,6 +269,51 @@ export const reviews = pgTable(
   ]
 );
 
+// ─── E-commerce (Marketing Shop) ────────────────────────────────────────────────
+export const products = pgTable("products", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  price: integer("price").notNull(), // in paise (e.g. 50000 = ₹500)
+  imageUrl: text("image_url"),
+  category: text("category").notNull(), // sticker, acrylic, digital, print
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const orders = pgTable("orders", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  clinicId: uuid("clinic_id")
+    .notNull()
+    .references(() => clinics.id, { onDelete: "cascade" }),
+  amount: integer("amount").notNull(), // in paise
+  status: text("status").notNull().default("pending"), // pending, paid, processing, shipped, delivered
+  shippingAddress: text("shipping_address"),
+  razorpayOrderId: text("razorpay_order_id"),
+  razorpayPaymentId: text("razorpay_payment_id"),
+  trackingUrl: text("tracking_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("orders_clinic_idx").on(table.clinicId)
+]);
+
+export const orderItems = pgTable("order_items", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  orderId: uuid("order_id")
+    .notNull()
+    .references(() => orders.id, { onDelete: "cascade" }),
+  productId: uuid("product_id")
+    .notNull()
+    .references(() => products.id),
+  quantity: integer("quantity").notNull().default(1),
+  price: integer("price").notNull(), // snapshot of price at time of purchase
+  generatedUrl: text("generated_url"), // For custom tracked QR URLs
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("order_items_order_idx").on(table.orderId)
+]);
+
 // ─── Type Exports ──────────────────────────────────────────────────────────────
 export type Clinic = typeof clinics.$inferSelect;
 export type NewClinic = typeof clinics.$inferInsert;
@@ -291,3 +337,9 @@ export type Review = typeof reviews.$inferSelect;
 export type NewReview = typeof reviews.$inferInsert;
 export type QrCode = typeof qrCodes.$inferSelect;
 export type NewQrCode = typeof qrCodes.$inferInsert;
+export type Product = typeof products.$inferSelect;
+export type NewProduct = typeof products.$inferInsert;
+export type Order = typeof orders.$inferSelect;
+export type NewOrder = typeof orders.$inferInsert;
+export type OrderItem = typeof orderItems.$inferSelect;
+export type NewOrderItem = typeof orderItems.$inferInsert;
