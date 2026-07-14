@@ -335,7 +335,7 @@ export default function HomePage() {
                 <span className="text-slate-500 text-sm">/ 3 mo</span>
               </div>
               <div className="mb-6 inline-block bg-white/5 text-slate-300 text-xs font-semibold px-2.5 py-1 rounded-lg border border-white/10">
-                Works out to just ₹500/month
+                Less than ₹17/day for your entire clinic
               </div>
               <ul className="space-y-4 mb-8">
                 {["One Complete Product", "Unlimited Patients & Appointments", "Free Premium Starter Kit", "Smart WhatsApp & SMS Ready", "Executive Analytics"].map((feat, i) => (
@@ -344,7 +344,7 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-              <div className="text-xs text-slate-500 text-center mb-4 font-medium">GST calculated at checkout. Claim 18% ITC.</div>
+
               <Link href="/signup" className="block w-full">
                 <Button variant="outline" className="w-full rounded-xl bg-transparent border-white/20 text-white hover:bg-white/10 h-14">
                   Start Free Setup
@@ -368,7 +368,7 @@ export default function HomePage() {
                 <span className="text-slate-400 text-sm">/ yr</span>
               </div>
               <div className="mb-6 inline-block bg-emerald-500/10 text-emerald-400 text-xs font-semibold px-2.5 py-1 rounded-lg border border-emerald-500/20">
-                Works out to just ₹416/month
+                Only ₹14/day for your entire clinic
               </div>
               <ul className="space-y-4 mb-8 relative z-10">
                 {["Everything in Quarterly", "Dedicated Account Manager", "Priority Support Channel", "Annual Performance Reviews"].map((feat, i) => (
@@ -377,7 +377,7 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-              <div className="text-xs text-slate-400 text-center mb-4 relative z-10 font-medium">GST calculated at checkout. Claim 18% ITC.</div>
+
               <Link href="/signup" className="block w-full relative z-10">
                 <Button className="w-full rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold h-14 shadow-[0_0_20px_rgba(16,185,129,0.4)]">
                   Start Free Setup

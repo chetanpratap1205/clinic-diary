@@ -127,7 +127,7 @@ export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
           Simple, No Hidden Cost
         </h2>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          GST calculated at checkout. Claim 18% ITC. No long-term lock-in.
+          GST Invoice Provided. No long-term lock-in.
         </p>
       </div>
 
