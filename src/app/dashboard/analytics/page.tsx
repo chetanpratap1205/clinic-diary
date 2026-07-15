@@ -117,6 +117,10 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
   
   // For acquisition sources
   const sourceCounts: Record<string, number> = {
+    qr_reception: 0,
+    qr_window: 0,
+    qr_sticker: 0,
+    qr_general: 0,
     qr_inside: 0,
     qr_outside: 0,
     sticker: 0,
@@ -168,6 +172,10 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
   }));
 
   const sourceLabels: Record<string, string> = {
+    qr_reception: "Reception Standee (QR)",
+    qr_window: "Outside Window (QR)",
+    qr_sticker: "Patient File (Sticker)",
+    qr_general: "General QR",
     qr_inside: "In-Clinic Poster",
     qr_outside: "Outside Poster",
     sticker: "Desk Sticker",

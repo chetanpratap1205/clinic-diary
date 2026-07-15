@@ -139,7 +139,7 @@ export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.15, duration: 0.5, type: "spring" }}
             className={`relative rounded-3xl bg-white p-8 shadow-xl ring-1 ring-gray-900/10 flex flex-col h-full 
-              ${plan.popular ? "scale-105 border-2 border-primary ring-0 shadow-2xl z-10" : ""}
+              ${plan.popular ? "md:scale-105 border-2 border-primary ring-0 shadow-2xl z-10" : ""}
             `}
           >
             {plan.popular && (

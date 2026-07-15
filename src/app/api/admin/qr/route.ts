@@ -31,6 +31,7 @@ export async function GET() {
       assignedAt: qrCodes.assignedAt,
       printedAt: qrCodes.printedAt,
       notes: qrCodes.notes,
+      usageType: qrCodes.usageType,
       createdAt: qrCodes.createdAt,
       clinicName: clinics.name,
       clinicSlug: clinics.slug,
@@ -83,7 +84,7 @@ export async function PATCH(req: Request) {
   }
 
   const body = await req.json();
-  const { qrId, clinicId, notes } = body;
+  const { qrId, clinicId, notes, usageType } = body;
 
   if (!qrId) {
     return NextResponse.json({ error: "qrId is required" }, { status: 400 });
@@ -105,26 +106,13 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Clinic not found" }, { status: 404 });
   }
 
-  // Check no other QR is already assigned to this clinic
-  const existing = await db
-    .select()
-    .from(qrCodes)
-    .where(eq(qrCodes.clinicId, clinicId))
-    .limit(1);
-
-  if (existing.length && existing[0].id !== qrId) {
-    return NextResponse.json(
-      { error: `This clinic already has QR code ${existing[0].code}. Unassign it first.` },
-      { status: 409 }
-    );
-  }
-
   const updated = await db
     .update(qrCodes)
     .set({
       clinicId,
       assignedAt: new Date(),
       notes: notes ?? null,
+      usageType: usageType ?? "general",
     })
     .where(eq(qrCodes.id, qrId))
     .returning();

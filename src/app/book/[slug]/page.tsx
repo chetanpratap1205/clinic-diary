@@ -162,70 +162,67 @@ export default async function BookingPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* ─────────────── HERO BANNER ─────────────── */}
-      <header
-        className="relative overflow-hidden mb-8 sm:mb-12 -mx-4 sm:-mx-6 lg:-mx-8"
-        style={{
-          background: `linear-gradient(150deg, ${themeColor} 0%, ${themeColor}ee 45%, ${themeColor}bb 100%)`,
-        }}
-      >
-        {/* Subtle dot mesh */}
+      <header className="relative overflow-hidden mb-8 sm:mb-12 -mx-4 sm:-mx-6 lg:-mx-8 bg-white border-b border-slate-100 pb-8 sm:pb-12 pt-10 sm:pt-14 shadow-sm">
+        {/* Subtle dot mesh light */}
         <div
-          className="absolute inset-0 opacity-[0.06]"
+          className="absolute inset-0 opacity-[0.4]"
           style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.9) 1px, transparent 0)`,
-            backgroundSize: "24px 24px",
+            backgroundImage: `radial-gradient(circle at 1px 1px, #e2e8f0 1px, transparent 0)`,
+            backgroundSize: "32px 32px",
           }}
         />
-        {/* Glow blobs */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full opacity-20 blur-3xl bg-white pointer-events-none" />
-        <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full opacity-10 blur-2xl bg-white pointer-events-none" />
+        {/* Very subtle glow */}
+        <div className="absolute top-0 -left-1/4 w-96 h-96 rounded-full mix-blend-multiply filter blur-[120px] opacity-10 animate-blob" style={{ backgroundColor: themeColor }} />
 
-        <div className="relative z-10 max-w-6xl mx-auto px-6 sm:px-8 py-10 sm:py-14">
+        <div className="relative z-10 max-w-6xl mx-auto px-6 sm:px-8">
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 sm:gap-8">
-
-            {/* Logo / Avatar */}
-            <div className="flex-shrink-0">
-              <ClinicLogo
-                logoUrl={safeLogoUrl}
-                clinicName={clinic.name}
-                themeColor={themeColor}
-                variant="hero"
-              />
+            {/* Logo / Avatar with Pulse */}
+            <div className="flex-shrink-0 relative">
+              <div className="absolute inset-0 rounded-full animate-ping opacity-20" style={{ backgroundColor: themeColor }} />
+              <div className="relative shadow-xl rounded-full border-4 border-white bg-white">
+                <ClinicLogo
+                  logoUrl={safeLogoUrl}
+                  clinicName={clinic.name}
+                  themeColor={themeColor}
+                  variant="hero"
+                />
+              </div>
             </div>
 
             {/* Identity */}
             <div className="flex-1 text-center sm:text-left">
               {/* Verified badge */}
-              <div className="inline-flex items-center gap-1.5 text-white/75 text-[11px] font-bold tracking-widest uppercase mb-3">
-                <BadgeCheck className="w-3.5 h-3.5 text-white" />
+              <div className="inline-flex items-center gap-1.5 text-emerald-600 text-[11px] font-bold tracking-widest uppercase mb-3 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+                <BadgeCheck className="w-3.5 h-3.5" />
                 Verified Clinic
               </div>
 
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight mb-1">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight mb-1">
                 {clinic.name}
               </h1>
-              <p className="text-white/90 font-semibold text-lg sm:text-xl mb-1">
+              <p className="text-slate-600 font-bold text-lg sm:text-xl mb-1 flex items-center justify-center sm:justify-start gap-1.5">
+                <Stethoscope className="w-5 h-5 text-slate-400" />
                 {displayDoctorName}
               </p>
               {clinic.specialty && (
-                <p className="text-white/65 text-sm font-medium mb-4">
+                <p className="text-slate-500 text-sm font-medium mb-4">
                   {clinic.specialty}
                 </p>
               )}
 
               {/* Info pills */}
-              <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+              <div className="flex flex-wrap gap-2 justify-center sm:justify-start mt-4">
                 {clinic.consultationFee ? (
-                  <span className="text-sm font-bold text-white bg-white/15 border border-white/20 px-4 py-1.5 rounded-full backdrop-blur-sm">
+                  <span className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 bg-white border border-slate-200 px-4 py-2 rounded-full shadow-sm">
                     ₹{clinic.consultationFee} &nbsp;·&nbsp; Consultation Fee
                   </span>
                 ) : null}
                 {clinic.phone && (
                   <a
                     href={`tel:${clinic.phone}`}
-                    className="inline-flex items-center gap-1.5 text-sm font-bold text-white bg-white/15 border border-white/20 px-4 py-1.5 rounded-full backdrop-blur-sm hover:bg-white/25 transition-all"
+                    className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 bg-white border border-slate-200 px-4 py-2 rounded-full shadow-sm hover:border-slate-300 hover:bg-slate-50 transition-all"
                   >
-                    <Phone className="w-3.5 h-3.5" />
+                    <Phone className="w-3.5 h-3.5 text-slate-400" />
                     {clinic.phone}
                   </a>
                 )}
@@ -234,10 +231,10 @@ export default async function BookingPage({
                     href={directionsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm font-bold text-white bg-white/15 border border-white/20 px-4 py-1.5 rounded-full backdrop-blur-sm hover:bg-white/25 transition-all"
+                    className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 bg-white border border-slate-200 px-4 py-2 rounded-full shadow-sm hover:border-slate-300 hover:bg-slate-50 transition-all"
                   >
-                    <MapPin className="w-3.5 h-3.5" />
-                    {clinic.address}
+                    <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                    View on Map
                   </a>
                 )}
               </div>
@@ -262,10 +259,10 @@ export default async function BookingPage({
       </div>
 
       {/* ─────────────── MAIN CONTENT GRID ─────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
 
-        {/* LEFT: Clinic Information — order 2 on mobile (booking always first) */}
-        <aside className="lg:col-span-4 xl:col-span-5 order-2 lg:order-1 space-y-7">
+        {/* LEFT: Clinic Information — order 2 on mobile */}
+        <aside className="lg:col-span-5 order-2 lg:order-1 space-y-7">
 
           {/* About */}
           {clinic.about && (
@@ -425,53 +422,48 @@ export default async function BookingPage({
             </h2>
             <div className="rounded-2xl border border-slate-100 bg-white shadow-sm p-5">
               {/* Rating Summary */}
-              <div className="flex items-center gap-3 mb-4">
-                <div className="text-center">
-                  <p className="text-4xl font-black text-slate-900 leading-none">{averageRating}</p>
-                  <div className="flex items-center gap-0.5 mt-1 justify-center">
+              <div className="flex items-center gap-4 mb-5 pb-5 border-b border-slate-50">
+                <div className="text-center bg-amber-50 rounded-2xl px-4 py-3 border border-amber-100">
+                  <p className="text-4xl font-black text-amber-600 leading-none">{averageRating}</p>
+                  <div className="flex items-center gap-0.5 mt-2 justify-center">
                     {[1, 2, 3, 4, 5].map((i) => (
                       <Star
                         key={i}
-                        className={`w-3 h-3 ${i <= Math.round(Number(averageRating)) ? "fill-amber-400 text-amber-400" : "text-slate-200"}`}
+                        className={`w-3.5 h-3.5 ${i <= Math.round(Number(averageRating)) ? "fill-amber-400 text-amber-400" : "text-slate-200"}`}
                       />
                     ))}
                   </div>
-                  {totalReviews > 0 && (
-                    <p className="text-[11px] text-slate-400 font-medium mt-1">{totalReviews} verified</p>
-                  )}
                 </div>
-                <div className="w-px h-14 bg-slate-100 mx-2" />
                 <div className="flex-1">
                   <p className="text-sm font-bold text-slate-800">Verified Patient Reviews</p>
                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                     {totalReviews === 0
                       ? "After your visit, you'll receive a link to share your experience."
-                      : "All reviews are from patients who visited this clinic."}
+                      : `Based on ${totalReviews} verified patients who visited this clinic.`}
                   </p>
                 </div>
               </div>
 
-              {/* Review List */}
+              {/* Review List - Horizontal Scroll */}
               {totalReviews > 0 && (
-                <div className="space-y-4 mb-4 divide-y divide-slate-50 border-t border-slate-50 pt-4">
+                <div className="flex gap-4 overflow-x-auto pb-4 snap-x scrollbar-hide -mx-5 px-5">
                   {clinicReviews.map((review) => (
-                    <div key={review.id} className="pt-4 first:pt-0">
-                      <div className="flex items-center justify-between mb-1.5">
+                    <div key={review.id} className="min-w-[280px] w-[280px] snap-center bg-slate-50 border border-slate-100 rounded-2xl p-4 flex-shrink-0">
+                      <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <div
-                            className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-black"
-                            style={{ backgroundColor: `${themeColor}cc` }}
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black shadow-sm"
+                            style={{ backgroundColor: `${themeColor}ee` }}
                           >
                             {review.patientName?.[0]?.toUpperCase() || "P"}
                           </div>
-                          <span className="text-xs font-bold text-slate-700">{review.patientName.split(" ")[0]}</span>
-                          <span className="text-[10px] font-medium text-slate-400 flex items-center gap-0.5"><ShieldCheck className="w-3 h-3 text-emerald-500" /> Verified</span>
+                          <div>
+                            <span className="text-xs font-bold text-slate-800 block leading-none">{review.patientName.split(" ")[0]}</span>
+                            <span className="text-[9px] font-bold text-emerald-600 flex items-center gap-0.5 mt-1 uppercase tracking-wider"><ShieldCheck className="w-3 h-3" /> Verified</span>
+                          </div>
                         </div>
-                        <span className="text-[10px] font-semibold text-slate-400">
-                          {new Date(review.createdAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
-                        </span>
                       </div>
-                      <div className="flex items-center gap-0.5 mb-2 ml-9">
+                      <div className="flex items-center gap-0.5 mb-2">
                         {[1, 2, 3, 4, 5].map((i) => (
                           <Star
                             key={i}
@@ -480,7 +472,7 @@ export default async function BookingPage({
                         ))}
                       </div>
                       {review.comment && (
-                        <p className="text-sm text-slate-600 leading-relaxed ml-9">&quot;{review.comment}&quot;</p>
+                        <p className="text-[13px] font-medium text-slate-700 leading-relaxed line-clamp-4">&quot;{review.comment}&quot;</p>
                       )}
                     </div>
                   ))}
@@ -491,7 +483,7 @@ export default async function BookingPage({
                 href={`https://www.google.com/search?q=${encodeURIComponent(clinic.name + (clinic.address ? " " + clinic.address : ""))}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-xs font-bold transition-colors hover:opacity-80 text-slate-400 border-t border-slate-50 pt-3 w-full mt-2"
+                className="inline-flex items-center justify-center gap-2 text-xs font-bold transition-all hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl py-3 w-full mt-2"
               >
                 See all reviews on Google →
               </a>
@@ -500,19 +492,26 @@ export default async function BookingPage({
         </aside>
 
         {/* RIGHT: Booking Widget — order 1 on mobile */}
-        <div className="lg:col-span-8 xl:col-span-7 order-1 lg:order-2">
-          <div className="lg:sticky lg:top-6">
-            <div className="mb-3 px-1">
+        <div className="lg:col-span-7 order-1 lg:order-2">
+          <div className="lg:sticky lg:top-6 lg:z-30">
+            <div className="mb-4">
               <p className="text-slate-500 text-sm font-medium">
                 Book a consultation with <span className="font-bold text-slate-800">{displayDoctorName}</span>
                 {clinic.specialty ? ` · ${clinic.specialty}` : ""}
               </p>
             </div>
-            <BookingClient
-              clinic={clinic}
-              workingDays={workingDays}
-              closedDates={closedDates}
-            />
+            
+            <div className="glass rounded-3xl p-1 shadow-2xl relative overflow-hidden ring-1 ring-black/5">
+              <div className="absolute inset-0 bg-white/40" />
+              <div className="relative bg-white/80 backdrop-blur-xl rounded-[1.35rem] shadow-inner">
+                <BookingClient
+                  clinic={clinic}
+                  workingDays={workingDays}
+                  closedDates={closedDates}
+                />
+              </div>
+            </div>
+
           </div>
         </div>
       </div>

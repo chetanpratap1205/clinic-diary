@@ -63,8 +63,8 @@ export async function GET(
 
     // ✅ Everything good — redirect to booking page
     let finalUrl = `${baseUrl}/book/${clinic.slug}`;
-    if (src === "sticker") {
-      finalUrl += `?utm_source=prescription-sticker`;
+    if (src) {
+      finalUrl += `?source=qr_${src}`;
     }
     return NextResponse.redirect(finalUrl, 302);
   } catch (err) {

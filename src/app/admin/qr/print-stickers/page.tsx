@@ -37,16 +37,16 @@ export default async function PrintStickersPage({
 
   // Every code gets its own full A4 sheet (24 stickers).
   // Whether they print 1 clinic or a batch of 10, each gets a full dedicated page.
-  const printItems = codes.flatMap(code => Array(24).fill(code));
+  const multipliedCodes = codes.flatMap(code => Array(24).fill(code));
 
-  const stickersData = await Promise.all(
-    printItems.map(async (item) => {
-      const url = `${baseUrl}/q/${item.code}?src=sticker`;
-      const qrDataUri = await QRCode.toDataURL(url, {
-        width: 400,
-        margin: 1, // tighter margin for bigger code
-        color: { dark: "#0f172a", light: "#ffffff" }, // Slate 900 for premium feel
-        errorCorrectionLevel: "H",
+  const printItems = await Promise.all(
+    multipliedCodes.map(async (item) => {
+      const url = `${baseUrl}/q/${item.code}`;
+      const qrDataUri = await QRCode.toDataURL(`${url}?src=sticker`, {
+        width: 600,
+        margin: 2,
+        color: { dark: "#060606", light: "#ffffff" },
+        errorCorrectionLevel: "M",
       });
       return { ...item, url, qrDataUri };
     })
@@ -255,9 +255,9 @@ export default async function PrintStickersPage({
 
       {/* ══ PAGES ════════════════════════════════════════════════════ */}
       <div className="print-root">
-        {Array.from({ length: Math.ceil(stickersData.length / 24) }).map((_, pageIdx) => (
+        {Array.from({ length: Math.ceil(printItems.length / 24) }).map((_, pageIdx) => (
           <div key={pageIdx} className="a4-sheet">
-            {stickersData.slice(pageIdx * 24, (pageIdx + 1) * 24).map((item, i) => (
+            {printItems.slice(pageIdx * 24, (pageIdx + 1) * 24).map((item, i) => (
               <div key={`${item.id}-${i}`} className="sticker">
                 <div className="sticker-bg" />
                 <div className="sticker-deco" />

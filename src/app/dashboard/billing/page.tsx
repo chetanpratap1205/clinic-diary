@@ -60,7 +60,7 @@ export default async function BillingPage() {
   );
 
   return (
-    <div className="flex-1 space-y-8 p-8 pt-6 bg-slate-50/50 min-h-screen">
+    <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 bg-slate-50/50 min-h-screen">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-gray-900">Billing & Subscriptions</h2>
@@ -71,6 +71,22 @@ export default async function BillingPage() {
         <div className="flex items-center gap-2 text-sm text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200">
           <ShieldCheck className="w-4 h-4" />
           <span>Enterprise-grade security</span>
+        </div>
+      </div>
+
+      {/* CFO / Finance Head Note */}
+      <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6 text-white shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-[60px] pointer-events-none" />
+        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-700 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-slate-600 shadow-inner z-10">
+          <ShieldCheck className="w-8 h-8 text-teal-400/50" />
+        </div>
+        <div className="flex-1 text-center sm:text-left z-10">
+          <h3 className="text-sm font-bold text-teal-400 uppercase tracking-widest mb-2">A Note From Finance</h3>
+          <p className="text-slate-300 text-sm sm:text-base leading-relaxed italic mb-4">
+            "We don't view Doctor Diary as a cost for your clinic, but as a growth investment. My team ensures our pricing model is fully transparent with zero hidden fees. If you aren't seeing a clear ROI in your first month, we want to know about it."
+          </p>
+          <div className="font-semibold text-white">Finance Leadership Team</div>
+          <div className="text-slate-400 text-xs uppercase tracking-wide">Doctor Diary</div>
         </div>
       </div>
       

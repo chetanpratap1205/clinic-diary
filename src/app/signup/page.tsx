@@ -152,109 +152,129 @@ export default function SignupPage() {
   }
 
   return (
-    <div
-      className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-slate-50 flex items-center justify-center p-4"
-      style={{ minHeight: "100dvh" }}
-    >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="w-full max-w-md"
-      >
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-teal-700 flex items-center justify-center shadow-md">
-              <Activity className="w-5 h-5 text-white" strokeWidth={3} />
+    <div className="min-h-screen flex bg-white" style={{ minHeight: "100dvh" }}>
+      {/* LEFT: Art / Brand (Hidden on Mobile) */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden">
+        {/* Abstract Dark UI Elements */}
+        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-emerald-500/20 blur-[100px]" />
+        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] rounded-full bg-indigo-500/20 blur-[120px]" />
+        
+        <div className="relative z-10 p-16 flex flex-col h-full justify-between">
+          <Link href="/" className="inline-flex items-center gap-3 w-fit">
+            <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-lg">
+              <Activity className="w-6 h-6 text-slate-900" strokeWidth={3} />
             </div>
-            <span className="font-bold text-slate-900 text-xl tracking-tight">
+            <span className="font-black text-white text-2xl tracking-tight">
               Doctor Diary
             </span>
           </Link>
-        </div>
 
-        <Card className="shadow-xl border-slate-200/60 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl font-semibold tracking-tight text-slate-900">
-              Create an account
-            </CardTitle>
-            <CardDescription className="text-slate-500">
-              Start managing your clinic efficiently
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="dr.sharma@clinic.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                  inputMode="email"
-                  className="h-11 text-base transition-all duration-200 focus:ring-teal-500/20"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="At least 8 characters"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={8}
-                    autoComplete="new-password"
-                    className="h-11 pr-10 text-base transition-all duration-200 focus:ring-teal-500/20"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </button>
+          <div>
+            <h1 className="text-5xl font-black text-white leading-tight mb-6 tracking-tight">
+              Start your digital <br/> clinic today.
+            </h1>
+            <p className="text-slate-400 text-xl font-medium max-w-md leading-relaxed">
+              Join thousands of doctors who have digitized their practice, saving hours every day and providing a premium experience to patients.
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-4 text-white">
+            <div className="flex -space-x-3">
+              {[1,2,3,4].map(i => (
+                <div key={i} className="w-10 h-10 rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
+                  D{i}
                 </div>
-                <p className="text-xs text-slate-400">Minimum 8 characters required</p>
+              ))}
+            </div>
+            <p className="text-sm font-semibold text-slate-400">
+              Trusted by 10,000+ top doctors across India.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT: Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 lg:p-16">
+        <div className="w-full max-w-md">
+          {/* Mobile Logo */}
+          <div className="lg:hidden text-center mb-10">
+            <Link href="/" className="inline-flex items-center gap-2">
+              <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-md">
+                <Activity className="w-5 h-5 text-white" strokeWidth={3} />
               </div>
+              <span className="font-black text-slate-900 text-xl tracking-tight">
+                Doctor Diary
+              </span>
+            </Link>
+          </div>
 
-              <Button
-                type="submit"
-                className="w-full h-12 bg-teal-700 hover:bg-teal-800 text-white shadow-md transition-all active:scale-[0.98] rounded-xl"
-                size="lg"
-                disabled={loading}
-              >
-                {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  "Create Account"
-                )}
-              </Button>
-            </form>
+          <div className="mb-8">
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Create an account</h2>
+            <p className="text-slate-500 font-medium">Start managing your clinic efficiently.</p>
+          </div>
 
-            <div className="mt-8 text-center text-sm text-slate-500">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-bold text-slate-700">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="dr.sharma@clinic.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+                inputMode="email"
+                className="h-12 text-base rounded-xl bg-slate-50 border-slate-200 focus:bg-white transition-colors"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-bold text-slate-700">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="At least 8 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  className="h-12 pr-12 text-base rounded-xl bg-slate-50 border-slate-200 focus:bg-white transition-colors tracking-widest"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              <p className="text-xs text-slate-400 font-medium mt-1">Minimum 8 characters required</p>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg shadow-slate-900/20 transition-all active:scale-[0.98]"
+              disabled={loading}
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create Account"}
+            </Button>
+          </form>
+
+          <div className="mt-10 text-center">
+            <p className="text-sm font-medium text-slate-500">
               Already have an account?{" "}
-              <Link
-                href="/login"
-                className="text-teal-700 font-medium hover:text-teal-800 transition-colors"
-              >
+              <Link href="/login" className="text-slate-900 font-bold hover:underline transition-all">
                 Sign in
               </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

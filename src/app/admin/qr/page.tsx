@@ -17,6 +17,7 @@ export default async function AdminQrPage() {
         assignedAt: qrCodes.assignedAt,
         printedAt: qrCodes.printedAt,
         notes: qrCodes.notes,
+        usageType: qrCodes.usageType,
         createdAt: qrCodes.createdAt,
         clinicName: clinics.name,
         clinicSlug: clinics.slug,

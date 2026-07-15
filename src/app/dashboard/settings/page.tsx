@@ -57,6 +57,9 @@ export default async function SettingsPage() {
     about: clinic.about,
     logoUrl: clinic.logoUrl,
     googleMapsUrl: clinic.googleMapsUrl,
+    billingAddress: clinic.billingAddress,
+    state: clinic.state,
+    gstin: clinic.gstin,
   };
 
   return (
@@ -93,6 +96,24 @@ export default async function SettingsPage() {
         </div>
         <AvailabilityClient initialAvailability={clinicAvailability} />
         <HolidayClient initialHolidays={initialHolidays} />
+      </div>
+
+      {/* Customer Success Note */}
+      <div className="pt-4 sm:pt-8">
+        <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-[60px] pointer-events-none" />
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full flex items-center justify-center flex-shrink-0 border-2 border-indigo-200 shadow-sm z-10">
+            <MessageCircle className="w-8 h-8 text-indigo-500/70" />
+          </div>
+          <div className="flex-1 text-center sm:text-left z-10">
+            <h3 className="text-sm font-bold text-indigo-700 uppercase tracking-widest mb-2">A Note From Customer Success</h3>
+            <p className="text-slate-700 text-sm sm:text-base leading-relaxed italic mb-4">
+              "Software is only as good as the people behind it. My team's only KPI is your clinic's success. Whether it's a quick question or a full staff training session, we are right here to help you get the maximum value out of Doctor Diary."
+            </p>
+            <div className="font-semibold text-slate-900">Customer Success Leadership</div>
+            <div className="text-slate-500 text-xs uppercase tracking-wide">Doctor Diary</div>
+          </div>
+        </div>
       </div>
 
       {/* Founder Direct Access Banner */}

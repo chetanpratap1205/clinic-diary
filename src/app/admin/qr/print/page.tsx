@@ -117,14 +117,25 @@ export default async function PrintQrPage({
 
   const printItems = await Promise.all(
     codes.map(async (item) => {
-      const url = `${baseUrl}/q/${item.code}`;
-      const qrDataUri = await QRCode.toDataURL(url, {
+      const baseUrlCode = `${baseUrl}/q/${item.code}`;
+      
+      // Inside QR
+      const qrDataUriInside = await QRCode.toDataURL(`${baseUrlCode}?src=reception`, {
         width: 1600,
         margin: 3,
         color: { dark: "#060606", light: "#ffffff" },
         errorCorrectionLevel: "H",
       });
-      return { ...item, url, qrDataUri };
+      
+      // Outside QR
+      const qrDataUriOutside = await QRCode.toDataURL(`${baseUrlCode}?src=window`, {
+        width: 1600,
+        margin: 3,
+        color: { dark: "#060606", light: "#ffffff" },
+        errorCorrectionLevel: "H",
+      });
+      
+      return { ...item, qrDataUriInside, qrDataUriOutside };
     })
   );
 
@@ -736,7 +747,7 @@ export default async function PrintQrPage({
                     <div className="qr-card qr-card-inside">
                       <div className="qr-image-wrap">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={item.qrDataUri} alt="Scan to book your token" />
+                        <img src={item.qrDataUriInside} alt="Scan to book your token" />
                         <div className="qr-corner qr-corner-tl-i" />
                         <div className="qr-corner qr-corner-tr-i" />
                         <div className="qr-corner qr-corner-bl-i" />
@@ -867,7 +878,7 @@ export default async function PrintQrPage({
                     <div className="qr-card qr-card-outside">
                       <div className="qr-image-wrap">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={item.qrDataUri} alt="Scan to book your next visit" />
+                        <img src={item.qrDataUriOutside} alt="Scan to book your next visit" />
                         <div className="qr-corner qr-corner-tl-o" />
                         <div className="qr-corner qr-corner-tr-o" />
                         <div className="qr-corner qr-corner-bl-o" />

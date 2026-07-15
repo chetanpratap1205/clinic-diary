@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
 import { getAuthUser } from "@/lib/auth";
 import { db } from "@/db";
-import { products, clinics } from "@/db/schema";
-import { eq, asc } from "drizzle-orm";
+import { clinics } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { GrowthClient } from "./growth-client";
 
 export const metadata = {
-  title: "Growth & Marketing | Clinic Diary",
+  title: "Growth Hub | Clinic Diary",
 };
 
 export default async function GrowthPage() {
@@ -16,14 +16,7 @@ export default async function GrowthPage() {
     redirect("/login");
   }
 
-  // Fetch all active products
-  const availableProducts = await db
-    .select()
-    .from(products)
-    .where(eq(products.isActive, true))
-    .orderBy(asc(products.price));
-
-  // Fetch clinic fee to populate the ROI calculator default
+  // Fetch clinic details for theme color and fee
   const clinicResult = await db
     .select({ consultationFee: clinics.consultationFee, themeColor: clinics.themeColor })
     .from(clinics)
@@ -35,17 +28,7 @@ export default async function GrowthPage() {
 
   return (
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-7xl mx-auto">
-      <div className="flex flex-col space-y-4">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Growth & Marketing</h2>
-          <p className="text-muted-foreground mt-1">
-            Acquire more patients with premium, trackable physical assets for your clinic.
-          </p>
-        </div>
-      </div>
-
       <GrowthClient 
-        products={availableProducts} 
         consultationFee={consultationFee}
         themeColor={themeColor}
       />

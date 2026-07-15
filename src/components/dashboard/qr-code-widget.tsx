@@ -1,8 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { QrCode, Download, Share2, CheckCircle2, Smartphone, Copy, Check, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { QRCodeCanvas } from "qrcode.react";
+
+interface QrCodeData {
+  id: string;
+  code: string;
+  usageType: string;
+}
 
 interface QrCodeWidgetProps {
   clinicId: string;
@@ -12,25 +19,38 @@ interface QrCodeWidgetProps {
 }
 
 export function QrCodeWidget({ clinicId, clinicName, slug, themeColor }: QrCodeWidgetProps) {
-  const [hasQr, setHasQr] = useState<boolean | null>(null); // null = loading
+  const [qrCodes, setQrCodes] = useState<QrCodeData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [origin, setOrigin] = useState("https://doctor.naturexpress.in");
 
   useEffect(() => {
     setOrigin(window.location.origin);
-    // Check if this clinic has a QR assigned
-    fetch(`/api/qr/${clinicId}`, { method: "GET" })
-      .then((res) => setHasQr(res.ok))
-      .catch(() => setHasQr(false));
+    fetch(`/api/qr/${clinicId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("No QR");
+        return res.json();
+      })
+      .then((data) => {
+        setQrCodes(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setQrCodes([]);
+        setLoading(false);
+      });
   }, [clinicId]);
 
-  const qrImageUrl = `/api/qr/${clinicId}`;
   const bookingUrl = `${origin}/book/${slug}`;
 
-  const handleDownload = () => {
+  const handleDownload = (code: string, usageType: string) => {
+    const canvas = document.getElementById(`qr-canvas-${code}`) as HTMLCanvasElement;
+    if (!canvas) return;
+    
+    const url = canvas.toDataURL("image/png");
     const a = document.createElement("a");
-    a.href = qrImageUrl;
-    a.download = `booking-qr-${slug}.png`;
+    a.href = url;
+    a.download = `qr-${usageType}-${slug}.png`;
     a.click();
     toast.success("QR code downloaded!");
   };
@@ -49,7 +69,7 @@ export function QrCodeWidget({ clinicId, clinicName, slug, themeColor }: QrCodeW
   };
 
   // ─── Loading state ──────────────────────────────────────────────────────────
-  if (hasQr === null) {
+  if (loading) {
     return (
       <div
         className="rounded-3xl border p-6 animate-pulse"
@@ -62,7 +82,7 @@ export function QrCodeWidget({ clinicId, clinicName, slug, themeColor }: QrCodeW
   }
 
   // ─── No QR assigned yet ─────────────────────────────────────────────────────
-  if (!hasQr) {
+  if (qrCodes.length === 0) {
     return (
       <div
         className="rounded-3xl border p-6 sm:p-7"
@@ -133,84 +153,96 @@ export function QrCodeWidget({ clinicId, clinicName, slug, themeColor }: QrCodeW
         </div>
       </div>
 
-      {/* QR Image + Instructions */}
-      <div className="px-5 sm:px-7 pb-5 sm:pb-7">
-        <div className="flex flex-col sm:flex-row gap-5 sm:gap-8 items-center sm:items-start">
+      {/* QR Code List */}
+      <div className="px-5 sm:px-7 pb-5 sm:pb-7 flex flex-col gap-8">
+        {qrCodes.map((qr) => {
+          let qrUrl = `${origin}/q/${qr.code}`;
+          
+          // Apply proper tracking source based on usageType
+          if (qr.usageType === "reception_desk") qrUrl += "?src=reception";
+          else if (qr.usageType === "outside_window") qrUrl += "?src=window";
+          else if (qr.usageType === "patient_file_sticker") qrUrl += "?src=sticker";
+          else qrUrl += "?src=general";
 
-          {/* QR Code Image */}
-          <div className="flex-shrink-0 flex flex-col items-center gap-2">
-            <div className="bg-white p-4 rounded-2xl shadow-lg border border-slate-100">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={qrImageUrl}
-                alt={`QR code for ${clinicName}`}
-                width={160}
-                height={160}
-                className="block"
-                style={{ imageRendering: "pixelated" }}
-              />
-            </div>
-            <p className="text-[10px] text-slate-400 font-semibold text-center">
-              Scan to book at {clinicName}
-            </p>
-          </div>
+          return (
+            <div key={qr.id} className="flex flex-col sm:flex-row gap-5 sm:gap-8 items-center sm:items-start pt-6 border-t border-slate-100 first:border-0 first:pt-0">
+              {/* QR Code Image */}
+              <div className="flex-shrink-0 flex flex-col items-center gap-2">
+                <div className="bg-white p-4 rounded-2xl shadow-lg border border-slate-100">
+                  <QRCodeCanvas
+                    id={`qr-canvas-${qr.code}`}
+                    value={qrUrl}
+                    size={160}
+                    level="H"
+                    includeMargin={false}
+                  />
+                </div>
+                <div className="text-center">
+                  <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">
+                    {qr.usageType.replace(/_/g, " ")}
+                  </p>
+                  <p className="text-[9px] text-slate-400 font-mono">#{qr.code}</p>
+                </div>
+              </div>
 
-          {/* Right side — steps + actions */}
-          <div className="flex-1 w-full space-y-4">
-            {/* How to use */}
-            <div className="space-y-2">
-              <p className="text-xs font-black text-slate-500 uppercase tracking-wider">
-                How patients use it
-              </p>
-              {[
-                "Scan the QR code with any phone camera",
-                "Pick their preferred date and time",
-                "Instant confirmation — no calls needed!",
-              ].map((step, i) => (
-                <div key={i} className="flex items-start gap-2.5">
-                  <div
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-black flex-shrink-0 mt-0.5"
+              {/* Right side — steps + actions */}
+              <div className="flex-1 w-full space-y-4">
+                {/* How to use */}
+                <div className="space-y-2">
+                  <p className="text-xs font-black text-slate-500 uppercase tracking-wider">
+                    How patients use it
+                  </p>
+                  {[
+                    "Scan the QR code with any phone camera",
+                    "Pick their preferred date and time",
+                    "Instant confirmation — no calls needed!",
+                  ].map((step, i) => (
+                    <div key={i} className="flex items-start gap-2.5">
+                      <div
+                        className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-black flex-shrink-0 mt-0.5"
+                        style={{ backgroundColor: themeColor }}
+                      >
+                        {i + 1}
+                      </div>
+                      <p className="text-slate-600 text-sm">{step}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => handleDownload(qr.code, qr.usageType)}
+                    className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold py-2.5 px-3 rounded-xl hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download PNG
+                  </button>
+                  <button
+                    onClick={handleShareWhatsApp}
+                    className="flex items-center justify-center gap-2 bg-[#25D366] text-white text-xs font-bold py-2.5 px-3 rounded-xl hover:bg-[#20bd5a] transition-all active:scale-95 shadow-sm"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    WhatsApp
+                  </button>
+                </div>
+
+                {/* Copy booking link */}
+                <div className="flex items-center gap-2 bg-white rounded-xl border border-slate-200 p-2 shadow-sm">
+                  <p className="flex-1 text-xs text-slate-500 font-mono truncate px-1">{qrUrl}</p>
+                  <button
+                    onClick={handleCopy}
+                    className="flex-shrink-0 flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-lg text-white transition-all active:scale-95"
                     style={{ backgroundColor: themeColor }}
                   >
-                    {i + 1}
-                  </div>
-                  <p className="text-slate-600 text-sm">{step}</p>
+                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copied ? "Copied!" : "Copy"}
+                  </button>
                 </div>
-              ))}
+              </div>
             </div>
-
-            {/* Action Buttons */}
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={handleDownload}
-                className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold py-2.5 px-3 rounded-xl hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
-              >
-                <Download className="w-4 h-4" />
-                Download PNG
-              </button>
-              <button
-                onClick={handleShareWhatsApp}
-                className="flex items-center justify-center gap-2 bg-[#25D366] text-white text-xs font-bold py-2.5 px-3 rounded-xl hover:bg-[#20bd5a] transition-all active:scale-95 shadow-sm"
-              >
-                <Share2 className="w-4 h-4" />
-                WhatsApp
-              </button>
-            </div>
-
-            {/* Copy booking link */}
-            <div className="flex items-center gap-2 bg-white rounded-xl border border-slate-200 p-2 shadow-sm">
-              <p className="flex-1 text-xs text-slate-500 font-mono truncate px-1">{bookingUrl}</p>
-              <button
-                onClick={handleCopy}
-                className="flex-shrink-0 flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-lg text-white transition-all active:scale-95"
-                style={{ backgroundColor: themeColor }}
-              >
-                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                {copied ? "Copied!" : "Copy"}
-              </button>
-            </div>
-          </div>
-        </div>
+          );
+        })}
 
         {/* Pro tip */}
         <div className="mt-4 flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5">

@@ -15,19 +15,24 @@ import {
   Check,
   Zap,
   Smartphone,
-  Quote
+  Quote,
+  Lock,
+  BellRing,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InstallButton } from "@/components/pwa-provider";
 import { PremiumIcon } from "@/components/ui/premium-icon";
 import { HomeRoiCalculator } from "./_components/home-roi-calculator";
+import { SocialProofPopup } from "./_components/social-proof-popup";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] relative overflow-hidden font-sans selection:bg-emerald-500/30 selection:text-emerald-200">
+      <SocialProofPopup />
       
       {/* Navigation */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-white/5 transition-all">
+      <nav className="fixed top-0 inset-x-0 z-50 bg-transparent transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="flex-shrink-0">
@@ -66,33 +71,50 @@ export default function HomePage() {
       </nav>
 
       {/* Obsidian Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 relative min-h-[90vh] flex flex-col items-center justify-center">
+      <section className="pt-32 pb-20 px-4 sm:px-6 relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden">
+        {/* Video Background */}
+        <div className="absolute inset-0 w-full h-full z-0">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover object-top"
+          >
+            <source src="/hero_bg.mp4" type="video/mp4" />
+          </video>
+          {/* Uniform dark overlay to make text readable while keeping video colors crisp */}
+          <div className="absolute inset-0 bg-[#0A0A0A]/60" />
+        </div>
+
         {/* Deep glows */}
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-emerald-500/20 rounded-full blur-[120px] -z-10 animate-pulse" style={{ animationDuration: '6s' }} />
-        <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[150px] -z-10 animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-emerald-500/20 rounded-full blur-[120px] z-0 animate-pulse" style={{ animationDuration: '6s' }} />
+        <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[150px] z-0 animate-pulse" style={{ animationDuration: '8s' }} />
         
-        <div className="max-w-5xl mx-auto text-center z-10 w-full">
+        <div className="max-w-5xl mx-auto text-center relative z-10 w-full drop-shadow-2xl">
           <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md border border-emerald-500/30 text-emerald-300 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold mb-8 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
             <Star strokeWidth={2} className="w-4 h-4 text-emerald-400 flex-shrink-0" />
             <span>The Operating System for Top-Tier Clinics</span>
           </div>
           
-          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-white mb-6 tracking-tighter leading-[1.05]">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white mb-6 tracking-tighter leading-[1.1] break-words">
             Less Administration.<br className="hidden sm:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 block sm:inline mt-2 sm:mt-0">
               More Patient Care.
             </span>
           </h1>
           
-          <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-            Help your clinic accept appointments online, reduce reception workload, and deliver a modern patient experience—all from one simple platform.
+          <p className="text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-[1.8] font-medium text-center">
+            <span className="bg-emerald-100 text-emerald-950 px-2 py-0.5 box-decoration-clone">
+              Help your clinic accept appointments online, reduce reception workload, and deliver a modern patient experience—all from one simple platform.
+            </span>
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
             <Link href="/signup" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="w-full sm:w-auto bg-gradient-to-r from-teal-500 to-indigo-600 hover:from-teal-400 hover:to-indigo-500 text-white shadow-[0_0_30px_rgba(20,184,166,0.4)] group h-14 px-8 text-base font-bold rounded-full transition-all hover:scale-105 border border-teal-400/20"
+                className="w-full sm:w-auto bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-white shadow-[0_0_40px_rgba(6,182,212,0.4)] group h-14 px-8 text-base font-bold rounded-full transition-all hover:scale-105 hover:shadow-[0_0_60px_rgba(6,182,212,0.6)] border border-white/20"
               >
                 Start Your Free Setup
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -118,95 +140,175 @@ export default function HomePage() {
         </div>
         
         {/* ROI Calculator */}
-        <HomeRoiCalculator />
+        <div className="relative z-10 w-full mt-12">
+          <HomeRoiCalculator />
+        </div>
       </section>
 
-      {/* The Platform Ecosystem (Bento Grid) */}
+      {/* The Growth & Experience Engine (Bento Grid) */}
       <section className="py-24 px-4 sm:px-6 bg-[#050505] relative border-t border-white/5">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-5xl font-bold text-white mb-4 tracking-tight">Enterprise Infrastructure.</h2>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto">Everything a high-volume modern clinic needs, packed into a stark, incredibly fast interface.</p>
+          <div className="text-center mb-20">
+            <h2 className="text-4xl sm:text-6xl md:text-7xl font-black text-white mb-6 tracking-tighter leading-[1.1]">
+              Stop Acting Like a Waiting Room.<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
+                Start Operating Like a Premium Brand.
+              </span>
+            </h2>
+            <p className="text-slate-400 text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed font-medium">
+              Doctor Diary isn’t just booking software. It’s an end-to-end growth engine designed to eliminate front-desk chaos, dazzle your patients, and effortlessly multiply your revenue.
+            </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
-            {/* Feature 1: One-Click WhatsApp */}
-            <div className="md:col-span-2 bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 sm:p-10 relative overflow-hidden group">
-              <div className="absolute right-0 top-0 w-[300px] h-[300px] bg-emerald-500/10 rounded-full blur-[80px] -z-10 group-hover:bg-emerald-500/20 transition-all" />
+            {/* Feature 1: The "Wow" Patient Experience */}
+            <div className="md:col-span-2 bg-[#0A0A0A] border border-white/10 rounded-[32px] p-8 sm:p-12 relative overflow-hidden group">
+              <div className="absolute -right-20 -top-20 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[100px] -z-10 group-hover:bg-emerald-500/20 transition-all duration-700" />
               <div className="mb-6">
-                <PremiumIcon Icon={MessageSquare} variant="glass" size="xl" />
+                <PremiumIcon Icon={Star} variant="glass" size="xl" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-3">One-Click WhatsApp Sharing</h3>
-              <p className="text-slate-400 text-lg max-w-md mb-8">
-                Instantly eliminate no-shows without paying for expensive APIs. Staff or doctors can send booking confirmations and live queue tracking links directly to patients' WhatsApp with a single tap.
-              </p>
-              
-              {/* Mock UI */}
-              <div className="bg-[#111] border border-white/10 rounded-xl p-4 max-w-sm shadow-2xl relative">
-                <div className="absolute -left-2 -top-2 w-6 h-6 bg-emerald-500 rounded-full border-4 border-[#111] animate-bounce flex items-center justify-center">
-                  <Check className="w-3 h-3 text-[#111]" />
+              <div className="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                  <h3 className="text-3xl font-bold text-white mb-4">The "Wow" Patient Experience.</h3>
+                  <p className="text-slate-400 text-lg leading-relaxed mb-8">
+                    Give patients a frictionless, digital-first journey. From beautiful online booking pages to live queue tracking, deliver a modern experience that screams "Top-Tier Clinic" and guarantees 5-star reviews.
+                  </p>
+                  <ul className="space-y-3">
+                    {["No app downloads required", "Beautiful clinic profile page", "Instant WhatsApp updates"].map((item, i) => (
+                      <li key={i} className="flex items-center gap-3 text-emerald-100/70 text-sm font-medium">
+                        <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" /> {item}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <p className="text-sm text-slate-300">
-                  <strong className="text-emerald-400">Clinic Diary</strong><br/>
-                  Your appointment with Dr. Sharma is confirmed! Track your queue status here: doctor.naturexpress.in/track/123
-                </p>
+                {/* Mock UI */}
+                <div className="relative h-64 md:h-full min-h-[250px] w-full rounded-2xl bg-gradient-to-br from-[#111] to-[#0a0a0a] border border-white/5 shadow-2xl flex items-center justify-center overflow-hidden">
+                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
+                  <div className="bg-[#151515] border border-white/10 rounded-2xl p-5 w-64 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transform rotate-2 group-hover:rotate-0 transition-all duration-500 z-10">
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-400 to-cyan-400 flex-shrink-0"></div>
+                      <div>
+                        <div className="text-white font-bold text-sm">Dr. Sharma Clinic</div>
+                        <div className="text-slate-500 text-xs">Premium Care</div>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center px-3 border border-emerald-500/30">
+                        <span className="text-emerald-400 text-xs font-bold">Book Appointment</span>
+                      </div>
+                      <div className="h-10 bg-[#222] rounded-lg flex items-center justify-center px-3 border border-white/5">
+                        <span className="text-slate-300 text-xs font-semibold">Track Live Queue</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Feature 2: Offline to Online */}
-            <div className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 sm:p-10 relative overflow-hidden group">
-               <div className="absolute left-0 bottom-0 w-[200px] h-[200px] bg-teal-500/10 rounded-full blur-[60px] -z-10 group-hover:bg-teal-500/20 transition-all" />
-              <div className="mb-6">
-                <PremiumIcon Icon={Smartphone} variant="glass" size="xl" />
+            {/* Feature 2: Eradicate No-Shows */}
+            <div className="bg-[#0A0A0A] border border-white/10 rounded-[32px] p-8 sm:p-10 relative overflow-hidden group flex flex-col justify-between">
+              <div className="absolute left-0 bottom-0 w-[300px] h-[300px] bg-teal-500/10 rounded-full blur-[80px] -z-10 group-hover:bg-teal-500/20 transition-all duration-700" />
+              <div>
+                <div className="mb-6">
+                  <PremiumIcon Icon={MessageSquare} variant="glass" size="xl" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3">Eradicate No-Shows.</h3>
+                <p className="text-slate-400 text-base mb-8">
+                  Ghosting patients kill profitability. Automated WhatsApp confirmations keep patients engaged, reducing no-shows to near zero without expensive SMS APIs.
+                </p>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Offline to Online Engine</h3>
-              <p className="text-slate-400 mb-6">
-                Bridge the gap with physical assets. Order our premium Acrylic QR stands directly from your dashboard to convert walk-ins to digital bookings.
-              </p>
-              <div className="aspect-[4/3] rounded-lg bg-gradient-to-br from-slate-800 to-[#111] border border-white/5 flex items-center justify-center overflow-hidden relative">
-                 <div className="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?q=80&w=600&auto=format&fit=crop')] bg-cover bg-center mix-blend-luminosity" />
-                 <div className="bg-white p-2 rounded shadow-2xl z-10 transform -rotate-6">
-                   <div className="w-16 h-16 bg-black" />
+              <div className="bg-[#111] border border-white/10 rounded-2xl p-4 shadow-2xl relative">
+                <div className="absolute -left-3 -top-3 w-8 h-8 bg-teal-500 rounded-full border-4 border-[#0a0a0a] shadow-lg animate-bounce flex items-center justify-center z-20">
+                  <BellRing className="w-4 h-4 text-[#111]" />
+                </div>
+                <div className="bg-[#1a2c26] border border-emerald-500/20 rounded-xl p-4 relative z-10">
+                  <p className="text-xs text-emerald-100 leading-relaxed">
+                    <strong className="text-emerald-400 block mb-1">Clinic Diary Update</strong>
+                    Hi! You're next in line for Dr. Sharma. Please proceed to the clinic to secure your spot.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 3: 24/7 Acquisition */}
+            <div className="bg-[#0A0A0A] border border-white/10 rounded-[32px] p-8 sm:p-10 relative overflow-hidden group flex flex-col justify-between">
+              <div className="absolute -left-10 -top-10 w-40 h-40 bg-cyan-500/10 rounded-full blur-[70px] -z-10 group-hover:bg-cyan-500/20 transition-all duration-700" />
+              <div>
+                <div className="mb-6">
+                  <PremiumIcon Icon={Smartphone} variant="glass" size="xl" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3">24/7 Acquisition: Inside & Out.</h3>
+                <p className="text-slate-400 text-base mb-8">
+                  Turn every physical touchpoint into a booking engine. We provide premium QR stands for your reception and weatherproof QR decals for your clinic shutter. Whether it's peak rush hour or 2 AM when you're closed, patients scan, book, and join your database instantly.
+                </p>
+              </div>
+              
+              {/* Situational UI Mockup */}
+              <div className="aspect-[3/2] w-full rounded-2xl bg-[#0d0d0d] border border-white/5 flex flex-col items-center justify-center p-5 relative group-hover:scale-105 transition-transform duration-500 overflow-hidden shadow-inner">
+                 <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                 
+                 <div className="flex flex-col items-center z-10 w-full max-w-[240px]">
+                   {/* Status Badge */}
+                   <div className="bg-[#1a1a1a] border border-white/10 rounded-full px-4 py-1.5 mb-5 flex items-center gap-2 shadow-lg backdrop-blur-md">
+                      <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></div>
+                      <span className="text-xs text-slate-300 font-semibold tracking-wide">Clinic Closed • 2:14 AM</span>
+                   </div>
+                   
+                   {/* Notification Card */}
+                   <div className="bg-gradient-to-b from-[#151515] to-[#0A0A0A] border border-cyan-500/30 rounded-xl p-4 w-full shadow-[0_10px_30px_rgba(6,182,212,0.15)] relative transform group-hover:-translate-y-1 transition-transform duration-500">
+                     <div className="flex justify-between items-start mb-2">
+                       <div>
+                         <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest mb-1">New Booking</p>
+                         <p className="text-white font-bold text-sm">Tomorrow, 10:30 AM</p>
+                       </div>
+                       <div className="bg-cyan-500/10 text-cyan-400 p-1.5 rounded-lg border border-cyan-500/20">
+                         <Zap className="w-3.5 h-3.5" />
+                       </div>
+                     </div>
+                     <div className="mt-4 pt-3 border-t border-white/10 flex justify-between items-center">
+                       <span className="text-[10px] text-slate-400 font-medium bg-white/5 px-2 py-1 rounded">Via Storefront QR</span>
+                       <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                         <CheckCircle className="w-3 h-3" /> Secured
+                       </span>
+                     </div>
+                   </div>
                  </div>
               </div>
             </div>
 
-            {/* Feature 3: Executive Analytics */}
-            <div className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 sm:p-10 relative overflow-hidden group">
-              <div className="absolute -left-10 -top-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-[60px] -z-10 group-hover:bg-indigo-500/20 transition-all" />
-              <div className="mb-6">
-                <PremiumIcon Icon={BarChart3} variant="glass" size="xl" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Executive Analytics</h3>
-              <p className="text-slate-400">
-                Track every rupee. Know your exact retention rates, booking sources, and revenue metrics at a glance.
-              </p>
-            </div>
-
-            {/* Feature 4: Zero Double Bookings */}
-            <div className="md:col-span-2 bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 sm:p-10 relative overflow-hidden group flex flex-col md:flex-row items-center gap-8">
-              <div className="absolute right-0 bottom-0 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[100px] -z-10" />
+            {/* Feature 4: Zero Chaos */}
+            <div className="md:col-span-2 bg-[#0A0A0A] border border-white/10 rounded-[32px] p-8 sm:p-12 relative overflow-hidden group flex flex-col md:flex-row items-center gap-10">
+              <div className="absolute right-0 bottom-0 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] -z-10 group-hover:bg-indigo-500/20 transition-all duration-700" />
               
-              <div className="flex-1">
+              <div className="flex-1 z-10">
                 <div className="mb-6">
                   <PremiumIcon Icon={Shield} variant="glass" size="xl" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-3">Zero Double Bookings. Guaranteed.</h3>
-                <p className="text-slate-400 text-lg">
-                  Our database-level unique constraints ensure that even if two patients click book at the exact same millisecond, only one gets the slot. Your calendar remains flawless.
+                <h3 className="text-3xl font-bold text-white mb-4">Flawless Operations.<br/>Zero Double-Bookings.</h3>
+                <p className="text-slate-400 text-lg leading-relaxed">
+                  Your reputation hinges on reliability. Our enterprise-grade calendar ensures absolute precision. When your calendar is flawless and your front desk is silent, your clinic radiates absolute professionalism.
                 </p>
               </div>
 
               {/* Mock Calendar UI */}
-              <div className="w-full md:w-64 bg-[#111] border border-white/10 rounded-xl p-4 shadow-2xl flex-shrink-0">
-                <div className="flex items-center justify-between mb-4 pb-4 border-b border-white/10">
-                  <span className="text-white font-medium">10:00 AM</span>
-                  <Badge className="bg-emerald-500 text-[#111]">Booked</Badge>
+              <div className="w-full md:w-72 bg-[#111] border border-white/10 rounded-2xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex-shrink-0 z-10 relative">
+                <div className="absolute -right-4 -top-4 w-12 h-12 bg-indigo-500 rounded-xl border-4 border-[#0a0a0a] shadow-lg flex items-center justify-center rotate-12 group-hover:rotate-[24deg] transition-transform duration-500">
+                  <Lock className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex items-center justify-between mb-5 pb-5 border-b border-white/5">
+                  <div>
+                    <span className="text-white font-bold block">10:00 AM</span>
+                    <span className="text-slate-500 text-xs">Dr. Sharma</span>
+                  </div>
+                  <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1">Secured</Badge>
                 </div>
                 <div className="flex items-center justify-between opacity-50">
-                  <span className="text-white font-medium">10:15 AM</span>
-                  <Badge className="bg-slate-800 text-slate-400 hover:bg-slate-800">Locked</Badge>
+                  <div>
+                    <span className="text-white font-bold block">10:15 AM</span>
+                    <span className="text-slate-500 text-xs">Dr. Sharma</span>
+                  </div>
+                  <Badge className="bg-slate-800 text-slate-400 px-3 py-1 border border-white/5">Locked</Badge>
                 </div>
               </div>
             </div>
@@ -215,53 +317,76 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* The "Sanity Restored" Section (For Receptionists) */}
-      <section className="py-24 px-4 sm:px-6 bg-[#0A0A0A] border-t border-white/5 relative overflow-hidden">
-         <div className="max-w-7xl mx-auto">
-           <div className="grid lg:grid-cols-2 gap-0 rounded-[40px] overflow-hidden border border-white/10 shadow-2xl">
+      {/* The Transformation Section */}
+      <section className="py-24 px-4 sm:px-6 bg-[#050505] border-t border-white/5 relative overflow-hidden flex flex-col items-center">
+         <div className="max-w-7xl mx-auto w-full relative">
+           
+           <div className="text-center mb-16">
+             <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold text-white mb-4 tracking-tighter">
+               Your Front Desk:<br />
+               <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-slate-400 to-emerald-400">
+                 A Call Center or a Premium Clinic?
+               </span>
+             </h2>
+           </div>
+
+           <div className="relative flex flex-col lg:flex-row items-center justify-center gap-0 max-w-5xl mx-auto">
              
-             {/* The Chaos */}
-             <div className="bg-gradient-to-br from-[#1A0B0B] to-[#0A0A0A] p-12 lg:p-16 relative">
-               <div className="absolute top-0 right-0 w-full h-1 bg-red-500/20" />
-               <h3 className="text-3xl font-bold text-white mb-4">The Old Chaos</h3>
-               <p className="text-slate-400 text-lg mb-8">Receptionists acting as call centers instead of greeting patients.</p>
+             {/* The Chaos (Background/Recessed) */}
+             <div className="w-full lg:w-[45%] bg-[#0f0707] border border-red-900/30 rounded-3xl p-8 sm:p-10 lg:pr-20 relative lg:translate-x-12 lg:scale-95 z-0 opacity-80 hover:opacity-100 transition-all duration-500">
+               <div className="absolute top-0 left-0 w-32 h-32 bg-red-500/10 rounded-full blur-[50px] -z-10" />
+               <h3 className="text-2xl font-bold text-red-50 mb-2">The Old Chaos</h3>
+               <p className="text-red-200/70 text-sm mb-8 leading-relaxed pr-4">
+                 Your reception is acting like a frantic call center, costing you patients and peace of mind.
+               </p>
                
-               <ul className="space-y-6">
+               <ul className="space-y-5 pr-2">
                  {[
-                   "Endless phone ringing.",
-                   "Manually calling to confirm appointments.",
-                   "Angry patients waiting due to double bookings.",
-                   "Messy ledger books and sticky notes."
+                   "The phone never stops ringing.",
+                   "Staff waste hours manually calling to confirm appointments.",
+                   "Angry patients crowd a chaotic, delayed waiting room.",
+                   "Revenue leaks through messy ledgers and no-shows."
                  ].map((item, i) => (
-                   <li key={i} className="flex items-start gap-3 text-slate-300">
-                     <div className="mt-1 w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                       <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                   <li key={i} className="flex items-start gap-3 text-red-100/70 text-sm font-medium">
+                     <div className="mt-0.5 bg-red-500/10 border border-red-500/20 rounded-full p-1 flex-shrink-0">
+                       <X className="w-3 h-3 text-red-400" />
                      </div>
-                     <span>{item}</span>
+                     <span className="leading-relaxed">{item}</span>
                    </li>
                  ))}
                </ul>
              </div>
 
-             {/* The Calm */}
-             <div className="bg-gradient-to-br from-emerald-950/40 to-[#0A0A0A] p-12 lg:p-16 relative">
-               <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500" />
-               <h3 className="text-3xl font-bold text-white mb-4">Sanity Restored</h3>
-               <p className="text-slate-400 text-lg mb-8">A silent front desk focused entirely on patient experience.</p>
+             {/* The Premium Standard (Foreground/Elevated) */}
+             <div className="w-full lg:w-[60%] bg-gradient-to-br from-[#0c1f17] to-[#0A0A0A] border border-emerald-500/40 rounded-3xl p-8 sm:p-12 relative z-10 shadow-[0_30px_80px_rgba(16,185,129,0.15)] transform -mt-6 lg:mt-0 lg:-translate-x-6 hover:-translate-y-2 transition-transform duration-500 backdrop-blur-2xl">
+               <div className="absolute -top-10 -left-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] -z-10" />
+               <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-t-3xl opacity-50" />
+               
+               <div className="absolute top-6 right-6 hidden sm:block">
+                 <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)]">The New Standard</Badge>
+               </div>
+
+               <h3 className="text-3xl font-black text-white mb-2">The Premium Clinic</h3>
+               <p className="text-emerald-100/70 text-base mb-10 max-w-sm leading-relaxed">
+                 A silent, paperless front desk focused entirely on premium patient hospitality.
+               </p>
                
                <ul className="space-y-6">
                  {[
-                   "Patients book themselves online.",
-                   "Share live queue tracking via WhatsApp instantly.",
-                   "Flawless queue management on a single iPad.",
-                   "Complete digital records, zero paper."
+                   "Patients self-book 24/7 via a beautiful digital portal.",
+                   "Automated WhatsApp alerts keep everyone perfectly informed.",
+                   "Your receptionist manages a flawless queue from a single iPad.",
+                   "100% digital records. Zero paper. Zero stress."
                  ].map((item, i) => (
-                   <li key={i} className="flex items-start gap-3 text-slate-200 font-medium">
-                     <CheckCircle className="w-5 h-5 text-emerald-500 mt-1 flex-shrink-0" />
-                     <span>{item}</span>
+                   <li key={i} className="flex items-start gap-4 text-slate-200 font-medium text-sm sm:text-base">
+                     <div className="mt-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded-full p-1 flex-shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                       <Check className="w-4 h-4 text-emerald-400" />
+                     </div>
+                     <span className="leading-relaxed">{item}</span>
                    </li>
                  ))}
                </ul>
+               
              </div>
 
            </div>
@@ -269,30 +394,76 @@ export default function HomePage() {
       </section>
 
       {/* Founder's Guarantee */}
-      <section className="py-24 px-4 sm:px-6 bg-[#050505] border-t border-white/5 relative">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[120px] -z-10" />
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-[#0A0A0A] border border-white/10 rounded-[32px] p-8 sm:p-12 shadow-2xl relative overflow-hidden">
-            <Quote className="absolute top-8 right-8 w-16 h-16 text-white/5" />
+      <section className="py-32 px-4 sm:px-6 bg-[#050505] relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-[150px] -z-10 pointer-events-none" />
+        
+        <div className="max-w-4xl mx-auto relative z-10 flex flex-col gap-8">
+          <div className="bg-gradient-to-b from-white/[0.05] to-transparent border border-white/10 rounded-[40px] p-8 sm:p-14 shadow-2xl backdrop-blur-xl relative overflow-hidden group">
             
-            <div className="flex flex-col sm:flex-row gap-8 items-center sm:items-start">
-              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-[#111] shadow-[0_0_20px_rgba(16,185,129,0.2)] flex-shrink-0">
+            <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
+            <Quote className="absolute top-10 right-10 w-24 h-24 text-white/[0.02] -rotate-12" />
+            
+            <div className="flex flex-col sm:flex-row gap-10 items-center sm:items-start relative">
+              <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full overflow-hidden border-2 border-emerald-500/30 shadow-[0_0_40px_rgba(16,185,129,0.2)] flex-shrink-0">
                 <Image 
                   src="/chetan_profile_photo.png" 
-                  alt="Founder" 
-                  width={128} 
-                  height={128} 
-                  className="object-cover w-full h-full"
+                  alt="Chetan Pratap, Founder" 
+                  width={160} 
+                  height={160} 
+                  className="object-cover w-full h-full grayscale hover:grayscale-0 transition-all duration-700"
                 />
               </div>
-              <div>
-                <h3 className="text-2xl font-bold text-white mb-4">A Note From the Founder</h3>
-                <p className="text-slate-300 text-lg leading-relaxed mb-6 italic">
-                  "I built Doctor Diary because I saw incredible doctors losing massive amounts of money to outdated systems and no-shows. We engineered this platform not just to be software, but to be an active revenue-generating machine for your clinic. Try it. It will pay for itself in the first week."
+              <div className="flex-1">
+                <h3 className="text-xl text-emerald-400 font-bold uppercase tracking-widest mb-4">A Note From the Founder</h3>
+                <p className="text-slate-300 text-lg sm:text-xl leading-relaxed mb-8 font-medium">
+                  "I built Doctor Diary because I saw incredible doctors losing massive amounts of money to outdated systems and no-shows. We engineered this platform not just to be software, but to be an active, automated revenue-generating machine for your clinic."
                 </p>
-                <div>
-                  <div className="font-bold text-white">Chetan Pratap</div>
-                  <div className="text-emerald-400 text-sm">Founder & CEO, NatureXpress</div>
+                
+                <div className="bg-[#0A0A0A]/50 border border-emerald-500/20 rounded-2xl p-5 mb-8 inline-block shadow-inner backdrop-blur-md">
+                  <div className="flex items-center gap-3">
+                    <Shield className="w-6 h-6 text-emerald-400 flex-shrink-0" />
+                    <span className="text-white font-bold text-lg">Try it. It will pay for itself in the first week.</span>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <div className="text-3xl text-white italic font-serif mb-1 opacity-90">Chetan Pratap</div>
+                  <div className="text-emerald-400/80 text-sm font-semibold tracking-wide uppercase">Founder & CEO, NatureXpress</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Co-Founder's Note */}
+          <div className="bg-gradient-to-b from-white/[0.05] to-transparent border border-white/10 rounded-[40px] p-8 sm:p-14 shadow-2xl backdrop-blur-xl relative overflow-hidden group">
+            
+            <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
+            <Quote className="absolute top-10 right-10 w-24 h-24 text-white/[0.02] -rotate-12" />
+            
+            <div className="flex flex-col sm:flex-row-reverse gap-10 items-center sm:items-start relative">
+              <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full overflow-hidden border-2 border-cyan-500/30 shadow-[0_0_40px_rgba(6,182,212,0.2)] flex-shrink-0 bg-[#0f0f0f] flex items-center justify-center">
+                <Image 
+                  src="/govind-profile-pic.png" 
+                  alt="Govind Bansal, Co-Founder" 
+                  width={160} 
+                  height={160} 
+                  className="object-cover w-full h-full grayscale hover:grayscale-0 transition-all duration-700"
+                />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl text-cyan-400 font-bold uppercase tracking-widest mb-4">A Note From Leadership</h3>
+                <p className="text-slate-300 text-lg sm:text-xl leading-relaxed mb-8 font-medium">
+                  "Your clinic's growth shouldn't be limited by administrative bottlenecks. We focus on transforming your front desk from a cost center into a powerful acquisition channel that naturally attracts and retains high-value patients."
+                </p>
+                
+                <div className="bg-[#0A0A0A]/50 border border-cyan-500/20 rounded-2xl p-5 mb-8 inline-flex items-center gap-3 shadow-inner backdrop-blur-md">
+                  <TrendingUp className="w-6 h-6 text-cyan-400 flex-shrink-0" />
+                  <span className="text-white font-bold text-lg">Turn every interaction into a growth opportunity.</span>
+                </div>
+
+                <div className="mt-4">
+                  <div className="text-3xl text-white italic font-serif mb-1 opacity-90">Govind Bansal</div>
+                  <div className="text-cyan-400/80 text-sm font-semibold tracking-wide uppercase">Co-Founder, Sales & Marketing Head</div>
                 </div>
               </div>
             </div>
@@ -301,116 +472,155 @@ export default function HomePage() {
       </section>
 
       {/* Premium Pricing Tier */}
-      <section id="pricing" className="py-24 px-4 sm:px-6 bg-[#0A0A0A] relative border-t border-white/5 overflow-hidden">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16 max-w-3xl mx-auto">
-            <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6 tracking-tight">
-              An Investment That <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">Pays For Itself.</span>
+      <section id="pricing" className="py-32 px-4 sm:px-6 bg-[#0a0a0a] relative border-t border-white/5 overflow-hidden">
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="text-center mb-20 max-w-3xl mx-auto">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-6 tracking-tighter">
+              An Investment That <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Pays For Itself.</span>
             </h2>
-            <p className="text-slate-400 text-lg">
-              The average clinic using Doctor Diary sees a <strong className="text-white">₹25,000 to ₹50,000</strong> increase in monthly revenue simply by eliminating no-shows.
+            <p className="text-slate-400 text-lg sm:text-xl leading-relaxed">
+              The average clinic using Doctor Diary sees a <strong className="text-white font-bold">₹25,000 to ₹50,000</strong> increase in monthly revenue simply by eliminating no-shows and streamlining operations.
             </p>
           </div>
           
-          <div className="mb-12 bg-gradient-to-r from-emerald-950/40 to-teal-900/40 border border-emerald-500/20 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-[0_0_30px_rgba(16,185,129,0.1)] max-w-4xl mx-auto">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] -z-10" />
+          {/* Starter Kit Unboxing Block */}
+          <div className="mb-16 bg-gradient-to-br from-[#111] to-[#0A0A0A] border border-emerald-500/30 rounded-3xl p-8 sm:p-10 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-[0_20px_50px_rgba(16,185,129,0.1)] max-w-5xl mx-auto group">
+            <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-emerald-500/10 to-transparent -z-10 group-hover:from-emerald-500/20 transition-all duration-700" />
+            <div className="w-24 h-24 rounded-2xl bg-[#151515] border border-white/10 shadow-2xl flex items-center justify-center flex-shrink-0 relative overflow-hidden transform group-hover:scale-105 transition-transform duration-500">
+              <div className="absolute inset-0 bg-emerald-500/20 blur-xl" />
+              <Star className="w-10 h-10 text-emerald-400 relative z-10 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
+            </div>
             <div>
-              <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                <PremiumIcon Icon={Star} variant="success" size="sm" />
-                FREE Premium Clinic Starter Kit <span className="text-emerald-400 text-sm font-semibold">(Worth ₹1,999)</span>
-              </h3>
-              <p className="text-slate-300 max-w-2xl text-sm">
-                Every new subscription includes our physical onboarding kit: Premium Reception QR Sticker, Digital Clinic Profile Setup, and Dedicated Staff Training. Everything you need to get patients booking online from Day 1.
+              <div className="inline-block bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-3 border border-emerald-500/20">Included Free (Worth ₹1,999)</div>
+              <h3 className="text-2xl font-bold text-white mb-3">Premium Clinic Starter Kit</h3>
+              <p className="text-slate-400 text-base max-w-2xl leading-relaxed">
+                Every subscription includes our physical onboarding kit shipped to your door: Premium Acrylic QR Stands, Weatherproof Shutters QR Decals, and a live Dedicated Staff Training session.
               </p>
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto items-center">
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto items-center">
             {/* Quarterly */}
-            <div className="bg-[#111] border border-white/10 rounded-3xl p-8 hover:bg-[#151515] transition-colors relative group">
-              <h3 className="text-xl font-semibold text-white mb-2">Quarterly</h3>
-              <p className="text-sm text-slate-400 mb-6 min-h-[40px]">Perfect for getting started and testing the waters.</p>
+            <div className="bg-[#0f0f0f] border border-white/10 rounded-[32px] p-8 sm:p-10 hover:bg-[#111] transition-colors relative z-0">
+              <h3 className="text-2xl font-bold text-white mb-2">Quarterly</h3>
+              <p className="text-base text-slate-400 mb-8 min-h-[48px]">Perfect for getting started and testing the waters.</p>
               <div className="mb-6 flex items-baseline gap-2">
-                <span className="text-5xl font-bold text-white">₹1,499</span>
-                <span className="text-slate-500 text-sm">/ 3 mo</span>
+                <span className="text-5xl font-black text-white">₹1,499</span>
+                <span className="text-slate-500 font-medium">/ 3 mo</span>
               </div>
-              <div className="mb-6 inline-block bg-white/5 text-slate-300 text-xs font-semibold px-2.5 py-1 rounded-lg border border-white/10">
+              <div className="mb-8 inline-block bg-white/5 text-slate-300 text-sm font-semibold px-4 py-2 rounded-xl border border-white/10">
                 Less than ₹17/day for your entire clinic
               </div>
-              <ul className="space-y-4 mb-8">
+              <ul className="space-y-4 mb-10">
                 {["One Complete Product", "Unlimited Patients & Appointments", "Free Premium Starter Kit", "Smart WhatsApp & SMS Ready", "Executive Analytics"].map((feat, i) => (
-                  <li key={i} className="flex items-center gap-3 text-slate-300 text-sm">
-                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" /> {feat}
+                  <li key={i} className="flex items-start gap-3 text-slate-300 text-base font-medium">
+                    <Check className="w-5 h-5 text-slate-500 flex-shrink-0 mt-0.5" /> 
+                    <span>{feat}</span>
                   </li>
                 ))}
               </ul>
 
               <Link href="/signup" className="block w-full">
-                <Button variant="outline" className="w-full rounded-xl bg-transparent border-white/20 text-white hover:bg-white/10 h-14">
+                <Button variant="outline" className="w-full rounded-2xl bg-[#151515] border-white/10 text-white hover:bg-white/10 h-16 text-lg font-bold">
                   Start Free Setup
                 </Button>
               </Link>
             </div>
 
-            {/* Annual - Enterprise Card */}
-            <div className="bg-gradient-to-b from-[#1a1a1a] to-[#0A0A0A] border border-emerald-500/50 rounded-3xl p-8 transform md:scale-105 shadow-[0_0_50px_rgba(16,185,129,0.15)] relative z-10 overflow-hidden">
-              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-400 to-teal-500" />
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl" />
+            {/* Annual - Enterprise Card (Dominant) */}
+            <div className="bg-[#050505] rounded-[32px] p-[2px] relative z-10 transform md:scale-105 shadow-[0_30px_100px_rgba(16,185,129,0.25)] group hover:-translate-y-2 transition-transform duration-500">
+              {/* Animated Glowing Border */}
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 rounded-[32px] opacity-70 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 rounded-[32px] opacity-100" />
               
-              <div className="absolute top-4 right-4 bg-emerald-500 text-[#0A0A0A] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                Best Value
-              </div>
-              
-              <h3 className="text-xl font-semibold text-white mb-2">Annual</h3>
-              <p className="text-sm text-emerald-200/70 mb-6 min-h-[40px]">Maximum ROI for established clinics.</p>
-              <div className="mb-6 flex items-baseline gap-2">
-                <span className="text-6xl font-black text-white tracking-tighter">₹4,999</span>
-                <span className="text-slate-400 text-sm">/ yr</span>
-              </div>
-              <div className="mb-6 inline-block bg-emerald-500/10 text-emerald-400 text-xs font-semibold px-2.5 py-1 rounded-lg border border-emerald-500/20">
-                Only ₹14/day for your entire clinic
-              </div>
-              <ul className="space-y-4 mb-8 relative z-10">
-                {["Everything in Quarterly", "Dedicated Account Manager", "Priority Support Channel", "Annual Performance Reviews"].map((feat, i) => (
-                  <li key={i} className="flex items-center gap-3 text-white text-sm font-medium">
-                    <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" /> {feat}
-                  </li>
-                ))}
-              </ul>
+              <div className="bg-[#0A0A0A] rounded-[30px] p-8 sm:p-12 relative h-full w-full overflow-hidden">
+                <div className="absolute -top-20 -right-20 w-64 h-64 bg-emerald-500/20 rounded-full blur-[80px]" />
+                
+                <div className="absolute top-6 right-6 bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
+                  Best Value
+                </div>
+                
+                <h3 className="text-2xl font-bold text-white mb-2">Annual</h3>
+                <p className="text-base text-emerald-100/60 mb-8 min-h-[48px]">Maximum ROI for established, high-volume clinics.</p>
+                <div className="mb-6 flex items-baseline gap-2">
+                  <span className="text-6xl sm:text-7xl font-black text-white tracking-tighter">₹4,999</span>
+                  <span className="text-slate-400 font-medium">/ yr</span>
+                </div>
+                
+                {/* The Chai Anchor */}
+                <div className="mb-8 inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-400 text-sm font-bold px-4 py-2.5 rounded-xl border border-emerald-500/30">
+                  <span className="animate-pulse">☕</span> Less than ₹14/day. (Cheaper than a cup of chai)
+                </div>
+                
+                <ul className="space-y-5 mb-10 relative z-10">
+                  {["Everything in Quarterly", "Dedicated Account Manager", "Priority Support Channel", "Annual Performance Reviews"].map((feat, i) => (
+                    <li key={i} className="flex items-start gap-3 text-white text-base font-semibold">
+                      <div className="mt-0.5 bg-emerald-500/20 rounded-full p-1 border border-emerald-500/30">
+                        <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      </div>
+                      <span>{feat}</span>
+                    </li>
+                  ))}
+                </ul>
 
-              <Link href="/signup" className="block w-full relative z-10">
-                <Button className="w-full rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold h-14 shadow-[0_0_20px_rgba(16,185,129,0.4)]">
-                  Start Free Setup
-                </Button>
-              </Link>
+                <Link href="/signup" className="block w-full relative z-10">
+                  <Button className="w-full rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-slate-950 font-black h-16 text-lg shadow-[0_0_30px_rgba(16,185,129,0.3)] hover:shadow-[0_0_50px_rgba(16,185,129,0.5)] transition-all">
+                    Claim Your Area Exclusivity
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 bg-[#050505] py-12 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="flex-shrink-0">
-              <Image src="/icon-192.png" alt="Doctor Diary Logo" width={32} height={32} className="rounded-lg grayscale opacity-80" />
-            </div>
-            <span className="font-bold text-white text-lg">
-              Doctor Diary{" "}
-              <span className="font-medium text-slate-600 text-sm">
-                by NatureXpress
+      <footer className="border-t border-white/10 bg-[#050505] pt-24 pb-12 px-4 sm:px-6 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-emerald-500/5 rounded-full blur-[150px] -z-10 pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto">
+          {/* Final CTA */}
+          <div className="text-center mb-24 relative z-10">
+            <h2 className="text-3xl sm:text-5xl font-black text-white mb-6 tracking-tighter">
+              Stop losing revenue to no-shows.
+            </h2>
+            <p className="text-slate-400 text-lg mb-10 max-w-2xl mx-auto font-medium">
+              Join 500+ top-tier doctors who have transformed their front desk into a premium, silent, automated experience.
+            </p>
+            <Link href="/signup">
+              <Button size="lg" className="rounded-full bg-white text-black hover:bg-slate-200 h-14 px-10 font-bold text-lg shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 transition-all">
+                Get Started Today
+              </Button>
+            </Link>
+          </div>
+
+          <div className="border-t border-white/10 pt-12 flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+            <div className="flex flex-col items-center md:items-start gap-2">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="flex-shrink-0 bg-white/5 p-2 rounded-xl border border-white/10 relative group">
+                  <div className="absolute inset-0 bg-emerald-500/20 blur-md group-hover:bg-emerald-500/40 transition-colors" />
+                  <Image src="/icon-192.png" alt="Doctor Diary Logo" width={28} height={28} className="rounded-md relative z-10" />
+                </div>
+                <span className="font-bold text-white text-xl tracking-tight">
+                  Doctor Diary
+                </span>
+              </div>
+              <span className="font-medium text-slate-500 text-sm">
+                Engineered by NatureXpress
               </span>
-            </span>
+            </div>
+            
+            <div className="flex flex-wrap gap-6 sm:gap-10 text-sm font-semibold text-slate-400 justify-center">
+              <Link href="/privacy" className="hover:text-emerald-400 transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-emerald-400 transition-colors">Terms</Link>
+              <Link href="/refund" className="hover:text-emerald-400 transition-colors">Refund Policy</Link>
+              <a href="mailto:support@doctor.naturexpress.in" className="hover:text-emerald-400 transition-colors">Contact Support</a>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-4 sm:gap-6 text-sm font-medium text-slate-500 justify-center sm:justify-start">
-            <Link href="/privacy" className="hover:text-emerald-400 transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-emerald-400 transition-colors">Terms of Service</Link>
-            <Link href="/refund" className="hover:text-emerald-400 transition-colors">Refund Policy</Link>
-            <a href="mailto:support@doctor.naturexpress.in" className="hover:text-emerald-400 transition-colors">Contact Support</a>
-          </div>
-          <p className="text-sm font-medium text-slate-600">
+          
+          <div className="mt-12 text-center text-xs font-medium text-slate-600">
             © {new Date().getFullYear()} NatureXpress. All rights reserved.
-          </p>
+          </div>
         </div>
       </footer>
     </div>

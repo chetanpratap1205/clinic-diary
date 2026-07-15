@@ -17,6 +17,9 @@ interface SettingsData {
   about?: string | null;
   logoUrl?: string | null;
   googleMapsUrl?: string | null;
+  billingAddress?: string | null;
+  state?: string | null;
+  gstin?: string | null;
 }
 
 export async function updateClinicSettings(data: SettingsData) {
@@ -39,6 +42,9 @@ export async function updateClinicSettings(data: SettingsData) {
         about: data.about,
         logoUrl: data.logoUrl,
         googleMapsUrl: data.googleMapsUrl,
+        billingAddress: data.billingAddress,
+        state: data.state,
+        gstin: data.gstin,
       })
       .where(eq(clinics.id, user.clinicId));
 

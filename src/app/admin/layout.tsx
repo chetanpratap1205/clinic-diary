@@ -22,7 +22,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-900 overflow-hidden print:h-auto print:block print:bg-white print:overflow-visible">
+    <div className="flex h-screen bg-slate-50 text-slate-900 overflow-auto md:overflow-hidden print:h-auto print:block print:bg-white print:overflow-visible">
       {/* Sidebar */}
       <aside className="print:hidden w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 z-20">
         {/* Logo */}

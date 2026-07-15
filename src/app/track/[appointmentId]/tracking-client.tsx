@@ -263,22 +263,35 @@ export function TrackingClient({
           {isCheckedIn && (
             <motion.div
               key="waiting-mode" layout initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.95, height: 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="bg-white rounded-3xl p-5 shadow-lg shadow-slate-200/50 border border-slate-100 flex items-center justify-between"
-              style={{ borderTop: `4px solid ${themeColor}` }}
+              className="bg-slate-900 rounded-3xl p-6 shadow-2xl flex items-center justify-between text-white relative overflow-hidden"
             >
-               <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Your Token</p>
-                  <motion.p key={appointment.tokenNumber} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-black text-slate-900 tracking-tight">
+               {/* Animated Background Glow */}
+               <motion.div 
+                 animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.3, 0.1] }} 
+                 transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                 className="absolute -top-1/2 -left-1/4 w-full h-full rounded-full blur-[80px] pointer-events-none"
+                 style={{ backgroundColor: themeColor }}
+               />
+               
+               <div className="relative z-10">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    </span>
+                    <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Live: Your Token</p>
+                  </div>
+                  <motion.p key={appointment.tokenNumber} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="text-4xl font-black tracking-tight mb-1">
                     {appointment.tokenNumber ? `#${appointment.tokenNumber}` : "-"}
                   </motion.p>
-                  <p className="text-[10px] text-slate-500 mt-1 font-medium">
-                    {currentlyServing?.tokenNumber ? `Serving: #${currentlyServing.tokenNumber}` : "Serving: None"}
+                  <p className="text-[11px] text-slate-400 font-medium">
+                    {currentlyServing?.tokenNumber ? `Currently Serving: #${currentlyServing.tokenNumber}` : "Serving: None"}
                   </p>
                </div>
-               <div className="text-right">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Est. Wait</p>
-                  <motion.p key={estimatedWaitMins} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-black" style={{ color: themeColor }}>
-                    {queuePosition === 0 && estimatedWaitMins === 0 ? "Any moment" : `~${estimatedWaitMins} min`}
+               <div className="text-right relative z-10">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Est. Wait</p>
+                  <motion.p key={estimatedWaitMins} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-black text-white drop-shadow-md">
+                    {queuePosition === 0 && estimatedWaitMins === 0 ? "Now" : `~${estimatedWaitMins}m`}
                   </motion.p>
                </div>
             </motion.div>
@@ -377,12 +390,25 @@ export function TrackingClient({
         {/* ──── Visit Summary ──── */}
         <AnimatePresence>
           {isCompleted && (appointment as any).visitNote && (
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-              <Card className="border-0 shadow-lg rounded-3xl overflow-hidden bg-white">
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", bounce: 0.5 }}>
+              <div className="relative mb-6 text-center pt-4">
+                 <motion.div 
+                    initial={{ scale: 0 }} 
+                    animate={{ scale: [0, 1.2, 1] }} 
+                    transition={{ duration: 0.6 }}
+                    className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-50 text-indigo-500 mb-2 shadow-inner"
+                 >
+                    <Sparkles className="w-8 h-8" />
+                 </motion.div>
+                 <h2 className="text-xl font-bold text-slate-900 tracking-tight">Visit Complete!</h2>
+                 <p className="text-sm text-slate-500 mt-1">Thank you for visiting Dr. {doctorFirstName}</p>
+              </div>
+
+              <Card className="border-0 shadow-xl shadow-indigo-100/50 rounded-3xl overflow-hidden bg-white/80 backdrop-blur-xl">
                 <CardContent className="p-5">
-                  <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-4">
-                    <Sparkles className="w-5 h-5 text-indigo-500" /> Visit Summary
-                  </h2>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    Visit Summary
+                  </h3>
                   <div className="space-y-4">
                     {((appointment as any).visitNote.diagnosis) && (
                       <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">

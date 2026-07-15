@@ -24,10 +24,15 @@ export const clinics = pgTable("clinics", {
   averageConsultationMinutes: integer("average_consultation_minutes").default(15).notNull(),
   themeColor: text("theme_color").default("#0ea5e9"),
   address: text("address"),
+  billingAddress: text("billing_address"),
+  state: text("state"),
+  gstin: text("gstin"),
   googleMapsUrl: text("google_maps_url"),
   about: text("about"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("clinics_created_at_idx").on(table.createdAt),
+]);
 
 // ─── Clinic Admins (links auth users to clinics) ─────────────────────────────
 export const clinicAdmins = pgTable("clinic_admins", {
@@ -223,6 +228,7 @@ export const paymentLogs = pgTable("payment_logs", {
   paidAt: timestamp("paid_at").defaultNow().notNull(),
 }, (table) => [
   index("payment_logs_clinic_idx").on(table.clinicId),
+  index("payment_logs_paid_at_idx").on(table.paidAt),
 ]);
 
 // ─── QR Codes (Pre-printed redirect codes for field sales) ──────────────────
@@ -232,6 +238,7 @@ export const qrCodes = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     code: text("code").notNull().unique(),          // e.g. "Q-001", "CD-X4K2"
     clinicId: uuid("clinic_id").references(() => clinics.id, { onDelete: "set null" }),
+    usageType: text("usage_type").notNull().default("general"), // general, reception, window, sticker
     assignedAt: timestamp("assigned_at"),
     printedAt: timestamp("printed_at"),
     notes: text("notes"),                            // e.g. "Given to Dr. Sharma, Pune demo"
@@ -314,6 +321,24 @@ export const orderItems = pgTable("order_items", {
   index("order_items_order_idx").on(table.orderId)
 ]);
 
+// ─── Doctor Leads (CRM) ────────────────────────────────────────────────────────
+export const doctorLeads = pgTable("doctor_leads", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  doctorName: text("doctor_name").notNull(),
+  clinicName: text("clinic_name"),
+  phone: text("phone").notNull(),
+  specialty: text("specialty"),
+  city: text("city"),
+  source: text("source").notNull().default("online"), // online, field_visit, referral
+  status: text("status").notNull().default("new"), // new, contacted, demo_scheduled, converted, rejected
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("doctor_leads_status_idx").on(table.status),
+  index("doctor_leads_created_at_idx").on(table.createdAt),
+]);
+
 // ─── Type Exports ──────────────────────────────────────────────────────────────
 export type Clinic = typeof clinics.$inferSelect;
 export type NewClinic = typeof clinics.$inferInsert;
@@ -343,3 +368,5 @@ export type Order = typeof orders.$inferSelect;
 export type NewOrder = typeof orders.$inferInsert;
 export type OrderItem = typeof orderItems.$inferSelect;
 export type NewOrderItem = typeof orderItems.$inferInsert;
+export type DoctorLead = typeof doctorLeads.$inferSelect;
+export type NewDoctorLead = typeof doctorLeads.$inferInsert;

@@ -27,6 +27,7 @@ type QrCodeRow = {
   assignedAt: Date | null;
   printedAt: Date | null;
   notes: string | null;
+  usageType: string;
   createdAt: Date;
   clinicName: string | null;
   clinicSlug: string | null;
@@ -79,6 +80,7 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
   const [assigningId, setAssigningId] = useState<string | null>(null);
   const [selectedClinicId, setSelectedClinicId] = useState("");
   const [notes, setNotes] = useState("");
+  const [usageType, setUsageType] = useState("general");
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const refresh = async () => {
@@ -116,7 +118,7 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
       const res = await fetch("/api/admin/qr", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ qrId, clinicId: selectedClinicId, notes }),
+        body: JSON.stringify({ qrId, clinicId: selectedClinicId, notes, usageType }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -129,6 +131,7 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
       setAssigningId(null);
       setSelectedClinicId("");
       setNotes("");
+      setUsageType("general");
       await refresh();
     });
   };
@@ -429,6 +432,11 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
                         {row.printedAt ? "✓ Printed" : "Needs Printing"}
                       </span>
                     )}
+                    {row.usageType && row.usageType !== "general" && (
+                      <span className="ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200 uppercase">
+                        {row.usageType.replace(/_/g, ' ')}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -542,6 +550,16 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
                         </option>
                       ))}
                     </select>
+                    <select
+                      value={usageType}
+                      onChange={(e) => setUsageType(e.target.value)}
+                      className="w-full bg-white border border-slate-300 text-slate-900 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 shadow-sm"
+                    >
+                      <option value="general">General (Unspecified)</option>
+                      <option value="reception_desk">Reception Desk (Standee)</option>
+                      <option value="outside_window">Outside Window</option>
+                      <option value="patient_file_sticker">Patient File Sticker</option>
+                    </select>
                     <input
                       type="text"
                       placeholder="Optional notes (e.g. handed out during demo)"
@@ -557,6 +575,7 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
                         setAssigningId(null);
                         setSelectedClinicId("");
                         setNotes("");
+                        setUsageType("general");
                       }}
                       className="px-4 py-2 rounded-lg text-slate-500 hover:text-slate-700 text-sm font-semibold transition-all"
                     >

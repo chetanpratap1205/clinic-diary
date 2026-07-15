@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { paymentLogs, clinics, subscriptions } from "@/db/schema";
 import { desc, eq, sum, count, gte, lt, and, sql } from "drizzle-orm";
 import { format, subMonths, startOfMonth } from "date-fns";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -23,7 +24,14 @@ import {
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Billing | ClinicDiary Admin" };
 
-export default async function BillingPage() {
+export default async function BillingPage(props: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const searchParams = await props.searchParams;
+  const page = Number(searchParams?.page) || 1;
+  const PAGE_SIZE = 50;
+  const offset = (page - 1) * PAGE_SIZE;
+
   const now = new Date();
   const thisMonthStart = startOfMonth(now);
   const lastMonthStart = startOfMonth(subMonths(now, 1));
@@ -73,6 +81,10 @@ export default async function BillingPage() {
   }>;
 
   // ── Recent payments ledger ─────────────────────────────────────────────────
+  const [totalPaymentsResult] = await db.select({ count: count() }).from(paymentLogs);
+  const totalCount = totalPaymentsResult.count;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+
   const recentPayments = await db
     .select({
       id: paymentLogs.id,
@@ -87,7 +99,8 @@ export default async function BillingPage() {
     .from(paymentLogs)
     .leftJoin(clinics, eq(paymentLogs.clinicId, clinics.id))
     .orderBy(desc(paymentLogs.paidAt))
-    .limit(100);
+    .limit(PAGE_SIZE)
+    .offset(offset);
 
   const planColors: Record<string, string> = {
     monthly: "bg-sky-50 text-sky-700 border-sky-200",
@@ -253,7 +266,7 @@ export default async function BillingPage() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-semibold text-slate-700">
-            Payment Ledger (Last 100 transactions)
+            Payment Ledger
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -318,6 +331,36 @@ export default async function BillingPage() {
               )}
             </TableBody>
           </Table>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between p-4 border-t border-slate-100 bg-slate-50 rounded-b-xl">
+              <p className="text-sm text-slate-500">
+                Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, totalCount)} of {totalCount} payments
+              </p>
+              <div className="flex gap-2">
+                <Link
+                  href={`/admin/billing?page=${Math.max(1, page - 1)}`}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all ${page === 1 ? 'pointer-events-none opacity-40' : ''}`}
+                  aria-disabled={page === 1}
+                  tabIndex={page === 1 ? -1 : undefined}
+                >
+                  Previous
+                </Link>
+                <span className="px-3 py-1.5 text-sm text-slate-500">
+                  {page} / {totalPages}
+                </span>
+                <Link
+                  href={`/admin/billing?page=${Math.min(totalPages, page + 1)}`}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all ${page === totalPages ? 'pointer-events-none opacity-40' : ''}`}
+                  aria-disabled={page === totalPages}
+                  tabIndex={page === totalPages ? -1 : undefined}
+                >
+                  Next
+                </Link>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

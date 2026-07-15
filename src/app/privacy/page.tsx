@@ -20,6 +20,21 @@ export default function PrivacyPolicy() {
           </div>
         </div>
 
+        {/* CTO Note */}
+        <div className="bg-teal-50 border border-teal-100 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-10 shadow-sm relative overflow-hidden">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full flex items-center justify-center flex-shrink-0 border-2 border-teal-200 shadow-sm z-10">
+             <Shield className="w-8 h-8 text-teal-600/50" />
+          </div>
+          <div className="flex-1 text-center sm:text-left z-10">
+            <h3 className="text-sm font-bold text-teal-700 uppercase tracking-widest mb-2">A Note From Engineering</h3>
+            <p className="text-slate-700 text-sm sm:text-base leading-relaxed italic mb-4">
+              "Patient data isn't just sensitive; it's sacred. We utilize bank-grade encryption and strict access controls so you can sleep well knowing your clinic's data is bulletproof. We engineered Doctor Diary with security as the absolute foundation."
+            </p>
+            <div className="font-semibold text-slate-900">Engineering Leadership</div>
+            <div className="text-slate-500 text-xs uppercase tracking-wide">Doctor Diary</div>
+          </div>
+        </div>
+
         <div className="prose prose-slate prose-teal max-w-none text-slate-600">
           <p>
             This Privacy Policy describes how NatureXpress ("Company", "we", "us", or "our"), the creator of Doctor Diary, collects, uses, and shares your personal information when you use our website, application, and software services (collectively, the "Services"). By using our Services, you agree to the collection and use of information in accordance with this Privacy Policy.

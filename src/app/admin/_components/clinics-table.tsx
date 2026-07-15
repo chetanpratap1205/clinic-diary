@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, Building2, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -29,6 +30,18 @@ export type ClinicRow = {
 
 interface ClinicsTableProps {
   clinics: ClinicRow[];
+  totalPages: number;
+  totalCount: number;
+  currentPage: number;
+  currentSearch: string;
+  currentTab: string;
+  counts: {
+    all: number;
+    active: number;
+    past_due: number;
+    cancelled: number;
+    trial: number;
+  };
 }
 
 const TABS = [
@@ -67,54 +80,46 @@ function SubBadge({ status }: { status: string | null }) {
   );
 }
 
-export function ClinicsTable({ clinics }: ClinicsTableProps) {
-  const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
-  const [page, setPage] = useState(1);
+export function ClinicsTable({
+  clinics,
+  totalPages,
+  totalCount,
+  currentPage,
+  currentSearch,
+  currentTab,
+  counts,
+}: ClinicsTableProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const counts = useMemo(
-    () => ({
-      all: clinics.length,
-      active: clinics.filter((c) => c.subscriptionStatus === "active").length,
-      past_due: clinics.filter((c) => c.subscriptionStatus === "past_due").length,
-      cancelled: clinics.filter((c) => c.subscriptionStatus === "cancelled").length,
-      trial: clinics.filter((c) => !c.subscriptionStatus).length,
-    }),
-    [clinics]
-  );
+  const [search, setSearch] = useState(currentSearch);
 
-  const filtered = useMemo(() => {
-    return clinics.filter((c) => {
-      const q = search.toLowerCase();
-      const matchSearch =
-        !search ||
-        c.name.toLowerCase().includes(q) ||
-        c.doctorName.toLowerCase().includes(q) ||
-        c.specialty.toLowerCase().includes(q) ||
-        c.phone.includes(q);
-
-      const matchTab =
-        activeTab === "all" ||
-        (activeTab === "active" && c.subscriptionStatus === "active") ||
-        (activeTab === "past_due" && c.subscriptionStatus === "past_due") ||
-        (activeTab === "cancelled" && c.subscriptionStatus === "cancelled") ||
-        (activeTab === "trial" && !c.subscriptionStatus);
-
-      return matchSearch && matchTab;
-    });
-  }, [clinics, search, activeTab]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (search !== currentSearch) {
+        const params = new URLSearchParams(searchParams.toString());
+        if (search) params.set("search", search);
+        else params.delete("search");
+        params.set("page", "1");
+        router.push(`${pathname}?${params.toString()}`);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search, currentSearch, pathname, router, searchParams]);
 
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    setPage(1);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", tab);
+    params.set("page", "1");
+    router.push(`${pathname}?${params.toString()}`);
   };
 
-  const handleSearch = (val: string) => {
-    setSearch(val);
-    setPage(1);
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", newPage.toString());
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (
@@ -123,13 +128,13 @@ export function ClinicsTable({ clinics }: ClinicsTableProps) {
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="flex bg-slate-100 rounded-xl p-1 gap-0.5 flex-wrap">
           {TABS.map((tab) => {
-            const count = counts[tab.id as keyof typeof counts];
+            const count = counts[tab.id as keyof typeof counts] || 0;
             return (
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                  activeTab === tab.id
+                  currentTab === tab.id
                     ? "bg-white text-teal-800 shadow-sm border border-slate-200/60"
                     : "text-slate-500 hover:text-slate-700"
                 }`}
@@ -147,7 +152,7 @@ export function ClinicsTable({ clinics }: ClinicsTableProps) {
             type="text"
             placeholder="Search clinics, doctors..."
             value={search}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-white border border-slate-200 text-slate-900 text-sm pl-9 pr-3 py-2 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 placeholder-slate-400 shadow-sm"
           />
         </div>
@@ -168,7 +173,7 @@ export function ClinicsTable({ clinics }: ClinicsTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginated.length === 0 ? (
+            {clinics.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={7}
@@ -179,7 +184,7 @@ export function ClinicsTable({ clinics }: ClinicsTableProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              paginated.map((clinic) => (
+              clinics.map((clinic) => (
                 <TableRow
                   key={clinic.id}
                   className="hover:bg-slate-50/50 transition-colors"
@@ -229,24 +234,24 @@ export function ClinicsTable({ clinics }: ClinicsTableProps) {
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-slate-500">
-            Showing {(page - 1) * PAGE_SIZE + 1}–
-            {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}{" "}
+            Showing {(currentPage - 1) * PAGE_SIZE + 1}–
+            {Math.min(currentPage * PAGE_SIZE, totalCount)} of {totalCount}{" "}
             clinics
           </p>
           <div className="flex gap-2">
             <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
+              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
               className="px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               Previous
             </button>
             <span className="px-3 py-1.5 text-sm text-slate-500">
-              {page} / {totalPages}
+              {currentPage} / {totalPages}
             </span>
             <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
+              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
               className="px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               Next

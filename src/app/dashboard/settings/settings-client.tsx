@@ -46,6 +46,9 @@ const settingsSchema = z.object({
   about: z.string().nullable().optional(),
   logoUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
   googleMapsUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
+  billingAddress: z.string().nullable().optional(),
+  state: z.string().nullable().optional(),
+  gstin: z.string().nullable().optional(),
 });
 
 type SettingsData = z.infer<typeof settingsSchema>;
@@ -62,19 +65,20 @@ interface SettingsClientProps {
     about?: string | null;
     logoUrl?: string | null;
     googleMapsUrl?: string | null;
+    billingAddress?: string | null;
+    state?: string | null;
+    gstin?: string | null;
   };
   slug: string;
 }
 
 const PRESET_COLORS = [
-  "#0ea5e9",
-  "#10b981",
-  "#8b5cf6",
-  "#f43f5e",
-  "#f59e0b",
-  "#14b8a6",
-  "#6366f1",
-  "#ef4444",
+  "#0F172A", // Midnight Blue
+  "#059669", // Deep Emerald
+  "#7C3AED", // Amethyst
+  "#2563EB", // Royal Blue
+  "#E11D48", // Crimson Rose
+  "#D97706", // Amber Gold
 ];
 
 function isValidEmbedUrl(url: string): boolean {
@@ -130,6 +134,9 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
       about: initialData.about || "",
       logoUrl: initialData.logoUrl || "",
       googleMapsUrl: initialData.googleMapsUrl || "",
+      billingAddress: initialData.billingAddress || "",
+      state: initialData.state || "",
+      gstin: initialData.gstin || "",
     },
   });
 
@@ -301,6 +308,60 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
                     className="w-full rounded-xl border border-slate-200 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 resize-none h-28 shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
                   />
                   <p className="text-xs text-slate-400">This appears on your public website. A good about section builds patient trust.</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* ─── BILLING DETAILS ─────────────────────────────────────────── */}
+            <Card className="rounded-3xl border-slate-200 shadow-sm overflow-hidden bg-white/70 backdrop-blur-xl">
+              <div className="h-1.5 w-full bg-slate-800" />
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl font-bold flex items-center gap-2">
+                  <BadgeCheck className="w-5 h-5 text-slate-800" />
+                  Billing & Tax Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label htmlFor="clinic-gstin" className="text-sm font-semibold text-slate-700">
+                        GSTIN (Optional)
+                      </label>
+                      <Input
+                        id="clinic-gstin"
+                        {...register("gstin")}
+                        placeholder="e.g. 29ABCDE1234F1Z5"
+                        className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors uppercase"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="clinic-state" className="text-sm font-semibold text-slate-700">
+                        State (For Tax Calculation)
+                      </label>
+                      <Input
+                        id="clinic-state"
+                        {...register("state")}
+                        placeholder="e.g. Maharashtra"
+                        className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2 pt-4">
+                    <label htmlFor="clinic-billing-address" className="text-sm font-semibold text-slate-700">
+                      Registered Billing Address
+                    </label>
+                    <Input
+                      id="clinic-billing-address"
+                      {...register("billingAddress")}
+                      placeholder="Full registered address for tax invoices"
+                      className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                    />
+                  </div>
+                  <p className="text-xs text-slate-400 flex items-start gap-1.5 pt-1">
+                    <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                    These details will be printed on the Tax Invoices you receive for your Doctor Diary subscription.
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -489,17 +550,6 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
                         {themeColor === color && <CheckCircle2 className="w-4 h-4 text-white" />}
                       </button>
                     ))}
-                    <div className="relative">
-                      <input
-                        type="color"
-                        {...register("themeColor")}
-                        className="w-9 h-9 rounded-full overflow-hidden cursor-pointer opacity-0 absolute inset-0 z-10"
-                        aria-label="Custom color picker"
-                      />
-                      <div className="w-9 h-9 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50">
-                        <Palette className="w-3.5 h-3.5 text-slate-400" />
-                      </div>
-                    </div>
                   </div>
                   {errors.themeColor && <p className="text-xs text-red-500">{errors.themeColor.message}</p>}
                 </div>

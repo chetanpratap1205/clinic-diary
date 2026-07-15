@@ -15,9 +15,80 @@ import { z } from "zod";
 import {
   Search, Clock, Calendar as CalendarIcon, CheckCircle2, User,
   Loader2, ArrowRight, Sparkles, CalendarCheck, Calendar, Phone,
-  Mail, ChevronLeft, Sun, Sunset, Moon, ShieldCheck, Share2,
+  Mail, ChevronLeft, Sun, Sunset, Moon, ShieldCheck, Share2, Globe
 } from "lucide-react";
 import { formatTimeDisplay } from "@/lib/format";
+
+type Language = "en" | "hi";
+
+const translations = {
+  en: {
+    bookAppointment: "Book Appointment",
+    myAppointment: "My Appointment",
+    pickDate: "Pick a Date",
+    pickDateDesc: "Choose your preferred day for the consultation.",
+    availableSlots: "Available Slots",
+    morning: "Morning",
+    afternoon: "Afternoon",
+    evening: "Evening",
+    fullyBooked: "Fully Booked",
+    fullyBookedDesc: (name: string) => `Dr. ${name} is fully booked on this day. Please select another date.`,
+    checkingAvailability: "Checking availability...",
+    yourDetails: "Your Details",
+    yourDetailsDesc: "Almost done — just your name and phone number.",
+    date: "Date",
+    time: "Time",
+    fullName: "Full Name",
+    mobileNumber: "Mobile Number",
+    email: "Email",
+    optional: "(Optional)",
+    confirmBooking: "Confirm Booking",
+    trustNote: "Free Booking · Pay at Clinic · Instant confirmation",
+    findMyAppointment: "Find My Appointment",
+    trackDesc: "Already booked? Enter your mobile number to track your live queue position.",
+    bookingConfirmed: "Booking Confirmed!",
+    bookingConfirmedDesc: (name: string) => `Your slot is reserved with Dr. ${name}. Save the details below.`,
+    viewQueue: "View Queue Status",
+    addToCalendar: "Add to Calendar",
+    share: "Share",
+    back: "Back",
+    slots: "slots",
+    secureNote: "Your appointment is saved and secure"
+  },
+  hi: {
+    bookAppointment: "अपॉइंटमेंट बुक करें",
+    myAppointment: "मेरा अपॉइंटमेंट",
+    pickDate: "तारीख चुनें",
+    pickDateDesc: "परामर्श के लिए अपना पसंदीदा दिन चुनें।",
+    availableSlots: "उपलब्ध स्लॉट",
+    morning: "सुबह",
+    afternoon: "दोपहर",
+    evening: "शाम",
+    fullyBooked: "पूरी तरह बुक",
+    fullyBookedDesc: (name: string) => `डॉ. ${name} इस दिन पूरी तरह बुक हैं। कृपया दूसरी तारीख चुनें।`,
+    checkingAvailability: "उपलब्धता जांची जा रही है...",
+    yourDetails: "आपका विवरण",
+    yourDetailsDesc: "लगभग पूरा हो गया — बस अपना नाम और फोन नंबर दें।",
+    date: "तारीख",
+    time: "समय",
+    fullName: "पूरा नाम",
+    mobileNumber: "मोबाइल नंबर",
+    email: "ईमेल",
+    optional: "(वैकल्पिक)",
+    confirmBooking: "बुकिंग पक्की करें",
+    trustNote: "मुफ्त बुकिंग · क्लिनिक में भुगतान करें · तुरंत पुष्टि",
+    findMyAppointment: "मेरा अपॉइंटमेंट खोजें",
+    trackDesc: "पहले से बुक किया है? अपनी लाइव कतार स्थिति ट्रैक करने के लिए अपना मोबाइल नंबर दर्ज करें।",
+    bookingConfirmed: "बुकिंग पक्की हो गई!",
+    bookingConfirmedDesc: (name: string) => `आपका स्लॉट डॉ. ${name} के साथ सुरक्षित है। नीचे दिया गया विवरण सहेजें।`,
+    viewQueue: "कतार की स्थिति देखें",
+    addToCalendar: "कैलेंडर में जोड़ें",
+    share: "साझा करें",
+    back: "वापस",
+    slots: "स्लॉट",
+    secureNote: "आपका अपॉइंटमेंट सुरक्षित रूप से सहेजा गया है"
+  }
+};
 
 interface ClinicData {
   id: string;
@@ -75,6 +146,9 @@ export function BookingClient({
   workingDays: number[];
   closedDates: string[];
 }) {
+  const [lang, setLang] = useState<Language>("en");
+  const t = translations[lang];
+
   const [mode, setMode] = useState<"book" | "track">("book");
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [logoError, setLogoError] = useState(false);
@@ -223,10 +297,10 @@ export function BookingClient({
 
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
               <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">
-                Booking Confirmed!
+                {t.bookingConfirmed}
               </h2>
               <p className="text-slate-500 text-sm mb-6 max-w-xs mx-auto">
-                Your slot is reserved with Dr. {doctorFirstName}. Save the details below.
+                {t.bookingConfirmedDesc(doctorFirstName)}
               </p>
             </motion.div>
 
@@ -242,7 +316,7 @@ export function BookingClient({
                   <CalendarCheck className="w-5 h-5 text-slate-600" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Date</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">{t.date}</p>
                   <p className="text-sm font-bold text-slate-900">{successData.date}</p>
                 </div>
               </div>
@@ -252,7 +326,7 @@ export function BookingClient({
                   <Clock className="w-5 h-5 text-slate-600" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Time</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">{t.time}</p>
                   <p className="text-sm font-bold text-slate-900">{successData.time}</p>
                 </div>
               </div>
@@ -271,7 +345,7 @@ export function BookingClient({
                 style={{ backgroundColor: themeColor }}
               >
                 <Sparkles className="w-4 h-4" />
-                View Queue Status
+                {t.viewQueue}
                 <ArrowRight className="w-4 h-4 ml-1" />
               </button>
 
@@ -283,21 +357,21 @@ export function BookingClient({
                   className="flex-1 bg-white border border-slate-200 text-slate-700 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-slate-50 transition-all active:scale-[0.98] shadow-sm"
                 >
                   <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                  Add to Calendar
+                  {t.addToCalendar}
                 </a>
                 <button
                   onClick={shareAppointment}
                   className="flex-1 bg-[#25D366] text-white py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#20bd5a] transition-all active:scale-[0.98] shadow-sm"
                 >
                   <Share2 className="w-3.5 h-3.5" />
-                  Share
+                  {t.share}
                 </button>
               </div>
 
               {/* Trust note */}
               <p className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1.5 mt-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                Your appointment is saved and secure
+                {t.secureNote}
               </p>
             </motion.div>
           </CardContent>
@@ -317,8 +391,8 @@ export function BookingClient({
       className="space-y-5 pt-2"
     >
       <div>
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">Pick a Date</h2>
-        <p className="text-slate-500 text-sm mt-1">Choose your preferred day for the consultation.</p>
+        <h2 className="text-xl font-bold text-slate-900 tracking-tight">{t.pickDate}</h2>
+        <p className="text-slate-500 text-sm mt-1">{t.pickDateDesc}</p>
       </div>
 
       <div className="flex overflow-x-auto snap-x gap-3 pb-4 pt-1 -mx-5 px-5 sm:mx-0 sm:px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
@@ -373,9 +447,9 @@ export function BookingClient({
   const renderStep2 = () => {
     const { morning, afternoon, evening } = groupSlots(availableSlots);
     const groups = [
-      { label: "Morning", icon: Sun, slots: morning },
-      { label: "Afternoon", icon: Sunset, slots: afternoon },
-      { label: "Evening", icon: Moon, slots: evening },
+      { label: t.morning, icon: Sun, slots: morning },
+      { label: t.afternoon, icon: Sunset, slots: afternoon },
+      { label: t.evening, icon: Moon, slots: evening },
     ].filter((g) => g.slots.length > 0);
 
     return (
@@ -388,7 +462,7 @@ export function BookingClient({
         className="space-y-5 pt-2"
       >
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Available Slots</h2>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">{t.availableSlots}</h2>
           <p className="text-slate-500 text-sm mt-1 flex items-center gap-2">
             <CalendarIcon className="w-4 h-4" />
             {format(selectedDate, "EEEE, MMMM d, yyyy")}
@@ -398,16 +472,16 @@ export function BookingClient({
         {isLoadingSlots ? (
           <div className="flex flex-col items-center justify-center py-14 bg-slate-50/50 rounded-3xl border border-slate-100">
             <Loader2 className="w-8 h-8 animate-spin mb-3" style={{ color: themeColor }} />
-            <p className="text-slate-500 text-sm font-medium">Checking availability...</p>
+            <p className="text-slate-500 text-sm font-medium">{t.checkingAvailability}</p>
           </div>
         ) : availableSlots.length === 0 ? (
           <div className="text-center py-14 bg-slate-50/80 rounded-3xl border border-slate-100">
             <div className="w-14 h-14 rounded-full bg-slate-200/50 flex items-center justify-center mx-auto mb-4">
               <Clock className="w-7 h-7 text-slate-400" />
             </div>
-            <p className="text-slate-900 font-bold text-base">Fully Booked</p>
+            <p className="text-slate-900 font-bold text-base">{t.fullyBooked}</p>
             <p className="text-slate-500 text-sm mt-1 max-w-[220px] mx-auto">
-              Dr. {doctorFirstName} is fully booked on this day. Please select another date.
+              {t.fullyBookedDesc(doctorFirstName)}
             </p>
           </div>
         ) : (
@@ -417,7 +491,7 @@ export function BookingClient({
                 <div className="flex items-center gap-2 mb-2.5">
                   <Icon className="w-3.5 h-3.5 text-slate-400" />
                   <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{label}</span>
-                  <span className="text-xs text-slate-300 font-medium">({slots.length} slots)</span>
+                  <span className="text-xs text-slate-300 font-medium">({slots.length} {t.slots})</span>
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
                   {slots.map((time) => (
@@ -450,8 +524,8 @@ export function BookingClient({
       className="space-y-5 pt-2"
     >
       <div>
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">Your Details</h2>
-        <p className="text-slate-500 text-sm mt-1">Almost done — just your name and phone number.</p>
+        <h2 className="text-xl font-bold text-slate-900 tracking-tight">{t.yourDetails}</h2>
+        <p className="text-slate-500 text-sm mt-1">{t.yourDetailsDesc}</p>
       </div>
 
       {/* Appointment summary */}
@@ -464,7 +538,7 @@ export function BookingClient({
             <Calendar className="w-4 h-4" style={{ color: themeColor }} />
           </div>
           <div>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Date</p>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{t.date}</p>
             <p className="text-xs font-bold text-slate-900">{format(selectedDate, "MMM d, yyyy")}</p>
           </div>
         </div>
@@ -474,7 +548,7 @@ export function BookingClient({
             <Clock className="w-4 h-4" style={{ color: themeColor }} />
           </div>
           <div>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Time</p>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{t.time}</p>
             <p className="text-xs font-bold text-slate-900">{selectedTime && formatTimeDisplay(selectedTime)}</p>
           </div>
         </div>
@@ -483,7 +557,7 @@ export function BookingClient({
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-1.5">
           <label htmlFor="patient-name" className="text-sm font-bold text-slate-700 flex items-center gap-2">
-            <User className="w-4 h-4 text-slate-400" /> Full Name
+            <User className="w-4 h-4 text-slate-400" /> {t.fullName}
           </label>
           <Input
             id="patient-name"
@@ -498,7 +572,7 @@ export function BookingClient({
 
         <div className="space-y-1.5">
           <label htmlFor="patient-phone" className="text-sm font-bold text-slate-700 flex items-center gap-2">
-            <Phone className="w-4 h-4 text-slate-400" /> Mobile Number
+            <Phone className="w-4 h-4 text-slate-400" /> {t.mobileNumber}
           </label>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-slate-400 text-sm">+91</span>
@@ -517,7 +591,7 @@ export function BookingClient({
 
         <div className="space-y-1.5">
           <label htmlFor="patient-email" className="text-sm font-bold text-slate-700 flex items-center gap-2">
-            <Mail className="w-4 h-4 text-slate-400" /> Email <span className="text-slate-400 font-normal ml-1">(Optional)</span>
+            <Mail className="w-4 h-4 text-slate-400" /> {t.email} <span className="text-slate-400 font-normal ml-1">{t.optional}</span>
           </label>
           <Input
             id="patient-email"
@@ -543,7 +617,7 @@ export function BookingClient({
             <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
             <>
-              Confirm Booking
+              {t.confirmBooking}
               <ArrowRight className="w-4 h-4 ml-1" />
             </>
           )}
@@ -552,7 +626,7 @@ export function BookingClient({
         {/* Trust note under CTA */}
         <p className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1.5">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-          Free to book · No payment needed · Instant confirmation
+          {t.trustNote}
         </p>
       </form>
     </motion.div>
@@ -572,16 +646,16 @@ export function BookingClient({
         <div className="w-14 h-14 rounded-full mx-auto flex items-center justify-center bg-slate-50 border border-slate-100 mb-4">
           <Search className="w-7 h-7 text-slate-400" />
         </div>
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">My Appointment</h2>
+        <h2 className="text-xl font-bold text-slate-900 tracking-tight">{t.findMyAppointment}</h2>
         <p className="text-slate-500 text-sm mt-2 max-w-xs mx-auto leading-relaxed">
-          Already booked? Enter your mobile number to track your live queue position.
+          {t.trackDesc}
         </p>
       </div>
 
       <form onSubmit={handleTrackSubmit} className="space-y-4">
         <div className="space-y-1.5">
           <label htmlFor="track-phone" className="text-sm font-bold text-slate-700 flex items-center gap-2">
-            <Phone className="w-4 h-4 text-slate-400" /> Mobile Number
+            <Phone className="w-4 h-4 text-slate-400" /> {t.mobileNumber}
           </label>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-slate-400 text-sm">+91</span>
@@ -610,7 +684,7 @@ export function BookingClient({
             <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
             <>
-              Find My Appointment
+              {t.findMyAppointment}
               <ArrowRight className="w-4 h-4 ml-1" />
             </>
           )}
@@ -628,9 +702,27 @@ export function BookingClient({
           onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)}
           className="flex items-center gap-1.5 text-sm font-bold text-slate-400 hover:text-slate-800 transition-colors mb-3 px-2.5 py-1.5 bg-white rounded-xl shadow-sm border border-slate-100 w-fit"
         >
-          <ChevronLeft className="w-4 h-4" /> Back
+          <ChevronLeft className="w-4 h-4" /> {t.back}
         </button>
       )}
+
+      {/* Language Toggle */}
+      <div className="flex justify-end mb-2">
+        <div className="bg-white p-1 rounded-full shadow-sm border border-slate-100 inline-flex items-center">
+          <button
+            onClick={() => setLang("en")}
+            className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${lang === "en" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-800"}`}
+          >
+            EN
+          </button>
+          <button
+            onClick={() => setLang("hi")}
+            className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${lang === "hi" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-800"}`}
+          >
+            हिंदी
+          </button>
+        </div>
+      </div>
 
       <Card className="border-0 shadow-2xl rounded-3xl overflow-hidden bg-white ring-1 ring-slate-900/5 relative min-h-[480px]">
         {/* Clinic identity strip */}
@@ -680,7 +772,7 @@ export function BookingClient({
             {mode === "book" && (
               <motion.div layoutId="activeTab" className="absolute inset-0 bg-white rounded-xl" transition={{ type: "spring", stiffness: 400, damping: 30 }} />
             )}
-            <span className="relative z-10">Book Appointment</span>
+            <span className="relative z-10">{t.bookAppointment}</span>
           </button>
           <button
             onClick={() => setMode("track")}
@@ -691,7 +783,7 @@ export function BookingClient({
             {mode === "track" && (
               <motion.div layoutId="activeTab" className="absolute inset-0 bg-white rounded-xl" transition={{ type: "spring", stiffness: 400, damping: 30 }} />
             )}
-            <span className="relative z-10">My Appointment</span>
+            <span className="relative z-10">{t.myAppointment}</span>
           </button>
         </div>
 
