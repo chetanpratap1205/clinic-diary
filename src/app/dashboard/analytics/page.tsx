@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 
 export const metadata = {
-  title: "Analytics | Clinic Diary",
+  title: "Analytics | Doctor Diary",
 };
 
 interface SearchParams {

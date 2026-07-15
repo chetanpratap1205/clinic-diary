@@ -179,7 +179,7 @@ export default async function BookingPage({
             {/* Logo / Avatar with Pulse */}
             <div className="flex-shrink-0 relative">
               <div className="absolute inset-0 rounded-full animate-ping opacity-20" style={{ backgroundColor: themeColor }} />
-              <div className="relative shadow-xl rounded-full border-4 border-white bg-white">
+              <div className="relative shadow-2xl rounded-full border-[6px] border-white bg-white overflow-hidden">
                 <ClinicLogo
                   logoUrl={safeLogoUrl}
                   clinicName={clinic.name}
@@ -415,80 +415,82 @@ export default async function BookingPage({
           )}
 
           {/* Patient Reviews */}
-          <section>
-            <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-              <Star className="w-3.5 h-3.5" />
-              Patient Reviews
-            </h2>
-            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm p-5">
-              {/* Rating Summary */}
-              <div className="flex items-center gap-4 mb-5 pb-5 border-b border-slate-50">
-                <div className="text-center bg-amber-50 rounded-2xl px-4 py-3 border border-amber-100">
-                  <p className="text-4xl font-black text-amber-600 leading-none">{averageRating}</p>
-                  <div className="flex items-center gap-0.5 mt-2 justify-center">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <Star
-                        key={i}
-                        className={`w-3.5 h-3.5 ${i <= Math.round(Number(averageRating)) ? "fill-amber-400 text-amber-400" : "text-slate-200"}`}
-                      />
-                    ))}
+          {totalReviews > 0 && (
+            <section>
+              <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <Star className="w-3.5 h-3.5" />
+                Patient Reviews
+              </h2>
+              <div className="rounded-2xl border border-slate-100 bg-white shadow-sm p-5">
+                {/* Rating Summary */}
+                <div className="flex items-center gap-4 mb-5 pb-5 border-b border-slate-50">
+                  <div className="text-center bg-amber-50 rounded-2xl px-4 py-3 border border-amber-100">
+                    <p className="text-4xl font-black text-amber-600 leading-none">{averageRating}</p>
+                    <div className="flex items-center gap-0.5 mt-2 justify-center">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <Star
+                          key={i}
+                          className={`w-3.5 h-3.5 ${i <= Math.round(Number(averageRating)) ? "fill-amber-400 text-amber-400" : "text-slate-200"}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-slate-800">Verified Patient Reviews</p>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                      {totalReviews === 0
+                        ? "After your visit, you'll receive a link to share your experience."
+                        : `Based on ${totalReviews} verified patients who visited this clinic.`}
+                    </p>
                   </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-slate-800">Verified Patient Reviews</p>
-                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    {totalReviews === 0
-                      ? "After your visit, you'll receive a link to share your experience."
-                      : `Based on ${totalReviews} verified patients who visited this clinic.`}
-                  </p>
-                </div>
-              </div>
 
-              {/* Review List - Horizontal Scroll */}
-              {totalReviews > 0 && (
-                <div className="flex gap-4 overflow-x-auto pb-4 snap-x scrollbar-hide -mx-5 px-5">
-                  {clinicReviews.map((review) => (
-                    <div key={review.id} className="min-w-[280px] w-[280px] snap-center bg-slate-50 border border-slate-100 rounded-2xl p-4 flex-shrink-0">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black shadow-sm"
-                            style={{ backgroundColor: `${themeColor}ee` }}
-                          >
-                            {review.patientName?.[0]?.toUpperCase() || "P"}
-                          </div>
-                          <div>
-                            <span className="text-xs font-bold text-slate-800 block leading-none">{review.patientName.split(" ")[0]}</span>
-                            <span className="text-[9px] font-bold text-emerald-600 flex items-center gap-0.5 mt-1 uppercase tracking-wider"><ShieldCheck className="w-3 h-3" /> Verified</span>
+                {/* Review List - Horizontal Scroll */}
+                {totalReviews > 0 && (
+                  <div className="flex gap-4 overflow-x-auto pb-4 snap-x scrollbar-hide -mx-5 px-5">
+                    {clinicReviews.map((review) => (
+                      <div key={review.id} className="min-w-[280px] w-[280px] snap-center bg-slate-50 border border-slate-100 rounded-2xl p-4 flex-shrink-0">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black shadow-sm"
+                              style={{ backgroundColor: `${themeColor}ee` }}
+                            >
+                              {review.patientName?.[0]?.toUpperCase() || "P"}
+                            </div>
+                            <div>
+                              <span className="text-xs font-bold text-slate-800 block leading-none">{review.patientName.split(" ")[0]}</span>
+                              <span className="text-[9px] font-bold text-emerald-600 flex items-center gap-0.5 mt-1 uppercase tracking-wider"><ShieldCheck className="w-3 h-3" /> Verified</span>
+                            </div>
                           </div>
                         </div>
+                        <div className="flex items-center gap-0.5 mb-2">
+                          {[1, 2, 3, 4, 5].map((i) => (
+                            <Star
+                              key={i}
+                              className={`w-3 h-3 ${i <= review.rating ? "fill-amber-400 text-amber-400" : "text-slate-200"}`}
+                            />
+                          ))}
+                        </div>
+                        {review.comment && (
+                          <p className="text-[13px] font-medium text-slate-700 leading-relaxed line-clamp-4">&quot;{review.comment}&quot;</p>
+                        )}
                       </div>
-                      <div className="flex items-center gap-0.5 mb-2">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                          <Star
-                            key={i}
-                            className={`w-3 h-3 ${i <= review.rating ? "fill-amber-400 text-amber-400" : "text-slate-200"}`}
-                          />
-                        ))}
-                      </div>
-                      {review.comment && (
-                        <p className="text-[13px] font-medium text-slate-700 leading-relaxed line-clamp-4">&quot;{review.comment}&quot;</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
 
-              <a
-                href={`https://www.google.com/search?q=${encodeURIComponent(clinic.name + (clinic.address ? " " + clinic.address : ""))}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 text-xs font-bold transition-all hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl py-3 w-full mt-2"
-              >
-                See all reviews on Google →
-              </a>
-            </div>
-          </section>
+                <a
+                  href={`https://www.google.com/search?q=${encodeURIComponent(clinic.name + (clinic.address ? " " + clinic.address : ""))}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 text-xs font-bold transition-all hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl py-3 w-full mt-2"
+                >
+                  See all reviews on Google →
+                </a>
+              </div>
+            </section>
+          )}
         </aside>
 
         {/* RIGHT: Booking Widget — order 1 on mobile */}

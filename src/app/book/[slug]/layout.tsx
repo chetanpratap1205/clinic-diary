@@ -56,7 +56,7 @@ export default async function BookingLayout({
             <p className="text-slate-400 text-xs">
               Powered by{" "}
               <Link href="/" className="font-semibold text-slate-500 hover:text-slate-700 transition-colors">
-                Clinic Diary
+                Doctor Diary by NatureXpress
               </Link>
             </p>
           </div>

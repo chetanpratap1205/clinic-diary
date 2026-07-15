@@ -4,7 +4,7 @@ import { eq, desc, sql, and, or, ilike, isNull } from "drizzle-orm";
 import { ClinicsTable, type ClinicRow } from "../_components/clinics-table";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Clinics | ClinicDiary Admin" };
+export const metadata = { title: "Clinics | Doctor Diary Admin" };
 
 export default async function ClinicsPage(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

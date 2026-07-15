@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect, useTransition, useRef } from "react";
 import { format, addDays, startOfToday, isSameDay } from "date-fns";
 import { getAvailableSlots, createBooking, findPatientAppointment } from "./actions";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -15,7 +15,7 @@ import { z } from "zod";
 import {
   Search, Clock, Calendar as CalendarIcon, CheckCircle2, User,
   Loader2, ArrowRight, Sparkles, CalendarCheck, Calendar, Phone,
-  Mail, ChevronLeft, Sun, Sunset, Moon, ShieldCheck, Share2, Globe
+  Mail, ChevronLeft, ChevronRight, Sun, Sunset, Moon, ShieldCheck, Share2, Globe
 } from "lucide-react";
 import { formatTimeDisplay } from "@/lib/format";
 
@@ -147,6 +147,13 @@ export function BookingClient({
   closedDates: string[];
 }) {
   const [lang, setLang] = useState<Language>("en");
+  const scrollRef = useRef<HTMLDivElement>(null);
+  
+  const scroll = (dir: "left" | "right") => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: dir === "left" ? -200 : 200, behavior: "smooth" });
+    }
+  };
   const t = translations[lang];
 
   const [mode, setMode] = useState<"book" | "track">("book");
@@ -395,51 +402,76 @@ export function BookingClient({
         <p className="text-slate-500 text-sm mt-1">{t.pickDateDesc}</p>
       </div>
 
-      <div className="flex overflow-x-auto snap-x gap-3 pb-4 pt-1 -mx-5 px-5 sm:mx-0 sm:px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        {next14Days.map((date) => {
-          const isSelected = isSameDay(date, selectedDate);
-          const isToday = isSameDay(date, today);
-          const dateStr = format(date, "yyyy-MM-dd");
-          const dayOfWeek = date.getDay();
-          const isWorkingDay = workingDays.includes(dayOfWeek) && !closedDates.includes(dateStr);
+      <div className="relative group flex items-center">
+        <button
+          onClick={() => scroll("left")}
+          className="absolute left-0 z-10 w-8 h-8 hidden sm:flex items-center justify-center bg-white shadow-md border border-slate-100 rounded-full text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0 -ml-4"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        <div ref={scrollRef} className="flex overflow-x-auto snap-x gap-3 pb-4 pt-1 -mx-5 px-5 sm:mx-0 sm:px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full">
+          {next14Days.map((date) => {
+            const isSelected = isSameDay(date, selectedDate);
+            const isToday = isSameDay(date, today);
+            const dateStr = format(date, "yyyy-MM-dd");
+            const dayOfWeek = date.getDay();
+            const isWorkingDay = workingDays.includes(dayOfWeek) && !closedDates.includes(dateStr);
 
-          return (
-            <button
-              key={date.toISOString()}
-              onClick={() => handleDateSelect(date)}
-              disabled={!isWorkingDay}
-              className={`flex-shrink-0 w-[72px] flex flex-col items-center justify-center h-[90px] rounded-2xl border transition-all duration-200 snap-center relative overflow-hidden ${
-                isSelected
-                  ? "border-transparent text-white shadow-lg scale-[1.02]"
-                  : !isWorkingDay
-                  ? "border-slate-100 bg-slate-50/50 opacity-35 cursor-not-allowed"
-                  : "border-slate-200/60 bg-slate-50/50 text-slate-500 hover:border-slate-300 hover:bg-slate-50 active:scale-[0.97] hover:shadow-sm"
-              }`}
-              style={
-                isSelected
-                  ? {
-                      backgroundColor: themeColor,
-                      backgroundImage: `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}dd 100%)`,
-                    }
-                  : {}
-              }
-            >
-              <span className={`text-[10px] font-bold uppercase tracking-wider ${isSelected ? "opacity-85" : "text-slate-400"}`}>
-                {format(date, "EEE")}
-              </span>
-              <span className="text-xl font-black mt-1 tracking-tight">
-                {format(date, "d")}
-              </span>
-              <span className={`text-[10px] uppercase font-bold mt-0.5 ${isSelected ? "opacity-75" : "text-slate-400"}`}>
-                {format(date, "MMM")}
-              </span>
-              {isToday && !isSelected && (
-                <div className="w-1.5 h-1.5 rounded-full mt-1" style={{ backgroundColor: themeColor }} />
-              )}
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={date.toISOString()}
+                onClick={() => handleDateSelect(date)}
+                disabled={!isWorkingDay}
+                className={`flex-shrink-0 w-[72px] flex flex-col items-center justify-center h-[90px] rounded-2xl border transition-all duration-200 snap-center relative overflow-hidden ${
+                  isSelected
+                    ? "border-transparent text-white shadow-lg scale-[1.02]"
+                    : !isWorkingDay
+                    ? "border-slate-100 bg-slate-50/50 opacity-35 cursor-not-allowed"
+                    : "border-slate-200/60 bg-slate-50/50 text-slate-500 hover:border-slate-300 hover:bg-slate-50 active:scale-[0.97] hover:shadow-sm"
+                }`}
+                style={
+                  isSelected
+                    ? {
+                        backgroundColor: themeColor,
+                        backgroundImage: `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}dd 100%)`,
+                      }
+                    : {}
+                }
+              >
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${isSelected ? "opacity-85" : "text-slate-400"}`}>
+                  {format(date, "EEE")}
+                </span>
+                <span className="text-xl font-black mt-1 tracking-tight">
+                  {format(date, "d")}
+                </span>
+                <span className={`text-[10px] uppercase font-bold mt-0.5 ${isSelected ? "opacity-75" : "text-slate-400"}`}>
+                  {format(date, "MMM")}
+                </span>
+                {isToday && !isSelected && (
+                  <div className="w-1.5 h-1.5 rounded-full mt-1" style={{ backgroundColor: themeColor }} />
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <button
+          onClick={() => scroll("right")}
+          className="absolute right-0 z-10 w-8 h-8 hidden sm:flex items-center justify-center bg-white shadow-md border border-slate-100 rounded-full text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0 -mr-4"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
+
+      <button
+        onClick={() => setStep(2)}
+        className="w-full h-14 rounded-2xl text-white font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] mt-2 flex items-center justify-center gap-2"
+        style={{
+          backgroundColor: themeColor,
+          backgroundImage: `linear-gradient(to right, ${themeColor}, ${themeColor}cc)`,
+        }}
+      >
+        Continue <ArrowRight className="w-4 h-4 ml-1" />
+      </button>
     </motion.div>
   );
 

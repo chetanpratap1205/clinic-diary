@@ -5,7 +5,7 @@ import { AnalyticsCharts } from "../_components/analytics-charts";
 import { format, subDays } from "date-fns";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Analytics | ClinicDiary Admin" };
+export const metadata = { title: "Analytics | Doctor Diary Admin" };
 
 export default async function AnalyticsPage() {
   const thirtyDaysAgo = format(subDays(new Date(), 30), "yyyy-MM-dd");

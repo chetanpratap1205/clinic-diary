@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Follow-Ups | ClinicDiary Admin" };
+export const metadata = { title: "Follow-Ups | Doctor Diary Admin" };
 
 export default async function FollowUpsPage() {
   const [

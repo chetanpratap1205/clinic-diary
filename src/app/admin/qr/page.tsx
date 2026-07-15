@@ -3,7 +3,7 @@ import { qrCodes, clinics, subscriptions } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { AdminQrClient } from "./admin-qr-client";
 
-export const metadata = { title: "QR Code Manager | ClinicDiary Admin" };
+export const metadata = { title: "QR Code Manager | Doctor Diary Admin" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminQrPage() {

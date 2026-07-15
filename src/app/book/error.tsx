@@ -44,7 +44,7 @@ export default function BookingError({
         )}
       </div>
       <p className="text-center text-xs font-semibold text-slate-400 mt-8">
-        Powered by Clinic Diary
+        Powered by Doctor Diary by NatureXpress
       </p>
     </div>
   );

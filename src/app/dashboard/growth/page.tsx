@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { GrowthClient } from "./growth-client";
 
 export const metadata = {
-  title: "Growth Hub | Clinic Diary",
+  title: "Growth Hub | Doctor Diary",
 };
 
 export default async function GrowthPage() {

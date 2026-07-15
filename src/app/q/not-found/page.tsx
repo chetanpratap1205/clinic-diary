@@ -13,12 +13,12 @@ export default function QrNotFoundPage() {
           Invalid QR Code
         </h1>
         <p className="text-slate-500 text-base leading-relaxed mb-8">
-          This QR code is not recognized. Please scan a valid ClinicDiary code.
+          This QR code is not recognized. Please scan a valid Doctor Diary code.
         </p>
 
         <div className="flex items-center justify-center gap-2 text-slate-400">
           <QrCode className="w-4 h-4" />
-          <p className="text-xs">Powered by <span className="font-bold text-slate-500">ClinicDiary</span></p>
+          <p className="text-xs">Powered by <span className="font-bold text-slate-500">Doctor Diary by NatureXpress</span></p>
         </div>
       </div>
     </div>

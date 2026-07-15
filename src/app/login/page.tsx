@@ -96,8 +96,8 @@ export default function LoginPage() {
         
         <div className="relative z-10 p-16 flex flex-col h-full justify-between">
           <Link href="/" className="inline-flex items-center gap-3 w-fit">
-            <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-lg">
-              <Activity className="w-6 h-6 text-slate-900" strokeWidth={3} />
+            <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-lg overflow-hidden p-1">
+              <img src="/icon-192.png" alt="Logo" className="w-full h-full object-contain" />
             </div>
             <span className="font-black text-white text-2xl tracking-tight">
               Doctor Diary
@@ -134,8 +134,8 @@ export default function LoginPage() {
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-10">
             <Link href="/" className="inline-flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-md">
-                <Activity className="w-5 h-5 text-white" strokeWidth={3} />
+              <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-md overflow-hidden p-1">
+                <img src="/icon-192.png" alt="Logo" className="w-full h-full object-contain" />
               </div>
               <span className="font-black text-slate-900 text-xl tracking-tight">
                 Doctor Diary

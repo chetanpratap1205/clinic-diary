@@ -16,7 +16,7 @@ import {
 import { ToggleVerifiedButton } from "../_components/review-actions";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Reviews | ClinicDiary Admin" };
+export const metadata = { title: "Reviews | Doctor Diary Admin" };
 
 function StarRating({ rating }: { rating: number }) {
   return (

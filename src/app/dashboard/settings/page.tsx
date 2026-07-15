@@ -11,7 +11,7 @@ import { QrCodeWidget } from "@/components/dashboard/qr-code-widget";
 import { MessageCircle, Sparkles, ShieldCheck } from "lucide-react";
 
 export const metadata = {
-  title: "Your Website | Clinic Diary",
+  title: "Your Website | Doctor Diary",
 };
 
 export default async function SettingsPage() {
@@ -158,7 +158,7 @@ export default async function SettingsPage() {
 
             <div className="flex-shrink-0 z-10 w-full sm:w-auto flex flex-col items-center">
               <a
-                href="https://wa.me/918077170715?text=Hi%20Chetan,%20I'm%20using%20Clinic%20Diary%20and%20I'd%20like%20to..."
+                href="https://wa.me/918077170715?text=Hi%20Chetan,%20I'm%20using%20Doctor%20Diary%20and%20I'd%20like%20to..."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group/btn relative w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20bd5a] text-white px-8 py-4 sm:px-10 sm:py-5 rounded-2xl font-extrabold text-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(37,211,102,0.6)] active:scale-95"

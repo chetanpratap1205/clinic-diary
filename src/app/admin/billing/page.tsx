@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Billing | ClinicDiary Admin" };
+export const metadata = { title: "Billing | Doctor Diary Admin" };
 
 export default async function BillingPage(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

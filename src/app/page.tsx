@@ -84,7 +84,7 @@ export default function HomePage() {
             <source src="/hero_bg.mp4" type="video/mp4" />
           </video>
           {/* Uniform dark overlay to make text readable while keeping video colors crisp */}
-          <div className="absolute inset-0 bg-[#0A0A0A]/60" />
+          <div className="absolute inset-0 bg-[#0A0A0A]/75 sm:bg-[#0A0A0A]/60" />
         </div>
 
         {/* Deep glows */}
@@ -224,7 +224,7 @@ export default function HomePage() {
                 </div>
                 <div className="bg-[#1a2c26] border border-emerald-500/20 rounded-xl p-4 relative z-10">
                   <p className="text-xs text-emerald-100 leading-relaxed">
-                    <strong className="text-emerald-400 block mb-1">Clinic Diary Update</strong>
+                    <strong className="text-emerald-400 block mb-1">Doctor Diary Update</strong>
                     Hi! You're next in line for Dr. Sharma. Please proceed to the clinic to secure your spot.
                   </p>
                 </div>
@@ -330,10 +330,10 @@ export default function HomePage() {
              </h2>
            </div>
 
-           <div className="relative flex flex-col lg:flex-row items-center justify-center gap-0 max-w-5xl mx-auto">
+           <div className="relative flex flex-col md:flex-row items-center justify-center gap-0 max-w-5xl mx-auto">
              
              {/* The Chaos (Background/Recessed) */}
-             <div className="w-full lg:w-[45%] bg-[#0f0707] border border-red-900/30 rounded-3xl p-8 sm:p-10 lg:pr-20 relative lg:translate-x-12 lg:scale-95 z-0 opacity-80 hover:opacity-100 transition-all duration-500">
+             <div className="w-full md:w-[45%] bg-[#0f0707] border border-red-900/30 rounded-3xl p-8 sm:p-10 md:pr-20 relative md:translate-x-12 md:scale-95 z-0 opacity-80 hover:opacity-100 transition-all duration-500">
                <div className="absolute top-0 left-0 w-32 h-32 bg-red-500/10 rounded-full blur-[50px] -z-10" />
                <h3 className="text-2xl font-bold text-red-50 mb-2">The Old Chaos</h3>
                <p className="text-red-200/70 text-sm mb-8 leading-relaxed pr-4">
@@ -358,7 +358,7 @@ export default function HomePage() {
              </div>
 
              {/* The Premium Standard (Foreground/Elevated) */}
-             <div className="w-full lg:w-[60%] bg-gradient-to-br from-[#0c1f17] to-[#0A0A0A] border border-emerald-500/40 rounded-3xl p-8 sm:p-12 relative z-10 shadow-[0_30px_80px_rgba(16,185,129,0.15)] transform -mt-6 lg:mt-0 lg:-translate-x-6 hover:-translate-y-2 transition-transform duration-500 backdrop-blur-2xl">
+             <div className="w-full md:w-[60%] bg-gradient-to-br from-[#0c1f17] to-[#0A0A0A] border border-emerald-500/40 rounded-3xl p-8 sm:p-12 relative z-10 shadow-[0_30px_80px_rgba(16,185,129,0.15)] transform -mt-6 md:mt-0 md:-translate-x-6 hover:-translate-y-2 transition-transform duration-500 backdrop-blur-2xl">
                <div className="absolute -top-10 -left-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] -z-10" />
                <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-t-3xl opacity-50" />
                

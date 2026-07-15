@@ -19,10 +19,14 @@ const growClinicServices: Omit<GrowthCardProps, 'onAction'>[] = [
     title: "Google Business Profile Optimization",
     description: "Improve your Google visibility, rank higher in local searches, and help nearby patients discover your clinic.",
     icon: <Search className="text-blue-500" />,
-    logoUrl: "https://logo.clearbit.com/google.com",
     badge: { text: "Popular", variant: "default" },
     price: 1499,
     pricingPeriod: "month",
+    stats: [
+      { label: "Avg Profile Views", value: "+320%" },
+      { label: "New Patient Calls", value: "3x" }
+    ],
+    features: ["Profile Setup & Verification", "Keyword Optimization", "Monthly Performance Report"]
   },
   {
     id: "google-reviews",
@@ -32,6 +36,11 @@ const growClinicServices: Omit<GrowthCardProps, 'onAction'>[] = [
     badge: { text: "Recommended", variant: "premium" },
     price: 1999,
     pricingPeriod: "month",
+    stats: [
+      { label: "Avg Rating Increase", value: "4.8+" },
+      { label: "Patient Trust", value: "98%" }
+    ],
+    features: ["Automated Review Requests", "Negative Feedback Interception", "Review Showcase Widget"]
   },
   {
     id: "local-seo",
@@ -41,26 +50,39 @@ const growClinicServices: Omit<GrowthCardProps, 'onAction'>[] = [
     badge: { text: "Available", variant: "outline" },
     price: 2999,
     pricingPeriod: "month",
+    stats: [
+      { label: "Search Ranking", value: "Top 3" },
+      { label: "Organic Traffic", value: "+150%" }
+    ],
+    features: ["Competitor Analysis", "Local Directory Listings", "On-Page SEO Optimization"]
   },
   {
     id: "google-ads",
     title: "Google Ads",
     description: "Launch targeted campaigns that bring appointment-ready patients to your clinic.",
-    icon: <Search className="text-blue-500" />,
-    logoUrl: "https://logo.clearbit.com/google.com",
-    badge: { text: "Available", variant: "outline" },
+    icon: <Target className="text-red-500" />,
+    badge: { text: "High ROI", variant: "success" },
     price: 4999,
     pricingPeriod: "month",
+    stats: [
+      { label: "Avg Campaign ROI", value: "5.2x" },
+      { label: "Lead Conversion", value: "24%" }
+    ],
+    features: ["Keyword Bidding", "Ad Copywriting", "Landing Page Optimization"]
   },
   {
     id: "social-media",
     title: "Social Media Marketing",
     description: "Professionally designed posts and campaigns that build trust and awareness.",
     icon: <Share2 className="text-pink-500" />,
-    logoUrl: "https://logo.clearbit.com/meta.com",
     badge: { text: "Available", variant: "outline" },
     price: 3499,
     pricingPeriod: "month",
+    stats: [
+      { label: "Monthly Reach", value: "10k+" },
+      { label: "Brand Engagement", value: "+85%" }
+    ],
+    features: ["Custom Graphics", "Content Calendar", "Community Management"]
   }
 ];
 
@@ -73,6 +95,11 @@ const brandClinicServices: Omit<GrowthCardProps, 'onAction'>[] = [
     badge: { text: "Exclusive", variant: "premium" },
     price: 999,
     pricingPeriod: "one-time",
+    stats: [
+      { label: "Booking Speed", value: "20s" },
+      { label: "Queue Wait Time", value: "-45%" }
+    ],
+    features: ["Weather-Proof Acrylic", "Pre-Configured Setup", "Free Replacement"]
   },
   {
     id: "visiting-cards",
@@ -82,6 +109,7 @@ const brandClinicServices: Omit<GrowthCardProps, 'onAction'>[] = [
     badge: { text: "Available", variant: "outline" },
     price: 1499,
     pricingPeriod: "per 1000",
+    features: ["350 GSM Matte Finish", "Spot UV Highlight", "Double-Sided Print"]
   },
   {
     id: "reception-branding",
@@ -91,6 +119,7 @@ const brandClinicServices: Omit<GrowthCardProps, 'onAction'>[] = [
     badge: { text: "Available", variant: "outline" },
     price: 3999,
     pricingPeriod: "one-time",
+    features: ["Custom Dimensions", "Installation Guide", "High Durability"]
   },
   {
     id: "posters",
@@ -100,6 +129,7 @@ const brandClinicServices: Omit<GrowthCardProps, 'onAction'>[] = [
     badge: { text: "Available", variant: "outline" },
     price: 499,
     pricingPeriod: "per set",
+    features: ["A3 Size", "Laminated Finish", "Health Tips & Info"]
   },
   {
     id: "website",
@@ -109,6 +139,11 @@ const brandClinicServices: Omit<GrowthCardProps, 'onAction'>[] = [
     badge: { text: "Popular", variant: "default" },
     price: 9999,
     pricingPeriod: "one-time",
+    stats: [
+      { label: "Load Time", value: "<1.5s" },
+      { label: "Mobile Optimized", value: "100%" }
+    ],
+    features: ["Custom Domain", "Online Booking Integration", "Secure Hosting"]
   }
 ];
 
@@ -116,43 +151,43 @@ const trustedPartners: Omit<GrowthCardProps, 'onAction'>[] = [
   {
     id: "apollo-diagnostics",
     title: "Apollo Diagnostics",
-    description: "Integrated lab test bookings and digital reports directly in Clinic Diary.",
+    description: "Integrated lab test bookings and digital reports directly in Doctor Diary.",
     icon: <Activity className="text-blue-600" />,
-    logoUrl: "https://logo.clearbit.com/apollodiagnostics.in",
     badge: { text: "Available", variant: "success" },
     isIntegrated: true,
+    features: ["Seamless Data Sync", "Direct Report Access", "Patient Notifications"]
   },
   {
     id: "tata-1mg",
     title: "Tata 1mg",
     description: "Seamless e-pharmacy integration for automated prescription fulfillment.",
     icon: <HeartPulse className="text-red-500" />,
-    logoUrl: "https://logo.clearbit.com/1mg.com",
     badge: { text: "Available", variant: "outline" },
+    features: ["One-Click Prescriptions", "Doorstep Delivery", "Automated Refills"]
   },
   {
     id: "razorpay",
     title: "Razorpay",
     description: "Collect payments seamlessly via UPI, Cards, and Netbanking.",
     icon: <CreditCard className="text-blue-500" />,
-    logoUrl: "https://logo.clearbit.com/razorpay.com",
     badge: { text: "Available", variant: "outline" },
+    features: ["Instant Settlement", "Zero Setup Fee", "Secure Transactions"]
   },
   {
     id: "msg91",
     title: "MSG91",
     description: "Reliable SMS delivery for patient alerts, OTPs, and booking confirmations.",
     icon: <MessageSquare className="text-orange-500" />,
-    logoUrl: "https://logo.clearbit.com/msg91.com",
     badge: { text: "Available", variant: "outline" },
+    features: ["99% Delivery Rate", "Global Coverage", "Detailed Analytics"]
   },
   {
     id: "whatsapp-meta",
     title: "WhatsApp Business",
     description: "Official WhatsApp Cloud API integration for automated patient communication.",
     icon: <MessageCircle className="text-emerald-500" />,
-    logoUrl: "https://logo.clearbit.com/whatsapp.com",
     badge: { text: "Premium", variant: "premium" },
+    features: ["Green Tick Verification", "Interactive Messages", "End-to-End Encryption"]
   }
 ];
 
@@ -165,16 +200,25 @@ const premiumTools: Omit<GrowthCardProps, 'onAction'>[] = [
     badge: { text: "Premium", variant: "premium" },
     price: 4999,
     pricingPeriod: "month",
+    stats: [
+      { label: "Missed Calls", value: "0%" },
+      { label: "Booking Rate", value: "+35%" }
+    ],
+    features: ["Natural Voice", "Calendar Sync", "Multi-Language"]
   },
   {
     id: "whatsapp-auto",
     title: "WhatsApp Automation",
     description: "Automated appointment reminders, patient follow-ups, and review requests via WhatsApp.",
     icon: <MessageCircle className="text-emerald-500" />,
-    logoUrl: "https://logo.clearbit.com/whatsapp.com",
     badge: { text: "Available", variant: "outline" },
     price: 1999,
     pricingPeriod: "month",
+    stats: [
+      { label: "No-Show Rate", value: "-60%" },
+      { label: "Open Rate", value: "98%" }
+    ],
+    features: ["Automated Reminders", "Custom Templates", "Two-Way Chat"]
   },
   {
     id: "sms-auto",
@@ -184,6 +228,7 @@ const premiumTools: Omit<GrowthCardProps, 'onAction'>[] = [
     badge: { text: "Available", variant: "outline" },
     price: 999,
     pricingPeriod: "month",
+    features: ["Scheduled Blasts", "Delivery Reports", "Personalized Texts"]
   },
   {
     id: "clinic-analytics",
@@ -191,6 +236,7 @@ const premiumTools: Omit<GrowthCardProps, 'onAction'>[] = [
     description: "Modern dashboard with charts and growth metrics to track your clinic's performance.",
     icon: <LineChart className="text-emerald-400" />,
     badge: { text: "Popular", variant: "default" },
+    features: ["Real-Time Data", "Export to PDF/CSV", "Customizable Views"]
   },
   {
     id: "advanced-reports",
@@ -198,6 +244,7 @@ const premiumTools: Omit<GrowthCardProps, 'onAction'>[] = [
     description: "Deep dive into financial, patient demographic, and operational analytics.",
     icon: <BarChart3 className="text-purple-400" />,
     badge: { text: "Available", variant: "outline" },
+    features: ["Revenue Breakdown", "Patient Segmentation", "Predictive Trends"]
   }
 ];
 

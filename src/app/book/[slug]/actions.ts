@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { appointments, availability, availabilityOverrides, clinics, patients, subscriptions } from "@/db/schema";
-import { eq, and, ne, count } from "drizzle-orm";
+import { eq, and, ne, count, inArray } from "drizzle-orm";
 import { parseISO, getDay, format, addMinutes } from "date-fns";
 import { sendNotification } from "@/lib/notifications";
 
@@ -154,6 +154,24 @@ export async function createBooking(
         .returning({ id: patients.id });
       patientId = newPatient.id;
     }
+
+    // --- 1 Active Appointment Restriction ---
+    const activeAppts = await db
+      .select({ id: appointments.id })
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.clinicId, clinicId),
+          eq(appointments.patientPhone, patientPhone),
+          inArray(appointments.status, ["confirmed", "checked_in", "in_consultation"])
+        )
+      )
+      .limit(1);
+
+    if (activeAppts.length > 0) {
+      return { error: "You already have an active appointment. Please cancel it first to book a new one." };
+    }
+    // ----------------------------------------
 
     const { desc } = await import("drizzle-orm");
     const [latestAppt] = await db

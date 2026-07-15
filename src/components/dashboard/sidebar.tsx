@@ -200,22 +200,22 @@ export function Sidebar({
             href={`/book/${clinicSlug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
+            className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
             aria-label="View booking page"
           >
-            <ExternalLink strokeWidth={1.5} className="w-4 h-4" />
+            <ExternalLink strokeWidth={1.5} className="w-5 h-5" />
           </a>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="p-2 -mr-1 rounded-lg hover:bg-slate-100 transition-colors"
+            className="w-11 h-11 -mr-2 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors"
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileOpen}
             aria-controls="mobile-sidebar"
           >
             {mobileOpen ? (
-              <X strokeWidth={1.5} className="w-5 h-5 text-slate-600" />
+              <X strokeWidth={1.5} className="w-6 h-6 text-slate-600" />
             ) : (
-              <Menu strokeWidth={1.5} className="w-5 h-5 text-slate-600" />
+              <Menu strokeWidth={1.5} className="w-6 h-6 text-slate-600" />
             )}
           </button>
         </div>

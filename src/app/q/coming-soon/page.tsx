@@ -21,7 +21,7 @@ export default function QrComingSoonPage() {
 
         <div className="flex items-center justify-center gap-2 text-slate-500">
           <QrCode className="w-4 h-4" />
-          <p className="text-xs">Powered by <span className="font-bold text-slate-400">ClinicDiary</span></p>
+          <p className="text-xs">Powered by <span className="font-bold text-slate-400">Doctor Diary by NatureXpress</span></p>
         </div>
       </div>
     </div>

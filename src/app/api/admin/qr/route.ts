@@ -56,7 +56,7 @@ export async function POST(req: Request) {
   const body = await req.json();
   const count = Math.min(Number(body.count) || 1, 100); // max 100 per batch
 
-  // Generate codes: CD-XXXX format (ClinicDiary branded)
+  // Generate codes: CD-XXXX format (Doctor Diary branded)
   const existingCodes = await db
     .select({ code: qrCodes.code })
     .from(qrCodes);

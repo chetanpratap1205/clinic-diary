@@ -239,8 +239,7 @@ export default async function DashboardPage() {
           <p className="text-sm font-semibold text-surface-900 mb-1">
             Your Patient Booking Link
           </p>
-          {/* URL always wraps — never truncates on mobile */}
-          <p className="text-xs text-surface-500 font-mono break-all leading-relaxed mb-3">
+          <p className="text-xs text-surface-500 font-mono truncate leading-relaxed mb-3" title={bookingUrl}>
             {bookingUrl}
           </p>
           <CopyLinkButton url={bookingUrl} />
@@ -285,7 +284,7 @@ export default async function DashboardPage() {
             <Card
               key={stat.label}
               className={`border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white group ${
-                stat.label.includes("Overdue") ? "col-span-2 md:col-span-1 lg:col-span-1" : ""
+                stat.label.includes("Overdue") ? "col-span-2 md:col-span-2 lg:col-span-1" : ""
               } ${
                 stat.label.includes("Overdue") && overdueCount > 0
                   ? "ring-2 ring-red-500/20"
