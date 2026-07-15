@@ -94,32 +94,45 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto text-center relative z-10 w-full drop-shadow-2xl">
           <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md border border-emerald-500/30 text-emerald-300 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold mb-8 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
             <Star strokeWidth={2} className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-            <span>The Operating System for Top-Tier Clinics</span>
+            <span>Built exclusively for independent clinics and specialists</span>
           </div>
           
           <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white mb-6 tracking-tighter leading-[1.1] break-words">
-            Less Administration.<br className="hidden sm:block" />
+            Turn Your Clinic Into A<br className="hidden sm:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 block sm:inline mt-2 sm:mt-0">
-              More Patient Care.
+              24/7 Growth Engine.
             </span>
           </h1>
           
-          <p className="text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-[1.8] font-medium text-center">
-            <span className="bg-emerald-100 text-emerald-950 px-2 py-0.5 box-decoration-clone">
-              Help your clinic accept appointments online, reduce reception workload, and deliver a modern patient experience—all from one simple platform.
-            </span>
+          <p className="text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-[1.8] font-medium text-center text-slate-300">
+            Stop losing patients to corporate hospitals. Elevate your brand with a premium booking page, automate WhatsApp patient reactivation, and fill empty slots—even while you sleep.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
             <Link href="/signup" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="w-full sm:w-auto bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-white shadow-[0_0_40px_rgba(6,182,212,0.4)] group h-14 px-8 text-base font-bold rounded-full transition-all hover:scale-105 hover:shadow-[0_0_60px_rgba(6,182,212,0.6)] border border-white/20"
+                className="w-full sm:w-auto bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-slate-950 shadow-[0_0_40px_rgba(16,185,129,0.3)] group h-14 px-8 text-base font-black rounded-full transition-all hover:scale-105 hover:shadow-[0_0_60px_rgba(16,185,129,0.5)] border border-emerald-400/50"
               >
-                Start Your Free Setup
+                Book Your Free Setup
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
+            <Link href="#demo" className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full sm:w-auto bg-white/5 border-white/20 text-white hover:bg-white/10 h-14 px-8 text-base font-bold rounded-full transition-all"
+              >
+                ▶ Watch 60-Sec Demo
+              </Button>
+            </Link>
+          </div>
+          
+          <div className="max-w-xl mx-auto text-center mb-12">
+            <p className="text-xs sm:text-sm text-slate-400 font-medium leading-relaxed">
+              <span className="text-emerald-400">No apps to download.</span> Includes beautiful physical QR codes for your clinic doors so you can capture bookings 24/7/365. <strong className="text-white">Pays for itself with just one recovered patient.</strong>
+            </p>
           </div>
           
           <div className="flex items-center justify-center gap-6 text-sm font-medium text-slate-500">
@@ -213,19 +226,19 @@ export default function HomePage() {
                 <div className="mb-6">
                   <PremiumIcon Icon={MessageSquare} variant="glass" size="xl" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-3">Eradicate No-Shows.</h3>
+                <h3 className="text-2xl font-bold text-white mb-3">The Patient Reactivation Engine.</h3>
                 <p className="text-slate-400 text-base mb-8">
-                  Ghosting patients kill profitability. Automated WhatsApp confirmations keep patients engaged, reducing no-shows to near zero without expensive SMS APIs.
+                  Got empty slots? With one click, launch automated WhatsApp health camps or check-up reminders to past patients, and watch your calendar fill up in minutes.
                 </p>
               </div>
               <div className="bg-[#111] border border-white/10 rounded-2xl p-4 shadow-2xl relative">
                 <div className="absolute -left-3 -top-3 w-8 h-8 bg-teal-500 rounded-full border-4 border-[#0a0a0a] shadow-lg animate-bounce flex items-center justify-center z-20">
-                  <BellRing className="w-4 h-4 text-[#111]" />
+                  <Zap className="w-4 h-4 text-[#111]" />
                 </div>
                 <div className="bg-[#1a2c26] border border-emerald-500/20 rounded-xl p-4 relative z-10">
                   <p className="text-xs text-emerald-100 leading-relaxed">
-                    <strong className="text-emerald-400 block mb-1">Doctor Diary Update</strong>
-                    Hi! You're next in line for Dr. Sharma. Please proceed to the clinic to secure your spot.
+                    <strong className="text-emerald-400 block mb-1">Dr. Sharma Clinic</strong>
+                    Hi Rohan, it's been 6 months since your last visit. Reply 'BOOK' to secure a priority slot for your routine check-up this week.
                   </p>
                 </div>
               </div>
@@ -471,6 +484,63 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* White-Glove Migration Guarantee */}
+      <section className="py-20 px-4 sm:px-6 bg-gradient-to-br from-emerald-950/20 to-[#050505] relative border-t border-b border-emerald-500/10 overflow-hidden">
+        <div className="absolute right-0 top-0 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
+        
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-12 relative z-10">
+          <div className="flex-1 text-center md:text-left">
+            <div className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest mb-6">
+              <Shield className="w-4 h-4" /> The Fear Eraser
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4 tracking-tighter">
+              Terrified of losing your current patient records?
+            </h2>
+            <p className="text-slate-300 text-lg leading-relaxed mb-8 font-medium">
+              We know that switching software feels like doing open-heart surgery on your clinic. That's why we include our <strong className="text-white">White-Glove Data Migration</strong> for free. 
+            </p>
+            <ul className="space-y-4 mb-8">
+              {[
+                "We securely export data from your old, clunky software.",
+                "Zero downtime. Your clinic keeps running smoothly.",
+                "100% of your patient histories safely transferred in 48 hours."
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-3 text-emerald-100/80 font-medium text-sm sm:text-base">
+                  <div className="bg-emerald-500/20 rounded-full p-1 border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                    <Check className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+          
+          <div className="w-full md:w-5/12">
+            <div className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative group overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="flex items-center justify-center mb-6">
+                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center border border-white/10 relative">
+                  <div className="absolute inset-0 bg-emerald-400/20 rounded-full animate-ping opacity-50" />
+                  <Activity className="w-8 h-8 text-emerald-400 relative z-10" />
+                </div>
+              </div>
+              <div className="text-center">
+                <h3 className="text-xl font-bold text-white mb-2">Concierge Onboarding</h3>
+                <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+                  You just hand us your messy Excel sheets or old software login, and our engineering team handles the rest securely.
+                </p>
+                <div className="w-full bg-[#151515] rounded-full h-2 mb-2 overflow-hidden border border-white/5">
+                  <div className="bg-gradient-to-r from-emerald-500 to-cyan-400 h-full w-[100%] rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                </div>
+                <div className="text-emerald-400 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-1">
+                  <CheckCircle className="w-3 h-3" /> Migration Complete
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Premium Pricing Tier */}
       <section id="pricing" className="py-32 px-4 sm:px-6 bg-[#0a0a0a] relative border-t border-white/5 overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
@@ -581,11 +651,11 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           {/* Final CTA */}
           <div className="text-center mb-24 relative z-10">
-            <h2 className="text-3xl sm:text-5xl font-black text-white mb-6 tracking-tighter">
-              Stop losing revenue to no-shows.
+            <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-white mb-6 tracking-tighter">
+              Wake up to a full calendar.
             </h2>
             <p className="text-slate-400 text-lg mb-10 max-w-2xl mx-auto font-medium">
-              Join 500+ top-tier doctors who have transformed their front desk into a premium, silent, automated experience.
+              Join 500+ top-tier doctors who have transformed their clinic into a 24/7 premium brand and automated their growth.
             </p>
             <Link href="/signup">
               <Button size="lg" className="rounded-full bg-white text-black hover:bg-slate-200 h-14 px-10 font-bold text-lg shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 transition-all">
