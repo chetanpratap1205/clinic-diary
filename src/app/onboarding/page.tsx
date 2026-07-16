@@ -22,6 +22,7 @@ import {
   Building2,
 } from "lucide-react";
 import { submitOnboarding } from "./actions";
+import { MapsAutoFill } from "./_components/maps-auto-fill";
 
 // ─── Schema ────────────────────────────────────────────────────────────────────
 const onboardingSchema = z.object({
@@ -39,6 +40,7 @@ const onboardingSchema = z.object({
       "Only lowercase letters, numbers, and hyphens allowed"
     ),
   consultationFee: z.number().min(0, "Fee cannot be negative"),
+  referralCode: z.string().optional(),
 });
 
 type OnboardingData = z.infer<typeof onboardingSchema>;
@@ -124,6 +126,7 @@ export default function OnboardingPage() {
   const [showSpecialtyDropdown, setShowSpecialtyDropdown] = useState(false);
   const [slugTouched, setSlugTouched] = useState(false);
   const [specialtyQuery, setSpecialtyQuery] = useState("");
+  const [highlightFields, setHighlightFields] = useState<Record<string, boolean>>({});
   const specialtyRef = useRef<HTMLDivElement>(null);
   const BASE_URL = (
     process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in"
@@ -138,13 +141,22 @@ export default function OnboardingPage() {
     formState: { errors },
   } = useForm<OnboardingData>({
     resolver: zodResolver(onboardingSchema),
-    defaultValues: { consultationFee: 500 },
+    defaultValues: { consultationFee: 500, referralCode: "" },
     mode: "onChange",
   });
 
   const doctorName = watch("doctorName");
   const slugValue = watch("slug");
   const specialtyValue = watch("specialty");
+
+  // Read referral code from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
+    if (ref) {
+      setValue("referralCode", ref);
+    }
+  }, [setValue]);
 
   // ── Auto-generate slug from doctor name if user hasn't manually edited it
   useEffect(() => {
@@ -180,6 +192,23 @@ export default function OnboardingPage() {
       setIsSubmitting(false);
     }
     // On success, server action redirects to /dashboard
+  };
+
+  const handleDataFound = (data: { name: string; phone: string }) => {
+    const fieldsToHighlight: Record<string, boolean> = {};
+    if (data.name) {
+      setValue("name", data.name, { shouldValidate: true });
+      fieldsToHighlight.name = true;
+    }
+    if (data.phone) {
+      setValue("phone", data.phone, { shouldValidate: true });
+      fieldsToHighlight.phone = true;
+    }
+
+    setHighlightFields(fieldsToHighlight);
+    setTimeout(() => {
+      setHighlightFields({});
+    }, 2000);
   };
 
   const slugIsValid = slugValue && !errors.slug;
@@ -221,6 +250,9 @@ export default function OnboardingPage() {
         >
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="p-6 sm:p-8 space-y-0">
+              
+              {/* ── Magic Auto-Fill ─────────────────────────────── */}
+              <MapsAutoFill onDataFound={handleDataFound} />
 
               {/* ── Section: About You ─────────────────────────────── */}
               <div className="mb-5">
@@ -374,8 +406,10 @@ export default function OnboardingPage() {
                       id="name"
                       placeholder="e.g. City Care Clinic"
                       {...register("name")}
-                      className={`h-12 rounded-xl text-base bg-slate-50 focus:bg-white transition-colors border ${
-                        errors.name
+                      className={`h-12 rounded-xl text-base bg-slate-50 focus:bg-white transition-all duration-500 border ${
+                        highlightFields.name 
+                          ? "bg-emerald-50 border-emerald-400 ring-4 ring-emerald-400/20 shadow-inner" 
+                          : errors.name
                           ? "border-red-400 focus:border-red-400"
                           : "border-slate-200 focus:border-sky-400"
                       }`}
@@ -395,8 +429,10 @@ export default function OnboardingPage() {
                       inputMode="tel"
                       maxLength={10}
                       {...register("phone")}
-                      className={`h-12 rounded-xl text-base bg-slate-50 focus:bg-white transition-colors border ${
-                        errors.phone
+                      className={`h-12 rounded-xl text-base bg-slate-50 focus:bg-white transition-all duration-500 border ${
+                        highlightFields.phone
+                          ? "bg-emerald-50 border-emerald-400 ring-4 ring-emerald-400/20 shadow-inner"
+                          : errors.phone
                           ? "border-red-400 focus:border-red-400"
                           : "border-slate-200 focus:border-sky-400"
                       }`}
@@ -431,6 +467,31 @@ export default function OnboardingPage() {
                         className="flex-1 h-full bg-transparent outline-none text-base font-semibold text-slate-900 pr-4"
                       />
                     </div>
+                  </FieldGroup>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-slate-100 my-5" />
+
+              {/* ── Section: Referral (Optional) ─────────────────────────────── */}
+              <div className="mb-5">
+                <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-4">
+                  Partner Referral
+                </p>
+                <div className="space-y-1">
+                  <FieldGroup
+                    label="Referral Code (Optional)"
+                    htmlFor="referralCode"
+                    icon={<Link2 className="w-3.5 h-3.5 text-slate-400" />}
+                    error={errors.referralCode?.message}
+                  >
+                    <Input
+                      id="referralCode"
+                      placeholder="e.g. GP-RAHUL-A3B2"
+                      {...register("referralCode")}
+                      className="h-12 rounded-xl text-base bg-slate-50 focus:bg-white transition-colors border border-slate-200 focus:border-emerald-400"
+                    />
                   </FieldGroup>
                 </div>
               </div>

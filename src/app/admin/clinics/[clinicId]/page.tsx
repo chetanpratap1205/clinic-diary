@@ -7,6 +7,7 @@ import {
   followUps,
   qrCodes,
   patients,
+  growthPartners,
 } from "@/db/schema";
 import { eq, count, sum, desc, sql } from "drizzle-orm";
 import { notFound } from "next/navigation";
@@ -37,6 +38,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { AssignPartnerOverride } from "./_components/assign-partner-override";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +71,7 @@ export default async function ClinicDetailPage({
     [pendingFollowUps],
     qrCodeRows,
     recentAppointments,
+    partners,
   ] = await Promise.all([
     db.select().from(clinics).where(eq(clinics.id, clinicId)).limit(1),
     db.select().from(subscriptions).where(eq(subscriptions.clinicId, clinicId)).limit(1),
@@ -87,6 +90,7 @@ export default async function ClinicDetailPage({
     db.select().from(qrCodes).where(eq(qrCodes.clinicId, clinicId)).limit(1),
     db.select().from(appointments).where(eq(appointments.clinicId, clinicId))
       .orderBy(desc(appointments.createdAt)).limit(8),
+    db.select({ id: growthPartners.id, name: growthPartners.name }).from(growthPartners).orderBy(growthPartners.name),
   ]);
 
   const clinic = clinicRows[0];
@@ -261,6 +265,26 @@ export default async function ClinicDetailPage({
             ) : (
               <p className="text-sm text-slate-400 py-2">No subscription found.</p>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Partner Attribution Override */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+              <Users className="w-4 h-4 text-slate-400" />
+              Partner Attribution
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-slate-500 mb-3">
+              If this clinic forgot to use a referral link, you can manually assign them to a partner below.
+            </p>
+            <AssignPartnerOverride 
+              clinicId={clinic.id} 
+              currentPartnerId={clinic.referredBy}
+              partners={partners}
+            />
           </CardContent>
         </Card>
 

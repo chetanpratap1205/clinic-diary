@@ -70,26 +70,26 @@ export function DateRangePicker() {
 
   return (
     <Popover>
-      <PopoverTrigger>
+      <PopoverTrigger render={
         <Button
           variant={"outline"}
           className={`justify-start text-left font-normal h-9 text-xs shadow-sm bg-white border-slate-200 ${
             !date.from && "text-slate-500"
           }`}
-        >
-          <CalendarIcon className="mr-2 h-3.5 w-3.5 text-slate-400" />
-          {date.from ? (
-            date.to ? (
-              <>
-                {format(date.from, "MMM d, yyyy")} - {format(date.to, "MMM d, yyyy")}
-              </>
-            ) : (
-              format(date.from, "MMM d, yyyy")
-            )
+        />
+      }>
+        <CalendarIcon className="mr-2 h-3.5 w-3.5 text-slate-400" />
+        {date.from ? (
+          date.to ? (
+            <>
+              {format(date.from, "MMM d, yyyy")} - {format(date.to, "MMM d, yyyy")}
+            </>
           ) : (
-            <span>Pick a date range</span>
-          )}
-        </Button>
+            format(date.from, "MMM d, yyyy")
+          )
+        ) : (
+          <span>Pick a date range</span>
+        )}
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0 flex items-start" align="end">
         <div className="flex flex-col gap-1 p-3 border-r border-slate-100 bg-slate-50">

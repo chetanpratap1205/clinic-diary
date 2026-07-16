@@ -13,6 +13,7 @@ import {
   CalendarClock,
   Package,
   Users,
+  Briefcase,
 } from "lucide-react";
 
 const navSections = [
@@ -20,13 +21,14 @@ const navSections = [
     label: "Overview",
     items: [
       { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-      { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+      { href: "/admin/finance", label: "Finance & MRR", icon: BarChart3 },
     ],
   },
   {
     label: "Management",
     items: [
       { href: "/admin/leads", label: "Leads CRM", icon: Users },
+      { href: "/admin/partners", label: "Growth Partners", icon: Briefcase },
       { href: "/admin/clinics", label: "Clinics", icon: Building2 },
       { href: "/admin/billing", label: "Billing", icon: CreditCard },
       { href: "/admin/reviews", label: "Reviews", icon: Star },
@@ -43,7 +45,11 @@ const navSections = [
   },
 ];
 
-export function AdminNav() {
+export interface AdminNavProps {
+  onNavClick?: () => void;
+}
+
+export function AdminNav({ onNavClick }: AdminNavProps = {}) {
   const pathname = usePathname();
 
   return (
@@ -59,7 +65,7 @@ export function AdminNav() {
                 ? pathname === item.href
                 : pathname.startsWith(item.href);
               return (
-                <Link key={item.href} href={item.href}>
+                <Link key={item.href} href={item.href} onClick={onNavClick}>
                   <span
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer font-medium text-sm group ${
                       isActive

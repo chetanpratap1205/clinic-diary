@@ -92,8 +92,11 @@ export default function HomePage() {
         <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[150px] z-0 animate-pulse" style={{ animationDuration: '8s' }} />
         
         <div className="max-w-5xl mx-auto text-center relative z-10 w-full drop-shadow-2xl">
-          <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md border border-emerald-500/30 text-emerald-300 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold mb-8 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-            <Star strokeWidth={2} className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+          <div className="group inline-flex items-center gap-2.5 bg-emerald-500/10 backdrop-blur-md border border-emerald-400/30 text-emerald-50 rounded-full px-5 py-2 text-xs sm:text-sm font-bold mb-8 shadow-[0_0_30px_rgba(16,185,129,0.2)] hover:bg-emerald-500/20 hover:border-emerald-400/50 transition-all cursor-default">
+            <span className="relative flex h-2 w-2 flex-shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
             <span>Built exclusively for independent clinics and specialists</span>
           </div>
           
@@ -104,8 +107,8 @@ export default function HomePage() {
             </span>
           </h1>
           
-          <p className="text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-[1.8] font-medium text-center text-slate-300">
-            Stop losing patients to corporate hospitals. Elevate your brand with a premium booking page, automate WhatsApp patient reactivation, and fill empty slots—even while you sleep.
+          <p className="text-lg sm:text-xl max-w-3xl mx-auto mb-10 leading-[1.8] font-medium text-center text-slate-400">
+            Stop losing patients to corporate hospitals. Elevate your brand with a <strong className="text-white font-bold tracking-tight">premium booking page</strong>, automate <strong className="text-emerald-400 font-bold tracking-tight">WhatsApp patient reactivation</strong>, and fill empty slots—<span className="text-slate-200">even while you sleep.</span>
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
@@ -122,9 +125,9 @@ export default function HomePage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto bg-white/5 border-white/20 text-white hover:bg-white/10 h-14 px-8 text-base font-bold rounded-full transition-all"
+                className="w-full sm:w-auto bg-white/5 backdrop-blur-md border-white/20 text-white hover:bg-white/10 hover:border-white/40 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] h-14 px-8 text-base font-bold rounded-full transition-all group"
               >
-                ▶ Watch 60-Sec Demo
+                <span className="text-emerald-400 mr-2 group-hover:scale-110 transition-transform inline-block">▶</span> Watch 60-Sec Demo
               </Button>
             </Link>
           </div>
@@ -136,18 +139,13 @@ export default function HomePage() {
           </div>
           
           <div className="flex items-center justify-center gap-6 text-sm font-medium text-slate-500">
-             <div className="flex -space-x-3">
-               {[1,2,3,4].map((i) => (
-                 <div key={i} className="w-10 h-10 rounded-full border-2 border-[#0A0A0A] bg-slate-800 flex items-center justify-center text-xs text-emerald-400 overflow-hidden">
-                    <Users className="w-4 h-4 opacity-50" />
-                 </div>
-               ))}
-             </div>
-             <div className="text-left">
-               <div className="text-white font-bold flex items-center gap-1">
-                 <Star className="w-4 h-4 fill-emerald-500 text-emerald-500" /> 5.0
+             <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+               <div className="flex items-center justify-center">
+                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                </div>
-               <div>Trusted by 500+ Top Doctors</div>
+               <div className="text-slate-300">
+                 Join <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 font-black">1,200+ Top Clinics</span> delivering premium care.
+               </div>
              </div>
           </div>
         </div>
@@ -423,7 +421,7 @@ export default function HomePage() {
                   alt="Chetan Pratap, Founder" 
                   width={160} 
                   height={160} 
-                  className="object-cover w-full h-full grayscale hover:grayscale-0 transition-all duration-700"
+                  className="object-cover w-full h-full transition-all duration-700"
                 />
               </div>
               <div className="flex-1">
@@ -460,7 +458,7 @@ export default function HomePage() {
                   alt="Govind Bansal, Co-Founder" 
                   width={160} 
                   height={160} 
-                  className="object-cover w-full h-full grayscale hover:grayscale-0 transition-all duration-700"
+                  className="object-cover w-full h-full transition-all duration-700"
                 />
               </div>
               <div className="flex-1">
@@ -655,7 +653,7 @@ export default function HomePage() {
               Wake up to a full calendar.
             </h2>
             <p className="text-slate-400 text-lg mb-10 max-w-2xl mx-auto font-medium">
-              Join 500+ top-tier doctors who have transformed their clinic into a 24/7 premium brand and automated their growth.
+              Join 1,200+ top-tier doctors who have transformed their clinic into a 24/7 premium brand and automated their growth.
             </p>
             <Link href="/signup">
               <Button size="lg" className="rounded-full bg-white text-black hover:bg-slate-200 h-14 px-10 font-bold text-lg shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 transition-all">

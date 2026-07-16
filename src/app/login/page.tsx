@@ -114,16 +114,14 @@ export default function LoginPage() {
           </div>
           
           <div className="flex items-center gap-4 text-white">
-            <div className="flex -space-x-3">
-              {[1,2,3,4].map(i => (
-                <div key={i} className="w-10 h-10 rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
-                  D{i}
-                </div>
-              ))}
-            </div>
-            <p className="text-sm font-semibold text-slate-400">
-              Trusted by 10,000+ top doctors across India.
-            </p>
+             <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+               <div className="flex items-center justify-center">
+                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+               </div>
+               <div className="text-slate-300 text-sm">
+                 Join <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 font-black">1,200+ Top Clinics</span> delivering premium care.
+               </div>
+             </div>
           </div>
         </div>
       </div>

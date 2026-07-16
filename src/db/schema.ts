@@ -29,6 +29,7 @@ export const clinics = pgTable("clinics", {
   gstin: text("gstin"),
   googleMapsUrl: text("google_maps_url"),
   about: text("about"),
+  referredBy: uuid("referred_by").references(() => growthPartners.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => [
   index("clinics_created_at_idx").on(table.createdAt),
@@ -321,24 +322,90 @@ export const orderItems = pgTable("order_items", {
   index("order_items_order_idx").on(table.orderId)
 ]);
 
+// ─── Growth Partners (Field Sales Team) ────────────────────────────────────────
+export const growthPartners = pgTable("growth_partners", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  authUserId: uuid("auth_user_id").notNull().unique(), // Supabase Auth user ID
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  city: text("city"),
+  region: text("region"),               // Territory they cover, e.g. "Pune West"
+  targetMonthly: integer("target_monthly").default(10), // Monthly lead conversion target
+  commissionFirstSalePct: integer("commission_first_sale_pct").default(30),  // 30% on first sale
+  commissionRenewalPct: integer("commission_renewal_pct").default(10),       // 10% on renewals
+  referralCode: text("referral_code").unique(), // e.g. "GP-RAHUL-001"
+  isActive: boolean("is_active").default(true),
+  joinedAt: timestamp("joined_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("growth_partners_region_idx").on(table.region),
+]);
+
 // ─── Doctor Leads (CRM) ────────────────────────────────────────────────────────
 export const doctorLeads = pgTable("doctor_leads", {
   id: uuid("id").defaultRandom().primaryKey(),
+  assignedTo: uuid("assigned_to").references(() => growthPartners.id, { onDelete: "set null" }),
   doctorName: text("doctor_name").notNull(),
   clinicName: text("clinic_name"),
   phone: text("phone").notNull(),
+  email: text("email"),
   specialty: text("specialty"),
   city: text("city"),
-  source: text("source").notNull().default("online"), // online, field_visit, referral
-  status: text("status").notNull().default("new"), // new, contacted, demo_scheduled, converted, rejected
+  address: text("address"),
+  source: text("source").notNull().default("online"), // online, field_visit, referral, imported
+  status: text("status").notNull().default("new"),     // new, contacted, demo_scheduled, converted, rejected
+  priority: text("priority").notNull().default("normal"), // hot, warm, normal, cold
   notes: text("notes"),
+  followUpDate: timestamp("follow_up_date"),
+  lastContactedAt: timestamp("last_contacted_at"),
+  demoScheduledAt: timestamp("demo_scheduled_at"),
+  convertedAt: timestamp("converted_at"),
+  conversionAmount: integer("conversion_amount"), // subscription amount in paise at time of conversion
+  commissionPaid: boolean("commission_paid").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => [
   index("doctor_leads_status_idx").on(table.status),
+  index("doctor_leads_priority_idx").on(table.priority),
+  index("doctor_leads_assigned_to_idx").on(table.assignedTo),
   index("doctor_leads_created_at_idx").on(table.createdAt),
 ]);
 
+// ─── Lead Activities (Visits, Calls, Notes) ────────────────────────────────────
+export const leadActivities = pgTable("lead_activities", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  leadId: uuid("lead_id").notNull().references(() => doctorLeads.id, { onDelete: "cascade" }),
+  partnerId: uuid("partner_id").notNull().references(() => growthPartners.id),
+  type: text("type").notNull(), // visit, call, note, status_change, whatsapp
+  notes: text("notes"),
+  previousStatus: text("previous_status"),
+  newStatus: text("new_status"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("lead_activities_lead_idx").on(table.leadId),
+  index("lead_activities_partner_idx").on(table.partnerId),
+]);
+
+// ─── Commission Payouts ────────────────────────────────────────────────────────
+// Tracks 30% on first sale, 10% on renewals per partner
+export const commissionPayouts = pgTable("commission_payouts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  partnerId: uuid("partner_id").notNull().references(() => growthPartners.id),
+  leadId: uuid("lead_id").references(() => doctorLeads.id, { onDelete: "set null" }),
+  paymentLogId: uuid("payment_log_id").references(() => paymentLogs.id, { onDelete: "set null" }),
+  type: text("type").notNull(),         // first_sale | renewal
+  basePaise: integer("base_paise").notNull(),   // subscription amount in paise
+  pct: integer("pct").notNull(),               // 30 or 10
+  commissionPaise: integer("commission_paise").notNull(), // base * pct / 100
+  status: text("status").notNull().default("pending"), // pending | paid | cancelled
+  paidAt: timestamp("paid_at"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("commission_payouts_partner_idx").on(table.partnerId),
+  index("commission_payouts_status_idx").on(table.status),
+]);
 // ─── Type Exports ──────────────────────────────────────────────────────────────
 export type Clinic = typeof clinics.$inferSelect;
 export type NewClinic = typeof clinics.$inferInsert;
@@ -370,3 +437,9 @@ export type OrderItem = typeof orderItems.$inferSelect;
 export type NewOrderItem = typeof orderItems.$inferInsert;
 export type DoctorLead = typeof doctorLeads.$inferSelect;
 export type NewDoctorLead = typeof doctorLeads.$inferInsert;
+export type GrowthPartner = typeof growthPartners.$inferSelect;
+export type NewGrowthPartner = typeof growthPartners.$inferInsert;
+export type LeadActivity = typeof leadActivities.$inferSelect;
+export type NewLeadActivity = typeof leadActivities.$inferInsert;
+export type CommissionPayout = typeof commissionPayouts.$inferSelect;
+export type NewCommissionPayout = typeof commissionPayouts.$inferInsert;

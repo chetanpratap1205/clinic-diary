@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth";
 import crypto from "crypto";
 import { db } from "@/db";
-import { subscriptions, paymentLogs } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { subscriptions, paymentLogs, clinics, growthPartners, commissionPayouts, doctorLeads } from "@/db/schema";
+import { eq, and, sql } from "drizzle-orm";
+
 
 const PLANS = {
   quarterly: { amount: Math.round(1499 * 1.18 * 100), name: "Quarterly" },
@@ -109,7 +110,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Insert payment log inside the same transaction
-      await tx.insert(paymentLogs).values({
+      const [insertedPayment] = await tx.insert(paymentLogs).values({
         clinicId: authUser.clinicId!,
         razorpayOrderId: razorpay_order_id,
         razorpayPaymentId: razorpay_payment_id,
@@ -117,7 +118,79 @@ export async function POST(req: NextRequest) {
         planName: planDetails?.name || "Unknown Plan",
         amountPaise: planDetails?.amount || 0,
         status: "paid",
-      });
+      }).returning();
+
+      // Automated Commission Calculation for Partners
+      const [clinic] = await tx
+        .select({ referredBy: clinics.referredBy, phone: clinics.phone })
+        .from(clinics)
+        .where(eq(clinics.id, authUser.clinicId!))
+        .limit(1);
+
+      if (clinic && clinic.referredBy) {
+        // Look up partner commission rates
+        const [partner] = await tx
+          .select({
+            firstSalePct: growthPartners.commissionFirstSalePct,
+            renewalPct: growthPartners.commissionRenewalPct,
+          })
+          .from(growthPartners)
+          .where(eq(growthPartners.id, clinic.referredBy))
+          .limit(1);
+
+        if (partner) {
+          // Check if this is their first payment or a renewal
+          const [existingPayments] = await tx
+            .select({ count: sql<number>`count(*)` })
+            .from(paymentLogs)
+            .where(
+              and(
+                eq(paymentLogs.clinicId, authUser.clinicId!),
+                eq(paymentLogs.status, "paid"),
+                sql`${paymentLogs.id} != ${insertedPayment.id}` // Exclude the one just inserted
+              )
+            );
+
+          const isFirstSale = Number(existingPayments.count) === 0;
+          const pct = isFirstSale ? partner.firstSalePct : partner.renewalPct;
+          
+          if (pct !== null && pct > 0) {
+            const commissionPaise = Math.round((planDetails.amount * pct) / 100);
+
+            // Find matching lead to attach payout to
+            const [lead] = await tx
+              .select({ id: doctorLeads.id })
+              .from(doctorLeads)
+              .where(
+                and(
+                  eq(doctorLeads.assignedTo, clinic.referredBy),
+                  eq(doctorLeads.phone, clinic.phone)
+                )
+              )
+              .limit(1);
+
+            // Update lead conversion amount if first sale
+            if (isFirstSale && lead) {
+              await tx
+                .update(doctorLeads)
+                .set({ conversionAmount: planDetails.amount })
+                .where(eq(doctorLeads.id, lead.id));
+            }
+
+            // Insert Commission Payout
+            await tx.insert(commissionPayouts).values({
+              partnerId: clinic.referredBy,
+              leadId: lead?.id || null,
+              paymentLogId: insertedPayment.id,
+              type: isFirstSale ? "first_sale" : "renewal",
+              basePaise: planDetails.amount,
+              pct,
+              commissionPaise,
+              status: "pending",
+            });
+          }
+        }
+      }
     });
 
     return NextResponse.json({ success: true });

@@ -7,6 +7,7 @@ import { TrendingUp, Sparkles, Megaphone, Search, Star, Presentation, QrCode, Cr
 import { toast } from "sonner";
 import { GrowthCard, GrowthCardProps } from "./components/GrowthCard";
 import Image from "next/image";
+import { requestGrowthService } from "./actions";
 
 interface GrowthClientProps {
   consultationFee: number;
@@ -251,10 +252,36 @@ const premiumTools: Omit<GrowthCardProps, 'onAction'>[] = [
 export function GrowthClient({ consultationFee, themeColor }: GrowthClientProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAction = (service: any) => {
     setSelectedService(service);
     setIsDialogOpen(true);
+  };
+
+  const submitRequest = async () => {
+    if (!selectedService) return;
+    setIsSubmitting(true);
+    try {
+      const res = await requestGrowthService({
+        id: selectedService.id,
+        title: selectedService.title,
+        description: selectedService.description,
+        price: selectedService.price,
+        category: "growth_service",
+      });
+
+      if (res.success) {
+        toast.success("Request sent successfully! Our growth team will contact you soon.");
+        setIsDialogOpen(false);
+      } else {
+        toast.error(res.error || "Failed to send request. Please try again.");
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -497,12 +524,10 @@ export function GrowthClient({ consultationFee, themeColor }: GrowthClientProps)
             </Button>
             <Button 
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-600/20"
-              onClick={() => {
-                toast.success("Request sent successfully! Our growth team will contact you soon.");
-                setIsDialogOpen(false);
-              }}
+              onClick={submitRequest}
+              disabled={isSubmitting}
             >
-              Request Setup
+              {isSubmitting ? "Submitting..." : "Request Setup"}
             </Button>
           </DialogFooter>
         </DialogContent>

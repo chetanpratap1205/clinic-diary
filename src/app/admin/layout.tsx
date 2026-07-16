@@ -5,6 +5,8 @@ import Link from "next/link";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminNav } from "./_components/admin-nav";
+import { AdminMobileNav } from "./_components/admin-mobile-nav";
+import { GlobalSearch } from "./_components/global-search";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const supabase = await createClient();
@@ -22,9 +24,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-900 overflow-auto md:overflow-hidden print:h-auto print:block print:bg-white print:overflow-visible">
+    <div className="flex h-screen bg-slate-50 text-slate-900 overflow-auto lg:overflow-hidden print:h-auto print:block print:bg-white print:overflow-visible">
       {/* Sidebar */}
-      <aside className="print:hidden w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 z-20">
+      <aside className="print:hidden hidden lg:flex w-64 bg-white border-r border-slate-200 flex-col shrink-0 z-20">
         {/* Logo */}
         <div className="h-16 flex items-center px-5 border-b border-slate-200 shrink-0 gap-3">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden bg-teal-50 ring-1 ring-teal-100 shrink-0">
@@ -76,13 +78,18 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden print:overflow-visible print:block">
         {/* Top Header */}
-        <header className="print:hidden h-16 bg-white border-b border-slate-200 flex items-center px-6 sm:px-8 shrink-0 z-10 sticky top-0">
+        <header className="print:hidden h-16 bg-white border-b border-slate-200 flex items-center px-4 sm:px-6 lg:px-8 shrink-0 z-10 sticky top-0 justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <h1 className="text-sm font-semibold text-slate-600">
+            <AdminMobileNav userEmail={user.email ?? ""} />
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse hidden sm:block" />
+            <h1 className="text-sm font-semibold text-slate-600 hidden sm:block">
               Platform Console
             </h1>
-            <span className="text-slate-300">·</span>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <GlobalSearch />
+            <span className="text-slate-300 hidden sm:block">·</span>
             <Link
               href="/"
               target="_blank"
