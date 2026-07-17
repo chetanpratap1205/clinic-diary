@@ -229,17 +229,11 @@ export default function SignupPage() {
             </Button>
           </form>
 
-          <div className="mt-10 text-center space-y-3">
+          <div className="mt-10 text-center">
             <p className="text-sm font-medium text-slate-500">
               Already have an account?{" "}
               <Link href="/login" className="text-slate-900 font-bold hover:underline transition-all">
                 Sign in
-              </Link>
-            </p>
-            <p className="text-xs text-slate-400">
-              Are you a field partner?{" "}
-              <Link href="/partner/login" className="text-blue-600 font-semibold hover:underline transition-all">
-                Sign in to Field Portal
               </Link>
             </p>
           </div>

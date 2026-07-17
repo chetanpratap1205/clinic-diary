@@ -6,6 +6,18 @@ import { eq } from "drizzle-orm";
 import { FieldPortalNav } from "./_components/field-portal-nav";
 import { PartnerSignOutButton } from "./_components/partner-sign-out-button";
 import type { ReactNode } from "react";
+import type { Metadata } from "next";
+
+// Override root manifest → field portal pages use the partner PWA manifest
+export const metadata: Metadata = {
+  manifest: "/field-portal-manifest.json",
+  title: "NatureXpress Partner Portal",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "NX Partners",
+  },
+};
 
 export default async function FieldPortalLayout({
   children,
@@ -15,8 +27,8 @@ export default async function FieldPortalLayout({
   const authUser = await getAuthUser();
 
   if (!authUser) {
-    // Not logged in → send to partner login page (not doctor login)
-    redirect("/partner/login");
+    // Not logged in → send to field portal login (canonical URL)
+    redirect("/field-portal/login");
   }
 
   // Check if user is a Growth Partner
@@ -27,8 +39,8 @@ export default async function FieldPortalLayout({
     .limit(1);
 
   if (!partner || !partner.isActive) {
-    // Logged in but not a partner → show access denied on partner login page
-    redirect("/partner/login?error=access_denied");
+    // Logged in but not a partner → show access denied on field portal login page
+    redirect("/field-portal/login?error=access_denied");
   }
 
   return (

@@ -140,5 +140,5 @@ export async function logWhatsApp(leadId: string) {
 export async function signOutPartner() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/partner/login");
+  redirect("/field-portal/login");
 }

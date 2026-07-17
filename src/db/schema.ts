@@ -331,6 +331,9 @@ export const growthPartners = pgTable("growth_partners", {
   phone: text("phone"),
   city: text("city"),
   region: text("region"),               // Territory they cover, e.g. "Pune West"
+  // Which NatureXpress product this partner sells.
+  // 'doctor' | 'kisan' | 'eudr' — defaults to 'doctor' for all existing records.
+  product: text("product").notNull().default("doctor"),
   targetMonthly: integer("target_monthly").default(10), // Monthly lead conversion target
   commissionFirstSalePct: integer("commission_first_sale_pct").default(30),  // 30% on first sale
   commissionRenewalPct: integer("commission_renewal_pct").default(10),       // 10% on renewals
@@ -340,6 +343,7 @@ export const growthPartners = pgTable("growth_partners", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => [
   index("growth_partners_region_idx").on(table.region),
+  index("growth_partners_product_idx").on(table.product),
 ]);
 
 // ─── Doctor Leads (CRM) ────────────────────────────────────────────────────────

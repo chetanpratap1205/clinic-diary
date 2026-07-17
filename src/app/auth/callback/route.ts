@@ -54,6 +54,12 @@ export async function GET(request: Request) {
     }
   }
 
-  // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/login?error=Could not verify email`)
+  // Return user to appropriate error page based on flow type
+  // Partner flows (next=/field-portal*) → field portal login
+  // Doctor flows → doctor login
+  const isPartnerFlow = next?.startsWith('/field-portal') || next?.startsWith('/partner')
+  const errorRedirect = isPartnerFlow
+    ? `${origin}/field-portal/login?error=Could not verify email`
+    : `${origin}/login?error=Could not verify email`
+  return NextResponse.redirect(errorRedirect)
 }
