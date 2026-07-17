@@ -10,6 +10,30 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/field-portal/:path*',
+        destination: 'https://partner.naturexpress.in/:path*',
+        permanent: true, // 308 permanent redirect
+      },
+      {
+        source: '/field-portal',
+        destination: 'https://partner.naturexpress.in/',
+        permanent: true,
+      },
+      {
+        source: '/partner/:path*',
+        destination: 'https://partner.naturexpress.in/:path*',
+        permanent: true,
+      },
+      {
+        source: '/partner',
+        destination: 'https://partner.naturexpress.in/',
+        permanent: true,
+      }
+    ];
+  },
   async headers() {
     return [
       {
