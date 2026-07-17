@@ -31,7 +31,7 @@ export async function createPartnerAction(data: {
           name: data.name,
           role: "growth_partner",
         },
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "https://doctor-diary.in"}/auth/callback?next=/field-portal`,
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "https://doctor-diary.in"}/auth/callback?next=/update-password`,
       });
 
     if (authError) {
@@ -208,7 +208,7 @@ export async function resendPartnerInviteAction(partnerId: string) {
         },
         redirectTo: `${
           process.env.NEXT_PUBLIC_APP_URL || "https://doctor-diary.in"
-        }/auth/callback?next=/field-portal`,
+        }/auth/callback?next=/update-password`,
       }
     );
 

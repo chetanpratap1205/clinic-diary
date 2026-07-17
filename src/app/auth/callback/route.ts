@@ -21,19 +21,24 @@ export async function GET(request: Request) {
       // If no  → respect the `next` param (e.g. /onboarding for doctors).
       let redirectPath = next
 
-      try {
-        const [partnerRecord] = await db
-          .select({ id: growthPartners.id, isActive: growthPartners.isActive })
-          .from(growthPartners)
-          .where(eq(growthPartners.authUserId, data.user.id))
-          .limit(1)
+      // Let explicit update-password requests through
+      if (next === '/update-password' || next === '/reset-password') {
+        redirectPath = next
+      } else {
+        try {
+          const [partnerRecord] = await db
+            .select({ id: growthPartners.id, isActive: growthPartners.isActive })
+            .from(growthPartners)
+            .where(eq(growthPartners.authUserId, data.user.id))
+            .limit(1)
 
-        if (partnerRecord) {
-          // This is a field partner — always route to their portal
-          redirectPath = '/field-portal'
+          if (partnerRecord) {
+            // This is a field partner — always route to their portal
+            redirectPath = '/field-portal'
+          }
+        } catch {
+          // If DB check fails, fall through to `next` param as-is
         }
-      } catch {
-        // If DB check fails, fall through to `next` param as-is
       }
 
       const forwardedHost = request.headers.get('x-forwarded-host')
