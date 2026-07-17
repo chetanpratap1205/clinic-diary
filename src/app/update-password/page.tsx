@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { AnimatedLogo } from "@/components/animated-logo";
+import { getLoginRedirectPath } from "@/app/login/actions";
 
 export default function UpdatePasswordPage() {
   const router = useRouter();
@@ -49,11 +50,8 @@ export default function UpdatePasswordPage() {
       
       toast.success("Password updated successfully!");
       
-      // Attempt to route based on user role
-      // An easy client-side check is to try hitting the DB or simply route to `/` and let middleware/callback handle it,
-      // but since they might be a partner or admin, we'll try `/auth/callback` trick or just `/` which will redirect properly
-      // Actually, since they are already logged in, let's redirect them appropriately.
-      router.push("/");
+      const redirectPath = await getLoginRedirectPath();
+      router.push(redirectPath);
     } catch (error) {
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
