@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, Activity } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
+import { getLoginRedirectPath } from "./actions";
 
 const AUTH_ERROR_MAP: Record<string, string> = {
   "Invalid login credentials": "Incorrect email or password. Please try again.",
@@ -55,7 +56,8 @@ export default function LoginPage() {
       }
 
       toast.success("Welcome back!");
-      router.push("/dashboard");
+      const redirectPath = await getLoginRedirectPath();
+      router.push(redirectPath);
     } catch {
       toast.error("An unexpected error occurred. Please try again.");
     } finally {

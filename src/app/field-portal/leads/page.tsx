@@ -48,7 +48,7 @@ export default async function FieldPortalLeadsPage() {
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-5 max-w-5xl mx-auto w-full">
+    <div className="p-4 md:p-8 space-y-5 max-w-5xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
@@ -89,7 +89,7 @@ export default async function FieldPortalLeadsPage() {
             const icon = priorityIcon[lead.priority] ?? "📋";
             return (
               <Link key={lead.id} href={`/field-portal/leads/${lead.id}`}>
-                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow active:scale-[0.99]">
+                <div className="bg-white/80 backdrop-blur-xl p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 active:scale-[0.99] animate-in fade-in slide-in-from-bottom-2 duration-500">
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <h2 className="font-bold text-slate-900 text-base">

@@ -64,7 +64,7 @@ export default async function AdminPartnersPage() {
   const totalLeadsAssigned = partners.reduce((sum, p) => sum + Number(p.totalLeads), 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -80,9 +80,9 @@ export default async function AdminPartnersPage() {
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="border-slate-200/60 bg-white/60 backdrop-blur-xl shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Total Partners
             </CardTitle>
             <Briefcase className="h-4 w-4 text-slate-400" />
@@ -119,9 +119,9 @@ export default async function AdminPartnersPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-teal-100 shadow-sm bg-teal-50/50">
+        <Card className="border-teal-200/60 bg-teal-50/60 backdrop-blur-xl shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-semibold text-teal-700 uppercase tracking-wider">
+            <CardTitle className="text-xs font-bold text-teal-700 uppercase tracking-wider">
               Avg Win Rate
             </CardTitle>
             <TrendingUp className="h-4 w-4 text-teal-600" />
@@ -151,7 +151,7 @@ export default async function AdminPartnersPage() {
           return (
             <Card
               key={partner.id}
-              className={`border shadow-sm relative overflow-hidden transition-shadow hover:shadow-md ${
+              className={`border shadow-sm relative overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 animate-in fade-in zoom-in-95 duration-500 ${
                 !partner.isActive ? "border-slate-200 opacity-60" : "border-slate-200"
               }`}
             >

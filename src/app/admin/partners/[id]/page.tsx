@@ -104,7 +104,7 @@ export default async function PartnerDetailPage(props: {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Back */}
       <Link
         href="/admin/partners"

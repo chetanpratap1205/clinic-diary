@@ -19,6 +19,11 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
+const PRICING = {
+  quarterly: 1499, // Base price in INR
+  yearly: 4999,
+};
+
 export default async function FinanceDashboardPage() {
   // 1. Calculate MRR & ARR from active subscriptions
   const activeSubs = await db
@@ -28,13 +33,12 @@ export default async function FinanceDashboardPage() {
     .groupBy(subscriptions.planId);
 
   let mrrPaise = 0;
-  // Based on current pricing logic: Quarterly is 1499, Annual is 4999 (plus GST, but we calculate MRR on base)
   activeSubs.forEach((sub) => {
     const count = Number(sub.count);
     if (sub.planId === "quarterly") {
-      mrrPaise += Math.round((1499 * 100) / 3) * count;
+      mrrPaise += Math.round((PRICING.quarterly * 100) / 3) * count;
     } else if (sub.planId === "yearly") {
-      mrrPaise += Math.round((4999 * 100) / 12) * count;
+      mrrPaise += Math.round((PRICING.yearly * 100) / 12) * count;
     }
   });
 
@@ -86,11 +90,11 @@ export default async function FinanceDashboardPage() {
     ORDER BY m.month ASC
   `);
 
-  const chartData: MonthlyData[] = chartQuery.rows.map((row: any) => {
+  const chartData: MonthlyData[] = chartQuery.rows.map((row) => {
     const gross = Math.round(Number(row.gross_paise) / 100);
     const comms = Math.round(Number(row.commission_paise) / 100);
     return {
-      month: new Date(row.month).toISOString(),
+      month: new Date(row.month as string).toISOString(),
       grossRevenue: gross,
       commissions: comms,
       netRevenue: gross - comms,
@@ -113,65 +117,66 @@ export default async function FinanceDashboardPage() {
     .limit(10);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <header>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Financial Forecasting</h1>
-        <p className="text-slate-500 text-sm mt-1">
+        <h1 className="text-2xl font-black tracking-tight text-slate-900">Financial Forecasting</h1>
+        <p className="text-slate-500 text-sm mt-1 font-medium">
           Monitor your recurring revenue, cash flow, and partner payouts.
         </p>
       </header>
 
       {/* Primary KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-emerald-200 bg-emerald-50/50 shadow-sm">
+        <Card className="border-emerald-200/60 bg-emerald-50/40 backdrop-blur-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
           <CardContent className="p-5">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-emerald-100/80 text-emerald-600 flex items-center justify-center shrink-0 shadow-sm">
                 <TrendingUp className="w-4 h-4" />
               </div>
-              <p className="text-sm font-semibold text-emerald-800">MRR</p>
+              <p className="text-sm font-bold text-emerald-800 tracking-tight">MRR</p>
             </div>
-            <p className="text-3xl font-bold text-slate-900">₹{mrr.toLocaleString("en-IN")}</p>
-            <p className="text-xs text-emerald-600 font-medium mt-1">Monthly Recurring Revenue</p>
+            <p className="text-3xl font-black text-slate-900 tracking-tight">₹{mrr.toLocaleString("en-IN")}</p>
+            <p className="text-xs text-emerald-600/80 font-bold mt-1 uppercase tracking-wider">Monthly Recurring</p>
           </CardContent>
         </Card>
 
-        <Card className="border-teal-200 bg-teal-50/50 shadow-sm">
+        <Card className="border-teal-200/60 bg-teal-50/40 backdrop-blur-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-75">
           <CardContent className="p-5">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-teal-100/80 text-teal-600 flex items-center justify-center shrink-0 shadow-sm">
                 <BarChart3 className="w-4 h-4" />
               </div>
-              <p className="text-sm font-semibold text-teal-800">ARR</p>
+              <p className="text-sm font-bold text-teal-800 tracking-tight">ARR</p>
+
             </div>
-            <p className="text-3xl font-bold text-slate-900">₹{arr.toLocaleString("en-IN")}</p>
-            <p className="text-xs text-teal-600 font-medium mt-1">Annual Run Rate</p>
+            <p className="text-3xl font-black text-slate-900 tracking-tight">₹{arr.toLocaleString("en-IN")}</p>
+            <p className="text-xs text-teal-600/80 font-bold mt-1 uppercase tracking-wider">Annual Run Rate</p>
           </CardContent>
         </Card>
 
-        <Card className="border-indigo-200 bg-indigo-50/50 shadow-sm">
+        <Card className="border-indigo-200/60 bg-indigo-50/40 backdrop-blur-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
           <CardContent className="p-5">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-indigo-100/80 text-indigo-600 flex items-center justify-center shrink-0 shadow-sm">
                 <Wallet className="w-4 h-4" />
               </div>
-              <p className="text-sm font-semibold text-indigo-800">Gross Cash Collected</p>
+              <p className="text-sm font-bold text-indigo-800 tracking-tight">Gross Collected</p>
             </div>
-            <p className="text-3xl font-bold text-slate-900">₹{totalCash.toLocaleString("en-IN")}</p>
-            <p className="text-xs text-indigo-600 font-medium mt-1">All-time successful payments</p>
+            <p className="text-3xl font-black text-slate-900 tracking-tight">₹{totalCash.toLocaleString("en-IN")}</p>
+            <p className="text-xs text-indigo-600/80 font-bold mt-1 uppercase tracking-wider">All-time Cash</p>
           </CardContent>
         </Card>
 
-        <Card className="border-amber-200 bg-amber-50/50 shadow-sm">
+        <Card className="border-amber-200/60 bg-amber-50/40 backdrop-blur-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
           <CardContent className="p-5">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-amber-100/80 text-amber-600 flex items-center justify-center shrink-0 shadow-sm">
                 <AlertCircle className="w-4 h-4" />
               </div>
-              <p className="text-sm font-semibold text-amber-800">Partner Liability</p>
+              <p className="text-sm font-bold text-amber-800 tracking-tight">Partner Liability</p>
             </div>
-            <p className="text-3xl font-bold text-slate-900">₹{totalLiability.toLocaleString("en-IN")}</p>
-            <p className="text-xs text-amber-600 font-medium mt-1">Total pending commissions</p>
+            <p className="text-3xl font-black text-slate-900 tracking-tight">₹{totalLiability.toLocaleString("en-IN")}</p>
+            <p className="text-xs text-amber-600/80 font-bold mt-1 uppercase tracking-wider">Pending Payouts</p>
           </CardContent>
         </Card>
       </div>

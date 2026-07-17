@@ -64,7 +64,7 @@ export default function NewLeadPage() {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-xl mx-auto w-full space-y-6">
+    <div className="p-4 md:p-8 max-w-xl mx-auto w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <header>
         <Link
           href="/field-portal/leads"
@@ -113,9 +113,10 @@ export default function NewLeadPage() {
 
         {/* Duplicate Warning */}
         {searchResult?.exists && (
-          <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-            <h3 className="font-semibold text-amber-900 text-sm">
-              ⚠ Clinic Already in System
+          <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl animate-in fade-in zoom-in-95 duration-300">
+            <h3 className="font-bold text-amber-900 text-sm flex items-center gap-2">
+              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-amber-200 text-amber-700">!</span>
+              Clinic Already in System
             </h3>
             <p className="text-xs text-amber-700 mt-1">
               This number is registered as{" "}

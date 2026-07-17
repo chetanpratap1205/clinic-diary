@@ -160,7 +160,7 @@ export default async function FieldPortalDashboardPage() {
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-6 max-w-5xl mx-auto w-full">
+    <div className="p-4 md:p-8 space-y-6 max-w-5xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header */}
       <header className="mb-2 sm:flex sm:items-center sm:justify-between">
         <div>

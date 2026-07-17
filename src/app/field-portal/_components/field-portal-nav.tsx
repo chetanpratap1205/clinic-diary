@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Users, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { InstallPwaButton } from "./install-pwa-button";
 
 const portalNavItems = [
   { href: "/field-portal", label: "Home", icon: Home, exact: true },
@@ -43,6 +44,7 @@ export function FieldPortalNav({
             </Link>
           );
         })}
+        <InstallPwaButton isHorizontal={true} />
       </div>
     );
   }
@@ -76,6 +78,7 @@ export function FieldPortalNav({
           </Link>
         );
       })}
+      <InstallPwaButton />
     </nav>
   );
 }
