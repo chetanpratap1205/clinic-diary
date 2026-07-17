@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { growthPartners } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { FieldPortalNav } from "./_components/field-portal-nav";
+import { PartnerSignOutButton } from "./_components/partner-sign-out-button";
 import type { ReactNode } from "react";
 
 export default async function FieldPortalLayout({
@@ -14,7 +15,8 @@ export default async function FieldPortalLayout({
   const authUser = await getAuthUser();
 
   if (!authUser) {
-    redirect("/login");
+    // Not logged in → send to partner login page (not doctor login)
+    redirect("/partner/login");
   }
 
   // Check if user is a Growth Partner
@@ -25,8 +27,8 @@ export default async function FieldPortalLayout({
     .limit(1);
 
   if (!partner || !partner.isActive) {
-    // If not a partner, redirect to dashboard or admin
-    redirect("/dashboard");
+    // Logged in but not a partner → show access denied on partner login page
+    redirect("/partner/login?error=access_denied");
   }
 
   return (
@@ -75,6 +77,9 @@ export default async function FieldPortalLayout({
               </p>
             </div>
           )}
+          <div className="mt-3">
+            <PartnerSignOutButton />
+          </div>
         </div>
       </aside>
 

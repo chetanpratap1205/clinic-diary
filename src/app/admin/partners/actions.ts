@@ -23,13 +23,15 @@ export async function createPartnerAction(data: {
       .toUpperCase()}`;
 
     // 2. Create Supabase Auth user and send invite email (magic link)
+    // redirectTo uses /auth/callback?next=/field-portal so the smart routing
+    // in the callback correctly identifies them as a partner and routes them there.
     const { data: authData, error: authError } =
       await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
         data: {
           name: data.name,
           role: "growth_partner",
         },
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "https://doctor-diary.in"}/field-portal`,
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "https://doctor-diary.in"}/auth/callback?next=/field-portal`,
       });
 
     if (authError) {
@@ -178,5 +180,53 @@ export async function markCommissionPaidAction(payoutId: string) {
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
+  }
+}
+
+// ─── Resend invite email to an existing partner ──────────────────────────────
+// Admin can click "Resend Invite" if the original email expired.
+export async function resendPartnerInviteAction(partnerId: string) {
+  try {
+    // Get partner details
+    const [partner] = await db
+      .select({ email: growthPartners.email, name: growthPartners.name })
+      .from(growthPartners)
+      .where(eq(growthPartners.id, partnerId))
+      .limit(1);
+
+    if (!partner) {
+      return { success: false, error: "Partner not found" };
+    }
+
+    // Re-invite via Supabase admin (sends a fresh magic link)
+    const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(
+      partner.email,
+      {
+        data: {
+          name: partner.name,
+          role: "growth_partner",
+        },
+        redirectTo: `${
+          process.env.NEXT_PUBLIC_APP_URL || "https://doctor-diary.in"
+        }/auth/callback?next=/field-portal`,
+      }
+    );
+
+    if (error) {
+      // If the user already exists and confirmed, Supabase may return an error;
+      // in that case we just tell them to use /partner/login directly.
+      if (error.message.includes("already been registered") || error.message.includes("already exists")) {
+        return {
+          success: false,
+          error: `This partner already has an account. Ask them to sign in at /partner/login`,
+        };
+      }
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("resendPartnerInviteAction error:", error);
+    return { success: false, error: error.message || "Failed to resend invite" };
   }
 }

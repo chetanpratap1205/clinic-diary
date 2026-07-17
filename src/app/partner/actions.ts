@@ -53,8 +53,8 @@ export async function addLead(data: any) {
     })
     .returning();
     
-  revalidatePath("/partner/leads");
-  revalidatePath("/partner");
+  revalidatePath("/field-portal/leads");
+  revalidatePath("/field-portal");
   return newLead.id;
 }
 
@@ -90,9 +90,9 @@ export async function logVisit(leadId: string, notes: string, status?: string) {
       .where(eq(doctorLeads.id, leadId));
   }
   
-  revalidatePath(`/partner/leads/${leadId}`);
-  revalidatePath("/partner/leads");
-  revalidatePath("/partner");
+  revalidatePath(`/field-portal/leads/${leadId}`);
+  revalidatePath("/field-portal/leads");
+  revalidatePath("/field-portal");
   
   return { success: true };
 }

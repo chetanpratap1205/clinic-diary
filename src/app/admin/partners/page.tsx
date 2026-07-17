@@ -15,6 +15,7 @@ import Link from "next/link";
 import { AddPartnerDialog } from "./_components/add-partner-dialog";
 import { BulkAssignDialog } from "./_components/bulk-assign-dialog";
 import { PartnerToggle } from "./_components/partner-toggle";
+import { ResendInviteButton } from "./_components/resend-invite-button";
 
 export const metadata = {
   title: "Growth Partners | Doctor Diary Admin",
@@ -267,6 +268,13 @@ export default async function AdminPartnersPage() {
                     <ExternalLink className="w-3.5 h-3.5" />
                     View Detail
                   </Link>
+                </div>
+                {/* Resend invite — useful if partner never clicked original email */}
+                <div className="pt-0">
+                  <ResendInviteButton
+                    partnerId={partner.id}
+                    partnerName={partner.name}
+                  />
                 </div>
               </CardContent>
             </Card>

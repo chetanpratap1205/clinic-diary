@@ -6,17 +6,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff, Activity, Mail, CheckCircle2 } from "lucide-react";
+import { Loader2, Eye, EyeOff, Mail, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { AnimatedLogo } from "@/components/animated-logo";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -30,7 +25,6 @@ export default function SignupPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -39,18 +33,11 @@ export default function SignupPage() {
           emailRedirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
         },
       });
-
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-
-      // If email confirmation is disabled, user is signed in immediately
+      if (error) { toast.error(error.message); return; }
       if (data.session) {
         toast.success("Account created successfully!");
         router.push("/onboarding");
       } else {
-        // Show email confirmation screen
         setNeedsConfirmation(true);
       }
     } catch {
@@ -60,37 +47,29 @@ export default function SignupPage() {
     }
   }
 
-  // Email confirmation screen
+  /* ── Email confirmation screen ──────────────────────────────────────────── */
   if (needsConfirmation) {
     return (
       <div
-        className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-slate-50 flex items-center justify-center p-4"
-        style={{ minHeight: "100dvh" }}
+        className="min-h-screen flex items-center justify-center p-4 bg-white"
+        style={{ minHeight: "100dvh", backgroundColor: "#ffffff" }}
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
           className="w-full max-w-md"
         >
-          <div className="text-center mb-8">
-            <Link href="/" className="inline-flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-teal-700 flex items-center justify-center shadow-md overflow-hidden p-1">
-                <img src="/icon-192.png" alt="Logo" className="w-full h-full object-contain" />
-              </div>
-              <span className="font-bold text-slate-900 text-xl tracking-tight">
-                Doctor Diary
-              </span>
-            </Link>
+          <div className="flex justify-center mb-8">
+            <AnimatedLogo theme="light" size="md" />
           </div>
 
-          <Card className="shadow-xl border-slate-200/60 bg-white/80 backdrop-blur-sm">
+          <Card className="shadow-xl border-slate-200/60 bg-white">
             <CardContent className="pt-8 pb-8 text-center">
-              {/* Animated mail icon */}
               <motion.div
                 initial={{ scale: 0, rotate: -20 }}
                 animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.15 }}
                 className="w-20 h-20 rounded-full bg-teal-50 border-2 border-teal-100 flex items-center justify-center mx-auto mb-6"
               >
                 <Mail className="w-9 h-9 text-teal-600" />
@@ -102,9 +81,7 @@ export default function SignupPage() {
               <p className="text-slate-500 text-sm leading-relaxed mb-2">
                 We&apos;ve sent a verification link to
               </p>
-              <p className="font-semibold text-slate-900 text-base mb-6 break-all">
-                {email}
-              </p>
+              <p className="font-semibold text-slate-900 text-base mb-6 break-all">{email}</p>
 
               <div className="bg-teal-50 rounded-2xl p-4 mb-6 text-left space-y-2">
                 {[
@@ -124,10 +101,7 @@ export default function SignupPage() {
                 <button
                   className="text-teal-700 font-medium hover:underline"
                   onClick={async () => {
-                    await supabase.auth.resend({
-                      type: "signup",
-                      email,
-                    });
+                    await supabase.auth.resend({ type: "signup", email });
                     toast.success("Verification email resent!");
                   }}
                 >
@@ -137,10 +111,7 @@ export default function SignupPage() {
               </p>
 
               <Link href="/login">
-                <Button
-                  variant="outline"
-                  className="w-full h-11 rounded-xl border-slate-200 font-medium"
-                >
+                <Button variant="outline" className="w-full h-11 rounded-xl border-slate-200 font-medium">
                   Back to Login
                 </Button>
               </Link>
@@ -151,60 +122,55 @@ export default function SignupPage() {
     );
   }
 
+  /* ── Main signup form ───────────────────────────────────────────────────── */
   return (
-    <div className="min-h-screen flex bg-white" style={{ minHeight: "100dvh" }}>
-      {/* LEFT: Art / Brand (Hidden on Mobile) */}
+    <div
+      className="flex min-h-screen bg-white"
+      style={{ minHeight: "100dvh", backgroundColor: "#ffffff" }}
+    >
+      {/* ── LEFT: Brand Panel (desktop only) ──────────────────────────── */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden">
-        {/* Abstract Dark UI Elements */}
-        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+        <div
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)",
+            backgroundSize: "40px 40px",
+          }}
+        />
         <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-emerald-500/20 blur-[100px]" />
         <div className="absolute bottom-0 right-0 w-[600px] h-[600px] rounded-full bg-indigo-500/20 blur-[120px]" />
-        
+
         <div className="relative z-10 p-16 flex flex-col h-full justify-between">
-          <Link href="/" className="inline-flex items-center gap-3 w-fit">
-            <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-lg overflow-hidden p-1">
-              <img src="/icon-192.png" alt="Logo" className="w-full h-full object-contain" />
-            </div>
-            <span className="font-black text-white text-2xl tracking-tight">
-              Doctor Diary
-            </span>
-          </Link>
+          <AnimatedLogo theme="dark" size="lg" />
 
           <div>
             <h1 className="text-5xl font-black text-white leading-tight mb-6 tracking-tight">
-              Start your digital <br/> clinic today.
+              Start your digital<br />clinic today.
             </h1>
             <p className="text-slate-400 text-xl font-medium max-w-md leading-relaxed">
               Join thousands of doctors who have digitized their practice, saving hours every day and providing a premium experience to patients.
             </p>
           </div>
-          
-          <div className="flex items-center gap-4 text-white">
-             <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-               <div className="flex items-center justify-center">
-                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-               </div>
-               <div className="text-slate-300 text-sm">
-                 Join <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 font-black">1,200+ Top Clinics</span> delivering premium care.
-               </div>
-             </div>
+
+          <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md w-fit">
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+            <div className="text-slate-300 text-sm">
+              Join{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 font-black">
+                1,200+ Top Clinics
+              </span>{" "}
+              delivering premium care.
+            </div>
           </div>
         </div>
       </div>
 
-      {/* RIGHT: Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 lg:p-16">
+      {/* ── RIGHT: Form Panel ─────────────────────────────────────────── */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-white">
         <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <div className="lg:hidden text-center mb-10">
-            <Link href="/" className="inline-flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-md overflow-hidden p-1">
-                <img src="/icon-192.png" alt="Logo" className="w-full h-full object-contain" />
-              </div>
-              <span className="font-black text-slate-900 text-xl tracking-tight">
-                Doctor Diary
-              </span>
-            </Link>
+          {/* Mobile logo */}
+          <div className="lg:hidden flex justify-center mb-10">
+            <AnimatedLogo theme="light" size="md" />
           </div>
 
           <div className="mb-8">
@@ -263,11 +229,17 @@ export default function SignupPage() {
             </Button>
           </form>
 
-          <div className="mt-10 text-center">
+          <div className="mt-10 text-center space-y-3">
             <p className="text-sm font-medium text-slate-500">
               Already have an account?{" "}
               <Link href="/login" className="text-slate-900 font-bold hover:underline transition-all">
                 Sign in
+              </Link>
+            </p>
+            <p className="text-xs text-slate-400">
+              Are you a field partner?{" "}
+              <Link href="/partner/login" className="text-blue-600 font-semibold hover:underline transition-all">
+                Sign in to Field Portal
               </Link>
             </p>
           </div>

@@ -5,6 +5,8 @@ import { doctorLeads, leadActivities, growthPartners } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 async function getPartnerId() {
   const authUser = await getAuthUser();
@@ -133,4 +135,10 @@ export async function logWhatsApp(leadId: string) {
 
   revalidatePath(`/field-portal/leads/${leadId}`);
   revalidatePath("/field-portal");
+}
+
+export async function signOutPartner() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect("/partner/login");
 }

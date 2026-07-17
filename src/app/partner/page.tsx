@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 
 /**
- * Backwards compatibility redirect.
- * Old route /partner → /field-portal
- * Partners who have bookmarks or old links will be automatically redirected.
+ * Old /partner route → redirect to partner login page.
+ * Partners who have bookmarks or old links will land on their dedicated login.
+ * From there they can sign in and reach /field-portal.
  */
-export default function PartnerRedirectPage() {
-  redirect("/field-portal");
+export default function PartnerRootPage() {
+  redirect("/partner/login");
 }

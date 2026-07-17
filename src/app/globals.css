@@ -57,11 +57,9 @@
   body {
     @apply antialiased bg-background text-foreground;
     font-family: var(--font-sans);
-    /* Ensure full safe area coverage */
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+    /* Note: safe-area padding intentionally NOT applied to body.
+       Auth pages are full-bleed white and handle their own safe areas.
+       Dashboard/portal pages use component-level pb-safe / pt-safe utilities. */
   }
 
   h1, h2, h3, h4, h5, h6 {

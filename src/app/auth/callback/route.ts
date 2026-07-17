@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { db } from '@/db'
+import { growthPartners } from '@/db/schema'
+import { eq } from 'drizzle-orm'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -9,18 +12,39 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    
-    if (!error) {
-      const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
+    if (!error && data?.user) {
+      // ── Smart role-based routing ─────────────────────────────────────
+      // After email verification, check if this user is a Growth Partner.
+      // If yes → always send them to /field-portal (their portal).
+      // If no  → respect the `next` param (e.g. /onboarding for doctors).
+      let redirectPath = next
+
+      try {
+        const [partnerRecord] = await db
+          .select({ id: growthPartners.id, isActive: growthPartners.isActive })
+          .from(growthPartners)
+          .where(eq(growthPartners.authUserId, data.user.id))
+          .limit(1)
+
+        if (partnerRecord) {
+          // This is a field partner — always route to their portal
+          redirectPath = '/field-portal'
+        }
+      } catch {
+        // If DB check fails, fall through to `next` param as-is
+      }
+
+      const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'
+
       if (isLocalEnv) {
-        // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
-        return NextResponse.redirect(`${origin}${next}`)
+        return NextResponse.redirect(`${origin}${redirectPath}`)
       } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`)
+        return NextResponse.redirect(`https://${forwardedHost}${redirectPath}`)
       } else {
-        return NextResponse.redirect(`${origin}${next}`)
+        return NextResponse.redirect(`${origin}${redirectPath}`)
       }
     }
   }
