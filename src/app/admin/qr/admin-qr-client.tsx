@@ -171,8 +171,8 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const downloadQrPdf = (id: string, code: string) => {
-    window.open(`/admin/qr/print?ids=${id}&download=true`, "_blank");
+  const downloadQrKit = (id: string, code: string) => {
+    window.open(`/admin/qr/print-kit?ids=${id}`, "_blank");
   };
 
   const unprintedUnassignedCodes = codes.filter((c) => !c.clinicId && !c.printedAt);
@@ -191,7 +191,7 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
       if (res.ok) {
         toast.success("Codes marked as printed!");
         const idParams = ids.join(",");
-        window.open(`/admin/qr/print?ids=${idParams}`, "_blank");
+        window.open(`/admin/qr/print-kit?ids=${idParams}`, "_blank");
         await refresh();
       } else {
         toast.error("Failed to mark as printed");
@@ -213,7 +213,7 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
       if (res.ok) {
         toast.success("Codes marked as printed!");
         const idParams = ids.join(",");
-        window.open(`/admin/qr/print-stickers?ids=${idParams}`, "_blank");
+        window.open(`/admin/qr/print-kit?ids=${idParams}`, "_blank");
         await refresh();
       } else {
         toast.error("Failed to mark as printed");
@@ -475,21 +475,12 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
                   </button>
 
                   <button
-                    onClick={() => downloadQrPdf(row.id, row.code)}
-                    className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-teal-600 transition-all"
-                    title="Download Poster PDF"
+                    onClick={() => downloadQrKit(row.id, row.code)}
+                    className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-teal-600 font-semibold text-xs transition-all"
+                    title="Download Clinic Kit (Posters + Stand + Stickers)"
                   >
                     <Download className="w-4 h-4" />
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      window.open(`/admin/qr/print-stickers?ids=${row.id}&download=true`, "_blank");
-                    }}
-                    className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-all"
-                    title="Download Stickers PDF"
-                  >
-                    <StickyNote className="w-4 h-4" />
+                    Print Kit
                   </button>
 
                   {row.clinicId ? (
