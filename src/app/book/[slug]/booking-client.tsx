@@ -21,6 +21,16 @@ import { formatTimeDisplay } from "@/lib/format";
 
 type Language = "en" | "hi";
 
+function getContrastYIQ(hexcolor: string) {
+  if (!hexcolor) return "text-white";
+  hexcolor = hexcolor.replace("#", "");
+  const r = parseInt(hexcolor.substring(0, 2), 16);
+  const g = parseInt(hexcolor.substring(2, 2), 16);
+  const b = parseInt(hexcolor.substring(4, 2), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 128 ? "text-slate-900" : "text-white";
+}
+
 const translations = {
   en: {
     bookAppointment: "Book Appointment",
@@ -405,7 +415,7 @@ export function BookingClient({
       <div className="relative group flex items-center">
         <button
           onClick={() => scroll("left")}
-          className="absolute left-0 z-10 w-8 h-8 hidden sm:flex items-center justify-center bg-white shadow-md border border-slate-100 rounded-full text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0 -ml-4"
+          className="absolute left-0 z-10 w-8 h-8 hidden sm:flex items-center justify-center bg-white shadow-md border border-slate-100 rounded-full text-slate-600 transition-opacity disabled:opacity-0 -ml-4"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -424,7 +434,7 @@ export function BookingClient({
                 disabled={!isWorkingDay}
                 className={`flex-shrink-0 w-[72px] flex flex-col items-center justify-center h-[90px] rounded-2xl border transition-all duration-200 snap-center relative overflow-hidden ${
                   isSelected
-                    ? "border-transparent text-white shadow-lg scale-[1.02]"
+                    ? `border-transparent ${getContrastYIQ(themeColor)} shadow-lg scale-[1.02]`
                     : !isWorkingDay
                     ? "border-slate-100 bg-slate-50/50 opacity-35 cursor-not-allowed"
                     : "border-slate-200/60 bg-slate-50/50 text-slate-500 hover:border-slate-300 hover:bg-slate-50 active:scale-[0.97] hover:shadow-sm"
@@ -456,7 +466,7 @@ export function BookingClient({
         </div>
         <button
           onClick={() => scroll("right")}
-          className="absolute right-0 z-10 w-8 h-8 hidden sm:flex items-center justify-center bg-white shadow-md border border-slate-100 rounded-full text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0 -mr-4"
+          className="absolute right-0 z-10 w-8 h-8 hidden sm:flex items-center justify-center bg-white shadow-md border border-slate-100 rounded-full text-slate-600 transition-opacity disabled:opacity-0 -mr-4"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -464,7 +474,7 @@ export function BookingClient({
 
       <button
         onClick={() => setStep(2)}
-        className="w-full h-14 rounded-2xl text-white font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] mt-2 flex items-center justify-center gap-2"
+        className={`w-full h-14 rounded-2xl ${getContrastYIQ(themeColor)} font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] mt-2 flex items-center justify-center gap-2`}
         style={{
           backgroundColor: themeColor,
           backgroundImage: `linear-gradient(to right, ${themeColor}, ${themeColor}cc)`,
@@ -639,7 +649,7 @@ export function BookingClient({
         <button
           type="submit"
           disabled={isPending}
-          className="w-full h-14 rounded-2xl text-white font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100"
+          className={`w-full h-14 rounded-2xl ${getContrastYIQ(themeColor)} font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100`}
           style={{
             backgroundColor: themeColor,
             backgroundImage: `linear-gradient(to right, ${themeColor}, ${themeColor}cc)`,
@@ -706,7 +716,7 @@ export function BookingClient({
         <button
           type="submit"
           disabled={isTracking || trackPhone.length !== 10}
-          className="w-full h-12 rounded-2xl text-white font-bold text-sm shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100"
+          className={`w-full h-12 rounded-2xl ${getContrastYIQ(themeColor)} font-bold text-sm shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100`}
           style={{
             backgroundColor: themeColor,
             backgroundImage: `linear-gradient(to right, ${themeColor}, ${themeColor}cc)`,

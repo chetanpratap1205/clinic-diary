@@ -43,6 +43,13 @@
       "when": 1784072542415,
       "tag": "0005_high_steel_serpent",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784335252751,
+      "tag": "0006_useful_marrow",
+      "breakpoints": true
     }
   ]
 }

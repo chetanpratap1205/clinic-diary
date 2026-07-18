@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -71,7 +73,6 @@ const SPECIALTIES = [
   "Other",
 ];
 
-// ─── Helper: Generate slug from doctor name ─────────────────────────────────────
 function generateSlug(name: string): string {
   return name
     .toLowerCase()
@@ -83,7 +84,6 @@ function generateSlug(name: string): string {
     .slice(0, 40);
 }
 
-// ─── Field wrapper with icon ────────────────────────────────────────────────────
 function FieldGroup({
   label,
   htmlFor,
@@ -98,29 +98,31 @@ function FieldGroup({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       <Label
         htmlFor={htmlFor}
-        className="text-sm font-semibold text-slate-700 flex items-center gap-1.5"
+        className="text-sm font-bold text-slate-300 flex items-center gap-2 ml-1"
       >
         {icon}
         {label}
       </Label>
       {children}
-      {/* Error always in flow, never absolutely positioned */}
-      <div className="min-h-[20px]">
+      <div className="min-h-[24px]">
         {error && (
-          <p className="text-xs text-red-500 font-medium flex items-center gap-1">
-            <AlertCircle className="w-3 h-3 flex-shrink-0" />
+          <motion.p
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-xs text-red-400 font-medium flex items-center gap-1.5 ml-1"
+          >
+            <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
             {error}
-          </p>
+          </motion.p>
         )}
       </div>
     </div>
   );
 }
 
-// ─── Main Component ─────────────────────────────────────────────────────────────
 export default function OnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSpecialtyDropdown, setShowSpecialtyDropdown] = useState(false);
@@ -137,7 +139,6 @@ export default function OnboardingPage() {
     handleSubmit,
     setValue,
     watch,
-    trigger,
     formState: { errors },
   } = useForm<OnboardingData>({
     resolver: zodResolver(onboardingSchema),
@@ -149,7 +150,6 @@ export default function OnboardingPage() {
   const slugValue = watch("slug");
   const specialtyValue = watch("specialty");
 
-  // Read referral code from URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get("ref");
@@ -158,7 +158,6 @@ export default function OnboardingPage() {
     }
   }, [setValue]);
 
-  // ── Auto-generate slug from doctor name if user hasn't manually edited it
   useEffect(() => {
     if (!slugTouched && doctorName) {
       const generated = generateSlug(doctorName);
@@ -166,7 +165,6 @@ export default function OnboardingPage() {
     }
   }, [doctorName, slugTouched, setValue]);
 
-  // ── Close specialty dropdown on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (
@@ -191,7 +189,6 @@ export default function OnboardingPage() {
       toast.error(result.error);
       setIsSubmitting(false);
     }
-    // On success, server action redirects to /dashboard
   };
 
   const handleDataFound = (data: { name: string; phone: string }) => {
@@ -215,99 +212,96 @@ export default function OnboardingPage() {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-emerald-50 flex flex-col items-center justify-start p-4 pb-10"
+      className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-start p-4 pb-12 relative overflow-hidden"
       style={{ minHeight: "100dvh" }}
     >
-      {/* Ambient background glows */}
-      <div className="pointer-events-none fixed top-[-15%] left-[-10%] w-[55%] h-[55%] bg-sky-200/40 rounded-full blur-[130px]" />
-      <div className="pointer-events-none fixed bottom-[-15%] right-[-10%] w-[55%] h-[55%] bg-emerald-200/35 rounded-full blur-[130px]" />
+      {/* ── BACKGROUND GLOWS ── */}
+      <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-emerald-500/10 blur-[130px] pointer-events-none fixed" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-indigo-500/10 blur-[130px] pointer-events-none fixed" />
 
-      <div className="w-full max-w-lg relative z-10 pt-8">
+      <div className="w-full max-w-[540px] relative z-10 pt-10 sm:pt-16">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45 }}
-          className="text-center mb-7"
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="text-center mb-10"
         >
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sky-600 shadow-lg shadow-sky-600/30 mb-4">
-            <Stethoscope className="w-7 h-7 text-white" strokeWidth={2.5} />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-white/5 border border-white/10 shadow-[0_0_30px_rgba(255,255,255,0.05)] mb-6">
+            <Stethoscope className="w-8 h-8 text-emerald-400" strokeWidth={2.5} />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
             Set up your clinic
           </h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <p className="text-slate-400 text-base mt-2 font-medium">
             Just a few details and you&apos;re ready to go
           </p>
         </motion.div>
 
         {/* Card */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.1 }}
-          className="bg-white/85 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/80 overflow-hidden"
+          initial={{ opacity: 0, y: 30, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+          className="bg-white/5 backdrop-blur-3xl rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.6)] border border-white/10 overflow-visible relative"
         >
+          {/* subtle top gradient line */}
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-emerald-500/0 via-emerald-400 to-cyan-400/0 rounded-t-[32px] opacity-30" />
+
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="p-6 sm:p-8 space-y-0">
+            <div className="p-6 sm:p-10 space-y-2">
               
-              {/* ── Magic Auto-Fill ─────────────────────────────── */}
-              <MapsAutoFill onDataFound={handleDataFound} />
+              <div className="mb-8">
+                <MapsAutoFill onDataFound={handleDataFound} />
+              </div>
 
               {/* ── Section: About You ─────────────────────────────── */}
-              <div className="mb-5">
-                <p className="text-xs font-bold uppercase tracking-widest text-sky-600 mb-4">
+              <div className="mb-6">
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-400 mb-6 flex items-center gap-3">
+                  <span className="w-6 h-[1px] bg-emerald-400/50" />
                   About You
                 </p>
-                <div className="space-y-1">
-                  {/* Doctor Name */}
+                <div className="space-y-2">
                   <FieldGroup
                     label="Your Name"
                     htmlFor="doctorName"
-                    icon={<User className="w-3.5 h-3.5 text-slate-400" />}
+                    icon={<User className="w-4 h-4 text-emerald-400/70" />}
                     error={errors.doctorName?.message}
                   >
                     <Input
                       id="doctorName"
                       placeholder="Dr. Anita Sharma"
                       {...register("doctorName")}
-                      className={`h-12 rounded-xl text-base bg-slate-50 focus:bg-white transition-colors border ${
+                      className={`h-14 rounded-2xl text-base bg-black/20 text-white placeholder:text-slate-600 transition-all px-5 border-2 ${
                         errors.doctorName
-                          ? "border-red-400 focus:border-red-400"
-                          : "border-slate-200 focus:border-sky-400"
+                          ? "border-red-500/50 focus:border-red-500"
+                          : "border-white/5 focus:border-emerald-500/50 focus:bg-black/40"
                       }`}
                     />
                   </FieldGroup>
 
-                  {/* Specialty */}
                   <FieldGroup
                     label="Specialty"
                     htmlFor="specialty-input"
-                    icon={<Stethoscope className="w-3.5 h-3.5 text-slate-400" />}
+                    icon={<Stethoscope className="w-4 h-4 text-emerald-400/70" />}
                     error={errors.specialty?.message}
                   >
                     <div ref={specialtyRef} className="relative">
                       <div
-                        className={`flex items-center h-12 rounded-xl border bg-slate-50 transition-colors cursor-pointer ${
+                        className={`flex items-center h-14 rounded-2xl bg-black/20 transition-all cursor-pointer border-2 px-5 ${
                           showSpecialtyDropdown
-                            ? "border-sky-400 bg-white ring-2 ring-sky-400/20"
+                            ? "border-emerald-500/50 bg-black/40 shadow-[0_0_20px_rgba(16,185,129,0.15)]"
                             : errors.specialty
-                            ? "border-red-400"
-                            : "border-slate-200"
+                            ? "border-red-500/50"
+                            : "border-white/5 hover:border-white/10"
                         }`}
-                        onClick={() =>
-                          setShowSpecialtyDropdown(!showSpecialtyDropdown)
-                        }
+                        onClick={() => setShowSpecialtyDropdown(!showSpecialtyDropdown)}
                       >
                         <input
                           id="specialty-input"
                           type="text"
                           placeholder="e.g. General Physician"
-                          value={
-                            showSpecialtyDropdown
-                              ? specialtyQuery
-                              : specialtyValue || ""
-                          }
+                          value={showSpecialtyDropdown ? specialtyQuery : specialtyValue || ""}
                           onChange={(e) => {
                             setSpecialtyQuery(e.target.value);
                             setShowSpecialtyDropdown(true);
@@ -316,61 +310,57 @@ export default function OnboardingPage() {
                             setSpecialtyQuery("");
                             setShowSpecialtyDropdown(true);
                           }}
-                          className="flex-1 h-full px-4 bg-transparent text-base text-slate-900 placeholder-slate-400 outline-none rounded-xl"
+                          className="flex-1 h-full bg-transparent text-base text-white placeholder-slate-600 outline-none"
                         />
                         <ChevronDown
-                          className={`w-4 h-4 text-slate-400 mr-3 transition-transform flex-shrink-0 ${
-                            showSpecialtyDropdown ? "rotate-180" : ""
+                          className={`w-5 h-5 text-slate-500 transition-transform flex-shrink-0 ${
+                            showSpecialtyDropdown ? "rotate-180 text-emerald-400" : ""
                           }`}
                         />
                       </div>
 
-                      {/* Hidden input for react-hook-form */}
                       <input type="hidden" {...register("specialty")} />
 
-                      {showSpecialtyDropdown && (
-                        <div className="absolute z-50 top-full mt-1 w-full bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden">
-                          <div className="max-h-52 overflow-y-auto">
-                            {filteredSpecialties.length === 0 ? (
-                              <div className="px-4 py-3 text-sm text-slate-400">
-                                No match — type to use custom
-                              </div>
-                            ) : (
-                              filteredSpecialties.map((s) => (
+                      <AnimatePresence>
+                        {showSpecialtyDropdown && (
+                          <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute z-50 top-[calc(100%+8px)] w-full bg-[#151515] rounded-2xl border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden"
+                          >
+                            <div className="max-h-56 overflow-y-auto custom-scrollbar">
+                              {filteredSpecialties.length === 0 ? (
+                                <div className="px-5 py-4 text-sm text-slate-500">
+                                  No match — type to use custom
+                                </div>
+                              ) : (
+                                filteredSpecialties.map((s) => (
+                                  <button
+                                    key={s}
+                                    type="button"
+                                    className={`w-full text-left px-5 py-3.5 text-sm font-medium transition-colors ${
+                                      specialtyValue === s
+                                        ? "bg-emerald-500/10 text-emerald-400"
+                                        : "text-slate-300 hover:bg-white/5 hover:text-white"
+                                    }`}
+                                    onClick={() => {
+                                      setValue("specialty", s, { shouldValidate: true });
+                                      setShowSpecialtyDropdown(false);
+                                      setSpecialtyQuery("");
+                                    }}
+                                  >
+                                    {s}
+                                  </button>
+                                ))
+                              )}
+                              {specialtyQuery && !SPECIALTIES.some((s) => s.toLowerCase() === specialtyQuery.toLowerCase()) && (
                                 <button
-                                  key={s}
                                   type="button"
-                                  className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors hover:bg-sky-50 hover:text-sky-700 ${
-                                    specialtyValue === s
-                                      ? "bg-sky-50 text-sky-700"
-                                      : "text-slate-700"
-                                  }`}
+                                  className="w-full text-left px-5 py-3.5 text-sm font-bold text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10 border-t border-white/5 transition-colors"
                                   onClick={() => {
-                                    setValue("specialty", s, {
-                                      shouldValidate: true,
-                                    });
-                                    setShowSpecialtyDropdown(false);
-                                    setSpecialtyQuery("");
-                                  }}
-                                >
-                                  {s}
-                                </button>
-                              ))
-                            )}
-                            {/* Allow custom entry if not in list */}
-                            {specialtyQuery &&
-                              !SPECIALTIES.some(
-                                (s) =>
-                                  s.toLowerCase() ===
-                                  specialtyQuery.toLowerCase()
-                              ) && (
-                                <button
-                                  type="button"
-                                  className="w-full text-left px-4 py-3 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border-t border-slate-100 transition-colors"
-                                  onClick={() => {
-                                    setValue("specialty", specialtyQuery, {
-                                      shouldValidate: true,
-                                    });
+                                    setValue("specialty", specialtyQuery, { shouldValidate: true });
                                     setShowSpecialtyDropdown(false);
                                     setSpecialtyQuery("");
                                   }}
@@ -378,49 +368,46 @@ export default function OnboardingPage() {
                                   + Use &quot;{specialtyQuery}&quot;
                                 </button>
                               )}
-                          </div>
-                        </div>
-                      )}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </FieldGroup>
                 </div>
               </div>
 
-              {/* Divider */}
-              <div className="border-t border-slate-100 my-5" />
-
               {/* ── Section: Your Clinic ─────────────────────────────── */}
-              <div className="mb-5">
-                <p className="text-xs font-bold uppercase tracking-widest text-sky-600 mb-4">
+              <div className="mb-6 pt-2">
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-400 mb-6 flex items-center gap-3">
+                  <span className="w-6 h-[1px] bg-cyan-400/50" />
                   Your Clinic
                 </p>
-                <div className="space-y-1">
-                  {/* Clinic Name */}
+                <div className="space-y-2">
                   <FieldGroup
                     label="Clinic Name"
                     htmlFor="name"
-                    icon={<Building2 className="w-3.5 h-3.5 text-slate-400" />}
+                    icon={<Building2 className="w-4 h-4 text-cyan-400/70" />}
                     error={errors.name?.message}
                   >
                     <Input
                       id="name"
                       placeholder="e.g. City Care Clinic"
                       {...register("name")}
-                      className={`h-12 rounded-xl text-base bg-slate-50 focus:bg-white transition-all duration-500 border ${
+                      className={`h-14 rounded-2xl text-base transition-all duration-500 px-5 border-2 ${
                         highlightFields.name 
-                          ? "bg-emerald-50 border-emerald-400 ring-4 ring-emerald-400/20 shadow-inner" 
+                          ? "bg-cyan-500/10 border-cyan-500/50 text-cyan-100 shadow-[inset_0_0_20px_rgba(34,211,238,0.1)]" 
                           : errors.name
-                          ? "border-red-400 focus:border-red-400"
-                          : "border-slate-200 focus:border-sky-400"
+                          ? "bg-black/20 border-red-500/50 text-white focus:border-red-500"
+                          : "bg-black/20 border-white/5 text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:bg-black/40"
                       }`}
                     />
                   </FieldGroup>
 
-                  {/* Phone */}
                   <FieldGroup
                     label="Clinic Phone"
                     htmlFor="phone"
-                    icon={<Phone className="w-3.5 h-3.5 text-slate-400" />}
+                    icon={<Phone className="w-4 h-4 text-cyan-400/70" />}
                     error={errors.phone?.message}
                   >
                     <Input
@@ -429,103 +416,83 @@ export default function OnboardingPage() {
                       inputMode="tel"
                       maxLength={10}
                       {...register("phone")}
-                      className={`h-12 rounded-xl text-base bg-slate-50 focus:bg-white transition-all duration-500 border ${
+                      className={`h-14 rounded-2xl text-base transition-all duration-500 px-5 border-2 ${
                         highlightFields.phone
-                          ? "bg-emerald-50 border-emerald-400 ring-4 ring-emerald-400/20 shadow-inner"
+                          ? "bg-cyan-500/10 border-cyan-500/50 text-cyan-100 shadow-[inset_0_0_20px_rgba(34,211,238,0.1)]"
                           : errors.phone
-                          ? "border-red-400 focus:border-red-400"
-                          : "border-slate-200 focus:border-sky-400"
+                          ? "bg-black/20 border-red-500/50 text-white focus:border-red-500"
+                          : "bg-black/20 border-white/5 text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:bg-black/40"
                       }`}
                     />
                   </FieldGroup>
 
-                  {/* Consultation Fee */}
                   <FieldGroup
                     label="Consultation Fee"
                     htmlFor="consultationFee"
-                    icon={<IndianRupee className="w-3.5 h-3.5 text-slate-400" />}
+                    icon={<IndianRupee className="w-4 h-4 text-cyan-400/70" />}
                     error={errors.consultationFee?.message}
                   >
                     <div
-                      className={`flex items-center h-12 rounded-xl border bg-slate-50 transition-colors focus-within:bg-white focus-within:border-sky-400 ${
-                        errors.consultationFee
-                          ? "border-red-400"
-                          : "border-slate-200"
+                      className={`flex items-center h-14 rounded-2xl bg-black/20 transition-all focus-within:bg-black/40 focus-within:border-cyan-500/50 border-2 ${
+                        errors.consultationFee ? "border-red-500/50" : "border-white/5 hover:border-white/10"
                       }`}
                     >
-                      <span className="pl-4 pr-1 text-slate-500 font-semibold select-none text-base">
-                        ₹
-                      </span>
+                      <span className="pl-5 pr-2 text-slate-500 font-bold select-none text-base">₹</span>
                       <input
                         id="consultationFee"
                         type="number"
                         inputMode="numeric"
                         placeholder="500"
-                        {...register("consultationFee", {
-                          valueAsNumber: true,
-                        })}
-                        className="flex-1 h-full bg-transparent outline-none text-base font-semibold text-slate-900 pr-4"
+                        {...register("consultationFee", { valueAsNumber: true })}
+                        className="flex-1 h-full bg-transparent outline-none text-base font-bold text-white pr-5"
                       />
                     </div>
                   </FieldGroup>
                 </div>
               </div>
 
-              {/* Divider */}
-              <div className="border-t border-slate-100 my-5" />
-
               {/* ── Section: Referral (Optional) ─────────────────────────────── */}
-              <div className="mb-5">
-                <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-4">
+              <div className="mb-6 pt-2">
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-indigo-400 mb-6 flex items-center gap-3">
+                  <span className="w-6 h-[1px] bg-indigo-400/50" />
                   Partner Referral
                 </p>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <FieldGroup
                     label="Referral Code (Optional)"
                     htmlFor="referralCode"
-                    icon={<Link2 className="w-3.5 h-3.5 text-slate-400" />}
+                    icon={<Link2 className="w-4 h-4 text-indigo-400/70" />}
                     error={errors.referralCode?.message}
                   >
                     <Input
                       id="referralCode"
                       placeholder="e.g. GP-RAHUL-A3B2"
                       {...register("referralCode")}
-                      className="h-12 rounded-xl text-base bg-slate-50 focus:bg-white transition-colors border border-slate-200 focus:border-emerald-400"
+                      className="h-14 rounded-2xl text-base bg-black/20 text-white placeholder:text-slate-600 transition-all px-5 border-2 border-white/5 focus:border-indigo-500/50 focus:bg-black/40"
                     />
                   </FieldGroup>
                 </div>
               </div>
 
-              {/* Divider */}
-              <div className="border-t border-slate-100 my-5" />
-
               {/* ── Section: Booking URL ─────────────────────────────── */}
-              <div className="mb-2">
-                <p className="text-xs font-bold uppercase tracking-widest text-sky-600 mb-1">
-                  Your Booking Page Link
-                </p>
-                <p className="text-xs text-slate-400 mb-4">
-                  Patients will use this link to book appointments.
-                  Auto-filled from your name — you can change it.
+              <div className="mb-2 pt-2">
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-white mb-6 flex items-center gap-3">
+                  <span className="w-6 h-[1px] bg-white/30" />
+                  Your Booking Link
                 </p>
 
-                {/* Label */}
-                <Label
-                  htmlFor="slug"
-                  className="text-sm font-semibold text-slate-700 flex items-center gap-1.5 mb-1.5"
-                >
-                  <Link2 className="w-3.5 h-3.5 text-slate-400" />
+                <Label htmlFor="slug" className="text-sm font-bold text-slate-300 flex items-center gap-2 mb-2 ml-1">
+                  <Link2 className="w-4 h-4 text-slate-500" />
                   Your unique URL name
                 </Label>
 
-                {/* Clean slug input — no inline domain prefix */}
                 <div
-                  className={`flex items-center h-12 rounded-xl border bg-slate-50 transition-colors focus-within:bg-white focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-400/20 ${
+                  className={`flex items-center h-14 rounded-2xl bg-black/20 transition-all focus-within:bg-black/40 focus-within:border-emerald-500/50 focus-within:shadow-[0_0_20px_rgba(16,185,129,0.1)] border-2 ${
                     errors.slug
-                      ? "border-red-400"
+                      ? "border-red-500/50"
                       : slugIsValid
-                      ? "border-emerald-400"
-                      : "border-slate-200"
+                      ? "border-emerald-500/30"
+                      : "border-white/5 hover:border-white/10"
                   }`}
                 >
                   <input
@@ -534,76 +501,67 @@ export default function OnboardingPage() {
                     autoCapitalize="none"
                     autoCorrect="off"
                     spellCheck={false}
-                    {...register("slug", {
-                      onChange: () => setSlugTouched(true),
-                    })}
-                    className="flex-1 h-full px-4 bg-transparent outline-none text-base font-semibold text-slate-900 min-w-0"
+                    {...register("slug", { onChange: () => setSlugTouched(true) })}
+                    className="flex-1 h-full px-5 bg-transparent outline-none text-base font-bold text-white min-w-0"
                   />
-                  {/* Status icon inside field — no layout shift */}
-                  <div className="pr-3 flex-shrink-0">
-                    {slugIsValid && (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    )}
-                    {errors.slug && (
-                      <AlertCircle className="w-4 h-4 text-red-400" />
-                    )}
+                  <div className="pr-4 flex-shrink-0">
+                    {slugIsValid && <CheckCircle2 className="w-5 h-5 text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />}
+                    {errors.slug && <AlertCircle className="w-5 h-5 text-red-500" />}
                   </div>
                 </div>
 
-                {/* Error — always in flow */}
-                <div className="min-h-[20px] mt-1">
+                <div className="min-h-[24px] mt-1">
                   {errors.slug && (
-                    <p className="text-xs text-red-500 font-medium flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-red-400 font-medium flex items-center gap-1.5 ml-1">
+                      <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
                       {errors.slug.message}
-                    </p>
+                    </motion.p>
                   )}
                 </div>
 
-                {/* URL preview badge — separate block, full width, wraps on mobile */}
                 {slugValue && (
-                  <div
-                    className={`mt-1 flex items-start gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium ${
+                  <motion.div
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`mt-2 flex items-start gap-2 px-4 py-3 rounded-2xl border text-sm font-medium transition-colors ${
                       slugIsValid
-                        ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                        : "bg-slate-50 border-slate-200 text-slate-500"
+                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
+                        : "bg-white/5 border-white/10 text-slate-400"
                     }`}
                   >
-                    <Link2 className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                    <Link2 className="w-4 h-4 flex-shrink-0 mt-0.5 opacity-70" />
                     <span className="break-all leading-snug">
-                      {BASE_URL}/
-                      <span className="font-bold">{slugValue}</span>
+                      {BASE_URL}/<span className="font-bold text-white">{slugValue}</span>
                     </span>
-                  </div>
+                  </motion.div>
                 )}
               </div>
 
-
               {/* ── Working Hours note ─────────────────────────────────── */}
-              <div className="mt-4 p-4 bg-sky-50 rounded-2xl border border-sky-100">
-                <p className="text-xs text-sky-700 font-medium leading-relaxed">
-                  <span className="font-bold">Default schedule:</span> Mon–Fri,
-                  9:00 AM – 5:00 PM, 30-min slots. Customize anytime from your
-                  dashboard.
+              <div className="mt-8 p-5 bg-white/5 rounded-2xl border border-white/10 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-cyan-500/50" />
+                <p className="text-sm text-slate-300 font-medium leading-relaxed pl-2">
+                  <span className="font-bold text-white block mb-1">Default schedule applies:</span> 
+                  Mon–Fri, 9:00 AM – 5:00 PM, 30-min slots. You can fully customize this anytime from your dashboard.
                 </p>
               </div>
             </div>
 
-            {/* ── Sticky Submit Button ───────────────────────────────── */}
-            <div className="px-6 sm:px-8 pb-6 pt-2 bg-white/90 backdrop-blur-md border-t border-slate-100 sticky bottom-0">
+            {/* ── Submit Button ───────────────────────────────── */}
+            <div className="p-6 sm:px-10 sm:pb-10 pt-2 relative z-10">
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full h-14 text-base font-bold rounded-2xl bg-sky-600 hover:bg-sky-700 active:scale-[0.98] text-white shadow-lg shadow-sky-600/30 transition-all"
+                className="w-full h-16 text-lg font-black rounded-2xl bg-white text-black hover:bg-slate-200 active:scale-[0.98] shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_40px_rgba(255,255,255,0.25)] transition-all"
               >
                 {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="flex items-center gap-3">
+                    <Loader2 className="w-6 h-6 animate-spin" />
                     Setting up your clinic…
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5" />
+                    <CheckCircle2 className="w-6 h-6" />
                     Complete Setup — Go to Dashboard
                   </span>
                 )}
@@ -612,14 +570,11 @@ export default function OnboardingPage() {
           </form>
         </motion.div>
 
-        <p className="text-center text-xs text-slate-400 mt-5 pb-4">
+        <p className="text-center text-xs text-slate-500 mt-8 pb-8 font-medium">
           By continuing, you agree to our{" "}
-          <a
-            href="/terms"
-            className="underline hover:text-slate-600 transition-colors"
-          >
+          <Link href="/terms" className="text-slate-400 hover:text-white underline underline-offset-2 transition-colors">
             Terms of Service
-          </a>
+          </Link>
           .
         </p>
       </div>

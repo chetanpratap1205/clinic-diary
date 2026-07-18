@@ -195,9 +195,10 @@ export default async function DashboardPage() {
   }/book/${clinicData?.slug}`;
 
 
-  const displayName = authUser.name.startsWith("Dr.") || authUser.name.startsWith("Dr ")
-    ? authUser.name
-    : authUser.name.split(" ")[0];
+  const nameStr = authUser.name || "Doctor";
+  const displayName = nameStr.startsWith("Dr.") || nameStr.startsWith("Dr ")
+    ? nameStr
+    : nameStr.split(" ")[0];
 
   return (
     <StaggerContainer className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-5 sm:space-y-8 pb-safe bottom-nav-spacing lg:pb-8">

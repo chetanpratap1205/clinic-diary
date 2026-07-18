@@ -125,6 +125,7 @@ export const appointments = pgTable(
       table.clinicId,
       table.appointmentDate
     ),
+    index("appointments_status_idx").on(table.status),
   ]
 );
 
@@ -155,6 +156,8 @@ export const followUps = pgTable(
       table.dueDate,
       table.status
     ),
+    index("follow_ups_status_idx").on(table.status),
+    index("follow_ups_patient_idx").on(table.patientId),
   ]
 );
 

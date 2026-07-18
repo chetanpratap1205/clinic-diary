@@ -46,9 +46,7 @@ export default function HomePage() {
             </span>
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
-            <div className="hidden md:block">
               <InstallButton />
-            </div>
             <Link href="/login">
               <Button
                 variant="ghost"
@@ -344,7 +342,7 @@ export default function HomePage() {
            <div className="relative flex flex-col md:flex-row items-center justify-center gap-0 max-w-5xl mx-auto">
              
              {/* The Chaos (Background/Recessed) */}
-             <div className="w-full md:w-[45%] bg-[#0f0707] border border-red-900/30 rounded-3xl p-8 sm:p-10 md:pr-20 relative md:translate-x-12 md:scale-95 z-0 opacity-80 hover:opacity-100 transition-all duration-500">
+             <div className="w-full lg:w-[45%] bg-[#0f0707] border border-red-900/30 rounded-3xl p-8 sm:p-10 lg:pr-20 relative lg:translate-x-12 lg:scale-95 z-0 opacity-80 hover:opacity-100 transition-all duration-500">
                <div className="absolute top-0 left-0 w-32 h-32 bg-red-500/10 rounded-full blur-[50px] -z-10" />
                <h3 className="text-2xl font-bold text-red-50 mb-2">The Old Chaos</h3>
                <p className="text-red-200/70 text-sm mb-8 leading-relaxed pr-4">
@@ -369,7 +367,7 @@ export default function HomePage() {
              </div>
 
              {/* The Premium Standard (Foreground/Elevated) */}
-             <div className="w-full md:w-[60%] bg-gradient-to-br from-[#0c1f17] to-[#0A0A0A] border border-emerald-500/40 rounded-3xl p-8 sm:p-12 relative z-10 shadow-[0_30px_80px_rgba(16,185,129,0.15)] transform -mt-6 md:mt-0 md:-translate-x-6 hover:-translate-y-2 transition-transform duration-500 backdrop-blur-2xl">
+             <div className="w-full lg:w-[60%] bg-gradient-to-br from-[#0c1f17] to-[#0A0A0A] border border-emerald-500/40 rounded-3xl p-8 sm:p-12 relative z-10 shadow-[0_30px_80px_rgba(16,185,129,0.15)] transform -mt-6 lg:mt-0 lg:-translate-x-6 hover:-translate-y-2 transition-transform duration-500 backdrop-blur-2xl">
                <div className="absolute -top-10 -left-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] -z-10" />
                <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-t-3xl opacity-50" />
                

@@ -14,7 +14,6 @@ const BASE_URL =
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   themeColor: "#0f766e",
   viewportFit: "cover",
 };
