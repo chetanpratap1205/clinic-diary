@@ -33,13 +33,16 @@ export default function SignupPage() {
         },
       });
       if (error) { toast.error(error.message); return; }
+      
       if (data.session) {
         toast.success("Account created successfully!");
-        router.push("/onboarding");
+        // Use hard navigation to ensure RSC cache sees the new auth cookie
+        window.location.href = "/onboarding";
       } else {
         setNeedsConfirmation(true);
       }
-    } catch {
+    } catch (err) {
+      console.error("Signup error:", err);
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);

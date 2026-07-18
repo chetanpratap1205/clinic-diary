@@ -40,8 +40,10 @@ function FieldPortalLoginForm() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) { toast.error(mapAuthError(error.message)); return; }
       toast.success("Welcome back, Partner! 🎯");
-      router.push("/field-portal");
-    } catch {
+      // Use hard navigation to bypass Next.js App Router cache issues with auth state
+      window.location.href = "/field-portal";
+    } catch (err) {
+      console.error("Login error:", err);
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);

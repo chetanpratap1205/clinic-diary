@@ -40,9 +40,19 @@ export default function LoginPage() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) { toast.error(mapAuthError(error.message)); return; }
+      
       toast.success("Welcome back!");
-      const redirectPath = await getLoginRedirectPath();
-      router.push(redirectPath);
+      
+      // Fallback to /dashboard if server action fails
+      let redirectPath = "/dashboard";
+      try {
+        redirectPath = await getLoginRedirectPath();
+      } catch (err) {
+        console.error("Failed to get redirect path:", err);
+      }
+      
+      // Use hard navigation to bypass Next.js App Router cache issues with auth state
+      window.location.href = redirectPath;
     } catch {
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
