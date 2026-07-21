@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Check, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { PremiumIcon } from "@/components/ui/premium-icon";
 import { toast } from "sonner";
 import Script from "next/script";
@@ -13,6 +14,7 @@ const plans = [
     id: "quarterly",
     name: "Quarterly",
     price: "₹1,499",
+    basePrice: 1499,
     duration: "per 3 months",
     description: "Perfect for getting started and testing the waters.",
     features: [
@@ -28,6 +30,7 @@ const plans = [
     id: "yearly",
     name: "Annual",
     price: "₹4,999",
+    basePrice: 4999,
     duration: "per year",
     description: "Maximum ROI for established clinics.",
     features: [
@@ -49,6 +52,7 @@ interface PricingCardsProps {
 
 export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
   const [loading, setLoading] = useState<string | null>(null);
+  const [checkoutPlan, setCheckoutPlan] = useState<typeof plans[0] | null>(null);
   const activeRank = activePlanId ? PLAN_RANKS[activePlanId] || 0 : 0;
 
   const handleSubscribe = async (planId: string) => {
@@ -158,6 +162,7 @@ export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
               <span className="text-4xl font-bold tracking-tight text-gray-900">{plan.price}</span>
               <span className="text-sm font-semibold text-gray-500">{plan.duration}</span>
             </div>
+            <p className="text-xs text-gray-400 -mt-4 mb-6">+ 18% GST</p>
 
             <ul className="mb-8 flex-1 space-y-4">
               {plan.features.map((feature, i) => (
@@ -169,7 +174,7 @@ export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
             </ul>
 
             <Button
-              onClick={() => handleSubscribe(plan.id)}
+              onClick={() => setCheckoutPlan(plan)}
               disabled={loading === plan.id || activePlanId === plan.id}
               className={`w-full py-6 text-base font-semibold rounded-xl transition-all ${
                 activePlanId === plan.id
@@ -206,9 +211,67 @@ export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
         </div>
         <h4 className="text-xl font-semibold text-gray-900 mb-2">100% Money-Back Guarantee</h4>
         <p className="text-gray-600">
-          Try our premium features risk-free for your first month. If you feel it's not useful, we'll refund your money — <strong>no questions asked.</strong>
+          Try our premium features risk-free for your first month. If you feel it&apos;s not useful, we&apos;ll refund your money — <strong>no questions asked.</strong>
         </p>
       </motion.div>
+
+      <Dialog open={!!checkoutPlan} onOpenChange={(open) => !open && !loading && setCheckoutPlan(null)}>
+        <DialogContent className="sm:max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Order Summary</DialogTitle>
+            <DialogDescription>
+              Review your plan details before proceeding to payment.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {checkoutPlan && (
+            <div className="space-y-4 py-4">
+              <div className="flex justify-between items-center pb-4 border-b border-gray-100">
+                <div>
+                  <h4 className="font-semibold text-gray-900">{checkoutPlan.name} Plan</h4>
+                  <p className="text-sm text-gray-500">{checkoutPlan.duration}</p>
+                </div>
+                <div className="font-semibold text-gray-900">₹{checkoutPlan.basePrice.toLocaleString()}</div>
+              </div>
+              
+              <div className="flex justify-between items-center text-sm text-gray-600">
+                <span>Base Price</span>
+                <span>₹{checkoutPlan.basePrice.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm text-gray-600">
+                <span>GST (18%)</span>
+                <span>₹{(checkoutPlan.basePrice * 0.18).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+              
+              <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                <span className="font-bold text-gray-900">Total Amount</span>
+                <span className="font-bold text-xl text-gray-900">
+                  ₹{(checkoutPlan.basePrice * 1.18).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="sm:justify-between gap-3 mt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setCheckoutPlan(null)}
+              disabled={loading !== null}
+              className="w-full sm:w-auto rounded-xl"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => checkoutPlan && handleSubscribe(checkoutPlan.id)} 
+              disabled={loading !== null}
+              className="w-full sm:w-auto bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white shadow-md rounded-xl border-none"
+            >
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {loading ? "Processing..." : "Proceed to Pay"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
