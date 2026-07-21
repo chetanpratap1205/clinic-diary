@@ -81,12 +81,14 @@ export default function LoginPage() {
 
   return (
     <div
-      className="flex min-h-screen bg-[#0A0A0A] relative overflow-hidden"
+      className="flex min-h-screen bg-[#0A0A0A] relative"
       style={{ minHeight: "100dvh" }}
     >
       {/* ── BACKGROUND GLOWS (Visible on both mobile & desktop) ── */}
-      <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full bg-emerald-500/10 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] rounded-full bg-indigo-500/10 blur-[120px] pointer-events-none" />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full bg-emerald-500/10 blur-[120px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] rounded-full bg-indigo-500/10 blur-[120px]" />
+      </div>
 
       {/* ── LEFT: Brand Panel (Desktop only) ─────────────────────────── */}
       <div className="hidden lg:flex lg:w-1/2 relative border-r border-white/5 bg-black/20 backdrop-blur-3xl z-10">
@@ -163,7 +165,7 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="dr.sharma@clinic.com"
+                  placeholder="doctor@clinic.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required

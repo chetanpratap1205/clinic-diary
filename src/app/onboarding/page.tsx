@@ -22,9 +22,9 @@ import {
   IndianRupee,
   User,
   Building2,
+  MapPin,
 } from "lucide-react";
 import { submitOnboarding } from "./actions";
-import { MapsAutoFill } from "./_components/maps-auto-fill";
 
 // ─── Schema ────────────────────────────────────────────────────────────────────
 const onboardingSchema = z.object({
@@ -34,6 +34,11 @@ const onboardingSchema = z.object({
   phone: z
     .string()
     .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian mobile number"),
+  pincode: z
+    .string()
+    .regex(/^\d{6}$/, "Enter a valid 6-digit Pincode"),
+  city: z.string().min(1, "City is required"),
+  state: z.string().min(1, "State is required"),
   slug: z
     .string()
     .min(3, "URL must be at least 3 characters")
@@ -165,6 +170,36 @@ export default function OnboardingPage() {
     }
   }, [doctorName, slugTouched, setValue]);
 
+  const pincodeValue = watch("pincode");
+  const [isFetchingPincode, setIsFetchingPincode] = useState(false);
+
+  useEffect(() => {
+    if (pincodeValue && pincodeValue.length === 6 && /^\d{6}$/.test(pincodeValue)) {
+      setIsFetchingPincode(true);
+      fetch(`https://api.postalpincode.in/pincode/${pincodeValue}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data[0] && data[0].Status === "Success") {
+            const postOffice = data[0].PostOffice[0];
+            setValue("city", postOffice.District, { shouldValidate: true });
+            setValue("state", postOffice.State, { shouldValidate: true });
+            setHighlightFields((prev) => ({ ...prev, city: true, state: true }));
+            setTimeout(() => {
+              setHighlightFields((prev) => ({ ...prev, city: false, state: false }));
+            }, 2000);
+          } else {
+            toast.error("Invalid Pincode");
+          }
+        })
+        .catch(() => {
+          toast.error("Failed to fetch location data");
+        })
+        .finally(() => {
+          setIsFetchingPincode(false);
+        });
+    }
+  }, [pincodeValue, setValue]);
+
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (
@@ -251,10 +286,6 @@ export default function OnboardingPage() {
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="p-6 sm:p-10 space-y-2">
               
-              <div className="mb-8">
-                <MapsAutoFill onDataFound={handleDataFound} />
-              </div>
-
               {/* ── Section: About You ─────────────────────────────── */}
               <div className="mb-6">
                 <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-400 mb-6 flex items-center gap-3">
@@ -270,7 +301,7 @@ export default function OnboardingPage() {
                   >
                     <Input
                       id="doctorName"
-                      placeholder="Dr. Anita Sharma"
+                      placeholder="Dr. Priya Verma"
                       {...register("doctorName")}
                       className={`h-14 rounded-2xl text-base bg-black/20 text-white placeholder:text-slate-600 transition-all px-5 border-2 ${
                         errors.doctorName
@@ -426,6 +457,72 @@ export default function OnboardingPage() {
                     />
                   </FieldGroup>
 
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FieldGroup
+                      label="Pincode"
+                      htmlFor="pincode"
+                      icon={<MapPin className="w-4 h-4 text-cyan-400/70" />}
+                      error={errors.pincode?.message}
+                    >
+                      <div className="relative">
+                        <Input
+                          id="pincode"
+                          placeholder="e.g. 110001"
+                          maxLength={6}
+                          {...register("pincode")}
+                          className={`h-14 rounded-2xl text-base transition-all duration-500 px-5 border-2 ${
+                            errors.pincode
+                              ? "bg-black/20 border-red-500/50 text-white focus:border-red-500"
+                              : "bg-black/20 border-white/5 text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:bg-black/40"
+                          }`}
+                        />
+                        {isFetchingPincode && (
+                          <Loader2 className="w-4 h-4 text-cyan-400 animate-spin absolute right-4 top-1/2 -translate-y-1/2" />
+                        )}
+                      </div>
+                    </FieldGroup>
+
+                    <FieldGroup
+                      label="City"
+                      htmlFor="city"
+                      icon={<Building2 className="w-4 h-4 text-cyan-400/70" />}
+                      error={errors.city?.message}
+                    >
+                      <Input
+                        id="city"
+                        placeholder="City"
+                        {...register("city")}
+                        className={`h-14 rounded-2xl text-base transition-all duration-500 px-5 border-2 ${
+                          highlightFields.city 
+                            ? "bg-cyan-500/10 border-cyan-500/50 text-cyan-100 shadow-[inset_0_0_20px_rgba(34,211,238,0.1)]" 
+                            : errors.city
+                            ? "bg-black/20 border-red-500/50 text-white focus:border-red-500"
+                            : "bg-black/20 border-white/5 text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:bg-black/40"
+                        }`}
+                      />
+                    </FieldGroup>
+                  </div>
+
+                  <FieldGroup
+                    label="State"
+                    htmlFor="state"
+                    icon={<MapPin className="w-4 h-4 text-cyan-400/70" />}
+                    error={errors.state?.message}
+                  >
+                    <Input
+                      id="state"
+                      placeholder="State"
+                      {...register("state")}
+                      className={`h-14 rounded-2xl text-base transition-all duration-500 px-5 border-2 ${
+                        highlightFields.state 
+                          ? "bg-cyan-500/10 border-cyan-500/50 text-cyan-100 shadow-[inset_0_0_20px_rgba(34,211,238,0.1)]" 
+                          : errors.state
+                          ? "bg-black/20 border-red-500/50 text-white focus:border-red-500"
+                          : "bg-black/20 border-white/5 text-white placeholder:text-slate-600 focus:border-cyan-500/50 focus:bg-black/40"
+                      }`}
+                    />
+                  </FieldGroup>
+
                   <FieldGroup
                     label="Consultation Fee"
                     htmlFor="consultationFee"
@@ -497,7 +594,7 @@ export default function OnboardingPage() {
                 >
                   <input
                     id="slug"
-                    placeholder="dr-sharma"
+                    placeholder="dr-priya"
                     autoCapitalize="none"
                     autoCorrect="off"
                     spellCheck={false}

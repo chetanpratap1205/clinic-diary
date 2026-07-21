@@ -15,6 +15,9 @@ export async function submitOnboarding(data: {
   slug: string;
   consultationFee: number;
   referralCode?: string;
+  pincode: string;
+  city: string;
+  state: string;
 }) {
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -49,6 +52,8 @@ export async function submitOnboarding(data: {
       slug: data.slug.toLowerCase(),
       consultationFee: data.consultationFee,
       referredBy: referredById,
+      state: data.state,
+      address: `${data.city}, ${data.state} - ${data.pincode}`,
     }).returning();
 
     // Link Admin

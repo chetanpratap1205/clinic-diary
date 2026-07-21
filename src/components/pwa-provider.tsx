@@ -34,8 +34,17 @@ export function PWAProvider() {
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      // Show install banner after 3 seconds of usage
-      setTimeout(() => setShowBanner(true), 3000);
+      
+      // Check if user dismissed it recently
+      const lastDismissed = localStorage.getItem("pwa_install_dismissed");
+      if (lastDismissed) {
+        const dismissedAt = parseInt(lastDismissed, 10);
+        const daysSince = (Date.now() - dismissedAt) / (1000 * 60 * 60 * 24);
+        if (daysSince < 3) return; // Hide for 3 days if dismissed
+      }
+      
+      // Show install banner after 45 seconds of usage
+      setTimeout(() => setShowBanner(true), 45000);
     };
 
     window.addEventListener("beforeinstallprompt", handler);
@@ -65,6 +74,11 @@ export function PWAProvider() {
 
   if (isInstalled || !showBanner || !deferredPrompt) return null;
 
+  const handleDismiss = () => {
+    localStorage.setItem("pwa_install_dismissed", Date.now().toString());
+    setShowBanner(false);
+  };
+
   return (
     <div
       className="fixed bottom-20 left-4 right-4 sm:bottom-6 sm:left-auto sm:right-6 sm:w-[340px] z-50 animate-slide-up"
@@ -88,7 +102,7 @@ export function PWAProvider() {
             </p>
           </div>
           <button
-            onClick={() => setShowBanner(false)}
+            onClick={handleDismiss}
             className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0 -mt-0.5 -mr-0.5"
             aria-label="Dismiss"
           >
@@ -97,7 +111,7 @@ export function PWAProvider() {
         </div>
         <div className="px-4 pb-4 flex gap-2">
           <button
-            onClick={() => setShowBanner(false)}
+            onClick={handleDismiss}
             className="flex-1 h-9 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
           >
             Not now
