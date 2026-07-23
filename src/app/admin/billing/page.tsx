@@ -269,16 +269,17 @@ export default async function BillingPage(props: {
             Payment Ledger
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto min-w-full">
+          <div className="min-w-[700px]">
           <Table>
             <TableHeader className="bg-slate-50">
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Clinic</TableHead>
-                <TableHead>Plan</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Order ID</TableHead>
+                <TableHead className="whitespace-nowrap">Date</TableHead>
+                <TableHead className="whitespace-nowrap">Clinic</TableHead>
+                <TableHead className="whitespace-nowrap hidden sm:table-cell">Plan</TableHead>
+                <TableHead className="text-right whitespace-nowrap">Amount</TableHead>
+                <TableHead className="whitespace-nowrap">Status</TableHead>
+                <TableHead className="hidden md:table-cell whitespace-nowrap">Order ID</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -297,10 +298,10 @@ export default async function BillingPage(props: {
                         {format(new Date(payment.paidAt), "h:mm a")}
                       </span>
                     </TableCell>
-                    <TableCell className="font-medium text-sm text-slate-900">
+                    <TableCell className="font-medium text-sm text-slate-900 min-w-[150px] truncate">
                       {payment.clinicName ?? "—"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       <Badge
                         variant="outline"
                         className={planColors[payment.planId] ?? "bg-slate-50 text-slate-600"}
@@ -308,7 +309,7 @@ export default async function BillingPage(props: {
                         {payment.planName}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right font-bold text-emerald-700 text-sm">
+                    <TableCell className="text-right font-bold text-emerald-700 text-sm whitespace-nowrap">
                       ₹{(payment.amountPaise / 100).toLocaleString("en-IN")}
                     </TableCell>
                     <TableCell>
@@ -323,7 +324,7 @@ export default async function BillingPage(props: {
                         {payment.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-mono text-xs text-slate-400 max-w-[140px] truncate">
+                    <TableCell className="hidden md:table-cell font-mono text-xs text-slate-400 max-w-[140px] truncate">
                       {payment.razorpayOrderId}
                     </TableCell>
                   </TableRow>
@@ -331,6 +332,7 @@ export default async function BillingPage(props: {
               )}
             </TableBody>
           </Table>
+          </div>
 
           {/* Pagination */}
           {totalPages > 1 && (

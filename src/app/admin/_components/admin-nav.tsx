@@ -27,9 +27,8 @@ const navSections = [
   {
     label: "Management",
     items: [
-      { href: "/admin/leads", label: "Leads CRM", icon: Users },
-      { href: "/admin/partners", label: "Growth Partners", icon: Briefcase },
       { href: "/admin/clinics", label: "Clinics", icon: Building2 },
+      { href: "/admin/directory", label: "SEO Directory", icon: Users },
       { href: "/admin/billing", label: "Billing", icon: CreditCard },
       { href: "/admin/reviews", label: "Reviews", icon: Star },
       { href: "/admin/follow-ups", label: "Follow-Ups", icon: CalendarClock },
@@ -38,6 +37,7 @@ const navSections = [
   {
     label: "Operations",
     items: [
+      { href: "/admin/marketing", label: "Marketing", icon: Briefcase },
       { href: "/admin/qr", label: "QR Codes", icon: QrCode },
       { href: "/admin/orders", label: "Orders", icon: Package },
       { href: "/admin/logs", label: "System Logs", icon: ScrollText },

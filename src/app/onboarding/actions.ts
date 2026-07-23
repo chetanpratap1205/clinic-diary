@@ -6,6 +6,18 @@ import { eq, ilike, and } from "drizzle-orm";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { sql } from "drizzle-orm";
+import { marketingCampaigns, unclaimedClinics } from "@/db/schema";
+
+export async function getUnclaimedClinic(id: string) {
+  try {
+    const [clinic] = await db.select().from(unclaimedClinics).where(eq(unclaimedClinics.id, id)).limit(1);
+    return { data: clinic };
+  } catch (err) {
+    return { error: "Failed to load clinic data" };
+  }
+}
 
 export async function submitOnboarding(data: {
   name: string;
@@ -18,6 +30,7 @@ export async function submitOnboarding(data: {
   pincode: string;
   city: string;
   state: string;
+  claimId?: string;
 }) {
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -101,6 +114,28 @@ export async function submitOnboarding(data: {
           newStatus: "converted"
         });
       }
+    }
+
+    // Mark as claimed if claimId exists
+    if (data.claimId) {
+      await db.update(unclaimedClinics)
+        .set({ isClaimed: true, claimedClinicId: newClinic.id, updatedAt: new Date() })
+        .where(eq(unclaimedClinics.id, data.claimId))
+        .execute()
+        .catch(e => console.error("Failed to mark clinic as claimed:", e));
+    }
+
+    // Check for marketing attribution cookie
+    const cookieStore = await cookies();
+    const marketingCode = cookieStore.get("nx_marketing_code")?.value;
+    
+    if (marketingCode) {
+      // Find the campaign and increment signups asynchronously
+      db.update(marketingCampaigns)
+        .set({ signups: sql`${marketingCampaigns.signups} + 1` })
+        .where(eq(marketingCampaigns.code, marketingCode))
+        .execute()
+        .catch((e) => console.error("Failed to track marketing signup:", e));
     }
 
   } catch (error: any) {

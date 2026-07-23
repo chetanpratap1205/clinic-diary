@@ -24,7 +24,7 @@ import {
   Building2,
   MapPin,
 } from "lucide-react";
-import { submitOnboarding } from "./actions";
+import { submitOnboarding, getUnclaimedClinic } from "./actions";
 
 // ─── Schema ────────────────────────────────────────────────────────────────────
 const onboardingSchema = z.object({
@@ -48,6 +48,7 @@ const onboardingSchema = z.object({
     ),
   consultationFee: z.number().min(0, "Fee cannot be negative"),
   referralCode: z.string().optional(),
+  claimId: z.string().optional(),
 });
 
 type OnboardingData = z.infer<typeof onboardingSchema>;
@@ -158,8 +159,35 @@ export default function OnboardingPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get("ref");
+    const claim = params.get("claim");
+
     if (ref) {
       setValue("referralCode", ref);
+    }
+    if (claim) {
+      setValue("claimId", claim);
+      // Fetch clinic data
+      getUnclaimedClinic(claim).then((res) => {
+        if (res.data) {
+          const c = res.data;
+          setValue("doctorName", c.doctorName, { shouldValidate: true });
+          setValue("name", c.clinicName, { shouldValidate: true });
+          setValue("specialty", c.specialty, { shouldValidate: true });
+          setValue("city", c.city, { shouldValidate: true });
+          setValue("state", c.state, { shouldValidate: true });
+          if (c.phone) setValue("phone", c.phone, { shouldValidate: true });
+          setHighlightFields({
+            doctorName: true,
+            name: true,
+            specialty: true,
+            city: true,
+            state: true,
+            phone: !!c.phone,
+          });
+          setTimeout(() => setHighlightFields({}), 2000);
+          toast.success("Profile data loaded. Please verify and complete setup.");
+        }
+      });
     }
   }, [setValue]);
 

@@ -156,15 +156,16 @@ export default async function FollowUpsPage() {
             Overdue Follow-Ups ({overdue.length})
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto min-w-full">
+          <div className="min-w-[600px]">
           <Table>
             <TableHeader className="bg-slate-50">
               <TableRow>
-                <TableHead>Patient</TableHead>
-                <TableHead>Clinic</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead>Days Overdue</TableHead>
-                <TableHead>Notes</TableHead>
+                <TableHead className="whitespace-nowrap">Patient</TableHead>
+                <TableHead className="hidden sm:table-cell whitespace-nowrap">Clinic</TableHead>
+                <TableHead className="whitespace-nowrap">Due Date</TableHead>
+                <TableHead className="whitespace-nowrap">Days Overdue</TableHead>
+                <TableHead className="hidden md:table-cell whitespace-nowrap">Notes</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -186,23 +187,23 @@ export default async function FollowUpsPage() {
                   );
                   return (
                     <TableRow key={fu.id} className="hover:bg-amber-50/30">
-                      <TableCell>
+                      <TableCell className="min-w-[150px]">
                         <div>
-                          <p className="text-sm font-semibold text-slate-900">
+                          <p className="text-sm font-semibold text-slate-900 truncate">
                             {fu.patientName ?? "Unknown"}
                           </p>
                           {fu.patientPhone && (
-                            <p className="text-xs text-slate-400">{fu.patientPhone}</p>
+                            <p className="text-xs text-slate-400 truncate">{fu.patientPhone}</p>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-slate-600">
+                      <TableCell className="hidden sm:table-cell text-sm text-slate-600 truncate max-w-[150px]">
                         {fu.clinicName ?? "—"}
                       </TableCell>
                       <TableCell className="text-sm whitespace-nowrap text-slate-600">
                         {format(new Date(fu.dueDate), "MMM d, yyyy")}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-nowrap">
                         <Badge
                           variant="outline"
                           className={
@@ -214,7 +215,7 @@ export default async function FollowUpsPage() {
                           {daysOverdue}d overdue
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-xs text-slate-500 max-w-[200px] truncate">
+                      <TableCell className="hidden md:table-cell text-xs text-slate-500 max-w-[200px] truncate">
                         {fu.notes ?? <span className="italic">—</span>}
                       </TableCell>
                     </TableRow>
@@ -223,6 +224,7 @@ export default async function FollowUpsPage() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -233,15 +235,16 @@ export default async function FollowUpsPage() {
             Follow-Ups by Clinic
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto min-w-full">
+          <div className="min-w-[500px]">
           <Table>
             <TableHeader className="bg-slate-50">
               <TableRow>
-                <TableHead>Clinic</TableHead>
-                <TableHead className="text-right">Pending</TableHead>
-                <TableHead className="text-right">Completed</TableHead>
-                <TableHead className="text-right">Missed</TableHead>
-                <TableHead className="text-right">Overdue</TableHead>
+                <TableHead className="whitespace-nowrap">Clinic</TableHead>
+                <TableHead className="text-right whitespace-nowrap">Pending</TableHead>
+                <TableHead className="text-right whitespace-nowrap hidden sm:table-cell">Completed</TableHead>
+                <TableHead className="text-right whitespace-nowrap hidden sm:table-cell">Missed</TableHead>
+                <TableHead className="text-right whitespace-nowrap">Overdue</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -254,19 +257,19 @@ export default async function FollowUpsPage() {
               ) : (
                 perClinic.map((row) => (
                   <TableRow key={row.clinicName} className="hover:bg-slate-50/50">
-                    <TableCell className="font-medium text-sm text-slate-900">
+                    <TableCell className="font-medium text-sm text-slate-900 min-w-[150px] truncate">
                       {row.clinicName}
                     </TableCell>
-                    <TableCell className="text-right text-sm text-amber-700 font-semibold">
+                    <TableCell className="text-right text-sm text-amber-700 font-semibold whitespace-nowrap">
                       {row.pending}
                     </TableCell>
-                    <TableCell className="text-right text-sm text-emerald-700">
+                    <TableCell className="hidden sm:table-cell text-right text-sm text-emerald-700 whitespace-nowrap">
                       {row.completed}
                     </TableCell>
-                    <TableCell className="text-right text-sm text-red-600">
+                    <TableCell className="hidden sm:table-cell text-right text-sm text-red-600 whitespace-nowrap">
                       {row.missed}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right whitespace-nowrap">
                       {row.overdue > 0 ? (
                         <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
                           {row.overdue}
@@ -280,6 +283,7 @@ export default async function FollowUpsPage() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

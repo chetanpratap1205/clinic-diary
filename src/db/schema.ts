@@ -446,6 +446,42 @@ export const clinicGallery = pgTable("clinic_gallery", {
   index("clinic_gallery_clinic_idx").on(table.clinicId)
 ]);
 
+// ─── Platform Marketing Campaigns (Tracking) ──────────────────────────────────
+export const marketingCampaigns = pgTable("marketing_campaigns", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  code: text("code").notNull().unique(), // E.g., M-PUNE-01 (This goes in the QR)
+  type: text("type").notNull().default("qr"), // qr, link, pamphlet, etc.
+  clicks: integer("clicks").notNull().default(0),
+  signups: integer("signups").notNull().default(0),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("marketing_campaigns_code_idx").on(table.code),
+]);
+
+// ─── Unclaimed Clinics (SEO Directory / Growth Engine) ─────────────────────────
+export const unclaimedClinics = pgTable("unclaimed_clinics", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  slug: text("slug").notNull().unique(),           // e.g., dr-rajesh-sharma-cardiology-pune
+  doctorName: text("doctor_name").notNull(),
+  clinicName: text("clinic_name").notNull(),
+  specialty: text("specialty").notNull(),
+  city: text("city").notNull(),
+  state: text("state").notNull(),
+  address: text("address").notNull(),
+  phone: text("phone"),                            // Internal use / verification
+  isClaimed: boolean("is_claimed").default(false).notNull(),
+  claimedClinicId: uuid("claimed_clinic_id").references(() => clinics.id, { onDelete: "set null" }), // Linked once claimed
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("unclaimed_clinics_city_idx").on(table.city),
+  index("unclaimed_clinics_slug_idx").on(table.slug),
+  index("unclaimed_clinics_is_claimed_idx").on(table.isClaimed),
+]);
+
 // ─── Type Exports ──────────────────────────────────────────────────────────────
 export type Clinic = typeof clinics.$inferSelect;
 export type NewClinic = typeof clinics.$inferInsert;
@@ -487,3 +523,7 @@ export type ClinicService = typeof clinicServices.$inferSelect;
 export type NewClinicService = typeof clinicServices.$inferInsert;
 export type ClinicGallery = typeof clinicGallery.$inferSelect;
 export type NewClinicGallery = typeof clinicGallery.$inferInsert;
+export type MarketingCampaign = typeof marketingCampaigns.$inferSelect;
+export type NewMarketingCampaign = typeof marketingCampaigns.$inferInsert;
+export type UnclaimedClinic = typeof unclaimedClinics.$inferSelect;
+export type NewUnclaimedClinic = typeof unclaimedClinics.$inferInsert;

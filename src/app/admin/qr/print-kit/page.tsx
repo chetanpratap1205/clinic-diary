@@ -4,17 +4,9 @@ import { inArray } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import QRCode from "qrcode";
 import { PrintButton } from "../print/print-button";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
-
-// Teal & Emerald Theme for Clean Medical look
-const C = {
-  main: "#0f766e",    // Teal 700
-  light: "#ccfbf1",   // Teal 50
-  accent: "#10b981",  // Emerald 500
-  text: "#0f172a",    // Slate 900
-  muted: "#64748b",   // Slate 500
-};
 
 export default async function PrintKitPage({
   searchParams,
@@ -28,7 +20,7 @@ export default async function PrintKitPage({
   const idsArray = sp.ids.split(",").filter((id) => uuidRegex.test(id));
   
   if (idsArray.length === 0) {
-    return <div className="p-5 text-red-800 bg-red-50 border border-red-200 font-sans">Error: Invalid QR IDs.</div>;
+    return <div className="p-5 text-red-800 bg-red-50 font-sans">Error: Invalid QR IDs.</div>;
   }
 
   const codes = await db
@@ -43,22 +35,22 @@ export default async function PrintKitPage({
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://doctor.naturexpress.in";
 
-  // Generate all QR code variants for each clinic code
+  // Generate QR codes with extremely high error correction and distinct colors
   const kits = await Promise.all(
     codes.map(async (item) => {
       const base = `${baseUrl}/q/${item.code}`;
       
       const qrInside = await QRCode.toDataURL(`${base}?src=reception`, {
-        width: 1200, margin: 2, color: { dark: C.main, light: "#ffffff" }, errorCorrectionLevel: "H",
+        width: 1200, margin: 1, color: { dark: "#0A5C55", light: "#ffffff" }, errorCorrectionLevel: "H",
       });
       const qrOutside = await QRCode.toDataURL(`${base}?src=window`, {
-        width: 1200, margin: 2, color: { dark: C.text, light: "#ffffff" }, errorCorrectionLevel: "H",
+        width: 1200, margin: 1, color: { dark: "#0F172A", light: "#ffffff" }, errorCorrectionLevel: "H",
       });
       const qrStand = await QRCode.toDataURL(`${base}?src=stand`, {
-        width: 800, margin: 2, color: { dark: C.main, light: "#ffffff" }, errorCorrectionLevel: "H",
+        width: 1000, margin: 1, color: { dark: "#0A5C55", light: "#ffffff" }, errorCorrectionLevel: "H",
       });
       const qrSticker = await QRCode.toDataURL(`${base}?src=sticker`, {
-        width: 400, margin: 1, color: { dark: "#000000", light: "#ffffff" }, errorCorrectionLevel: "M",
+        width: 600, margin: 1, color: { dark: "#000000", light: "#ffffff" }, errorCorrectionLevel: "M",
       });
       
       return { ...item, qrInside, qrOutside, qrStand, qrSticker };
@@ -70,13 +62,30 @@ export default async function PrintKitPage({
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Noto+Sans+Devanagari:wght@600;800&display=swap" />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@600;800&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" />
 
       <style dangerouslySetInnerHTML={{ __html: `
+        :root {
+          --teal-900: #042f2e;
+          --teal-800: #115e59;
+          --teal-700: #0f766e;
+          --teal-600: #0d9488;
+          --teal-brand: #0A5C55;
+          --emerald-500: #10b981;
+          --slate-900: #0f172a;
+          --slate-800: #1e293b;
+          --slate-500: #64748b;
+          --slate-50: #f8fafc;
+        }
+
         .print-kit *, .print-kit *::before, .print-kit *::after {
           box-sizing: border-box; margin: 0; padding: 0;
           font-family: 'Inter', system-ui, sans-serif;
         }
+        
+        .hi { font-family: 'Noto Sans Devanagari', sans-serif; }
+        .head { font-family: 'Plus Jakarta Sans', sans-serif; }
+
         body { background: #0f172a; }
 
         @media print {
@@ -91,95 +100,164 @@ export default async function PrintKitPage({
 
         .page-a4 {
           width: 210mm; height: 297mm;
-          margin: 20px auto;
+          margin: 20mm auto;
           background: #fff;
           position: relative;
           overflow: hidden;
           page-break-after: always;
-          box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+          box-shadow: 0 20px 60px rgba(0,0,0,0.6);
         }
         @media print { .page-a4 { margin: 0; box-shadow: none; } }
 
-        /* ─── Shared Typography ─── */
-        .hi { font-family: 'Noto Sans Devanagari', sans-serif; }
-        
-        /* ─── PAGE 1 & 2: POSTERS ─── */
-        .poster-content {
-          padding: 15mm;
-          height: 100%; display: flex; flex-direction: column;
-          align-items: center; text-align: center;
+        /* ─── PAGE 1: INSIDE POSTER (Waiting Room) ─── */
+        .p1-hero {
+          width: 100%; height: 160mm;
+          background-image: url('/assets/images/patient_hero.jpg');
+          background-size: cover;
+          background-position: center 20%;
+          position: relative;
         }
-        .poster-bg-teal {
-          position: absolute; inset: 0; z-index: 0;
-          background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 40%);
-          border: 4mm solid #0f766e;
+        /* Gradient mask to blend image into white bottom */
+        .p1-hero::after {
+          content: '';
+          position: absolute; bottom: 0; left: 0; width: 100%; height: 60mm;
+          background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 90%, #ffffff 100%);
         }
-        .poster-bg-slate {
-          position: absolute; inset: 0; z-index: 0;
-          background: linear-gradient(180deg, #f8fafc 0%, #ffffff 40%);
-          border: 4mm solid #334155;
+        
+        .p1-content {
+          position: relative; z-index: 10;
+          margin-top: -30mm;
+          padding: 0 15mm;
+          display: flex; flex-direction: column; align-items: center; text-align: center;
         }
-        .poster-z { position: relative; z-index: 1; }
         
-        .p-title-en { font-size: 42px; font-weight: 900; color: #0f172a; line-height: 1.1; letter-spacing: -1px; margin-top: 10mm; }
-        .p-title-hi { font-size: 28px; font-weight: 800; color: #0f766e; line-height: 1.4; margin-top: 5mm; }
-        .p-sub { font-size: 20px; font-weight: 600; color: #475569; margin-top: 8mm; max-width: 80%; }
+        .p1-title-en { font-size: 48px; font-weight: 900; color: var(--slate-900); line-height: 1.1; letter-spacing: -1px; }
+        .p1-title-hi { font-size: 26px; font-weight: 800; color: var(--teal-700); line-height: 1.4; margin-top: 3mm; }
         
-        .p-qr-box {
+        .p1-qr-container {
+          display: flex; align-items: center; justify-content: center; gap: 8mm;
           margin-top: 15mm;
-          width: 120mm; height: 120mm;
-          background: #fff; border-radius: 20px;
-          padding: 5mm;
-          box-shadow: 0 20px 50px rgba(15,118,110,0.15), 0 0 0 4px #0f766e;
+          width: 100%;
         }
-        .p-qr-box.slate-accent { box-shadow: 0 20px 50px rgba(51,65,85,0.15), 0 0 0 4px #334155; }
-        .p-qr-box img { width: 100%; height: 100%; object-fit: contain; }
         
-        .p-steps {
-          display: flex; gap: 10mm; margin-top: auto; margin-bottom: 10mm; width: 100%; justify-content: center;
+        .p1-qr-box {
+          width: 90mm; height: 90mm;
+          background: #fff; border-radius: 6mm;
+          padding: 4mm;
+          box-shadow: 0 20px 50px rgba(10,92,85,0.15), 0 0 0 2px rgba(10,92,85,0.1);
         }
-        .p-step { display: flex; flex-direction: column; align-items: center; gap: 2mm; }
-        .p-step-circle { width: 12mm; height: 12mm; border-radius: 50%; background: #0f766e; color: #fff; font-size: 6mm; font-weight: 800; display: flex; align-items: center; justify-content: center; }
-        .slate-accent .p-step-circle { background: #334155; }
-        .p-step-txt { font-size: 14px; font-weight: 800; color: #0f172a; }
+        .p1-qr-box img { width: 100%; height: 100%; object-fit: contain; }
+        
+        .p1-steps {
+          text-align: left; display: flex; flex-direction: column; gap: 6mm;
+        }
+        .p1-step { display: flex; align-items: center; gap: 4mm; }
+        .p1-step-icon { 
+          width: 14mm; height: 14mm; border-radius: 50%; 
+          background: var(--teal-50); color: var(--teal-brand);
+          display: flex; align-items: center; justify-content: center;
+          border: 1px solid rgba(10,92,85,0.2);
+        }
+        .p1-step-txt-en { font-size: 18px; font-weight: 800; color: var(--slate-900); }
+        .p1-step-txt-hi { font-size: 14px; font-weight: 600; color: var(--slate-500); margin-top: 1mm; }
+
+        /* ─── PAGE 2: OUTSIDE POSTER (Clinic Door) ─── */
+        .p2-bg {
+          position: absolute; inset: 0;
+          background-image: url('/assets/images/teal_abstract.jpg');
+          background-size: cover; background-position: center;
+        }
+        .p2-bg::after {
+          content: ''; position: absolute; inset: 0;
+          background: linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(10,92,85,0.9) 100%);
+        }
+        
+        .p2-content {
+          position: relative; z-index: 10;
+          padding: 20mm; height: 100%;
+          display: flex; flex-direction: column; align-items: center; text-align: center;
+        }
+        
+        .p2-badge {
+          background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.5);
+          color: #34d399; font-weight: 800; font-size: 16px; letter-spacing: 2px; text-transform: uppercase;
+          padding: 3mm 8mm; border-radius: 50px; margin-top: 10mm; margin-bottom: 8mm;
+        }
+        
+        .p2-title-en { font-size: 56px; font-weight: 900; color: #ffffff; line-height: 1.1; letter-spacing: -1.5px; }
+        .p2-title-hi { font-size: 32px; font-weight: 800; color: #6ee7b7; line-height: 1.4; margin-top: 5mm; }
+        
+        .p2-qr-wrapper {
+          margin-top: 20mm; position: relative;
+        }
+        .p2-qr-box {
+          width: 130mm; height: 130mm;
+          background: #ffffff; border-radius: 8mm; padding: 6mm;
+          box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+          position: relative; z-index: 2;
+        }
+        .p2-qr-box img { width: 100%; height: 100%; object-fit: contain; }
+        
+        .p2-footer { margin-top: auto; margin-bottom: 10mm; color: rgba(255,255,255,0.7); font-size: 16px; font-weight: 600; }
 
         /* ─── PAGE 3: ACRYLIC STAND (4x6 on A4) ─── */
-        .stand-page { display: flex; align-items: center; justify-content: center; background: #f8fafc; }
+        .stand-page { 
+          display: flex; align-items: center; justify-content: center; 
+          background: #f8fafc;
+        }
         /* 4x6 inches = 101.6mm x 152.4mm */
         .stand-cut-area {
           width: 101.6mm; height: 152.4mm;
-          background: #fff;
-          border: 1px dashed #cbd5e1;
+          background: #ffffff;
           position: relative;
-          display: flex; flex-direction: column; align-items: center;
-          padding: 6mm;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+          box-shadow: 0 30px 60px rgba(0,0,0,0.1);
         }
-        /* Scissor cut marks */
-        .cut-mark { position: absolute; font-size: 12px; color: #94a3b8; }
-        .cm-tl { top: -6mm; left: -2mm; }
-        .cm-tr { top: -6mm; right: -2mm; }
-        .cm-bl { bottom: -6mm; left: -2mm; }
-        .cm-br { bottom: -6mm; right: -2mm; }
+        
+        .cm-line { position: absolute; background: #cbd5e1; }
+        .cm-t { top: 0; left: -10mm; right: -10mm; height: 1px; border-top: 1px dashed #cbd5e1; background: transparent; }
+        .cm-b { bottom: 0; left: -10mm; right: -10mm; height: 1px; border-bottom: 1px dashed #cbd5e1; background: transparent; }
+        .cm-l { left: 0; top: -10mm; bottom: -10mm; width: 1px; border-left: 1px dashed #cbd5e1; background: transparent; }
+        .cm-r { right: 0; top: -10mm; bottom: -10mm; width: 1px; border-right: 1px dashed #cbd5e1; background: transparent; }
 
         .stand-inner {
           width: 100%; height: 100%;
-          border: 2mm solid #0f766e;
-          border-radius: 4mm;
-          display: flex; flex-direction: column; align-items: center;
-          background: linear-gradient(180deg, #ccfbf1 0%, #ffffff 30%);
-          padding: 4mm; text-align: center;
+          position: relative; overflow: hidden;
+          display: flex; flex-direction: column; align-items: center; text-align: center;
         }
-        .st-title-en { font-size: 24px; font-weight: 900; color: #0f172a; line-height: 1.1; margin-top: 2mm; }
-        .st-title-hi { font-size: 16px; font-weight: 800; color: #0f766e; line-height: 1.2; margin-top: 1mm; }
+        
+        .st-bg {
+          position: absolute; top: 0; left: 0; width: 100%; height: 50%;
+          background-image: url('/assets/images/teal_abstract.jpg');
+          background-size: cover; background-position: center;
+        }
+        .st-bg::after {
+          content: ''; position: absolute; inset: 0;
+          background: linear-gradient(to bottom, rgba(10,92,85,0.4) 0%, rgba(255,255,255,1) 100%);
+        }
+        
+        .st-content {
+          position: relative; z-index: 10; width: 100%; height: 100%;
+          display: flex; flex-direction: column; align-items: center;
+          padding: 8mm;
+        }
+        
+        .st-logo {
+          background: #fff; color: var(--teal-brand); font-weight: 900; font-size: 12px;
+          padding: 1.5mm 4mm; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+          margin-top: 2mm; text-transform: uppercase; letter-spacing: 1px;
+        }
+        
+        .st-title-en { font-size: 26px; font-weight: 900; color: var(--slate-900); line-height: 1.1; margin-top: 8mm; }
+        .st-title-hi { font-size: 16px; font-weight: 800; color: var(--teal-600); line-height: 1.2; margin-top: 2mm; }
         
         .st-qr-box {
-          margin-top: 5mm; width: 65mm; height: 65mm;
-          background: #fff; border-radius: 3mm; padding: 2mm;
-          box-shadow: 0 8px 20px rgba(15,118,110,0.2), 0 0 0 2px #0f766e;
+          margin-top: 8mm; width: 68mm; height: 68mm;
+          background: #fff; border-radius: 4mm; padding: 2.5mm;
+          box-shadow: 0 15px 35px rgba(10,92,85,0.15), 0 0 0 1px rgba(10,92,85,0.05);
         }
         .st-qr-box img { width: 100%; height: 100%; object-fit: contain; }
-        .st-footer { margin-top: auto; font-size: 10px; font-weight: 600; color: #64748b; }
+        
+        .st-id { margin-top: auto; font-size: 9px; font-family: monospace; color: var(--slate-400); }
 
         /* ─── PAGE 4-6: STICKERS (Avery L7159 - 3x8) ─── */
         .sticker-page {
@@ -190,32 +268,29 @@ export default async function PrintKitPage({
         .sticker {
           width: 63.5mm; height: 33.9mm;
           position: relative; overflow: hidden;
-          background: #fff;
-          display: flex; align-items: center;
-          padding: 2mm; gap: 2mm;
-          outline: 1px dashed rgba(0,0,0,0.1);
-          outline-offset: -1px;
+          background: #fff; display: flex; align-items: center;
+          padding: 2mm; gap: 2.5mm;
+          outline: 1px dashed rgba(0,0,0,0.1); outline-offset: -1px;
         }
         @media print { .sticker { outline: none; } }
         
-        /* Maximize QR size */
         .stk-qr {
-          width: 28mm; height: 28mm; flex-shrink: 0;
-          background: #fff; border-radius: 2mm; padding: 1mm;
-          border: 1.5px solid #0f766e;
+          width: 29mm; height: 29mm; flex-shrink: 0;
+          background: #fff; border-radius: 2mm; padding: 0.5mm;
+          border: 2px solid var(--teal-brand);
         }
         .stk-qr img { width: 100%; height: 100%; image-rendering: pixelated; }
         
         .stk-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
-        .stk-en { font-size: 13px; font-weight: 900; color: #0f172a; line-height: 1.1; letter-spacing: -0.3px; }
-        .stk-hi { font-size: 10px; font-weight: 800; color: #0f766e; line-height: 1.2; margin-top: 2mm; }
-        .stk-foot { font-size: 7px; font-weight: 800; color: #94a3b8; margin-top: 3mm; font-family: monospace; }
+        .stk-en { font-size: 14px; font-weight: 900; color: var(--slate-900); line-height: 1.1; letter-spacing: -0.3px; }
+        .stk-hi { font-size: 11px; font-weight: 800; color: var(--teal-700); line-height: 1.2; margin-top: 1.5mm; }
+        .stk-foot { font-size: 7px; font-weight: 700; color: var(--slate-400); margin-top: 4mm; font-family: monospace; }
       ` }} />
 
-      <div className="no-print" style={{ background: "#0f172a", borderBottom: "1px solid #334155", padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100 }}>
+      <div className="no-print" style={{ background: "#0f172a", borderBottom: "1px solid #1e293b", padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ color: "#fff" }}>
-          <h1 style={{ fontSize: "20px", fontWeight: 900 }}>Clinic QR Starter Kit</h1>
-          <p style={{ fontSize: "14px", color: "#94a3b8" }}>1 Kit = 6 Pages (Inside, Outside, Stand, 3x Stickers). Print on A4, Margins: None.</p>
+          <h1 style={{ fontSize: "20px", fontWeight: 900, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Premium Enterprise QR Kit</h1>
+          <p style={{ fontSize: "14px", color: "#94a3b8" }}>1 Kit = 6 Pages (Inside, Outside, Acrylic Stand 4x6, 72 Stickers). Print Margins: None.</p>
         </div>
         <PrintButton />
       </div>
@@ -226,62 +301,89 @@ export default async function PrintKitPage({
             
             {/* ─── PAGE 1: INSIDE POSTER ─── */}
             <div className="page-a4">
-              <div className="poster-bg-teal" />
-              <div className="poster-content poster-z">
-                <div className="p-title-en">Skip the Waiting Area</div>
-                <div className="p-title-hi hi">इंतज़ार से बचें, सीधा डॉक्टर से मिलें</div>
-                <div className="p-sub">Scan to generate your live token and track your exact turn on your phone.</div>
+              <div className="p1-hero" />
+              <div className="p1-content">
+                <div className="p1-title-en head">Skip the Waiting Area</div>
+                <div className="p1-title-hi hi">इंतज़ार से बचें, सीधा डॉक्टर से मिलें</div>
                 
-                <div className="p-qr-box">
-                  <img src={kit.qrInside} alt="QR Code" />
-                </div>
-                
-                <div className="p-steps">
-                  <div className="p-step"><div className="p-step-circle">1</div><div className="p-step-txt">Scan QR<br/><span className="hi" style={{color:"#0f766e", fontSize:"12px"}}>स्कैन करें</span></div></div>
-                  <div className="p-step"><div className="p-step-circle">2</div><div className="p-step-txt">Get Token<br/><span className="hi" style={{color:"#0f766e", fontSize:"12px"}}>टोकन लें</span></div></div>
-                  <div className="p-step"><div className="p-step-circle">3</div><div className="p-step-txt">Meet Doctor<br/><span className="hi" style={{color:"#0f766e", fontSize:"12px"}}>डॉक्टर से मिलें</span></div></div>
+                <div className="p1-qr-container">
+                  <div className="p1-qr-box">
+                    <img src={kit.qrInside} alt="QR Code" />
+                  </div>
+                  <div className="p1-steps">
+                    <div className="p1-step">
+                      <div className="p1-step-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path></svg>
+                      </div>
+                      <div>
+                        <div className="p1-step-txt-en">1. Scan QR</div>
+                        <div className="p1-step-txt-hi hi">अपने फोन से स्कैन करें</div>
+                      </div>
+                    </div>
+                    <div className="p1-step">
+                      <div className="p1-step-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                      </div>
+                      <div>
+                        <div className="p1-step-txt-en">2. Get Live Token</div>
+                        <div className="p1-step-txt-hi hi">अपना टोकन नंबर लें</div>
+                      </div>
+                    </div>
+                    <div className="p1-step">
+                      <div className="p1-step-icon" style={{background: "#10b981", color: "#fff", border: "none"}}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </div>
+                      <div>
+                        <div className="p1-step-txt-en">3. Relax & Wait</div>
+                        <div className="p1-step-txt-hi hi">आराम से अपनी बारी का इंतज़ार करें</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* ─── PAGE 2: OUTSIDE POSTER ─── */}
-            <div className="page-a4 slate-accent">
-              <div className="poster-bg-slate" />
-              <div className="poster-content poster-z">
-                <div className="p-title-en" style={{color:"#1e293b"}}>Clinic Closed? Book 24/7</div>
-                <div className="p-title-hi hi" style={{color:"#334155"}}>क्लिनिक बंद है? फिर भी बुकिंग करें</div>
-                <div className="p-sub">Secure your appointment for tomorrow right now. No need to call!</div>
+            <div className="page-a4">
+              <div className="p2-bg" />
+              <div className="p2-content">
+                <div className="p2-badge">24/7 Booking Engine</div>
+                <div className="p2-title-en head">Clinic Closed?</div>
+                <div className="p2-title-en head" style={{marginTop:"-5px"}}>Book Instantly.</div>
+                <div className="p2-title-hi hi">क्लिनिक बंद है? फिर भी कल की बुकिंग करें</div>
                 
-                <div className="p-qr-box slate-accent">
-                  <img src={kit.qrOutside} alt="QR Code" />
+                <div className="p2-qr-wrapper">
+                  <div className="p2-qr-box">
+                    <img src={kit.qrOutside} alt="QR Code" />
+                  </div>
                 </div>
                 
-                <div className="p-steps slate-accent">
-                  <div className="p-step"><div className="p-step-circle">1</div><div className="p-step-txt">Scan QR<br/><span className="hi" style={{color:"#64748b", fontSize:"12px"}}>स्कैन करें</span></div></div>
-                  <div className="p-step"><div className="p-step-circle">2</div><div className="p-step-txt">Pick Time<br/><span className="hi" style={{color:"#64748b", fontSize:"12px"}}>समय चुनें</span></div></div>
-                  <div className="p-step"><div className="p-step-circle">3</div><div className="p-step-txt">Confirmed!<br/><span className="hi" style={{color:"#64748b", fontSize:"12px"}}>बुकिंग पक्की</span></div></div>
-                </div>
+                <div className="p2-footer">Secure your appointment for tomorrow right now. No need to call!</div>
               </div>
             </div>
 
             {/* ─── PAGE 3: ACRYLIC STAND (4x6) ─── */}
             <div className="page-a4 stand-page">
               <div className="stand-cut-area">
-                <div className="cut-mark cm-tl">✂</div>
-                <div className="cut-mark cm-tr">✂</div>
-                <div className="cut-mark cm-bl">✂</div>
-                <div className="cut-mark cm-br">✂</div>
+                <div className="cm-line cm-t" />
+                <div className="cm-line cm-b" />
+                <div className="cm-line cm-l" />
+                <div className="cm-line cm-r" />
                 
                 <div className="stand-inner">
-                  <div className="st-title-en">Scan & Book</div>
-                  <div className="st-title-hi hi">स्कैन करें और टोकन लें</div>
-                  
-                  <div className="st-qr-box">
-                    <img src={kit.qrStand} alt="QR Code" />
+                  <div className="st-bg" />
+                  <div className="st-content">
+                    <div className="st-logo head">NatureXpress</div>
+                    
+                    <div className="st-title-en head">Scan & Book</div>
+                    <div className="st-title-hi hi">अगली बुकिंग यहाँ से करें</div>
+                    
+                    <div className="st-qr-box">
+                      <img src={kit.qrStand} alt="QR Code" />
+                    </div>
+                    
+                    <div className="st-id">ID: {kit.code}</div>
                   </div>
-                  
-                  <div style={{marginTop:"auto", fontWeight:800, color:"#115e59", fontSize:"14px"}}>Doctor Diary</div>
-                  <div className="st-footer">Powered by NatureXpress • #{kit.code}</div>
                 </div>
               </div>
             </div>
@@ -295,9 +397,9 @@ export default async function PrintKitPage({
                       <img src={kit.qrSticker} alt="QR" />
                     </div>
                     <div className="stk-txt">
-                      <div className="stk-en">Scan for<br/>Next Visit</div>
-                      <div className="stk-hi hi">अगली बुकिंग स्कैन<br/>करके करें</div>
-                      <div className="stk-foot">#{kit.code}</div>
+                      <div className="stk-en head">Book Next<br/>Visit Online</div>
+                      <div className="stk-hi hi">अगली बार बिना लाइन<br/>के बुकिंग करें</div>
+                      <div className="stk-foot">{kit.code}</div>
                     </div>
                   </div>
                 ))}

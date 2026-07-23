@@ -19,6 +19,8 @@ import {
   TrendingUp,
   Activity,
   ArrowRight,
+  QrCode,
+  AlertTriangle
 } from "lucide-react";
 import { format, subMonths, startOfMonth, endOfDay } from "date-fns";
 import Link from "next/link";
@@ -83,6 +85,8 @@ export default async function AdminDashboardPage(props: {
     [periodRevenueResult],
     [allTimeRevenueResult],
     [todayApptsResult],
+    qrScansResult,
+    inactiveClinicsResult,
   ] = await Promise.all([
     db.select({ value: count() }).from(clinics).where(and(gte(clinics.createdAt, fromParam), lte(clinics.createdAt, toParam))),
     db.select({ value: count() }).from(patients).where(and(gte(patients.createdAt, fromParam), lte(patients.createdAt, toParam))),
@@ -94,10 +98,14 @@ export default async function AdminDashboardPage(props: {
     db.select({ value: sum(paymentLogs.amountPaise) }).from(paymentLogs).where(eq(paymentLogs.status, "paid")),
     db.select({ value: count() }).from(appointments)
       .where(eq(appointments.appointmentDate, today)),
+    db.execute(sql`SELECT count(*)::int as value FROM appointments WHERE acquisition_source LIKE 'qr_%' AND created_at >= ${fromParam.toISOString()} AND created_at <= ${toParam.toISOString()}`),
+    db.execute(sql`SELECT count(id)::int as value FROM clinics WHERE id NOT IN (SELECT clinic_id FROM appointments WHERE created_at >= NOW() - INTERVAL '7 days')`),
   ]);
 
   const periodRevenue = (Number(periodRevenueResult?.value) || 0) / 100;
   const allTimeRevenue = (Number(allTimeRevenueResult?.value) || 0) / 100;
+  const qrScansCount = Number(qrScansResult.rows[0]?.value) || 0;
+  const inactiveClinicsCount = Number(inactiveClinicsResult.rows[0]?.value) || 0;
 
   // ── Chart data ─────────────────────────────────────────────────────────────
   // We still show the 6-month chart regardless of the date picker, 
@@ -180,6 +188,13 @@ export default async function AdminDashboardPage(props: {
       accent: "bg-emerald-50 text-emerald-600",
     },
     {
+      title: "Inactive Clinics",
+      value: inactiveClinicsCount.toLocaleString(),
+      sub: "No appointments in 7 days",
+      icon: AlertTriangle,
+      accent: "bg-rose-50 text-rose-600",
+    },
+    {
       title: isCustomRange ? "New Patients" : "Patients (This Month)",
       value: totalPatients.value.toLocaleString(),
       sub: isCustomRange ? subText : "Across all clinics this month",
@@ -221,6 +236,13 @@ export default async function AdminDashboardPage(props: {
       icon: Star,
       accent: "bg-orange-50 text-orange-600",
     },
+    {
+      title: isCustomRange ? "QR Scans (Period)" : "QR Scans (This Month)",
+      value: qrScansCount.toLocaleString(),
+      sub: isCustomRange ? subText : "Appointments booked via QR",
+      icon: QrCode,
+      accent: "bg-blue-50 text-blue-600",
+    },
   ];
 
   return (
@@ -238,8 +260,8 @@ export default async function AdminDashboardPage(props: {
         </div>
       </div>
 
-      {/* KPI Grid — 4 across on desktop */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      {/* KPI Grid — 1 across mobile, 2 tablet, 4 desktop */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map((kpi) => (
           <KpiCard key={kpi.title} {...kpi} />
         ))}

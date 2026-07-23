@@ -25,7 +25,9 @@ export type ClinicRow = {
   subscriptionStatus: string | null;
   planId: string | null;
   totalAppointments: number;
+  apptVolume30d?: number;
   totalRevenue: number;
+  kitOrderStatus?: string | null;
 };
 
 interface ClinicsTableProps {
@@ -159,16 +161,18 @@ export function ClinicsTable({
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-xl overflow-x-auto shadow-sm relative w-full">
+        <div className="min-w-[800px]">
         <Table>
           <TableHeader className="bg-slate-50">
             <TableRow>
-              <TableHead className="font-semibold">Clinic / Doctor</TableHead>
-              <TableHead className="font-semibold">Specialty</TableHead>
-              <TableHead className="font-semibold">Joined</TableHead>
-              <TableHead className="font-semibold text-right">Appts</TableHead>
-              <TableHead className="font-semibold text-right">Revenue</TableHead>
-              <TableHead className="font-semibold">Subscription</TableHead>
+              <TableHead className="font-semibold whitespace-nowrap">Clinic / Doctor</TableHead>
+              <TableHead className="font-semibold whitespace-nowrap hidden sm:table-cell">Specialty</TableHead>
+              <TableHead className="font-semibold whitespace-nowrap hidden md:table-cell">Joined</TableHead>
+              <TableHead className="font-semibold text-right whitespace-nowrap hidden lg:table-cell">Appts (30d/All)</TableHead>
+              <TableHead className="font-semibold text-right whitespace-nowrap hidden lg:table-cell">Revenue</TableHead>
+              <TableHead className="font-semibold whitespace-nowrap hidden xl:table-cell">Kit Status</TableHead>
+              <TableHead className="font-semibold whitespace-nowrap">Subscription</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
@@ -176,7 +180,7 @@ export function ClinicsTable({
             {clinics.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={8}
                   className="h-32 text-center text-slate-500"
                 >
                   <Building2 className="w-8 h-8 mx-auto mb-2 text-slate-300" />
@@ -189,29 +193,40 @@ export function ClinicsTable({
                   key={clinic.id}
                   className="hover:bg-slate-50/50 transition-colors"
                 >
-                  <TableCell>
+                  <TableCell className="min-w-[200px]">
                     <div>
-                      <p className="font-semibold text-slate-900 text-sm">
+                      <p className="font-semibold text-slate-900 text-sm truncate">
                         {clinic.name}
                       </p>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-xs text-slate-500 mt-0.5 truncate">
                         {clinic.doctorName} · {clinic.phone}
                       </p>
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-slate-600">
+                  <TableCell className="text-sm text-slate-600 hidden sm:table-cell whitespace-nowrap">
                     {clinic.specialty}
                   </TableCell>
-                  <TableCell className="text-sm text-slate-600 whitespace-nowrap">
+                  <TableCell className="text-sm text-slate-600 whitespace-nowrap hidden md:table-cell">
                     {format(new Date(clinic.createdAt), "MMM d, yyyy")}
                   </TableCell>
-                  <TableCell className="text-sm font-medium text-slate-900 text-right">
-                    {clinic.totalAppointments.toLocaleString()}
+                  <TableCell className="text-sm font-medium text-slate-900 text-right hidden lg:table-cell whitespace-nowrap">
+                    <span className="text-teal-600 font-bold">{clinic.apptVolume30d || 0}</span>
+                    <span className="text-slate-400 mx-1">/</span>
+                    <span className="text-slate-500 text-xs">{clinic.totalAppointments.toLocaleString()}</span>
                   </TableCell>
-                  <TableCell className="text-sm font-semibold text-emerald-700 text-right">
+                  <TableCell className="text-sm font-semibold text-emerald-700 text-right hidden lg:table-cell whitespace-nowrap">
                     ₹{(clinic.totalRevenue / 100).toLocaleString("en-IN")}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden xl:table-cell whitespace-nowrap">
+                    {clinic.kitOrderStatus ? (
+                      <Badge variant="outline" className={clinic.kitOrderStatus === 'shipped' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}>
+                        {clinic.kitOrderStatus.toUpperCase()}
+                      </Badge>
+                    ) : (
+                      <span className="text-xs text-slate-400">No Orders</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
                     <SubBadge status={clinic.subscriptionStatus} />
                   </TableCell>
                   <TableCell>
@@ -228,6 +243,7 @@ export function ClinicsTable({
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* Pagination */}

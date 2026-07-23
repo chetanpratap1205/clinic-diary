@@ -152,16 +152,17 @@ export default async function ReviewsPage() {
             All Reviews ({total})
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto min-w-full">
+          <div className="min-w-[700px]">
           <Table>
             <TableHeader className="bg-slate-50">
               <TableRow>
-                <TableHead>Clinic</TableHead>
-                <TableHead>Patient</TableHead>
-                <TableHead>Rating</TableHead>
-                <TableHead>Comment</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="whitespace-nowrap">Clinic</TableHead>
+                <TableHead className="hidden sm:table-cell whitespace-nowrap">Patient</TableHead>
+                <TableHead className="whitespace-nowrap">Rating</TableHead>
+                <TableHead className="whitespace-nowrap">Comment</TableHead>
+                <TableHead className="hidden md:table-cell whitespace-nowrap">Date</TableHead>
+                <TableHead className="whitespace-nowrap">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -177,13 +178,13 @@ export default async function ReviewsPage() {
               ) : (
                 allReviews.map((review) => (
                   <TableRow key={review.id} className="hover:bg-slate-50/50">
-                    <TableCell className="text-sm font-medium text-slate-900">
+                    <TableCell className="text-sm font-medium text-slate-900 min-w-[150px] truncate">
                       {review.clinicName ?? "—"}
                     </TableCell>
-                    <TableCell className="text-sm text-slate-600">
+                    <TableCell className="hidden sm:table-cell text-sm text-slate-600 truncate">
                       {review.patientName ?? "Anonymous"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <StarRating rating={review.rating} />
                     </TableCell>
                     <TableCell className="max-w-[240px]">
@@ -193,10 +194,10 @@ export default async function ReviewsPage() {
                         )}
                       </p>
                     </TableCell>
-                    <TableCell className="text-xs text-slate-500 whitespace-nowrap">
+                    <TableCell className="hidden md:table-cell text-xs text-slate-500 whitespace-nowrap">
                       {format(new Date(review.createdAt), "MMM d, yyyy")}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <ToggleVerifiedButton
                         reviewId={review.id}
                         isVerified={review.isVerified}
@@ -207,6 +208,7 @@ export default async function ReviewsPage() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

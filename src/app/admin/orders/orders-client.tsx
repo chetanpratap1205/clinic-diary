@@ -20,6 +20,7 @@ import { toast } from "sonner";
 export function OrdersClient({ orders }: { orders: any[] }) {
   const [isPending, startTransition] = useTransition();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [trackingUrls, setTrackingUrls] = useState<Record<string, string>>({});
 
   const handleDownloadQR = async (url: string, filename: string) => {
     try {
@@ -44,7 +45,7 @@ export function OrdersClient({ orders }: { orders: any[] }) {
     setUpdatingId(orderId);
     startTransition(async () => {
       try {
-        await markOrderShipped(orderId);
+        await markOrderShipped(orderId, trackingUrls[orderId]);
         toast.success("Order marked as shipped!");
       } catch (err) {
         toast.error("Failed to update status.");
@@ -55,11 +56,12 @@ export function OrdersClient({ orders }: { orders: any[] }) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto w-full">
+      <div className="min-w-[800px]">
       <Table>
         <TableHeader className="bg-slate-50">
           <TableRow>
-            <TableHead>Order ID & Date</TableHead>
+            <TableHead className="whitespace-nowrap">Order ID & Date</TableHead>
             <TableHead>Clinic</TableHead>
             <TableHead>Items & QR Assets</TableHead>
             <TableHead>Amount</TableHead>
@@ -131,20 +133,34 @@ export function OrdersClient({ orders }: { orders: any[] }) {
                   >
                     {o.order.status.toUpperCase()}
                   </Badge>
+                  {o.order.trackingUrl && (
+                    <a href={o.order.trackingUrl} target="_blank" rel="noopener noreferrer" className="block mt-2 text-xs text-teal-600 hover:underline">
+                      Track Shipment ↗
+                    </a>
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   {o.order.status !== "shipped" && (
-                    <Button 
-                      size="sm"
-                      onClick={() => handleShipOrder(o.order.id)}
-                      disabled={isPending && updatingId === o.order.id}
-                    >
-                      {isPending && updatingId === o.order.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <><Truck className="w-4 h-4 mr-2" /> Mark Shipped</>
-                      )}
-                    </Button>
+                    <div className="flex flex-col gap-2 items-end">
+                      <input
+                        type="url"
+                        placeholder="Tracking URL (optional)"
+                        value={trackingUrls[o.order.id] || ""}
+                        onChange={(e) => setTrackingUrls({ ...trackingUrls, [o.order.id]: e.target.value })}
+                        className="text-xs px-2 py-1 border rounded w-48"
+                      />
+                      <Button 
+                        size="sm"
+                        onClick={() => handleShipOrder(o.order.id)}
+                        disabled={isPending && updatingId === o.order.id}
+                      >
+                        {isPending && updatingId === o.order.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <><Truck className="w-4 h-4 mr-2" /> Mark Shipped</>
+                        )}
+                      </Button>
+                    </div>
                   )}
                 </TableCell>
               </TableRow>
@@ -152,6 +168,7 @@ export function OrdersClient({ orders }: { orders: any[] }) {
           )}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }

@@ -47,15 +47,16 @@ export default async function LogsPage() {
         <p className="text-slate-500 mt-1">Monitor automated reminder delivery and system events.</p>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto min-w-full shadow-sm">
+        <div className="min-w-[600px]">
         <Table>
           <TableHeader className="bg-slate-50">
             <TableRow>
-              <TableHead>Time</TableHead>
-              <TableHead>Channel</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Clinic / Patient</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead className="whitespace-nowrap">Time</TableHead>
+              <TableHead className="whitespace-nowrap">Channel</TableHead>
+              <TableHead className="hidden sm:table-cell whitespace-nowrap">Type</TableHead>
+              <TableHead className="whitespace-nowrap">Clinic / Patient</TableHead>
+              <TableHead className="whitespace-nowrap">Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -72,18 +73,18 @@ export default async function LogsPage() {
                     {format(new Date(log.sentAt), "MMM d, h:mm a")}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 whitespace-nowrap">
                       {getChannelIcon(log.channel)}
                       <span className="capitalize text-sm font-medium">{log.channel}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-slate-600">
+                  <TableCell className="hidden sm:table-cell text-sm text-slate-600 whitespace-nowrap">
                     {log.triggerType.replace("_", " ")}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="min-w-[150px]">
                     <div className="flex flex-col">
-                      <span className="text-sm font-medium text-slate-900">{log.clinicName || "Unknown"}</span>
-                      <span className="text-xs text-slate-500">To: {log.patientName || "Unknown"}</span>
+                      <span className="text-sm font-medium text-slate-900 truncate">{log.clinicName || "Unknown"}</span>
+                      <span className="text-xs text-slate-500 truncate">To: {log.patientName || "Unknown"}</span>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -102,6 +103,7 @@ export default async function LogsPage() {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
     </div>
   );

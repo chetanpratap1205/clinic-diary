@@ -47,7 +47,7 @@ export async function getOrders() {
   return ordersWithItems;
 }
 
-export async function markOrderShipped(orderId: string) {
+export async function markOrderShipped(orderId: string, trackingUrl?: string) {
   const authUser = await getAuthUser();
   if (!authUser) throw new Error("Unauthorized");
   
@@ -58,7 +58,7 @@ export async function markOrderShipped(orderId: string) {
 
   await db
     .update(orders)
-    .set({ status: "shipped" })
+    .set({ status: "shipped", trackingUrl: trackingUrl || null })
     .where(eq(orders.id, orderId));
 
   revalidatePath("/admin/orders");
