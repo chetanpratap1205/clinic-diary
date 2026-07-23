@@ -14,7 +14,7 @@ export async function logoutDoctor() {
   redirect("/login");
 }
 
-export async function updateAppointmentStatus(appointmentId: string, status: string) {
+export async function updateAppointmentStatus(appointmentId: string, status: string, feeCollected?: number) {
   const authUser = await getAuthUser();
   if (!authUser?.clinicId) {
     return { error: "Unauthorized" };
@@ -24,7 +24,12 @@ export async function updateAppointmentStatus(appointmentId: string, status: str
     const updateData: any = { status };
     if (status === "checked_in") updateData.checkInTime = new Date();
     else if (status === "in_consultation") updateData.consultationStartTime = new Date();
-    else if (status === "completed") updateData.consultationEndTime = new Date();
+    else if (status === "completed") {
+      updateData.consultationEndTime = new Date();
+      if (feeCollected !== undefined) {
+        updateData.feeCollected = feeCollected;
+      }
+    }
 
     // Only allow update if appointment belongs to doctor's clinic
     await db
@@ -79,6 +84,7 @@ export async function completeAppointmentWithNotes(data: {
   diagnosis?: string;
   treatment: string;
   followUpDays: number | "none";
+  feeCollected?: number;
 }) {
   const authUser = await getAuthUser();
   if (!authUser?.clinicId) {
@@ -86,10 +92,15 @@ export async function completeAppointmentWithNotes(data: {
   }
 
   try {
+    const updateData: any = { status: "completed", consultationEndTime: new Date() };
+    if (data.feeCollected !== undefined) {
+      updateData.feeCollected = data.feeCollected;
+    }
+
     // 1. Update appointment status and timestamp
     await db
       .update(appointments)
-      .set({ status: "completed", consultationEndTime: new Date() })
+      .set(updateData)
       .where(
         and(
           eq(appointments.id, data.appointmentId),

@@ -17,8 +17,9 @@ export function QueueQuickAdd() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (phone.length !== 10) return toast.error("Enter a valid 10-digit number");
-    
+    const { isValidIndianMobileNumber } = await import("@/lib/validations");
+    if (!isValidIndianMobileNumber(phone)) return toast.error("Please enter a valid Indian 10-digit mobile number.");
+
     setIsSearching(true);
     try {
       const res = await fetch(`/api/patients?search=${phone}&t=${Date.now()}`, { cache: "no-store" });

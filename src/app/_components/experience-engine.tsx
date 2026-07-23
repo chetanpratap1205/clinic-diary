@@ -47,7 +47,7 @@ export function ExperienceEngine() {
   };
 
   return (
-    <section className="py-24 px-4 sm:px-6 bg-[#050505] relative border-t border-white/5">
+    <section className="py-16 sm:py-24 px-4 sm:px-6 bg-[#050505] relative border-t border-white/5">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-4xl sm:text-6xl md:text-7xl font-black text-white mb-6 tracking-tighter leading-[1.1]">
@@ -115,7 +115,7 @@ export function ExperienceEngine() {
           aria-live="polite"
         >
           {/* Feature 1: The "Wow" Patient Experience */}
-          <div className="md:col-span-2 bg-[#0A0A0A] border border-white/10 rounded-[32px] p-8 sm:p-12 relative overflow-hidden group">
+          <div className="md:col-span-2 bg-[#0A0A0A] border border-white/10 rounded-[32px] p-6 sm:p-12 relative overflow-hidden group">
             <div 
               className="absolute -right-20 -top-20 w-[500px] h-[500px] rounded-full blur-[100px] -z-10 transition-colors duration-700" 
               style={{ backgroundColor: `${currentSpecialty.accentColor}15` }}
@@ -172,7 +172,7 @@ export function ExperienceEngine() {
           </div>
 
           {/* Feature 2: Eradicate No-Shows */}
-          <div className="bg-[#0A0A0A] border border-white/10 rounded-[32px] p-8 sm:p-10 relative overflow-hidden group flex flex-col justify-between min-h-[400px]">
+          <div className="bg-[#0A0A0A] border border-white/10 rounded-[32px] p-6 sm:p-10 relative overflow-hidden group flex flex-col justify-between min-h-[400px]">
             <div 
               className="absolute left-0 bottom-0 w-[300px] h-[300px] rounded-full blur-[80px] -z-10 transition-colors duration-700" 
               style={{ backgroundColor: `${currentSpecialty.accentColor}15` }}
@@ -206,7 +206,7 @@ export function ExperienceEngine() {
           </div>
 
           {/* Feature 3: 24/7 Acquisition */}
-          <div className="bg-[#0A0A0A] border border-white/10 rounded-[32px] p-8 sm:p-10 relative overflow-hidden group flex flex-col justify-between">
+          <div className="bg-[#0A0A0A] border border-white/10 rounded-[32px] p-6 sm:p-10 relative overflow-hidden group flex flex-col justify-between">
             <div className="absolute -left-10 -top-10 w-40 h-40 bg-cyan-500/10 rounded-full blur-[70px] -z-10 group-hover:bg-cyan-500/20 transition-all duration-700" />
             <div>
               <div className="mb-6">
@@ -252,7 +252,7 @@ export function ExperienceEngine() {
           </div>
 
           {/* Feature 4: Zero Chaos */}
-          <div className="md:col-span-2 bg-[#0A0A0A] border border-white/10 rounded-[32px] p-8 sm:p-12 relative overflow-hidden group flex flex-col md:flex-row items-center gap-10">
+          <div className="md:col-span-2 bg-[#0A0A0A] border border-white/10 rounded-[32px] p-6 sm:p-12 relative overflow-hidden group flex flex-col md:flex-row items-center gap-10">
             <div className="absolute right-0 bottom-0 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] -z-10 group-hover:bg-indigo-500/20 transition-all duration-700" />
             
             <div className="flex-1 z-10">

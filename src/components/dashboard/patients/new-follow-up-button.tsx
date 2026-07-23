@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Loader2, Calendar } from "lucide-react";
+import { Calendar, Loader2 } from "lucide-react";
+import { createFollowUpAction } from "@/app/actions/follow-ups";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,8 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-export function NewFollowUpButton({ patientId }: { patientId: string }) {
-  const router = useRouter();
+export function NewFollowUpButton({ patientId, appointmentId }: { patientId: string, appointmentId?: string }) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notes, setNotes] = useState("");
@@ -28,34 +27,35 @@ export function NewFollowUpButton({ patientId }: { patientId: string }) {
     setIsSubmitting(true);
 
     try {
-      let dueDateStr = "";
+      let date = "";
       if (days === "custom") {
         if (!customDate) {
           toast.error("Please select a date");
           setIsSubmitting(false);
           return;
         }
-        dueDateStr = customDate;
+        date = customDate;
       } else {
         const d = new Date();
         d.setDate(d.getDate() + days);
-        dueDateStr = d.toISOString().split("T")[0];
+        date = d.toISOString().split("T")[0];
       }
 
-      const res = await fetch("/api/follow-ups", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ patientId, dueDate: dueDateStr, notes }),
+      const result = await createFollowUpAction({
+        patientId,
+        appointmentId,
+        dueDate: date,
+        notes,
       });
 
-      if (!res.ok) throw new Error("Failed to schedule follow-up");
+      if (result.error) {
+        throw new Error(result.error);
+      }
 
-      toast.success("Follow-up scheduled");
+      toast.success("Follow-up scheduled successfully");
       setOpen(false);
-      setNotes("");
-      setDays(7);
       setCustomDate("");
-      router.refresh();
+      setNotes("");
     } catch (error: any) {
       toast.error(error.message);
     } finally {

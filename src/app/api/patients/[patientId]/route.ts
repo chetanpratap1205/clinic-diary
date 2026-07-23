@@ -82,3 +82,76 @@ export async function DELETE(
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ patientId: string }> }
+) {
+  try {
+    const authUser = await getAuthUser();
+    if (!authUser || !authUser.clinicId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const patientId = (await params).patientId;
+    const body = await req.json();
+    const { name, phone, age, gender, address } = body;
+
+    if (!name || !phone) {
+      return NextResponse.json(
+        { error: "Name and phone are required" },
+        { status: 400 }
+      );
+    }
+
+    const { isValidIndianMobileNumber } = await import("@/lib/validations");
+    if (!isValidIndianMobileNumber(phone)) {
+      return NextResponse.json(
+        { error: "Please enter a valid 10-digit mobile number." },
+        { status: 400 }
+      );
+    }
+
+    // Check if another patient (different ID) has this phone number
+    const existing = await db
+      .select()
+      .from(patients)
+      .where(
+        and(
+          eq(patients.clinicId, authUser.clinicId),
+          eq(patients.phone, phone)
+        )
+      );
+
+    const duplicate = existing.find(p => p.id !== patientId);
+    if (duplicate) {
+      return NextResponse.json(
+        { error: "Another patient with this phone number already exists" },
+        { status: 400 }
+      );
+    }
+
+    const [updatedPatient] = await db
+      .update(patients)
+      .set({
+        name,
+        phone,
+        age: age ? parseInt(age) : null,
+        gender: gender || null,
+        address: address || null,
+      })
+      .where(
+        and(eq(patients.id, patientId), eq(patients.clinicId, authUser.clinicId))
+      )
+      .returning();
+
+    if (!updatedPatient) {
+      return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ patient: updatedPatient });
+  } catch (err) {
+    console.error("[Patient PATCH] Error:", err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+}

@@ -34,14 +34,14 @@ export function HomeNav() {
     >
       <nav
         className={cn(
-          "mx-auto max-w-7xl rounded-2xl transition-all duration-300 ease-in-out flex items-center justify-between px-4 sm:px-6",
+          "mx-auto max-w-7xl rounded-2xl transition-all duration-300 ease-in-out flex items-center px-4 sm:px-6",
           isScrolled
             ? "bg-white/80 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 h-16"
             : "bg-transparent border-transparent h-16"
         )}
       >
         {/* Logo Section */}
-        <div className="flex items-center gap-2 lg:gap-3 flex-shrink-0">
+        <div className="flex items-center gap-2 lg:gap-3 flex-1 justify-start">
           <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-xl overflow-hidden bg-white shadow-sm flex items-center justify-center shrink-0 border border-slate-100">
             <Image
               src="/icon-192.png"
@@ -61,13 +61,13 @@ export function HomeNav() {
         </div>
 
         {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-8 mr-8 lg:mr-24">
+        <div className="hidden md:flex items-center justify-center gap-8 px-4">
           <Link href="/login" className="text-sm font-black text-[#0B132B] hover:text-[#00B7A8] transition-colors">Sign In</Link>
           <Link href="#pricing" className="text-sm font-black text-[#0B132B] hover:text-[#00B7A8] transition-colors">Pricing</Link>
         </div>
 
         {/* CTA & Mobile Toggle */}
-        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+        <div className="flex items-center gap-3 sm:gap-4 flex-1 justify-end">
           <InstallButton className="!bg-[#0B132B] hover:!bg-[#1a2b5e] !text-white hover:!text-white !border-transparent !rounded-full !font-bold shadow-md px-4 sm:px-6 h-9 sm:h-10" />
           
           <button 

@@ -153,7 +153,7 @@ export default function LoginPage() {
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="w-full max-w-[440px] bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_8px_40px_rgba(0,0,0,0.4)] overflow-hidden"
         >
-          <div className="p-8 sm:p-10">
+          <div className="p-6 sm:p-10">
             <div className="mb-8 text-center lg:text-left">
               <h2 className="text-3xl font-black text-white tracking-tight mb-2">Welcome back</h2>
               <p className="text-slate-400 font-medium">Please enter your details to sign in.</p>

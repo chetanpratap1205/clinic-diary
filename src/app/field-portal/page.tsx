@@ -177,52 +177,52 @@ export default async function FieldPortalDashboardPage() {
       </header>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card className="border-blue-100 shadow-sm bg-gradient-to-br from-white to-blue-50/50">
-          <CardHeader className="p-4 pb-2 space-y-0">
+          <CardHeader className="p-3 sm:p-4 pb-2 space-y-0">
             <CardTitle className="text-xs font-medium text-slate-500 uppercase tracking-wider flex justify-between items-center">
               Total Assigned
               <Users className="w-4 h-4 text-blue-500" />
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
+          <CardContent className="p-3 sm:p-4 pt-0">
             <div className="text-3xl font-bold text-slate-900">{assignedCount}</div>
           </CardContent>
         </Card>
 
         <Card className="border-emerald-100 shadow-sm bg-gradient-to-br from-white to-emerald-50/50">
-          <CardHeader className="p-4 pb-2 space-y-0">
+          <CardHeader className="p-3 sm:p-4 pb-2 space-y-0">
             <CardTitle className="text-xs font-medium text-slate-500 uppercase tracking-wider flex justify-between items-center">
               Visits Today
               <MapPin className="w-4 h-4 text-emerald-500" />
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
+          <CardContent className="p-3 sm:p-4 pt-0">
             <div className="text-3xl font-bold text-slate-900">{visitsCount}</div>
           </CardContent>
         </Card>
 
         <Card className="border-teal-100 shadow-sm bg-gradient-to-br from-white to-teal-50/50">
-          <CardHeader className="p-4 pb-2 space-y-0">
+          <CardHeader className="p-3 sm:p-4 pb-2 space-y-0">
             <CardTitle className="text-xs font-medium text-slate-500 uppercase tracking-wider flex justify-between items-center">
               This Month
               <TrendingUp className="w-4 h-4 text-teal-500" />
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
+          <CardContent className="p-3 sm:p-4 pt-0">
             <div className="text-3xl font-bold text-slate-900">{monthConvertedCount}</div>
             <p className="text-xs text-slate-500 mt-0.5">conversions</p>
           </CardContent>
         </Card>
 
         <Card className="border-amber-100 shadow-sm bg-gradient-to-br from-white to-amber-50/50">
-          <CardHeader className="p-4 pb-2 space-y-0">
+          <CardHeader className="p-3 sm:p-4 pb-2 space-y-0">
             <CardTitle className="text-xs font-medium text-slate-500 uppercase tracking-wider flex justify-between items-center">
               My Rank
               <Activity className="w-4 h-4 text-amber-500" />
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
+          <CardContent className="p-3 sm:p-4 pt-0">
             <div className="text-3xl font-bold text-slate-900">{myRank > 0 ? rankEmoji : "—"}</div>
             <p className="text-xs text-slate-500 mt-0.5">this month</p>
           </CardContent>
@@ -231,7 +231,7 @@ export default async function FieldPortalDashboardPage() {
 
       {/* Monthly Target Progress */}
       <Card className="border-slate-200 shadow-sm">
-        <CardContent className="p-4">
+        <CardContent className="p-3 sm:p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Target className="w-4 h-4 text-purple-600" />
@@ -267,13 +267,13 @@ export default async function FieldPortalDashboardPage() {
       {/* Commission Summary */}
       <div className="grid grid-cols-2 gap-4">
         <Card className="border-emerald-100 shadow-sm">
-          <CardHeader className="p-4 pb-2 space-y-0">
+          <CardHeader className="p-3 sm:p-4 pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold text-emerald-700 uppercase tracking-wider flex items-center gap-2">
               <Wallet className="w-3.5 h-3.5" />
               Total Earned
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-1">
+          <CardContent className="p-3 sm:p-4 pt-1">
             <p className="text-2xl font-bold text-emerald-700">
               ₹{earnedRs.toLocaleString("en-IN")}
             </p>
@@ -282,13 +282,13 @@ export default async function FieldPortalDashboardPage() {
         </Card>
 
         <Card className="border-amber-100 shadow-sm">
-          <CardHeader className="p-4 pb-2 space-y-0">
+          <CardHeader className="p-3 sm:p-4 pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold text-amber-700 uppercase tracking-wider flex items-center gap-2">
               <Wallet className="w-3.5 h-3.5" />
               Pending
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-1">
+          <CardContent className="p-3 sm:p-4 pt-1">
             <p className="text-2xl font-bold text-amber-700">
               ₹{pendingRs.toLocaleString("en-IN")}
             </p>

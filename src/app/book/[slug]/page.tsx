@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { clinics, availability, availabilityOverrides, reviews, appointments } from "@/db/schema";
+import { clinics, availability, availabilityOverrides, reviews, appointments, clinicServices, clinicGallery } from "@/db/schema";
 import { eq, desc, avg, count } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { BookingClient } from "./booking-client";
@@ -16,7 +16,46 @@ import {
   CalendarCheck,
   CheckCircle2,
   Users,
+  MessageCircle,
+  Image as ImageIcon,
+  Sparkles,
 } from "lucide-react";
+
+const Instagram = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+  </svg>
+);
+
+const Facebook = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+  </svg>
+);
 import type { Metadata } from "next";
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -92,7 +131,7 @@ export default async function BookingPage({
     : `Dr. ${clinic.doctorName}`;
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in";
 
-  const [availRecords, overrideRecords, clinicReviews, statsResult] = await Promise.all([
+  const [availRecords, overrideRecords, clinicReviews, statsResult, services, gallery] = await Promise.all([
     db.select().from(availability).where(eq(availability.clinicId, clinic.id)),
     db.select().from(availabilityOverrides).where(eq(availabilityOverrides.clinicId, clinic.id)),
     db
@@ -102,9 +141,10 @@ export default async function BookingPage({
         comment: reviews.comment,
         createdAt: reviews.createdAt,
         patientName: appointments.patientName,
+        source: reviews.source,
       })
       .from(reviews)
-      .innerJoin(appointments, eq(reviews.appointmentId, appointments.id))
+      .leftJoin(appointments, eq(reviews.appointmentId, appointments.id))
       .where(eq(reviews.clinicId, clinic.id))
       .orderBy(desc(reviews.createdAt))
       .limit(5),
@@ -115,6 +155,8 @@ export default async function BookingPage({
       })
       .from(reviews)
       .where(eq(reviews.clinicId, clinic.id)),
+    db.select().from(clinicServices).where(eq(clinicServices.clinicId, clinic.id)),
+    db.select().from(clinicGallery).where(eq(clinicGallery.clinicId, clinic.id)).orderBy(clinicGallery.sortOrder),
   ]);
 
   const stats = statsResult[0];
@@ -162,19 +204,34 @@ export default async function BookingPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* ─────────────── HERO BANNER ─────────────── */}
-      <header className="relative overflow-hidden mb-8 sm:mb-12 -mx-4 sm:-mx-6 lg:-mx-8 bg-white border-b border-slate-100 pb-8 sm:pb-12 pt-10 sm:pt-14 shadow-sm">
-        {/* Subtle dot mesh light */}
-        <div
-          className="absolute inset-0 opacity-[0.4]"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, #e2e8f0 1px, transparent 0)`,
-            backgroundSize: "32px 32px",
-          }}
-        />
-        {/* Very subtle glow */}
-        <div className="absolute top-0 -left-1/4 w-96 h-96 rounded-full mix-blend-multiply filter blur-[120px] opacity-10 animate-blob" style={{ backgroundColor: themeColor }} />
+      <header className="relative overflow-hidden mb-8 sm:mb-12 -mx-4 sm:-mx-6 lg:-mx-8 bg-white border-b border-slate-100 pb-8 sm:pb-12 pt-10 sm:pt-14 shadow-sm min-h-[260px] flex items-end">
+        {clinic.heroImageUrl ? (
+          <>
+            <img src={clinic.heroImageUrl} alt={clinic.name} className="absolute inset-0 w-full h-full object-cover z-0" />
+            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent z-0" />
+          </>
+        ) : (
+          <>
+            {/* High-end Abstract Mesh Gradient fallback */}
+            <div
+              className="absolute inset-0 opacity-[0.9] z-0"
+              style={{
+                backgroundImage: `radial-gradient(at 0% 0%, ${themeColor}22 0px, transparent 50%), radial-gradient(at 100% 0%, ${themeColor}22 0px, transparent 50%), radial-gradient(at 100% 100%, ${themeColor}11 0px, transparent 50%)`,
+                backgroundColor: "#f8fafc"
+              }}
+            />
+            <div
+              className="absolute inset-0 z-0 opacity-30"
+              style={{
+                backgroundImage: `radial-gradient(circle at 1px 1px, ${themeColor} 1px, transparent 0)`,
+                backgroundSize: "40px 40px",
+              }}
+            />
+            <div className="absolute top-0 -left-1/4 w-[600px] h-[600px] rounded-full mix-blend-multiply filter blur-[120px] opacity-15 animate-blob z-0" style={{ backgroundColor: themeColor }} />
+          </>
+        )}
 
-        <div className="relative z-10 max-w-6xl mx-auto px-6 sm:px-8">
+        <div className="relative z-10 max-w-6xl mx-auto px-6 sm:px-8 w-full mt-12 sm:mt-16">
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 sm:gap-8">
             {/* Logo / Avatar with Pulse */}
             <div className="flex-shrink-0 relative">
@@ -192,12 +249,12 @@ export default async function BookingPage({
             {/* Identity */}
             <div className="flex-1 text-center sm:text-left">
               {/* Verified badge */}
-              <div className="inline-flex items-center gap-1.5 text-emerald-600 text-[11px] font-bold tracking-widest uppercase mb-3 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+              <div className="inline-flex items-center gap-1.5 text-emerald-600 text-[11px] font-bold tracking-widest uppercase mb-3 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100 backdrop-blur-md">
                 <BadgeCheck className="w-3.5 h-3.5" />
                 Verified Clinic
               </div>
 
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight mb-1">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>
                 {clinic.name}
               </h1>
               <p className="text-slate-600 font-bold text-lg sm:text-xl mb-1 flex items-center justify-center sm:justify-start gap-1.5">
@@ -210,11 +267,11 @@ export default async function BookingPage({
                 </p>
               )}
 
-              {/* Info pills */}
-              <div className="flex flex-wrap gap-2 justify-center sm:justify-start mt-4">
+              {/* Info pills & Socials */}
+              <div className="flex flex-wrap gap-2 justify-center sm:justify-start mt-4 items-center">
                 {clinic.consultationFee ? (
                   <span className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 bg-white border border-slate-200 px-4 py-2 rounded-full shadow-sm">
-                    ₹{clinic.consultationFee} &nbsp;·&nbsp; Consultation Fee
+                    ₹{clinic.consultationFee} &nbsp;·&nbsp; Consultation
                   </span>
                 ) : null}
                 {clinic.phone && (
@@ -234,7 +291,24 @@ export default async function BookingPage({
                     className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-700 bg-white border border-slate-200 px-4 py-2 rounded-full shadow-sm hover:border-slate-300 hover:bg-slate-50 transition-all"
                   >
                     <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                    View on Map
+                    Map
+                  </a>
+                )}
+                
+                {/* Floating Socials */}
+                {clinic.whatsappNumber && (
+                  <a href={`https://wa.me/${clinic.whatsappNumber.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors ml-1 shadow-sm">
+                    <MessageCircle className="w-4 h-4" />
+                  </a>
+                )}
+                {clinic.instagramUrl && (
+                  <a href={clinic.instagramUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#E1306C]/10 text-[#E1306C] hover:bg-[#E1306C]/20 transition-colors shadow-sm">
+                    <Instagram className="w-4 h-4" />
+                  </a>
+                )}
+                {clinic.facebookUrl && (
+                  <a href={clinic.facebookUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#1877F2]/10 text-[#1877F2] hover:bg-[#1877F2]/20 transition-colors shadow-sm">
+                    <Facebook className="w-4 h-4" />
                   </a>
                 )}
               </div>
@@ -273,6 +347,55 @@ export default async function BookingPage({
               </h2>
               <div className="rounded-2xl border border-slate-100 bg-white shadow-sm p-5">
                 <p className="text-slate-700 leading-relaxed text-[15px]">{clinic.about}</p>
+              </div>
+            </section>
+          )}
+
+          {/* Services */}
+          {services.length > 0 && (
+            <section>
+              <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5" />
+                Top Services
+              </h2>
+              <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden divide-y divide-slate-50">
+                {services.map(service => (
+                  <div key={service.id} className="p-4 flex items-start justify-between gap-4 hover:bg-slate-50/50 transition-colors">
+                    <div>
+                      <p className="font-bold text-slate-800 text-[15px]">{service.name}</p>
+                      {service.description && (
+                        <p className="text-slate-500 text-sm mt-0.5 leading-relaxed">{service.description}</p>
+                      )}
+                      {service.durationMinutes && (
+                        <p className="text-slate-400 text-xs mt-1.5 flex items-center gap-1"><Clock className="w-3 h-3" /> {service.durationMinutes} mins</p>
+                      )}
+                    </div>
+                    {service.pricePaise !== null && (
+                      <div className="text-right flex-shrink-0">
+                        <span className="inline-block bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1 text-sm font-bold text-slate-700">
+                          ₹{(service.pricePaise / 100).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Gallery */}
+          {gallery.length > 0 && (
+            <section>
+              <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <ImageIcon className="w-3.5 h-3.5" />
+                Clinic Gallery
+              </h2>
+              <div className="grid grid-cols-2 gap-3">
+                {gallery.map((img, idx) => (
+                  <div key={img.id} className={`rounded-xl overflow-hidden shadow-sm border border-slate-100 ${idx === 0 && gallery.length % 2 !== 0 ? "col-span-2 aspect-video" : "aspect-square"}`}>
+                    <img src={img.url} alt={img.caption || `Clinic photo ${idx + 1}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                  </div>
+                ))}
               </div>
             </section>
           )}
@@ -454,13 +577,19 @@ export default async function BookingPage({
                           <div className="flex items-center gap-2">
                             <div
                               className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black shadow-sm"
-                              style={{ backgroundColor: `${themeColor}ee` }}
+                              style={{ backgroundColor: review.source === 'google' ? "#4285F4" : `${themeColor}ee` }}
                             >
-                              {review.patientName?.[0]?.toUpperCase() || "P"}
+                              {review.patientName ? review.patientName[0].toUpperCase() : "G"}
                             </div>
                             <div>
-                              <span className="text-xs font-bold text-slate-800 block leading-none">{review.patientName.split(" ")[0]}</span>
-                              <span className="text-[9px] font-bold text-emerald-600 flex items-center gap-0.5 mt-1 uppercase tracking-wider"><ShieldCheck className="w-3 h-3" /> Verified</span>
+                              <span className="text-xs font-bold text-slate-800 block leading-none">{review.patientName ? review.patientName.split(" ")[0] : "Google User"}</span>
+                              <span className="text-[9px] font-bold text-emerald-600 flex items-center gap-0.5 mt-1 uppercase tracking-wider">
+                                {review.source === 'google' ? (
+                                  <span className="text-[#4285F4] flex items-center gap-0.5"><Star className="w-3 h-3 fill-[#4285F4]" /> Google Review</span>
+                                ) : (
+                                  <><ShieldCheck className="w-3 h-3" /> Verified</>
+                                )}
+                              </span>
                             </div>
                           </div>
                         </div>

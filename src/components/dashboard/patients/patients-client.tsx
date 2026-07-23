@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useTransition } from "react";
 import { format } from "date-fns";
-import { Search, User, Phone, CalendarDays, Activity, MessageCircle, Plus } from "lucide-react";
+import { Search, User, Phone, CalendarDays, Activity, MessageCircle, Plus, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PremiumIcon } from "@/components/ui/premium-icon";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface PatientWithStats {
   id: string;
@@ -18,40 +19,75 @@ interface PatientWithStats {
   visitCount: number;
 }
 
-export function PatientsClient({ patients, clinic }: { patients: PatientWithStats[], clinic: any }) {
-  const [search, setSearch] = useState("");
+export function PatientsClient({ 
+  patients, 
+  clinic,
+  totalCount,
+  currentPage,
+  pageSize,
+  initialSearch
+}: { 
+  patients: PatientWithStats[], 
+  clinic: any,
+  totalCount?: number,
+  currentPage?: number,
+  pageSize?: number,
+  initialSearch?: string
+}) {
+  const router = useRouter();
+  const [search, setSearch] = useState(initialSearch || "");
+  const [isPending, startTransition] = useTransition();
 
-  const filtered = useMemo(() => {
-    if (!search.trim()) return patients;
-    const q = search.toLowerCase();
-    return patients.filter((p) => 
-      p.name.toLowerCase().includes(q) || 
-      p.phone.includes(q)
-    );
-  }, [search, patients]);
+  const totalPages = totalCount && pageSize ? Math.ceil(totalCount / pageSize) : 1;
+  const current = currentPage || 1;
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    startTransition(() => {
+      const params = new URLSearchParams();
+      if (search.trim()) params.set("search", search.trim());
+      params.set("page", "1");
+      router.push(`/dashboard/patients?${params.toString()}`);
+    });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    startTransition(() => {
+      const params = new URLSearchParams();
+      if (search.trim()) params.set("search", search.trim());
+      params.set("page", newPage.toString());
+      router.push(`/dashboard/patients?${params.toString()}`);
+    });
+  };
 
   return (
     <div className="space-y-6">
       {/* Search Bar - Premium Spotlight Style */}
-      <div className="relative max-w-2xl mx-auto sm:mx-0 group">
+      <form onSubmit={handleSearchSubmit} className="relative max-w-2xl mx-auto sm:mx-0 group">
         <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
           <Search strokeWidth={2} className="w-5 h-5 text-slate-400 group-focus-within:text-sky-500 transition-colors" />
         </div>
         <input
           type="text"
-          placeholder="Search patients by name or phone..."
+          placeholder="Search patients by name or phone... (Press Enter)"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-14 pr-5 py-4 bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl text-base text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-sky-500/15 focus:border-sky-400 transition-all shadow-sm hover:shadow-md"
+          className="w-full pl-14 pr-12 py-4 bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl text-base text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-sky-500/15 focus:border-sky-400 transition-all shadow-sm hover:shadow-md"
         />
-        <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none hidden sm:flex">
-           <span className="text-xs font-semibold text-slate-300 border border-slate-200 rounded-md px-2 py-1 bg-slate-50 shadow-sm">⌘K</span>
+        <div className="absolute inset-y-0 right-4 flex items-center">
+           {isPending ? (
+             <Loader2 className="w-5 h-5 animate-spin text-sky-500" />
+           ) : (
+             <button type="submit" className="hidden sm:flex text-xs font-semibold text-slate-300 border border-slate-200 rounded-md px-2 py-1 bg-slate-50 shadow-sm hover:bg-slate-100 hover:text-slate-600 transition-colors">
+               ↵
+             </button>
+           )}
         </div>
-      </div>
+      </form>
 
       {/* Patient List / Grid */}
       <div>
-        {filtered.length === 0 ? (
+        {patients.length === 0 ? (
           <Card className="border-slate-100 shadow-sm border-dashed bg-white/50">
             <CardContent className="flex flex-col items-center justify-center py-16 sm:py-24">
               <div className="mb-4">
@@ -66,8 +102,8 @@ export function PatientsClient({ patients, clinic }: { patients: PatientWithStat
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 auto-rows-fr">
-            {filtered.map((patient) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 auto-rows-fr opacity-100 transition-opacity duration-200" style={{ opacity: isPending ? 0.6 : 1 }}>
+            {patients.map((patient) => (
               <Card key={patient.id} className="group relative h-full flex flex-col border-slate-200/60 shadow-sm hover:shadow-xl hover:shadow-sky-500/10 transition-all duration-300 hover:-translate-y-1 hover:border-sky-300/60 bg-white/60 backdrop-blur-sm overflow-hidden rounded-2xl">
                 
                 {/* Main Card Content (Clickable) */}
@@ -151,6 +187,31 @@ export function PatientsClient({ patients, clinic }: { patients: PatientWithStat
           </div>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-6">
+          <button
+            onClick={() => handlePageChange(current - 1)}
+            disabled={current === 1 || isPending}
+            className="p-2 rounded-xl border border-slate-200 bg-white text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors shadow-sm"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          
+          <div className="flex items-center gap-1 px-4 py-2 rounded-xl bg-white border border-slate-200 shadow-sm text-sm font-medium text-slate-700">
+            Page {current} of {totalPages}
+          </div>
+
+          <button
+            onClick={() => handlePageChange(current + 1)}
+            disabled={current === totalPages || isPending}
+            className="p-2 rounded-xl border border-slate-200 bg-white text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors shadow-sm"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

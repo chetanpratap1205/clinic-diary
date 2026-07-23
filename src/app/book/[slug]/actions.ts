@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { appointments, availability, availabilityOverrides, clinics, patients, subscriptions } from "@/db/schema";
 import { eq, and, ne, count, inArray } from "drizzle-orm";
 import { parseISO, getDay, format, addMinutes } from "date-fns";
+import { getClinicTodayDate } from "@/lib/timezone";
 import { sendNotification } from "@/lib/notifications";
 
 export async function getAvailableSlots(clinicId: string, dateStr: string) {
@@ -103,117 +104,138 @@ export async function createBooking(
   acquisitionSource?: string
 ) {
   try {
-    // 0. Find or create patient
-    let patientId = null;
-    const existingPatient = await db
-      .select({ id: patients.id })
-      .from(patients)
-      .where(
-        and(
-          eq(patients.clinicId, clinicId),
-          eq(patients.phone, patientPhone)
-        )
-      )
-      .limit(1);
+    // We wrap everything in a transaction to prevent race conditions during high-volume booking
+    let finalAppointmentId: string | null = null;
+    let finalPatientId: string | null = null;
 
-    if (existingPatient.length > 0) {
-      patientId = existingPatient[0].id;
-    } else {
-      // --- Subscription & Patient Limit Check ---
-      const [{ count: patientCount }] = await db
-        .select({ count: count() })
+    await db.transaction(async (tx) => {
+      // 0. Find or create patient
+      let patientId = null;
+      const existingPatient = await tx
+        .select({ id: patients.id })
         .from(patients)
-        .where(eq(patients.clinicId, clinicId));
-
-      if (patientCount >= 5) {
-        // Check if clinic has an active subscription
-        const activeSubs = await db
-          .select()
-          .from(subscriptions)
-          .where(
-            and(
-              eq(subscriptions.clinicId, clinicId),
-              eq(subscriptions.status, "active")
-            )
+        .where(
+          and(
+            eq(patients.clinicId, clinicId),
+            eq(patients.phone, patientPhone)
           )
-          .limit(1);
+        )
+        .limit(1);
 
-        if (activeSubs.length === 0) {
-          return { error: "This clinic is currently not accepting new patients." };
+      if (existingPatient.length > 0) {
+        patientId = existingPatient[0].id;
+      } else {
+        // --- Subscription & Patient Limit Check ---
+        const [{ count: patientCount }] = await tx
+          .select({ count: count() })
+          .from(patients)
+          .where(eq(patients.clinicId, clinicId));
+
+        if (patientCount >= 5) {
+          // Check if clinic has an active subscription
+          const activeSubs = await tx
+            .select()
+            .from(subscriptions)
+            .where(
+              and(
+                eq(subscriptions.clinicId, clinicId),
+                eq(subscriptions.status, "active")
+              )
+            )
+            .limit(1);
+
+          if (activeSubs.length === 0) {
+            throw new Error("This clinic is currently not accepting new patients.");
+          }
         }
+        // -------------------------------------------
+
+        const [newPatient] = await tx
+          .insert(patients)
+          .values({
+            clinicId,
+            name: patientName,
+            phone: patientPhone,
+          })
+          .returning({ id: patients.id });
+        patientId = newPatient.id;
       }
-      // -------------------------------------------
-
-      const [newPatient] = await db
-        .insert(patients)
-        .values({
-          clinicId,
-          name: patientName,
-          phone: patientPhone,
-        })
-        .returning({ id: patients.id });
-      patientId = newPatient.id;
-    }
-
-    // --- 1 Active Appointment Restriction ---
-    const activeAppts = await db
-      .select({ id: appointments.id })
-      .from(appointments)
-      .where(
-        and(
-          eq(appointments.clinicId, clinicId),
-          eq(appointments.patientPhone, patientPhone),
-          inArray(appointments.status, ["confirmed", "checked_in", "in_consultation"])
-        )
-      )
-      .limit(1);
-
-    if (activeAppts.length > 0) {
-      return { error: "You already have an active appointment. Please cancel it first to book a new one." };
-    }
-    // ----------------------------------------
-
-    const { desc } = await import("drizzle-orm");
-    const [latestAppt] = await db
-      .select({ tokenNumber: appointments.tokenNumber })
-      .from(appointments)
-      .where(
-        and(
-          eq(appointments.clinicId, clinicId),
-          eq(appointments.appointmentDate, dateStr)
-        )
-      )
-      .orderBy(desc(appointments.tokenNumber))
-      .limit(1);
       
-    const nextToken = (latestAppt?.tokenNumber || 0) + 1;
-    const cancelToken = crypto.randomUUID();
+      finalPatientId = patientId;
 
-    // Insert the appointment and return the ID
-    const [newAppointment] = await db.insert(appointments).values({
-      clinicId,
-      patientId,
-      patientName,
-      patientPhone,
-      patientEmail: patientEmail || null,
-      appointmentDate: dateStr,
-      appointmentTime: timeStr,
-      status: "confirmed",
-      tokenNumber: nextToken,
-      cancelToken,
-      acquisitionSource: acquisitionSource || null,
-    }).returning({ id: appointments.id });
+      // --- 1 Active Appointment Restriction ---
+      const activeAppts = await tx
+        .select({ id: appointments.id })
+        .from(appointments)
+        .where(
+          and(
+            eq(appointments.clinicId, clinicId),
+            eq(appointments.patientPhone, patientPhone),
+            inArray(appointments.status, ["confirmed", "checked_in", "in_consultation"])
+          )
+        )
+        .limit(1);
 
-    // Fetch clinic details for the notification
+      if (activeAppts.length > 0) {
+        throw new Error("You already have an active appointment. Please cancel it first to book a new one.");
+      }
+      // ----------------------------------------
+
+      // Lock the clinic row to serialize token generation for this clinic
+      await tx
+        .select()
+        .from(clinics)
+        .where(eq(clinics.id, clinicId))
+        .for("update");
+
+      const { desc } = await import("drizzle-orm");
+      const [latestAppt] = await tx
+        .select({ tokenNumber: appointments.tokenNumber })
+        .from(appointments)
+        .where(
+          and(
+            eq(appointments.clinicId, clinicId),
+            eq(appointments.appointmentDate, dateStr)
+          )
+        )
+        .orderBy(desc(appointments.tokenNumber))
+        .limit(1);
+        
+      const nextToken = (latestAppt?.tokenNumber || 0) + 1;
+      const cancelToken = crypto.randomUUID();
+
+      // Insert the appointment and return the ID
+      const [newAppointment] = await tx.insert(appointments).values({
+        clinicId,
+        patientId,
+        patientName,
+        patientPhone,
+        patientEmail: patientEmail || null,
+        appointmentDate: dateStr,
+        appointmentTime: timeStr,
+        status: "confirmed",
+        tokenNumber: nextToken,
+        cancelToken,
+        acquisitionSource: acquisitionSource || null,
+      }).returning({ id: appointments.id });
+
+      finalAppointmentId = newAppointment.id;
+    });
+
+    if (!finalAppointmentId) {
+      return { error: "Failed to generate appointment." };
+    }
+
+    // Fetch clinic details for the notification outside transaction
     const clinicRecord = await db.select().from(clinics).where(eq(clinics.id, clinicId)).limit(1);
     
     if (clinicRecord.length > 0) {
       const clinic = clinicRecord[0];
-      const trackingUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://doctordiary.in"}/track/${newAppointment.id}`;
+      const trackingUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://doctordiary.in"}/track/${finalAppointmentId}`;
       
       // Fire and forget the simulated SMS notification
       sendNotification("sms", "booking_confirmation", {
-        appointmentId: newAppointment.id,
+        appointmentId: finalAppointmentId,
         patientPhone,
         patientName,
         clinicName: clinic.name,
@@ -224,11 +246,15 @@ export async function createBooking(
       });
     }
 
-    return { success: true, appointmentId: newAppointment.id };
+    return { success: true, appointmentId: finalAppointmentId };
   } catch (error: any) {
     // Check for Postgres unique constraint violation
-    if (error.code === "23505" || error.message?.includes("unique")) {
+    if (error?.code === "23505" || error?.message?.includes("unique")) {
       return { error: "This slot was just taken! Please select another time." };
+    }
+    // Return custom errors thrown from within the transaction
+    if (error instanceof Error && error.message) {
+      return { error: error.message };
     }
     console.error("Booking error:", error);
     return { error: "Failed to create booking. Please try again." };
@@ -237,7 +263,7 @@ export async function createBooking(
 
 export async function findPatientAppointment(clinicId: string, phone: string) {
   try {
-    const todayStr = format(new Date(), "yyyy-MM-dd");
+    const todayStr = getClinicTodayDate();
     
     // 1. Try to find an appointment for today
     let appts = await db

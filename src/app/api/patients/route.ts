@@ -48,11 +48,19 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { name, phone, age, gender, address } = body;
+    const { name, phone, age, gender, address, addToQueue } = body;
 
     if (!name || !phone) {
       return NextResponse.json(
         { error: "Name and phone are required" },
+        { status: 400 }
+      );
+    }
+
+    const { isValidIndianMobileNumber } = await import("@/lib/validations");
+    if (!isValidIndianMobileNumber(phone)) {
+      return NextResponse.json(
+        { error: "Please enter a valid 10-digit mobile number." },
         { status: 400 }
       );
     }

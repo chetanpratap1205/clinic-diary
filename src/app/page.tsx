@@ -63,7 +63,7 @@ export default function HomePage() {
       <ExperienceEngine />
 
       {/* The Transformation Section */}
-      <section className="py-24 px-4 sm:px-6 bg-[#050505] border-t border-white/5 relative overflow-hidden flex flex-col items-center">
+      <section className="py-16 sm:py-24 px-4 sm:px-6 bg-[#050505] border-t border-white/5 relative overflow-hidden flex flex-col items-center">
          <div className="max-w-7xl mx-auto w-full relative">
            
            <div className="text-center mb-16">
@@ -78,7 +78,7 @@ export default function HomePage() {
            <div className="relative flex flex-col lg:flex-row items-center justify-center gap-0 max-w-5xl mx-auto">
              
              {/* The Chaos (Background/Recessed) */}
-             <div className="w-full lg:w-[45%] bg-[#0f0707] border border-red-900/30 rounded-3xl p-8 sm:p-10 lg:pr-20 relative lg:translate-x-12 lg:scale-95 z-0 opacity-80 hover:opacity-100 transition-all duration-500">
+             <div className="w-full lg:w-[45%] bg-[#0f0707] border border-red-900/30 rounded-3xl p-6 sm:p-10 lg:pr-20 relative lg:translate-x-12 lg:scale-95 z-0 opacity-80 hover:opacity-100 transition-all duration-500">
                <div className="absolute top-0 left-0 w-32 h-32 bg-red-500/10 rounded-full blur-[50px] -z-10" />
                <h3 className="text-2xl font-bold text-red-50 mb-2">The Old Chaos</h3>
                <p className="text-red-200/70 text-sm mb-8 leading-relaxed pr-4">
@@ -107,7 +107,7 @@ export default function HomePage() {
              </div>
 
              {/* The Premium Standard (Foreground/Elevated) */}
-             <div className="w-full lg:w-[60%] bg-gradient-to-br from-[#0c1f17] to-[#0A0A0A] border border-emerald-500/40 rounded-3xl p-8 sm:p-12 relative z-10 shadow-[0_30px_80px_rgba(16,185,129,0.15)] transform -mt-6 lg:mt-0 lg:-translate-x-6 hover:-translate-y-2 transition-transform duration-500 backdrop-blur-2xl">
+             <div className="w-full lg:w-[60%] bg-gradient-to-br from-[#0c1f17] to-[#0A0A0A] border border-emerald-500/40 rounded-3xl p-6 sm:p-12 relative z-10 shadow-[0_30px_80px_rgba(16,185,129,0.15)] transform -mt-6 lg:mt-0 lg:-translate-x-6 hover:-translate-y-2 transition-transform duration-500 backdrop-blur-2xl">
                <div className="absolute -top-10 -left-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] -z-10" />
                <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-t-3xl opacity-50" />
                
@@ -143,11 +143,11 @@ export default function HomePage() {
       </section>
 
       {/* Founder's Guarantee */}
-      <section className="py-32 px-4 sm:px-6 bg-[#050505] relative overflow-hidden">
+      <section className="py-16 sm:py-32 px-4 sm:px-6 bg-[#050505] relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-[150px] -z-10 pointer-events-none" />
         
         <div className="max-w-4xl mx-auto relative z-10 flex flex-col gap-8">
-          <div className="bg-gradient-to-b from-white/[0.05] to-transparent border border-white/10 rounded-[40px] p-8 sm:p-14 shadow-2xl backdrop-blur-xl relative overflow-hidden group">
+          <div className="bg-gradient-to-b from-white/[0.05] to-transparent border border-white/10 rounded-[40px] p-6 sm:p-14 shadow-2xl backdrop-blur-xl relative overflow-hidden group">
             
             <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
             <Quote className="absolute top-10 right-10 w-24 h-24 text-white/[0.02] -rotate-12" />
@@ -184,7 +184,7 @@ export default function HomePage() {
           </div>
 
           {/* Co-Founder's Note */}
-          <div className="bg-gradient-to-b from-white/[0.05] to-transparent border border-white/10 rounded-[40px] p-8 sm:p-14 shadow-2xl backdrop-blur-xl relative overflow-hidden group">
+          <div className="bg-gradient-to-b from-white/[0.05] to-transparent border border-white/10 rounded-[40px] p-6 sm:p-14 shadow-2xl backdrop-blur-xl relative overflow-hidden group">
             
             <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
             <Quote className="absolute top-10 right-10 w-24 h-24 text-white/[0.02] -rotate-12" />
@@ -221,7 +221,7 @@ export default function HomePage() {
       </section>
 
       {/* White-Glove Migration Guarantee */}
-      <section className="py-20 px-4 sm:px-6 bg-gradient-to-br from-emerald-950/20 to-[#050505] relative border-t border-b border-emerald-500/10 overflow-hidden">
+      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-br from-emerald-950/20 to-[#050505] relative border-t border-b border-emerald-500/10 overflow-hidden">
         <div className="absolute right-0 top-0 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
         
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-12 relative z-10">
@@ -252,7 +252,7 @@ export default function HomePage() {
           </div>
           
           <div className="w-full md:w-5/12">
-            <div className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative group overflow-hidden">
+            <div className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative group overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="flex items-center justify-center mb-6">
                 <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center border border-white/10 relative">
@@ -278,7 +278,7 @@ export default function HomePage() {
       </section>
 
       {/* Premium Pricing Tier */}
-      <section id="pricing" className="py-32 px-4 sm:px-6 bg-[#0a0a0a] relative border-t border-white/5 overflow-hidden">
+      <section id="pricing" className="py-16 sm:py-32 px-4 sm:px-6 bg-[#0a0a0a] relative border-t border-white/5 overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-20 max-w-3xl mx-auto">
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-6 tracking-tighter">
@@ -290,7 +290,7 @@ export default function HomePage() {
           </div>
           
           {/* Starter Kit Unboxing Block */}
-          <div className="mb-16 bg-gradient-to-br from-[#111] to-[#0A0A0A] border border-emerald-500/30 rounded-3xl p-8 sm:p-10 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-[0_20px_50px_rgba(16,185,129,0.1)] max-w-5xl mx-auto group">
+          <div className="mb-16 bg-gradient-to-br from-[#111] to-[#0A0A0A] border border-emerald-500/30 rounded-3xl p-6 sm:p-10 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-[0_20px_50px_rgba(16,185,129,0.1)] max-w-5xl mx-auto group">
             <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-emerald-500/10 to-transparent -z-10 group-hover:from-emerald-500/20 transition-all duration-700" />
             <div className="w-24 h-24 rounded-2xl bg-[#151515] border border-white/10 shadow-2xl flex items-center justify-center flex-shrink-0 relative overflow-hidden transform group-hover:scale-105 transition-transform duration-500">
               <div className="absolute inset-0 bg-emerald-500/20 blur-xl" />
@@ -316,7 +316,7 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto items-center">
             {/* Quarterly */}
-            <div className="bg-[#0f0f0f] border border-white/10 rounded-[32px] p-8 sm:p-10 hover:bg-[#111] transition-colors relative z-0">
+            <div className="bg-[#0f0f0f] border border-white/10 rounded-[32px] p-6 sm:p-10 hover:bg-[#111] transition-colors relative z-0">
               <h3 className="text-2xl font-bold text-white mb-2">Quarterly</h3>
               <p className="text-base text-slate-400 mb-8 min-h-[48px]">Perfect for getting started — lock in founding pricing before it increases.</p>
               <div className="mb-6 flex items-baseline gap-2">
@@ -348,7 +348,7 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 rounded-[32px] opacity-70 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 rounded-[32px] opacity-100" />
               
-              <div className="bg-[#0A0A0A] rounded-[30px] p-8 sm:p-12 relative h-full w-full overflow-hidden">
+              <div className="bg-[#0A0A0A] rounded-[30px] p-6 sm:p-12 relative h-full w-full overflow-hidden">
                 <div className="absolute -top-20 -right-20 w-64 h-64 bg-emerald-500/20 rounded-full blur-[80px]" />
                 
                 <div className="absolute top-6 right-6 bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
@@ -358,7 +358,7 @@ export default function HomePage() {
                 <h3 className="text-2xl font-bold text-white mb-2">Annual</h3>
                 <p className="text-base text-emerald-100/60 mb-8 min-h-[48px]">Maximum ROI, plus your area exclusivity locked in as a founding partner clinic.</p>
                 <div className="mb-6 flex items-baseline gap-2">
-                  <span className="text-6xl sm:text-7xl font-black text-white tracking-tighter">₹4,999</span>
+                  <span className="text-5xl sm:text-7xl font-black text-white tracking-tighter">₹4,999</span>
                   <span className="text-slate-400 font-medium">/ yr</span>
                 </div>
                 
@@ -390,7 +390,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 bg-[#050505] pt-24 pb-12 px-4 sm:px-6 relative overflow-hidden">
+      <footer className="border-t border-white/10 bg-[#050505] pt-16 sm:pt-24 pb-12 px-4 sm:px-6 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-emerald-500/5 rounded-full blur-[150px] -z-10 pointer-events-none" />
         
         <div className="max-w-7xl mx-auto">

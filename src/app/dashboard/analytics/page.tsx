@@ -81,6 +81,7 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
       status: appointments.status,
       date: appointments.appointmentDate,
       acquisitionSource: appointments.acquisitionSource,
+      feeCollected: appointments.feeCollected,
     })
     .from(appointments)
     .where(
@@ -128,35 +129,35 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
     unknown: 0
   };
   
+  let totalRevenue = 0;
+
   appointmentsResult.forEach(app => {
     // Status breakdown
     statusCounts[app.status] = (statusCounts[app.status] || 0) + 1;
     
-    if (app.status === "completed") {
-      completedCount++;
-    }
-
-    // Source breakdown
-    const source = app.acquisitionSource || "unknown";
-    sourceCounts[source] = (sourceCounts[source] || 0) + 1;
-
     // Daily breakdown
     const dateStr = app.date;
     if (!dailyMap[dateStr]) {
       dailyMap[dateStr] = { appointments: 0, revenue: 0 };
     }
     dailyMap[dateStr].appointments += 1;
+
     if (app.status === "completed") {
-      dailyMap[dateStr].revenue += (clinic.consultationFee || 0);
+      completedCount++;
+      const fee = app.feeCollected ?? (clinic.consultationFee || 0);
+      dailyMap[dateStr].revenue += fee;
+      totalRevenue += fee;
     }
+
+    // Source breakdown
+    const source = app.acquisitionSource || "unknown";
+    sourceCounts[source] = (sourceCounts[source] || 0) + 1;
   });
 
   const totalAppointmentsInPeriod = appointmentsResult.length;
   const completionRate = totalAppointmentsInPeriod > 0 
     ? Math.round((completedCount / totalAppointmentsInPeriod) * 100) 
     : 0;
-  
-  const estimatedRevenue = completedCount * (clinic.consultationFee || 0);
 
   // Follow-up conversion
   const totalFollowUps = followUpsResult.length;
@@ -259,10 +260,10 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
           themeColor={clinic.themeColor!}
         />
         <StatCard
-          title="Estimated Revenue"
-          value={`₹${estimatedRevenue.toLocaleString()}`}
+          title="Revenue"
+          value={`₹${totalRevenue.toLocaleString()}`}
           icon={<TrendingUp className="w-5 h-5" />}
-          description="Based on completed appointments"
+          description="Total collected from completed visits"
           themeColor={clinic.themeColor!}
         />
         <StatCard

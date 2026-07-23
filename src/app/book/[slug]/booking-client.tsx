@@ -262,9 +262,9 @@ export function BookingClient({
             setIsLoadingSlots(false);
           });
         }
-      } else if (res.appointmentId) {
+      } else if ("appointmentId" in res && (res as any).appointmentId) {
         setSuccessData({
-          appointmentId: res.appointmentId,
+          appointmentId: (res as any).appointmentId,
           date: format(selectedDate, "EEE, MMM d, yyyy"),
           time: formatTimeDisplay(selectedTime),
         });
@@ -540,7 +540,7 @@ export function BookingClient({
                     <button
                       key={time}
                       onClick={() => handleTimeSelect(time)}
-                      className="py-3.5 px-2 rounded-2xl border-2 border-slate-100 bg-white text-slate-700 font-bold text-sm hover:border-slate-300 hover:shadow-md transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 group"
+                      className="py-3.5 px-2 rounded-2xl border-2 border-slate-100 bg-white text-slate-700 font-bold text-[13px] sm:text-sm hover:border-slate-300 hover:shadow-md transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 group"
                     >
                       <Clock className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-400 transition-colors" />
                       {formatTimeDisplay(time)}

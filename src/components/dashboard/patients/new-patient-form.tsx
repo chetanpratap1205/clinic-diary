@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, Plus, Phone, CalendarDays, MapPin } from "lucide-react";
+import { createPatientAction } from "@/app/actions/patients";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -37,28 +38,27 @@ export function NewPatientForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (formData.phone.length !== 10) {
-      toast.error("Please enter a valid 10-digit mobile number");
+    const { isValidIndianMobileNumber } = await import("@/lib/validations");
+    if (!isValidIndianMobileNumber(formData.phone)) {
+      toast.error("Please enter a valid Indian 10-digit mobile number.");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/patients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const result = await createPatientAction(formData);
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || data.error || "Failed to add patient");
+      if (result.error) {
+        throw new Error(result.error);
       }
 
-      toast.success("Patient added successfully");
-      router.push(`/dashboard/patients/${data.patient.id}`);
-      router.refresh();
+      toast.success(
+        formData.addToQueue 
+          ? "Patient added and checked into queue" 
+          : "Patient registered successfully"
+      );
+      
+      router.push(`/dashboard/patients/${result.patient?.id}`);
     } catch (error: any) {
       toast.error(error.message);
       setIsSubmitting(false);

@@ -32,7 +32,7 @@ export function HomeRoiCalculator() {
         {/* Subtle inner top glow */}
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
 
-        <div className="grid md:grid-cols-2 gap-12 items-center">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
           
           {/* Left Side: Sliders */}
           <div className="space-y-8">
@@ -96,7 +96,7 @@ export function HomeRoiCalculator() {
                   <Users className="w-4 h-4" />
                   Monthly Revenue Recovered
                 </p>
-                <div className="text-5xl font-black text-white tracking-tighter">
+                <div className="text-4xl sm:text-5xl font-black text-white tracking-tighter break-words">
                   +₹{recoveredRevenue.toLocaleString()}
                 </div>
                 <p className="text-slate-400 text-xs mt-2">

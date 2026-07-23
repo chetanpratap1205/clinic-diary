@@ -263,7 +263,7 @@ export function TrackingClient({
           {isCheckedIn && (
             <motion.div
               key="waiting-mode" layout initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.95, height: 0 }} transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="bg-slate-900 rounded-3xl p-6 shadow-2xl flex items-center justify-between text-white relative overflow-hidden"
+              className="bg-slate-900 rounded-3xl p-5 sm:p-6 shadow-2xl flex items-center justify-between text-white relative overflow-hidden"
             >
                {/* Animated Background Glow */}
                <motion.div 

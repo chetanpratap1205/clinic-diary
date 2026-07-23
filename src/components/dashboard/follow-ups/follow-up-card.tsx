@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CheckCircle2, MessageSquare, Phone } from "lucide-react";
+import { updateFollowUpStatusAction } from "@/app/actions/follow-ups";
 import { Card, CardContent } from "@/components/ui/card";
 import { differenceInDays, format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -28,22 +28,18 @@ interface FollowUpCardProps {
 }
 
 export function FollowUpCard({ followUp, variant, clinic }: FollowUpCardProps) {
-  const router = useRouter();
   const [isMarking, setIsMarking] = useState(false);
 
   const handleMarkDone = async () => {
     setIsMarking(true);
     try {
-      const res = await fetch(`/api/follow-ups/${followUp.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "checked_in" }),
-      });
+      const result = await updateFollowUpStatusAction(followUp.id, "checked_in");
 
-      if (!res.ok) throw new Error("Failed to update status");
+      if (result.error) {
+        throw new Error(result.error);
+      }
 
       toast.success("Patient checked in successfully");
-      router.refresh();
     } catch (error: any) {
       toast.error(error.message);
       setIsMarking(false);

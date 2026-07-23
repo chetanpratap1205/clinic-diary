@@ -13,6 +13,7 @@ import { NewFollowUpButton } from "@/components/dashboard/patients/new-follow-up
 import { CheckInWalkInButton } from "@/components/dashboard/patients/check-in-walk-in-button";
 import { WhatsAppShareButton } from "@/components/dashboard/patients/whatsapp-share-button";
 import { MedicalNotes } from "@/components/dashboard/patients/medical-notes";
+import { EditPatientSheet } from "@/components/dashboard/patients/edit-patient-sheet";
 
 function getStatusBadge(status: string) {
   switch (status) {
@@ -143,6 +144,14 @@ export default async function PatientProfilePage(props: { params: Promise<{ pati
               <CheckInWalkInButton patientId={patient.id} />
             )}
             <NewFollowUpButton patientId={patient.id} />
+            <EditPatientSheet patient={{
+              id: patient.id,
+              name: patient.name,
+              phone: patient.phone,
+              age: patient.age,
+              gender: patient.gender,
+              address: patient.address,
+            }} />
           </div>
         </div>
       </FadeInUp>

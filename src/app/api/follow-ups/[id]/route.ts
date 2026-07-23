@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { followUps, appointments, patients } from "@/db/schema";
+import { followUps, appointments, patients, clinics } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { format } from "date-fns";
@@ -43,7 +43,35 @@ export async function PATCH(
 
         if (patient) {
           const todayStr = format(new Date(), "yyyy-MM-dd");
-          const timeStr = format(new Date(), "HH:mm:ss");
+          const now = new Date();
+          
+          // Get clinic settings for average consultation minutes
+          const [clinicResult] = await db
+            .select({ averageConsultationMinutes: clinics.averageConsultationMinutes })
+            .from(clinics)
+            .where(eq(clinics.id, authUser.clinicId));
+          const avgConsultMins = clinicResult?.averageConsultationMinutes ?? 15;
+
+          // Get existing appointments today to calculate the correct walk-in slot
+          const todayAppointmentsData = await db
+            .select()
+            .from(appointments)
+            .where(
+              and(
+                eq(appointments.clinicId, authUser.clinicId),
+                eq(appointments.appointmentDate, todayStr)
+              )
+            );
+            
+          // Get next token number
+          const maxTokenData = todayAppointmentsData.reduce((max, curr) => Math.max(max, curr.tokenNumber || 0), 0);
+          const nextToken = maxTokenData + 1;
+
+          let appointmentTime = format(now, "HH:mm:ss");
+          if (todayAppointmentsData.length > 0) {
+            const { getWalkInTimeSlot } = await import("@/lib/queue-logic");
+            appointmentTime = getWalkInTimeSlot(todayAppointmentsData, now, avgConsultMins);
+          }
 
           const [newAppt] = await db.insert(appointments).values({
             clinicId: authUser.clinicId,
@@ -51,9 +79,10 @@ export async function PATCH(
             patientName: patient.name,
             patientPhone: patient.phone,
             appointmentDate: todayStr,
-            appointmentTime: timeStr,
+            appointmentTime: appointmentTime,
+            tokenNumber: nextToken,
             status: "checked_in",
-            checkInTime: new Date(),
+            checkInTime: now,
             notes: "Auto-generated from Follow-up Check In",
           }).returning({ id: appointments.id });
 

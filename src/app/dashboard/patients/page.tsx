@@ -1,16 +1,22 @@
 import { getAuthUser } from "@/lib/auth";
 import { db } from "@/db";
 import { patients, appointments, subscriptions, clinics } from "@/db/schema";
-import { eq, desc, count, and } from "drizzle-orm";
+import { eq, desc, count, and, ilike, or } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { StaggerContainer, FadeInUp } from "@/components/dashboard/dashboard-animations";
 import { PatientsClient } from "@/components/dashboard/patients/patients-client";
 
-export default async function PatientsPage() {
+export default async function PatientsPage(props: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const authUser = await getAuthUser();
   if (!authUser?.clinicId) redirect("/login");
+
+  const searchParams = await props.searchParams;
+  const page = typeof searchParams.page === "string" ? parseInt(searchParams.page) || 1 : 1;
+  const searchQ = typeof searchParams.search === "string" ? searchParams.search : "";
+  const pageSize = 20;
+  const offset = (page - 1) * pageSize;
 
   const [clinic] = await db
     .select()
@@ -18,7 +24,24 @@ export default async function PatientsPage() {
     .where(eq(clinics.id, authUser.clinicId))
     .limit(1);
 
-  // Fetch patients with their visit count and last visit date
+  let whereCondition = eq(patients.clinicId, authUser.clinicId);
+  if (searchQ) {
+    whereCondition = and(
+      eq(patients.clinicId, authUser.clinicId),
+      or(
+        ilike(patients.name, `%${searchQ}%`),
+        ilike(patients.phone, `%${searchQ}%`)
+      )
+    ) as any;
+  }
+
+  // Count query
+  const [{ totalCount }] = await db
+    .select({ totalCount: count() })
+    .from(patients)
+    .where(whereCondition);
+
+  // Fetch patients with their visit count
   const patientsWithStats = await db
     .select({
       id: patients.id,
@@ -38,7 +61,7 @@ export default async function PatientsPage() {
         eq(appointments.clinicId, patients.clinicId)
       )
     )
-    .where(eq(patients.clinicId, authUser.clinicId))
+    .where(whereCondition)
     .groupBy(
       patients.id,
       patients.name,
@@ -49,7 +72,14 @@ export default async function PatientsPage() {
       patients.createdAt
     )
     .orderBy(desc(patients.createdAt))
-    .limit(500);
+    .limit(pageSize)
+    .offset(offset);
+
+  // Total patients count for limit check (without search filter)
+  const [{ totalPatientsCount }] = await db
+    .select({ totalPatientsCount: count() })
+    .from(patients)
+    .where(eq(patients.clinicId, authUser.clinicId));
 
   // Check subscription status
   const activeSubs = await db
@@ -64,7 +94,7 @@ export default async function PatientsPage() {
     .limit(1);
 
   const hasActiveSubscription = activeSubs.length > 0;
-  const isLimitReached = !hasActiveSubscription && patientsWithStats.length >= 5;
+  const isLimitReached = !hasActiveSubscription && totalPatientsCount >= 5;
 
   return (
     <StaggerContainer className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-5 sm:space-y-8 pb-safe bottom-nav-spacing lg:pb-8">
@@ -90,7 +120,7 @@ export default async function PatientsPage() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Patients</h1>
             <p className="text-slate-500 mt-1 text-sm sm:text-base">
-              {patientsWithStats.length} patient{patientsWithStats.length !== 1 ? 's' : ''} in your directory
+              {totalCount} patient{totalCount !== 1 ? 's' : ''} {searchQ && 'found'}
             </p>
           </div>
           {!isLimitReached ? (
@@ -114,7 +144,14 @@ export default async function PatientsPage() {
       </FadeInUp>
 
       <FadeInUp>
-        <PatientsClient patients={patientsWithStats} clinic={clinic} />
+        <PatientsClient 
+          patients={patientsWithStats} 
+          clinic={clinic} 
+          totalCount={totalCount}
+          currentPage={page}
+          pageSize={pageSize}
+          initialSearch={searchQ}
+        />
       </FadeInUp>
     </StaggerContainer>
   );

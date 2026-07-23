@@ -29,6 +29,10 @@ export const clinics = pgTable("clinics", {
   gstin: text("gstin"),
   googleMapsUrl: text("google_maps_url"),
   about: text("about"),
+  heroImageUrl: text("hero_image_url"),
+  instagramUrl: text("instagram_url"),
+  whatsappNumber: text("whatsapp_number"),
+  facebookUrl: text("facebook_url"),
   referredBy: uuid("referred_by").references(() => growthPartners.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => [
@@ -113,6 +117,7 @@ export const appointments = pgTable(
     cancelToken: text("cancel_token"),
     rescheduleToken: text("reschedule_token"),
     acquisitionSource: text("acquisition_source"), // qr_inside, qr_outside, sticker, etc.
+    feeCollected: integer("fee_collected"), // For accurate POS tracking
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [
@@ -263,19 +268,16 @@ export const reviews = pgTable(
       .notNull()
       .references(() => clinics.id, { onDelete: "cascade" }),
     patientId: uuid("patient_id")
-      .notNull()
       .references(() => patients.id, { onDelete: "cascade" }),
     appointmentId: uuid("appointment_id")
-      .notNull()
       .references(() => appointments.id, { onDelete: "cascade" }),
     rating: integer("rating").notNull(), // 1 to 5
     comment: text("comment"),
     isVerified: boolean("is_verified").default(true).notNull(),
+    source: text("source").notNull().default("internal"), // internal, google, practo
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [
-    // One review per appointment
-    uniqueIndex("reviews_appointment_unique").on(table.appointmentId),
     index("reviews_clinic_idx").on(table.clinicId),
   ]
 );
@@ -413,6 +415,37 @@ export const commissionPayouts = pgTable("commission_payouts", {
   index("commission_payouts_partner_idx").on(table.partnerId),
   index("commission_payouts_status_idx").on(table.status),
 ]);
+
+// ─── Clinic Services ───────────────────────────────────────────────────────────
+export const clinicServices = pgTable("clinic_services", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  clinicId: uuid("clinic_id")
+    .notNull()
+    .references(() => clinics.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  pricePaise: integer("price_paise"),
+  durationMinutes: integer("duration_minutes"),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("clinic_services_clinic_idx").on(table.clinicId)
+]);
+
+// ─── Clinic Gallery ────────────────────────────────────────────────────────────
+export const clinicGallery = pgTable("clinic_gallery", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  clinicId: uuid("clinic_id")
+    .notNull()
+    .references(() => clinics.id, { onDelete: "cascade" }),
+  url: text("url").notNull(),
+  caption: text("caption"),
+  sortOrder: integer("sort_order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("clinic_gallery_clinic_idx").on(table.clinicId)
+]);
+
 // ─── Type Exports ──────────────────────────────────────────────────────────────
 export type Clinic = typeof clinics.$inferSelect;
 export type NewClinic = typeof clinics.$inferInsert;
@@ -450,3 +483,7 @@ export type LeadActivity = typeof leadActivities.$inferSelect;
 export type NewLeadActivity = typeof leadActivities.$inferInsert;
 export type CommissionPayout = typeof commissionPayouts.$inferSelect;
 export type NewCommissionPayout = typeof commissionPayouts.$inferInsert;
+export type ClinicService = typeof clinicServices.$inferSelect;
+export type NewClinicService = typeof clinicServices.$inferInsert;
+export type ClinicGallery = typeof clinicGallery.$inferSelect;
+export type NewClinicGallery = typeof clinicGallery.$inferInsert;
