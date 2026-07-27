@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { appointments } from "@/db/schema";
-import { eq, and, max } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
+import { getClinicTodayDate } from "@/lib/timezone";
+import { ensureUniqueTime } from "@/lib/appointment-utils";
 import { format } from "date-fns";
 
 export async function POST(req: NextRequest) {
@@ -22,7 +24,20 @@ export async function POST(req: NextRequest) {
     }
 
     const now = new Date();
-    const appointmentDate = format(now, 'yyyy-MM-dd');
+    const appointmentDate = getClinicTodayDate();
+
+    // Fetch existing appointments for today to determine token and prevent time collisions
+    const todayAppointmentsData = await db
+      .select()
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.clinicId, authUser.clinicId),
+          eq(appointments.appointmentDate, appointmentDate)
+        )
+      );
+
+    const existingTimes = new Set<string>(todayAppointmentsData.map((a) => a.appointmentTime));
 
     // Fetch next available slot according to clinic's schedule settings
     const { getAvailableSlotsForDate } = await import("@/lib/slots");
@@ -32,41 +47,22 @@ export async function POST(req: NextRequest) {
     const currentTimeStr = format(now, 'HH:mm');
     const futureSlots = slots.filter(s => s.available && s.time >= currentTimeStr);
     
-    let appointmentTime = format(now, 'HH:mm:ss');
+    let rawTime = format(now, 'HH:mm:ss');
     if (futureSlots.length > 0) {
-      appointmentTime = futureSlots[0].time + ":00"; // format as HH:mm:ss
-    } else {
-      // If no future slots are available (fully booked), we just append them to the very end 
-      // of the last booked slot or use current time if empty
-      const todayAppointmentsData = await db
-        .select()
-        .from(appointments)
-        .where(
-          and(
-            eq(appointments.clinicId, authUser.clinicId),
-            eq(appointments.appointmentDate, appointmentDate)
-          )
-        );
-      if (todayAppointmentsData.length > 0) {
-        const { getWalkInTimeSlot } = await import("@/lib/queue-logic");
-        const { clinics } = await import("@/db/schema");
-        const [clinicResult] = await db.select().from(clinics).where(eq(clinics.id, authUser.clinicId));
-        const avgConsultMins = clinicResult?.averageConsultationMinutes ?? 15;
-        appointmentTime = getWalkInTimeSlot(todayAppointmentsData, now, avgConsultMins);
-      }
+      rawTime = futureSlots[0].time + ":00";
+    } else if (todayAppointmentsData.length > 0) {
+      const { getWalkInTimeSlot } = await import("@/lib/queue-logic");
+      const { clinics } = await import("@/db/schema");
+      const [clinicResult] = await db.select().from(clinics).where(eq(clinics.id, authUser.clinicId));
+      const avgConsultMins = clinicResult?.averageConsultationMinutes ?? 15;
+      rawTime = getWalkInTimeSlot(todayAppointmentsData, now, avgConsultMins);
     }
 
-    // Calculate token number
-    const todayAppointmentsDataForToken = await db
-      .select()
-      .from(appointments)
-      .where(
-        and(
-          eq(appointments.clinicId, authUser.clinicId),
-          eq(appointments.appointmentDate, appointmentDate)
-        )
-      );
-    const maxTokenData = todayAppointmentsDataForToken.reduce((max, curr) => Math.max(max, curr.tokenNumber || 0), 0);
+    // Guarantee unique appointment time to eliminate PostgreSQL unique index constraint failures
+    const appointmentTime = ensureUniqueTime(rawTime, existingTimes);
+
+    // Calculate next token number safely
+    const maxTokenData = todayAppointmentsData.reduce((max, curr) => Math.max(max, curr.tokenNumber || 0), 0);
     const nextToken = maxTokenData + 1;
 
     const [newAppointment] = await db

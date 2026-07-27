@@ -68,34 +68,18 @@ export function HeroRedesign() {
                 </Button>
               </Link>
               
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="w-full sm:w-auto bg-white border-[#E5E7EB] text-[#0B132B] hover:bg-[#F8FAFC] h-14 px-8 text-base font-bold rounded-lg transition-all flex items-center gap-2 group shadow-sm"
-                  >
-                    <div className="bg-[#0B132B]/5 rounded-full p-1">
-                      <Play className="w-3.5 h-3.5 fill-[#0B132B]" />
-                    </div>
-                    Watch 2-min Demo
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[800px] w-[95vw] p-0 overflow-hidden bg-black/95 border-none rounded-xl">
-                  <div className="relative pt-[56.25%] w-full">
-                    <video 
-                      autoPlay 
-                      controls 
-                      className="absolute top-0 left-0 w-full h-full"
-                      preload="metadata"
-                      playsInline
-                    >
-                      <source src="/demo_video.mp4" type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
+              <Link href="/demo" className="w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto bg-white border-[#E5E7EB] text-[#0B132B] hover:bg-[#F8FAFC] h-14 px-8 text-base font-bold rounded-lg transition-all flex items-center gap-2 group shadow-sm"
+                >
+                  <div className="bg-[#0B132B]/5 rounded-full p-1">
+                    <Play className="w-3.5 h-3.5 fill-[#0B132B]" />
                   </div>
-                </DialogContent>
-              </Dialog>
+                  Watch 2-min Demo
+                </Button>
+              </Link>
             </motion.div>
 
             <motion.div

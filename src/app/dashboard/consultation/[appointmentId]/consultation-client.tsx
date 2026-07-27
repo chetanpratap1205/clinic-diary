@@ -298,10 +298,13 @@ export function ConsultationClient({
       <div className="flex-1 overflow-y-auto space-y-5 min-h-0 pb-4">
         {/* Vitals */}
         <div className="space-y-2">
-          <label className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
-            <Activity className="w-3 h-3 text-slate-400" />
-            Vitals
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <Activity className="w-3 h-3 text-slate-400" />
+              Vitals
+            </label>
+            <span className="text-[10px] text-slate-400 font-medium">Tap to insert</span>
+          </div>
           <input
             type="text"
             placeholder="e.g. BP 120/80, WT 75kg, Temp 98.6°F"
@@ -309,14 +312,29 @@ export function ConsultationClient({
             onChange={(e) => setVitals(e.target.value)}
             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-300 focus:bg-white transition-all placeholder:text-slate-300"
           />
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {["BP 120/80", "WT 70kg", "Temp 98.6°F", "Pulse 72 bpm", "SpO2 98%"].map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setVitals((prev) => (prev ? `${prev}, ${item}` : item))}
+                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 border border-slate-200/60 text-slate-600 text-xs font-semibold transition-all active:scale-95"
+              >
+                + {item}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Complaint */}
         <div className="space-y-2">
-          <label className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
-            <ClipboardList className="w-3 h-3 text-slate-400" />
-            Chief Complaint / Symptoms
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <ClipboardList className="w-3 h-3 text-slate-400" />
+              Chief Complaint / Symptoms
+            </label>
+            <span className="text-[10px] text-slate-400 font-medium">Tap to insert</span>
+          </div>
           <textarea
             placeholder="What brings the patient in today?"
             value={complaint}
@@ -324,14 +342,29 @@ export function ConsultationClient({
             rows={3}
             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-300 focus:bg-white transition-all resize-none placeholder:text-slate-300 leading-relaxed"
           />
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {["Fever & Bodyache", "Cold & Cough", "Acidity & Heartburn", "Headache", "Weakness & Fatigue"].map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setComplaint((prev) => (prev ? `${prev}, ${item}` : item))}
+                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 border border-slate-200/60 text-slate-600 text-xs font-semibold transition-all active:scale-95"
+              >
+                + {item}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Diagnosis */}
         <div className="space-y-2">
-          <label className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
-            <AlertCircle className="w-3 h-3 text-slate-400" />
-            Diagnosis
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <AlertCircle className="w-3 h-3 text-slate-400" />
+              Diagnosis
+            </label>
+            <span className="text-[10px] text-slate-400 font-medium">Tap to insert</span>
+          </div>
           <input
             type="text"
             placeholder="Primary diagnosis..."
@@ -339,21 +372,54 @@ export function ConsultationClient({
             onChange={(e) => setDiagnosis(e.target.value)}
             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-300 focus:bg-white transition-all placeholder:text-slate-300"
           />
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {["Upper Respiratory Infection", "Viral Fever", "Essential Hypertension", "Type 2 Diabetes", "GERD / Hyperacidity"].map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setDiagnosis(item)}
+                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 border border-slate-200/60 text-slate-600 text-xs font-semibold transition-all active:scale-95"
+              >
+                {item}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Treatment */}
         <div className="space-y-2">
-          <label className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
-            <Pill className="w-3 h-3 text-slate-400" />
-            Treatment &amp; Prescription
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <Pill className="w-3 h-3 text-slate-400" />
+              Treatment &amp; Prescription
+            </label>
+            <span className="text-[10px] text-slate-400 font-medium">1-Tap Rx Presets</span>
+          </div>
           <textarea
             placeholder="Medicines, dosage, duration, and instructions..."
             value={treatment}
             onChange={(e) => setTreatment(e.target.value)}
             rows={5}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-300 focus:bg-white transition-all resize-none placeholder:text-slate-300 leading-relaxed"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-300 focus:bg-white transition-all resize-none placeholder:text-slate-300 leading-relaxed font-mono"
           />
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {[
+              { label: "Paracetamol 650mg", rx: "Tab Paracetamol 650mg (1-0-1 after food x 3 days)" },
+              { label: "Amoxicillin 500mg", rx: "Cap Amoxicillin 500mg (1-0-1 after food x 5 days)" },
+              { label: "Pantoprazole 40mg", rx: "Tab Pantoprazole 40mg (1-0-0 before food x 5 days)" },
+              { label: "Cetirizine 10mg", rx: "Tab Cetirizine 10mg (0-0-1 at night x 5 days)" },
+              { label: "Multivitamin", rx: "Tab B-Complex with Zinc (0-1-0 after food x 10 days)" }
+            ].map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => setTreatment((prev) => (prev ? `${prev}\n• ${item.rx}` : `• ${item.rx}`))}
+                className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold transition-all hover:bg-emerald-100 active:scale-95"
+              >
+                + {item.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Follow-up toggle */}

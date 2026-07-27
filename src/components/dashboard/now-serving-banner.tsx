@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, ChevronRight, CheckCircle2 } from "lucide-react";
+import { Play, ChevronRight } from "lucide-react";
 import type { Appointment } from "@/db/schema";
 import { format } from "date-fns";
 import Link from "next/link";
+import { normalizeAppointment } from "@/lib/appointment-utils";
 
 interface NowServingBannerProps {
   clinicId: string;
@@ -15,7 +16,15 @@ interface NowServingBannerProps {
 }
 
 export function NowServingBanner({ clinicId, initialAppointments, themeColor }: NowServingBannerProps) {
-  const [appointments, setAppointments] = useState(initialAppointments);
+  const [appointments, setAppointments] = useState<Appointment[]>(() =>
+    (initialAppointments || []).map(normalizeAppointment)
+  );
+
+  useEffect(() => {
+    if (initialAppointments) {
+      setAppointments(initialAppointments.map(normalizeAppointment));
+    }
+  }, [initialAppointments]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -31,13 +40,21 @@ export function NowServingBanner({ clinicId, initialAppointments, themeColor }: 
         },
         (payload) => {
           if (payload.eventType === "UPDATE") {
+            const updated = normalizeAppointment(payload.new);
             setAppointments((prev) =>
-              prev.map((a) => (a.id === payload.new.id ? (payload.new as Appointment) : a))
+              prev.map((a) => (a.id === updated.id ? updated : a))
             );
           } else if (payload.eventType === "INSERT") {
-            const newAppt = payload.new as Appointment;
+            const newAppt = normalizeAppointment(payload.new);
             if (newAppt.appointmentDate === format(new Date(), "yyyy-MM-dd")) {
-              setAppointments((prev) => [...prev, newAppt]);
+              setAppointments((prev) => {
+                if (prev.some((a) => a.id === newAppt.id)) return prev;
+                return [...prev, newAppt];
+              });
+            }
+          } else if (payload.eventType === "DELETE") {
+            if (payload.old?.id) {
+              setAppointments((prev) => prev.filter((a) => a.id !== payload.old.id));
             }
           }
         }
@@ -50,7 +67,7 @@ export function NowServingBanner({ clinicId, initialAppointments, themeColor }: 
   }, [clinicId]);
 
   const inConsultation = appointments
-    .filter((a) => a.status === "in_consultation")
+    .filter((a) => a && a.status === "in_consultation")
     .sort(
       (a, b) =>
         new Date(a.consultationStartTime || 0).getTime() -
@@ -58,7 +75,7 @@ export function NowServingBanner({ clinicId, initialAppointments, themeColor }: 
     );
 
   const checkedIn = appointments
-    .filter((a) => a.status === "checked_in")
+    .filter((a) => a && a.status === "checked_in")
     .sort((a, b) => (a.tokenNumber || 0) - (b.tokenNumber || 0));
 
   const currentlyServing = inConsultation[0];
@@ -89,8 +106,8 @@ export function NowServingBanner({ clinicId, initialAppointments, themeColor }: 
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Now Serving</p>
                 <p className="text-base font-bold text-white flex items-center gap-2">
-                  {currentlyServing.patientName}
-                  {currentlyServing.tokenNumber && (
+                  {currentlyServing.patientName || "Patient"}
+                  {currentlyServing.tokenNumber !== null && currentlyServing.tokenNumber !== undefined && (
                     <span className="bg-white/10 px-2 py-0.5 rounded text-xs">#{currentlyServing.tokenNumber}</span>
                   )}
                 </p>
@@ -105,12 +122,12 @@ export function NowServingBanner({ clinicId, initialAppointments, themeColor }: 
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center">
                 <span className="text-slate-400 font-bold text-lg">
-                  {nextUp.tokenNumber ? `#${nextUp.tokenNumber}` : "-"}
+                  {nextUp.tokenNumber !== null && nextUp.tokenNumber !== undefined ? `#${nextUp.tokenNumber}` : "-"}
                 </span>
               </div>
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Next Up</p>
-                <p className="text-base font-bold text-slate-800">{nextUp.patientName}</p>
+                <p className="text-base font-bold text-slate-800">{nextUp.patientName || "Patient"}</p>
               </div>
             </div>
             <Link

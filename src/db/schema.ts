@@ -245,7 +245,7 @@ export const qrCodes = pgTable(
   "qr_codes",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    code: text("code").notNull().unique(),          // e.g. "Q-001", "CD-X4K2"
+    code: text("code").notNull().unique(),          // e.g. "Q-001", "DD-X4K2"
     clinicId: uuid("clinic_id").references(() => clinics.id, { onDelete: "set null" }),
     usageType: text("usage_type").notNull().default("general"), // general, reception, window, sticker
     assignedAt: timestamp("assigned_at"),

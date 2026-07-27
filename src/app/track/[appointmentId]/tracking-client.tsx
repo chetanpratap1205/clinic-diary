@@ -25,6 +25,7 @@ import type { Appointment, Clinic } from "@/db/schema";
 import Link from "next/link";
 import { formatTimeDisplay } from "@/lib/format";
 import { getClinicDelay, getEstimatedStart } from "@/lib/queue-logic";
+import { normalizeAppointment } from "@/lib/appointment-utils";
 
 interface TrackingClientProps {
   appointment: Appointment;
@@ -92,14 +93,20 @@ export function TrackingClient({
         { event: "*", schema: "public", table: "appointments", filter: `clinic_id=eq.${clinic.id}` },
         (payload) => {
           if (payload.eventType === "UPDATE") {
-             setAllAppts((prev) => prev.map(a => a.id === payload.new.id ? (payload.new as Appointment) : a));
+             const updated = normalizeAppointment(payload.new);
+             setAllAppts((prev) => prev.map(a => a.id === updated.id ? updated : a));
           } else if (payload.eventType === "INSERT") {
-             const newAppt = payload.new as Appointment;
+             const newAppt = normalizeAppointment(payload.new);
              if (newAppt.appointmentDate === appointment.appointmentDate) {
-               setAllAppts((prev) => [...prev, newAppt]);
+               setAllAppts((prev) => {
+                 if (prev.some(a => a.id === newAppt.id)) return prev;
+                 return [...prev, newAppt];
+               });
              }
           } else if (payload.eventType === "DELETE") {
-             setAllAppts((prev) => prev.filter(a => a.id !== payload.old.id));
+             if (payload.old?.id) {
+               setAllAppts((prev) => prev.filter(a => a.id !== payload.old.id));
+             }
           }
         }
       )

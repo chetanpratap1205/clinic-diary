@@ -182,24 +182,29 @@ export async function checkInWalkIn(patientId: string) {
 
     if (!patient) return { error: "Patient not found" };
 
+    const { getClinicTodayDate } = await import("@/lib/timezone");
+    const { ensureUniqueTime } = await import("@/lib/appointment-utils");
     const { format } = await import("date-fns");
-    const todayStr = format(new Date(), "yyyy-MM-dd");
-    const timeStr = format(new Date(), "HH:mm:ss");
 
-    const { desc } = await import("drizzle-orm");
-    const [latestAppt] = await db
-      .select({ tokenNumber: appointments.tokenNumber })
+    const todayStr = getClinicTodayDate();
+    const now = new Date();
+
+    const todayAppointmentsData = await db
+      .select({ appointmentTime: appointments.appointmentTime, tokenNumber: appointments.tokenNumber })
       .from(appointments)
       .where(
         and(
           eq(appointments.clinicId, authUser.clinicId),
           eq(appointments.appointmentDate, todayStr)
         )
-      )
-      .orderBy(desc(appointments.tokenNumber))
-      .limit(1);
-      
-    const nextToken = (latestAppt?.tokenNumber || 0) + 1;
+      );
+
+    const existingTimes = new Set<string>(todayAppointmentsData.map((a) => a.appointmentTime));
+    const rawTime = format(now, "HH:mm:ss");
+    const appointmentTime = ensureUniqueTime(rawTime, existingTimes);
+
+    const maxToken = todayAppointmentsData.reduce((max, curr) => Math.max(max, curr.tokenNumber || 0), 0);
+    const nextToken = maxToken + 1;
 
     await db.insert(appointments).values({
       clinicId: authUser.clinicId,
@@ -207,9 +212,9 @@ export async function checkInWalkIn(patientId: string) {
       patientName: patient.name,
       patientPhone: patient.phone,
       appointmentDate: todayStr,
-      appointmentTime: timeStr,
+      appointmentTime,
       status: "checked_in",
-      checkInTime: new Date(),
+      checkInTime: now,
       notes: "Walk-in patient",
       tokenNumber: nextToken,
     });

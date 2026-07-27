@@ -111,7 +111,12 @@ export default async function ReviewPage({
                 How was your consultation with {doctorName}? Your feedback is greatly appreciated.
               </p>
               
-              <ReviewForm appointmentId={appointmentId} themeColor={themeColor} />
+              <ReviewForm 
+                appointmentId={appointmentId} 
+                themeColor={themeColor} 
+                googleMapsUrl={clinic?.googleMapsUrl}
+                doctorName={doctorName}
+              />
             </>
           )}
         </div>

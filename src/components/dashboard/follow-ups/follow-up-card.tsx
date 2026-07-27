@@ -47,8 +47,9 @@ export function FollowUpCard({ followUp, variant, clinic }: FollowUpCardProps) {
   };
 
   const handleWhatsApp = () => {
-    const bookingLink = `${process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in"}/book/${clinic.slug}`;
-    const text = `Hi ${followUp.patient.name}, this is a reminder from ${clinic.name}. Your follow-up visit was scheduled around ${format(new Date(followUp.dueDate), "MMM d, yyyy")}. Please book your slot at your convenience using our online portal: ${bookingLink}`;
+    const origin = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in");
+    const bookingLink = `${origin}/book/${clinic.slug}`;
+    const text = `*Follow-up Reminder from ${clinic.name}* 🏥\n\nDear ${followUp.patient.name},\nThis is a gentle reminder for your scheduled follow-up visit. Regular check-ups ensure your best health!\n\n📅 *Due Date:* ${format(new Date(followUp.dueDate), "dd MMM yyyy")}\n\n👉 *Book your preferred slot online now:*\n${bookingLink}\n\nWishing you good health! 🌿`;
     const url = `https://wa.me/91${followUp.patient.phone}?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank");
   };

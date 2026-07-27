@@ -62,6 +62,8 @@ export function HomeNav() {
 
         {/* Desktop Links */}
         <div className="hidden md:flex items-center justify-center gap-8 px-4">
+          <Link href="/demo" className="text-sm font-black text-[#0B132B] hover:text-[#00B7A8] transition-colors">Watch Demo</Link>
+          <Link href="/blog" className="text-sm font-black text-[#0B132B] hover:text-[#00B7A8] transition-colors">Blog</Link>
           <Link href="/login" className="text-sm font-black text-[#0B132B] hover:text-[#00B7A8] transition-colors">Sign In</Link>
           <Link href="#pricing" className="text-sm font-black text-[#0B132B] hover:text-[#00B7A8] transition-colors">Pricing</Link>
         </div>
@@ -82,6 +84,8 @@ export function HomeNav() {
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
         <div className="absolute top-full left-4 right-4 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 p-4 flex flex-col gap-4 md:hidden backdrop-blur-xl">
+          <Link href="/demo" className="text-sm font-black text-[#0B132B] p-2 hover:bg-slate-50 rounded-lg" onClick={() => setIsMobileMenuOpen(false)}>Watch Demo</Link>
+          <Link href="/blog" className="text-sm font-black text-[#0B132B] p-2 hover:bg-slate-50 rounded-lg" onClick={() => setIsMobileMenuOpen(false)}>Blog</Link>
           <Link href="/login" className="text-sm font-black text-[#0B132B] p-2 hover:bg-slate-50 rounded-lg" onClick={() => setIsMobileMenuOpen(false)}>Sign In</Link>
           <Link href="#pricing" className="text-sm font-black text-[#0B132B] p-2 hover:bg-slate-50 rounded-lg" onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
         </div>

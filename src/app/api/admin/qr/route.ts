@@ -56,7 +56,7 @@ export async function POST(req: Request) {
   const body = await req.json();
   const count = Math.min(Number(body.count) || 1, 100); // max 100 per batch
 
-  // Generate codes: CD-XXXX format (Doctor Diary branded)
+  // Generate codes: DD-XXXX format (Doctor Diary branded)
   const existingCodes = await db
     .select({ code: qrCodes.code })
     .from(qrCodes);
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
   let attempts = 0;
   while (newCodes.length < count && attempts < 1000) {
     attempts++;
-    const code = `CD-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    const code = `DD-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
     if (!existingSet.has(code)) {
       existingSet.add(code);
       newCodes.push({ code });

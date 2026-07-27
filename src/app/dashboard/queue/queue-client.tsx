@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { updateAppointmentStatus } from "@/app/dashboard/actions";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, CheckCircle2, User, Phone, Play, Check, X, AlertTriangle, Activity, Undo2 } from "lucide-react";
+import { Clock, CheckCircle2, User, Play, Check, X, Activity, Undo2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Appointment, Clinic } from "@/db/schema";
 import { format } from "date-fns";
@@ -13,13 +13,13 @@ import { cn } from "@/lib/utils";
 import { WhatsAppShareButton } from "@/components/dashboard/patients/whatsapp-share-button";
 import { formatTimeDisplay } from "@/lib/format";
 import { getClinicDelay, getEstimatedStart } from "@/lib/queue-logic";
+import { normalizeAppointment } from "@/lib/appointment-utils";
+
 interface QueueClientProps {
   initialAppointments: Appointment[];
   clinic: Clinic;
   today: string;
 }
-
-
 
 const QueueCard = ({ 
   appt, 
@@ -33,13 +33,15 @@ const QueueCard = ({
   appt: Appointment; 
   clinic: Clinic; 
   isPending: boolean;
-  handleStatusChange: (id: string, status: string) => void;
+  handleStatusChange: (id: string, status: string, fee?: number) => Promise<boolean>;
   router: any;
   now: Date;
   delayMinutes: number;
 }) => {
-  const { estimatedStart, isDelayed, waitMins } = getEstimatedStart(appt, delayMinutes, now);
+  const { estimatedStart, isDelayed } = getEstimatedStart(appt, delayMinutes, now);
   const adjustedTimeStr = format(estimatedStart, "h:mm a");
+  const tokenDisplay = appt.tokenNumber !== null && appt.tokenNumber !== undefined ? appt.tokenNumber : "-";
+
   return (
     <motion.div
       layout
@@ -59,11 +61,13 @@ const QueueCard = ({
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-[1.1rem] bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center flex-shrink-0 text-slate-800 border border-slate-300/50 shadow-inner relative overflow-hidden">
              <div className="absolute inset-0 bg-white/50"></div>
-             <span className="font-black text-lg tracking-tighter relative z-10"><span className="text-slate-400 font-medium text-sm mr-0.5">#</span>{appt.tokenNumber || "-"}</span>
+             <span className="font-black text-lg tracking-tighter relative z-10">
+               <span className="text-slate-400 font-medium text-sm mr-0.5">#</span>{tokenDisplay}
+             </span>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <p className="font-bold text-slate-900 text-sm">{appt.patientName}</p>
+              <p className="font-bold text-slate-900 text-sm">{appt.patientName || "Patient"}</p>
               {appt.notes?.includes("Quick check-in") ? (
                 <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-slate-100 text-slate-500">Walk-in</span>
               ) : appt.notes?.includes("Auto-generated from Follow-up") ? (
@@ -120,8 +124,10 @@ const QueueCard = ({
         {appt.status === "checked_in" && (
           <button
             onClick={async () => {
-              await handleStatusChange(appt.id, "in_consultation");
-              router.push(`/dashboard/consultation/${appt.id}`);
+              const success = await handleStatusChange(appt.id, "in_consultation");
+              if (success) {
+                router.push(`/dashboard/consultation/${appt.id}`);
+              }
             }}
             disabled={isPending}
             className="w-full bg-sky-50 text-sky-700 hover:opacity-90 min-h-[44px] rounded-xl text-xs font-bold tracking-wide transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
@@ -230,7 +236,12 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
   const router = useRouter();
   type Tab = "Scheduled" | "Waiting" | "In Consult" | "Done";
   const [activeTab, setActiveTab] = useState<Tab>("Waiting");
-  const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
+  
+  // Normalize initial data cleanly
+  const [appointments, setAppointments] = useState<Appointment[]>(() =>
+    (initialAppointments || []).map(normalizeAppointment)
+  );
+
   const [isPending, startTransition] = useTransition();
   const [now, setNow] = useState(new Date());
 
@@ -240,10 +251,33 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
   const [completingAppt, setCompletingAppt] = useState<Appointment | null>(null);
   const [feeCollected, setFeeCollected] = useState<number>(clinic.consultationFee || 0);
 
+  // Sync prop updates if server revalidates
+  useEffect(() => {
+    if (initialAppointments) {
+      setAppointments((initialAppointments || []).map(normalizeAppointment));
+    }
+  }, [initialAppointments]);
+
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
+
+  // Window focus auto-resync (resilient against silent socket disconnects)
+  useEffect(() => {
+    const handleFocus = () => {
+      router.refresh();
+    };
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        router.refresh();
+      }
+    });
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [router]);
 
   // Supabase Realtime for instant updates across devices
   useEffect(() => {
@@ -260,67 +294,94 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
         },
         (payload) => {
           if (payload.eventType === "UPDATE") {
+            const updated = normalizeAppointment(payload.new);
             setAppointments((prev) =>
-              prev.map((a) => (a.id === payload.new.id ? (payload.new as Appointment) : a))
+              prev.map((a) => (a.id === updated.id ? updated : a))
             );
           } else if (payload.eventType === "INSERT") {
-            const newAppt = payload.new as Appointment;
+            const newAppt = normalizeAppointment(payload.new);
             if (newAppt.appointmentDate === today) {
-              setAppointments((prev) => [...prev, newAppt]);
+              setAppointments((prev) => {
+                if (prev.some((a) => a.id === newAppt.id)) return prev;
+                return [...prev, newAppt];
+              });
+            }
+          } else if (payload.eventType === "DELETE") {
+            if (payload.old?.id) {
+              setAppointments((prev) => prev.filter((a) => a.id !== payload.old.id));
             }
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          router.refresh();
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [clinic.id]);
+  }, [clinic.id, today, router]);
 
-  const handleStatusChange = (appointmentId: string, newStatus: string, fee?: number) => {
-    if (newStatus === "completed_prompt") {
-      const apptToComplete = appointments.find(a => a.id === appointmentId);
-      if (apptToComplete) {
-        setCompletingAppt(apptToComplete);
-        setFeeCollected(clinic.consultationFee || 0);
-        setReceiptState("input");
-        setCompleteModalOpen(true);
+  const handleStatusChange = useCallback(
+    async (appointmentId: string, newStatus: string, fee?: number): Promise<boolean> => {
+      if (newStatus === "completed_prompt") {
+        const apptToComplete = appointments.find((a) => a.id === appointmentId);
+        if (apptToComplete) {
+          setCompletingAppt(apptToComplete);
+          setFeeCollected(clinic.consultationFee || 0);
+          setReceiptState("input");
+          setCompleteModalOpen(true);
+        }
+        return false;
       }
-      return;
-    }
 
-    startTransition(async () => {
+      const previousAppointments = [...appointments];
+
       // Optimistic update
       setAppointments((prev) =>
         prev.map((a) =>
-          a.id === appointmentId ? { ...a, status: newStatus, feeCollected: fee ?? null } : a
+          a.id === appointmentId
+            ? normalizeAppointment({ ...a, status: newStatus, feeCollected: fee ?? a.feeCollected })
+            : a
         )
       );
 
-      const res = await updateAppointmentStatus(appointmentId, newStatus, fee);
-      if (res?.error) {
-        toast.error(res.error);
-        // Revert on error could be implemented here
-      } else {
-        toast.success(`Patient marked as ${newStatus.replace("_", " ")}`);
-      }
-    });
-  };
+      return new Promise<boolean>((resolve) => {
+        startTransition(async () => {
+          try {
+            const res = await updateAppointmentStatus(appointmentId, newStatus, fee);
+            if (res?.error) {
+              toast.error(res.error);
+              setAppointments(previousAppointments); // Revert optimistic update on failure
+              resolve(false);
+            } else {
+              toast.success(`Patient marked as ${newStatus.replace("_", " ")}`);
+              resolve(true);
+            }
+          } catch (err: any) {
+            toast.error(err.message || "Failed to update appointment status");
+            setAppointments(previousAppointments); // Revert optimistic update on error
+            resolve(false);
+          }
+        });
+      });
+    },
+    [appointments, clinic.consultationFee]
+  );
 
-  // Group appointments
+  // Group appointments safely
   const scheduled = appointments
-    .filter((a) => a.status === "confirmed")
-    .sort((a, b) => a.appointmentTime.localeCompare(b.appointmentTime));
+    .filter((a) => a && a.status === "confirmed")
+    .sort((a, b) => (a.appointmentTime || "").localeCompare(b.appointmentTime || ""));
 
   const checkedIn = appointments
-    .filter((a) => a.status === "checked_in")
-    .sort(
-      (a, b) => (a.tokenNumber || 0) - (b.tokenNumber || 0)
-    );
+    .filter((a) => a && a.status === "checked_in")
+    .sort((a, b) => (a.tokenNumber || 0) - (b.tokenNumber || 0));
 
   const inConsultation = appointments
-    .filter((a) => a.status === "in_consultation")
+    .filter((a) => a && a.status === "in_consultation")
     .sort(
       (a, b) =>
         new Date(a.consultationStartTime || 0).getTime() -
@@ -328,16 +389,16 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
     );
 
   const completed = appointments
-    .filter((a) => ["completed", "cancelled", "no_show"].includes(a.status))
+    .filter((a) => a && ["completed", "cancelled", "no_show"].includes(a.status))
     .sort((a, b) => {
-       const aTime = a.consultationEndTime ? new Date(a.consultationEndTime).getTime() : new Date(a.createdAt).getTime();
-       const bTime = b.consultationEndTime ? new Date(b.consultationEndTime).getTime() : new Date(b.createdAt).getTime();
-       return bTime - aTime; // descending
+       const aTime = a.consultationEndTime ? new Date(a.consultationEndTime).getTime() : new Date(a.createdAt || 0).getTime();
+       const bTime = b.consultationEndTime ? new Date(b.consultationEndTime).getTime() : new Date(b.createdAt || 0).getTime();
+       return bTime - aTime;
     });
 
   const delayMinutes = getClinicDelay(appointments, now);
 
-  const tabs: { id: Tab, label: string, count: number }[] = [
+  const tabs: { id: Tab; label: string; count: number }[] = [
     { id: "Scheduled", label: "Scheduled", count: scheduled.length },
     { id: "Waiting", label: "Waiting", count: checkedIn.length },
     { id: "In Consult", label: "In Consult", count: inConsultation.length },
@@ -395,8 +456,8 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
                       Cancel
                     </button>
                     <button 
-                      onClick={() => {
-                        handleStatusChange(completingAppt.id, "completed", feeCollected);
+                      onClick={async () => {
+                        await handleStatusChange(completingAppt.id, "completed", feeCollected);
                         setReceiptState("success");
                       }}
                       className="flex-1 py-3 bg-slate-900 text-white font-bold text-sm rounded-xl shadow-md hover:bg-slate-800 hover:shadow-lg transition-all active:scale-[0.98]"

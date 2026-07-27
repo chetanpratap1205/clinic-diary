@@ -184,7 +184,7 @@ export default function SignupPage() {
             <div className="text-slate-300 text-sm font-medium">
               Join{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 font-black">
-                21,000+ Top Doctors
+                1,200+ Top Doctors
               </span>{" "}
               delivering premium care.
             </div>

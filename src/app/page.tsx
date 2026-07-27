@@ -29,6 +29,7 @@ import { ExperienceEngine } from "./_components/experience-engine";
 import { RotatingSpecialty } from "./_components/rotating-specialty";
 import { HeroRedesign } from "./_components/hero-redesign";
 import { HomeNav } from "./_components/home-nav";
+import { LeadMagnetSection } from "./_components/lead-magnet";
 
 export default function HomePage() {
   return (
@@ -158,7 +159,8 @@ export default function HomePage() {
                   src="/chetan_profile_photo.png" 
                   alt="Chetan Pratap, Founder" 
                   width={160} 
-                  height={160} 
+                  height={160}
+                  unoptimized 
                   className="object-cover w-full h-full transition-all duration-700"
                 />
               </div>
@@ -196,6 +198,7 @@ export default function HomePage() {
                   alt="Govind Bansal, Co-Founder" 
                   width={160} 
                   height={160} 
+                  unoptimized
                   className="object-cover w-full h-full transition-all duration-700"
                 />
               </div>
@@ -389,6 +392,9 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Lead Magnet Section for Capturing Non-Ready Doctor Leads */}
+      <LeadMagnetSection />
+
       {/* Footer */}
       <footer className="border-t border-white/10 bg-[#050505] pt-16 sm:pt-24 pb-12 px-4 sm:px-6 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-emerald-500/5 rounded-full blur-[150px] -z-10 pointer-events-none" />
@@ -434,10 +440,14 @@ export default function HomePage() {
             </div>
             
             <div className="flex flex-wrap gap-6 sm:gap-10 text-sm font-semibold text-slate-400 justify-center">
+              <Link href="/blog" className="hover:text-emerald-400 transition-colors">Blog</Link>
+              <Link href="/demo" className="hover:text-emerald-400 transition-colors">Demo</Link>
               <Link href="/privacy" className="hover:text-emerald-400 transition-colors">Privacy</Link>
               <Link href="/terms" className="hover:text-emerald-400 transition-colors">Terms</Link>
               <Link href="/refund" className="hover:text-emerald-400 transition-colors">Refund Policy</Link>
-              <a href="mailto:support@doctor.naturexpress.in" className="hover:text-emerald-400 transition-colors">Contact Support</a>
+              <a href="https://wa.me/918077170715?text=Hi%20Doctor%20Diary%20Support%20Team" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors flex items-center gap-1">
+                Contact Support (WhatsApp)
+              </a>
             </div>
           </div>
           

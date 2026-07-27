@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Star, Loader2, MessageSquareText } from "lucide-react";
+import { Star, Loader2, MessageSquareText, ExternalLink, CheckCircle2 } from "lucide-react";
 import { submitReview } from "./actions";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -9,14 +9,19 @@ import { toast } from "sonner";
 export function ReviewForm({
   appointmentId,
   themeColor,
+  googleMapsUrl,
+  doctorName,
 }: {
   appointmentId: string;
   themeColor: string;
+  googleMapsUrl?: string | null;
+  doctorName?: string;
 }) {
   const [rating, setRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [comment, setComment] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [submitted, setSubmitted] = useState(false);
   const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -33,10 +38,46 @@ export function ReviewForm({
         toast.error(result.error);
       } else {
         toast.success("Review submitted successfully!");
+        setSubmitted(true);
         router.refresh();
       }
     });
   };
+
+  if (submitted) {
+    return (
+      <div className="text-center py-8 space-y-5 animate-in fade-in zoom-in-95 duration-300">
+        <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto text-emerald-600 mb-2">
+          <CheckCircle2 className="w-8 h-8" />
+        </div>
+        <h3 className="text-xl font-black text-slate-800">Thank You for Your Feedback!</h3>
+        <p className="text-slate-500 text-sm max-w-xs mx-auto">
+          Your review has been logged successfully.
+        </p>
+
+        {rating >= 4 && googleMapsUrl && (
+          <div className="mt-6 p-5 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-200/80 space-y-3 text-left">
+            <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+              <span>Help {doctorName || "the Doctor"} on Google Maps!</span>
+            </div>
+            <p className="text-xs text-amber-800/80 leading-relaxed">
+              Would you mind posting your review on Google Maps as well? It takes just 10 seconds and helps other patients find the clinic!
+            </p>
+            <a
+              href={googleMapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3 px-4 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm rounded-xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-95"
+            >
+              <span>Post on Google Maps</span>
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
