@@ -8,6 +8,7 @@ import {
   qrCodes,
   patients,
   growthPartners,
+  qrScans,
 } from "@/db/schema";
 import { eq, count, sum, desc, sql } from "drizzle-orm";
 import { notFound } from "next/navigation";
@@ -72,6 +73,8 @@ export default async function ClinicDetailPage({
     qrCodeRows,
     recentAppointments,
     partners,
+    [totalQrScansResult],
+    qrApptsResult,
   ] = await Promise.all([
     db.select().from(clinics).where(eq(clinics.id, clinicId)).limit(1),
     db.select().from(subscriptions).where(eq(subscriptions.clinicId, clinicId)).limit(1),
@@ -91,6 +94,13 @@ export default async function ClinicDetailPage({
     db.select().from(appointments).where(eq(appointments.clinicId, clinicId))
       .orderBy(desc(appointments.createdAt)).limit(8),
     db.select({ id: growthPartners.id, name: growthPartners.name }).from(growthPartners).orderBy(growthPartners.name),
+    db.select({ count: count() }).from(qrScans).where(eq(qrScans.clinicId, clinicId)),
+    db.execute(sql`
+      SELECT acquisition_source AS source, COUNT(*)::int AS count
+      FROM appointments
+      WHERE clinic_id = ${clinicId} AND acquisition_source LIKE 'qr_%'
+      GROUP BY acquisition_source
+    `),
   ]);
 
   const clinic = clinicRows[0];
@@ -290,33 +300,70 @@ export default async function ClinicDetailPage({
 
         {/* QR + Follow-ups */}
         <div className="space-y-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                <QrCode className="w-4 h-4 text-slate-400" />
-                QR Code
-              </CardTitle>
+          <Card className="border-teal-100 bg-gradient-to-br from-white to-teal-50/20">
+            <CardHeader className="pb-3 border-b border-slate-100">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                  <QrCode className="w-4 h-4 text-teal-600" />
+                  Doctor QR Analytics & Performance
+                </CardTitle>
+                <Link href="/admin/qr" className="text-xs font-semibold text-teal-600 hover:underline">
+                  Manage QR →
+                </Link>
+              </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-4 space-y-4">
               {qrCode ? (
-                <div className="flex items-center justify-between text-sm">
-                  <div>
-                    <p className="font-mono font-bold text-slate-900">{qrCode.code}</p>
-                    {qrCode.assignedAt && (
-                      <p className="text-xs text-slate-500 mt-1">
-                        Assigned {format(new Date(qrCode.assignedAt), "MMM d, yyyy")}
+                <>
+                  <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200/80 shadow-2xs">
+                    <div>
+                      <p className="font-mono font-extrabold text-slate-900 text-sm">#{qrCode.code}</p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Assigned {qrCode.assignedAt ? format(new Date(qrCode.assignedAt), "MMM d, yyyy") : "N/A"}
                       </p>
-                    )}
-                    {qrCode.notes && (
-                      <p className="text-xs text-slate-500 mt-1 italic">{qrCode.notes}</p>
-                    )}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] text-slate-400 font-bold uppercase">Usage Type</p>
+                      <Badge variant="outline" className="bg-teal-50 text-teal-700 border-teal-200 text-[10px] uppercase font-mono mt-0.5">
+                        {qrCode.usageType}
+                      </Badge>
+                    </div>
                   </div>
-                  <Link href="/admin/qr" className="text-xs text-teal-600 hover:underline">
-                    Manage →
+
+                  {/* QR Stats Summary */}
+                  <div className="grid grid-cols-2 gap-2 text-center">
+                    <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase">Total Scans</p>
+                      <p className="text-lg font-black text-slate-800">{totalQrScansResult?.count || 0}</p>
+                    </div>
+                    <div className="bg-emerald-50/60 p-2.5 rounded-lg border border-emerald-200">
+                      <p className="text-[10px] font-bold text-emerald-700 uppercase">QR Appts Booked</p>
+                      <p className="text-lg font-black text-emerald-700">
+                        {((qrApptsResult.rows as any[]) || []).reduce((acc: number, r: any) => acc + Number(r.count || 0), 0)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 1-Click Sales Pack Download */}
+                  <a
+                    href={`/api/admin/qr/sales-pack?id=${qrCode.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm transition-all"
+                  >
+                    🚀 Download Doctor QR Sales Pack PDF
+                  </a>
+                </>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-slate-400">No QR code assigned to this doctor yet.</p>
+                  <Link
+                    href="/admin/qr"
+                    className="inline-block mt-2 px-3 py-1.5 rounded-lg bg-teal-600 text-white font-bold text-xs shadow-xs"
+                  >
+                    Assign QR Code →
                   </Link>
                 </div>
-              ) : (
-                <p className="text-sm text-slate-400">No QR code assigned.</p>
               )}
             </CardContent>
           </Card>

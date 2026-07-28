@@ -12,8 +12,8 @@ import {
   Star,
   CalendarClock,
   Package,
-  Users,
   Briefcase,
+  UserSearch,
 } from "lucide-react";
 
 const navSections = [
@@ -28,10 +28,15 @@ const navSections = [
     label: "Management",
     items: [
       { href: "/admin/clinics", label: "Clinics", icon: Building2 },
-      { href: "/admin/directory", label: "SEO Directory", icon: Users },
       { href: "/admin/billing", label: "Billing", icon: CreditCard },
       { href: "/admin/reviews", label: "Reviews", icon: Star },
       { href: "/admin/follow-ups", label: "Follow-Ups", icon: CalendarClock },
+    ],
+  },
+  {
+    label: "Sales",
+    items: [
+      { href: "/admin/leads", label: "Doctor Leads", icon: UserSearch },
     ],
   },
   {

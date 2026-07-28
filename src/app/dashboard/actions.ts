@@ -2,8 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { db } from "@/db";
-import { appointments } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { appointments, clinics, followUps, patients } from "@/db/schema";
+import { eq, and, lte, desc } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -22,9 +22,12 @@ export async function updateAppointmentStatus(appointmentId: string, status: str
 
   try {
     const updateData: any = { status };
-    if (status === "checked_in") updateData.checkInTime = new Date();
-    else if (status === "in_consultation") updateData.consultationStartTime = new Date();
-    else if (status === "completed") {
+    if (status === "checked_in") {
+      updateData.consultationStartTime = null;
+      updateData.consultationEndTime = null;
+    } else if (status === "in_consultation") {
+      updateData.consultationStartTime = new Date();
+    } else if (status === "completed") {
       updateData.consultationEndTime = new Date();
       if (feeCollected !== undefined) {
         updateData.feeCollected = feeCollected;
@@ -42,23 +45,39 @@ export async function updateAppointmentStatus(appointmentId: string, status: str
         )
       );
 
-    // Sync linked follow-up if applicable
-    const { followUps } = await import("@/db/schema");
+    // ─── P0: Golden Thread sync ────────────────────────────────────────────────
+    // When completing, mark ANY follow-up that GENERATED this appointment as done
+    // (via the originating appointmentId link — old path kept for backward compat)
+    // AND mark any follow-up that has THIS as its follow_up_appointment_id (new path)
     if (status === "completed") {
+      const now = new Date();
+      // Path 1: old — follow-up whose appointmentId = this appointment (walk-in quick complete)
       await db
         .update(followUps)
-        .set({ status: "completed", completedAt: new Date() })
+        .set({ status: "completed", completedAt: now })
         .where(
           and(
             eq(followUps.appointmentId, appointmentId),
+            eq(followUps.clinicId, authUser.clinicId),
+            eq(followUps.status, "pending")
+          )
+        );
+      // Path 2: new — follow-up whose followUpAppointmentId = this appointment
+      await db
+        .update(followUps)
+        .set({ status: "completed", completedAt: now })
+        .where(
+          and(
+            eq(followUps.followUpAppointmentId, appointmentId),
             eq(followUps.clinicId, authUser.clinicId),
             eq(followUps.status, "pending")
           )
         );
     } else if (status === "cancelled" || status === "no_show") {
+      const fuStatus = status === "no_show" ? "missed" : "cancelled";
       await db
         .update(followUps)
-        .set({ status: status === "no_show" ? "missed" : "cancelled" })
+        .set({ status: fuStatus })
         .where(
           and(
             eq(followUps.appointmentId, appointmentId),
@@ -66,10 +85,24 @@ export async function updateAppointmentStatus(appointmentId: string, status: str
             eq(followUps.status, "pending")
           )
         );
+      // Also unlink the follow-up appointment reference so it can be re-booked
+      await db
+        .update(followUps)
+        .set({ followUpAppointmentId: null })
+        .where(
+          and(
+            eq(followUps.followUpAppointmentId, appointmentId),
+            eq(followUps.clinicId, authUser.clinicId),
+            eq(followUps.status, "pending")
+          )
+        );
     }
+    // ─── end golden thread sync ────────────────────────────────────────────────
 
     revalidatePath("/dashboard");
+    revalidatePath("/dashboard/queue");
     revalidatePath("/dashboard/calendar");
+    revalidatePath("/dashboard/follow-ups");
     return { success: true };
   } catch (error) {
     console.error("Failed to update status:", error);
@@ -97,6 +130,44 @@ export async function completeAppointmentWithNotes(data: {
       updateData.feeCollected = data.feeCollected;
     }
 
+    let activePatientId = data.patientId;
+    const [existingAppt] = await db
+      .select()
+      .from(appointments)
+      .where(eq(appointments.id, data.appointmentId))
+      .limit(1);
+
+    if (!activePatientId && existingAppt?.patientPhone) {
+      const [p] = await db
+        .select()
+        .from(patients)
+        .where(
+          and(
+            eq(patients.clinicId, authUser.clinicId),
+            eq(patients.phone, existingAppt.patientPhone)
+          )
+        )
+        .limit(1);
+
+      if (p) {
+        activePatientId = p.id;
+        updateData.patientId = p.id;
+      } else if (existingAppt.patientName) {
+        const [newP] = await db
+          .insert(patients)
+          .values({
+            clinicId: authUser.clinicId,
+            name: existingAppt.patientName,
+            phone: existingAppt.patientPhone,
+          })
+          .returning();
+        if (newP) {
+          activePatientId = newP.id;
+          updateData.patientId = newP.id;
+        }
+      }
+    }
+
     // 1. Update appointment status and timestamp
     await db
       .update(appointments)
@@ -108,11 +179,13 @@ export async function completeAppointmentWithNotes(data: {
         )
       );
 
-    // 1.5 Auto-complete any follow-up that generated this appointment
-    const { followUps } = await import("@/db/schema");
+    const now = new Date();
+
+    // ─── P0: Golden Thread — complete any linked follow-ups ───────────────────
+    // Path 1: follow-up that generated this appointment (originating appointmentId)
     await db
       .update(followUps)
-      .set({ status: "completed", completedAt: new Date() })
+      .set({ status: "completed", completedAt: now })
       .where(
         and(
           eq(followUps.appointmentId, data.appointmentId),
@@ -120,13 +193,25 @@ export async function completeAppointmentWithNotes(data: {
           eq(followUps.status, "pending")
         )
       );
+    // Path 2: follow-up that has THIS as its return appointment
+    await db
+      .update(followUps)
+      .set({ status: "completed", completedAt: now })
+      .where(
+        and(
+          eq(followUps.followUpAppointmentId, data.appointmentId),
+          eq(followUps.clinicId, authUser.clinicId),
+          eq(followUps.status, "pending")
+        )
+      );
+    // ─── end golden thread ────────────────────────────────────────────────────
 
     // 2. Add visit notes
-    if (data.patientId && (data.complaint || data.diagnosis || data.treatment)) {
+    if (activePatientId && (data.complaint || data.diagnosis || data.treatment)) {
       const { visitNotes } = await import("@/db/schema");
       await db.insert(visitNotes).values({
         clinicId: authUser.clinicId,
-        patientId: data.patientId,
+        patientId: activePatientId,
         appointmentId: data.appointmentId,
         complaint: data.complaint || null,
         diagnosis: data.diagnosis || null,
@@ -136,24 +221,42 @@ export async function completeAppointmentWithNotes(data: {
     }
 
     // 3. Schedule follow-up if requested
-    if (data.patientId && data.followUpDays !== "none") {
-      const d = new Date();
-      d.setDate(d.getDate() + data.followUpDays);
-      const dueDateStr = d.toISOString().split("T")[0];
+    if (activePatientId && data.followUpDays !== "none") {
+      const { CLINIC_TIMEZONE } = await import("@/lib/timezone");
+      const { formatInTimeZone } = await import("date-fns-tz");
+      const { addDays } = await import("date-fns");
+      const targetDate = addDays(now, data.followUpDays);
+      const dueDateStr = formatInTimeZone(targetDate, CLINIC_TIMEZONE, "yyyy-MM-dd");
+
+      // ─── P0: Determine if follow-up is free based on clinic policy ────────
+      const [clinicData] = await db
+        .select({ freeFollowupDays: clinics.freeFollowupDays })
+        .from(clinics)
+        .where(eq(clinics.id, authUser.clinicId))
+        .limit(1);
+
+      const freeWindow = clinicData?.freeFollowupDays ?? 0;
+      const isFree = freeWindow > 0 && data.followUpDays <= freeWindow;
 
       await db.insert(followUps).values({
         clinicId: authUser.clinicId,
-        patientId: data.patientId,
-        appointmentId: data.appointmentId, // This points to the originating appointment
+        patientId: activePatientId,
+        appointmentId: data.appointmentId, // originating appointment
         dueDate: dueDateStr,
         status: "pending",
+        isFree,
+        feeOverride: isFree ? 0 : null,
+        sourceType: "auto",
         notes: data.complaint ? `Follow-up for: ${data.complaint}` : null,
       });
+      // ─── end P0 ────────────────────────────────────────────────────────────
     }
 
     revalidatePath("/dashboard");
+    revalidatePath("/dashboard/queue");
     revalidatePath("/dashboard/calendar");
-    if (data.patientId) revalidatePath(`/dashboard/patients/${data.patientId}`);
+    revalidatePath("/dashboard/follow-ups");
+    if (activePatientId) revalidatePath(`/dashboard/patients/${activePatientId}`);
     return { success: true };
   } catch (error) {
     console.error("Failed to complete appointment:", error);
@@ -168,7 +271,6 @@ export async function checkInWalkIn(patientId: string) {
   }
 
   try {
-    const { patients } = await import("@/db/schema");
     const [patient] = await db
       .select()
       .from(patients)
@@ -182,9 +284,10 @@ export async function checkInWalkIn(patientId: string) {
 
     if (!patient) return { error: "Patient not found" };
 
-    const { getClinicTodayDate } = await import("@/lib/timezone");
+    const { getClinicTodayDate, CLINIC_TIMEZONE } = await import("@/lib/timezone");
     const { ensureUniqueTime } = await import("@/lib/appointment-utils");
-    const { format } = await import("date-fns");
+    const { formatInTimeZone } = await import("date-fns-tz");
+    const { max } = await import("drizzle-orm");
 
     const todayStr = getClinicTodayDate();
     const now = new Date();
@@ -200,13 +303,40 @@ export async function checkInWalkIn(patientId: string) {
       );
 
     const existingTimes = new Set<string>(todayAppointmentsData.map((a) => a.appointmentTime));
-    const rawTime = format(now, "HH:mm:ss");
+    const rawTime = formatInTimeZone(now, CLINIC_TIMEZONE, "HH:mm:ss");
     const appointmentTime = ensureUniqueTime(rawTime, existingTimes);
 
-    const maxToken = todayAppointmentsData.reduce((max, curr) => Math.max(max, curr.tokenNumber || 0), 0);
+    const maxToken = todayAppointmentsData.reduce((m, curr) => Math.max(m, curr.tokenNumber || 0), 0);
     const nextToken = maxToken + 1;
 
-    await db.insert(appointments).values({
+    // ─── P0: Check for pending follow-up before creating appointment ──────────
+    // Find the most recent pending follow-up for this patient at this clinic
+    // due today or earlier (covers overdue follow-ups too)
+    const [pendingFollowUp] = await db
+      .select()
+      .from(followUps)
+      .where(
+        and(
+          eq(followUps.clinicId, authUser.clinicId),
+          eq(followUps.patientId, patientId),
+          eq(followUps.status, "pending"),
+          lte(followUps.dueDate, todayStr)
+        )
+      )
+      .orderBy(desc(followUps.dueDate))
+      .limit(1);
+
+    // Determine appointment notes and fee
+    const isFollowUpVisit = !!pendingFollowUp;
+    const isFreeFollowUp = isFollowUpVisit && pendingFollowUp.isFree;
+    const appointmentNotes = isFollowUpVisit
+      ? "Auto-generated from Follow-up"
+      : "Walk-in patient";
+    const followUpFee = isFollowUpVisit
+      ? (isFreeFollowUp ? 0 : (pendingFollowUp.feeOverride ?? undefined))
+      : undefined;
+
+    const [newAppt] = await db.insert(appointments).values({
       clinicId: authUser.clinicId,
       patientId: patient.id,
       patientName: patient.name,
@@ -215,12 +345,24 @@ export async function checkInWalkIn(patientId: string) {
       appointmentTime,
       status: "checked_in",
       checkInTime: now,
-      notes: "Walk-in patient",
+      notes: appointmentNotes,
       tokenNumber: nextToken,
-    });
+      ...(followUpFee !== undefined && { feeCollected: followUpFee }),
+    }).returning();
+
+    // ─── P0: Link the follow-up to this new appointment (golden thread) ──────
+    if (pendingFollowUp && newAppt) {
+      await db
+        .update(followUps)
+        .set({ followUpAppointmentId: newAppt.id })
+        .where(eq(followUps.id, pendingFollowUp.id));
+    }
+    // ─── end P0 ────────────────────────────────────────────────────────────────
 
     revalidatePath("/dashboard");
+    revalidatePath("/dashboard/queue");
     revalidatePath(`/dashboard/patients/${patientId}`);
+    revalidatePath("/dashboard/follow-ups");
     return { success: true };
   } catch (error) {
     console.error("Failed to check in walk-in:", error);

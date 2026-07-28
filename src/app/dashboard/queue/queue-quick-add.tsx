@@ -22,9 +22,10 @@ export function QueueQuickAdd() {
 
     setIsSearching(true);
     try {
+      const { matchIndianPhones } = await import("@/lib/phone-utils");
       const res = await fetch(`/api/patients?search=${phone}&t=${Date.now()}`, { cache: "no-store" });
       const data = await res.json();
-      const match = data.patients?.find((p: any) => p.phone && p.phone.replace(/\D/g, '') === phone);
+      const match = data.patients?.find((p: any) => matchIndianPhones(p.phone, phone));
       
       if (match) {
         setSearchResult(match);

@@ -51,6 +51,7 @@ export default async function SettingsPage() {
     doctorName: clinic.doctorName,
     specialty: clinic.specialty,
     consultationFee: clinic.consultationFee || 0,
+    freeFollowupDays: clinic.freeFollowupDays ?? 0, // P0
     address: clinic.address,
     phone: clinic.phone,
     themeColor: clinic.themeColor,

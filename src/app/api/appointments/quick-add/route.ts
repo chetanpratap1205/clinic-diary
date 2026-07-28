@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { appointments } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { appointments, followUps } from "@/db/schema";
+import { eq, and, lte, desc } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { getClinicTodayDate } from "@/lib/timezone";
 import { ensureUniqueTime } from "@/lib/appointment-utils";
@@ -41,13 +41,16 @@ export async function POST(req: NextRequest) {
 
     // Fetch next available slot according to clinic's schedule settings
     const { getAvailableSlotsForDate } = await import("@/lib/slots");
+    const { CLINIC_TIMEZONE } = await import("@/lib/timezone");
+    const { formatInTimeZone } = await import("date-fns-tz");
+
     const slots = await getAvailableSlotsForDate(authUser.clinicId, appointmentDate);
     
-    // Find the first available slot that is >= current time
-    const currentTimeStr = format(now, 'HH:mm');
+    // Find the first available slot that is >= current time in clinic timezone
+    const currentTimeStr = formatInTimeZone(now, CLINIC_TIMEZONE, 'HH:mm');
     const futureSlots = slots.filter(s => s.available && s.time >= currentTimeStr);
     
-    let rawTime = format(now, 'HH:mm:ss');
+    let rawTime = formatInTimeZone(now, CLINIC_TIMEZONE, 'HH:mm:ss');
     if (futureSlots.length > 0) {
       rawTime = futureSlots[0].time + ":00";
     } else if (todayAppointmentsData.length > 0) {
@@ -65,6 +68,30 @@ export async function POST(req: NextRequest) {
     const maxTokenData = todayAppointmentsData.reduce((max, curr) => Math.max(max, curr.tokenNumber || 0), 0);
     const nextToken = maxTokenData + 1;
 
+    // ─── P2: Detect pending follow-up & link (golden thread) ─────────────────
+    const [pendingFollowUp] = await db
+      .select()
+      .from(followUps)
+      .where(
+        and(
+          eq(followUps.clinicId, authUser.clinicId),
+          eq(followUps.patientId, patientId),
+          eq(followUps.status, "pending"),
+          lte(followUps.dueDate, appointmentDate)
+        )
+      )
+      .orderBy(desc(followUps.dueDate))
+      .limit(1);
+
+    const isFollowUpVisit = !!pendingFollowUp;
+    const isFreeFollowUp = isFollowUpVisit && pendingFollowUp.isFree;
+    const appointmentNotes = isFollowUpVisit
+      ? "Auto-generated from Follow-up"
+      : "Quick check-in from Queue Dashboard";
+    const followUpFee = isFollowUpVisit
+      ? (isFreeFollowUp ? 0 : (pendingFollowUp.feeOverride ?? undefined))
+      : undefined;
+
     const [newAppointment] = await db
       .insert(appointments)
       .values({
@@ -77,9 +104,19 @@ export async function POST(req: NextRequest) {
         tokenNumber: nextToken,
         status: "checked_in",
         checkInTime: now,
-        notes: "Quick check-in from Queue Dashboard",
+        notes: appointmentNotes,
+        ...(followUpFee !== undefined && { feeCollected: followUpFee }),
       })
       .returning();
+
+    // Link follow-up to this appointment
+    if (pendingFollowUp && newAppointment) {
+      await db
+        .update(followUps)
+        .set({ followUpAppointmentId: newAppointment.id })
+        .where(eq(followUps.id, pendingFollowUp.id));
+    }
+    // ─── end P2 ───────────────────────────────────────────────────────────────
 
     return NextResponse.json({ appointment: newAppointment });
   } catch (err) {

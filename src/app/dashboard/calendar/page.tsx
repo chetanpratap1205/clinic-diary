@@ -25,6 +25,11 @@ export default async function CalendarPage() {
       dueDate: followUps.dueDate,
       status: followUps.status,
       notes: followUps.notes,
+      isFree: followUps.isFree,
+      feeOverride: followUps.feeOverride,
+      followUpAppointmentId: followUps.followUpAppointmentId,
+      linkedApptTime: appointments.appointmentTime,
+      linkedApptDate: appointments.appointmentDate,
       patient: {
         name: patients.name,
         phone: patients.phone,
@@ -32,6 +37,7 @@ export default async function CalendarPage() {
     })
     .from(followUps)
     .innerJoin(patients, eq(followUps.patientId, patients.id))
+    .leftJoin(appointments, eq(followUps.followUpAppointmentId, appointments.id))
     .where(
       and(
         eq(followUps.clinicId, authUser.clinicId),
@@ -51,6 +57,7 @@ export default async function CalendarPage() {
       time: appt.appointmentTime as string,
       status: appt.status,
       notes: appt.notes,
+      acquisitionSource: appt.acquisitionSource,
     })),
     ...pendingFollowUps.map(fu => ({
       type: "follow_up" as const,
@@ -58,10 +65,12 @@ export default async function CalendarPage() {
       patientId: fu.patientId,
       patientName: fu.patient.name,
       patientPhone: fu.patient.phone,
-      date: fu.dueDate as string,
-      time: "00:00:00", // Generic sorting time for follow-ups
-      status: "pending_follow_up",
+      date: (fu.followUpAppointmentId && fu.linkedApptDate) ? (fu.linkedApptDate as string) : (fu.dueDate as string),
+      time: (fu.followUpAppointmentId && fu.linkedApptTime) ? (fu.linkedApptTime as string) : "00:00:00",
+      status: fu.followUpAppointmentId ? "follow_up_booked" : "pending_follow_up",
       notes: fu.notes,
+      isFollowUpFree: fu.isFree,
+      followUpAppointmentId: fu.followUpAppointmentId,
     }))
   ];
 

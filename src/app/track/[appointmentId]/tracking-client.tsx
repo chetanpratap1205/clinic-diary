@@ -94,7 +94,14 @@ export function TrackingClient({
         (payload) => {
           if (payload.eventType === "UPDATE") {
              const updated = normalizeAppointment(payload.new);
-             setAllAppts((prev) => prev.map(a => a.id === updated.id ? updated : a));
+             setAllAppts((prev) => {
+               if (updated.appointmentDate !== appointment.appointmentDate) {
+                 return prev.filter((a) => a.id !== updated.id);
+               }
+               const exists = prev.some((a) => a.id === updated.id);
+               if (!exists) return [...prev, updated];
+               return prev.map((a) => (a.id === updated.id ? updated : a));
+             });
           } else if (payload.eventType === "INSERT") {
              const newAppt = normalizeAppointment(payload.new);
              if (newAppt.appointmentDate === appointment.appointmentDate) {
@@ -150,8 +157,13 @@ export function TrackingClient({
   const currentlyServing = inConsultation.length > 0 ? inConsultation[0] : null;
 
   const waitingRoom = allAppts
-    .filter(a => a.status === "checked_in")
-    .sort((a, b) => (a.tokenNumber || 0) - (b.tokenNumber || 0));
+    .filter(a => a && a.status === "checked_in")
+    .sort((a, b) => {
+      const tokenA = a.tokenNumber ?? 999999;
+      const tokenB = b.tokenNumber ?? 999999;
+      if (tokenA !== tokenB) return tokenA - tokenB;
+      return (a.appointmentTime || "").localeCompare(b.appointmentTime || "");
+    });
 
   const delayMinutes = getClinicDelay(allAppts, now);
   const { estimatedStart, isDelayed, waitMins } = getEstimatedStart(appointment, delayMinutes, now);
@@ -394,49 +406,55 @@ export function TrackingClient({
           </Card>
         </motion.div>
 
-        {/* ──── Visit Summary ──── */}
+        {/* ──── Visit Complete & E-Receipt Card ──── */}
         <AnimatePresence>
-          {isCompleted && (appointment as any).visitNote && (
+          {isCompleted && (
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", bounce: 0.5 }}>
-              <div className="relative mb-6 text-center pt-4">
+              <div className="relative mb-4 text-center pt-2">
                  <motion.div 
                     initial={{ scale: 0 }} 
                     animate={{ scale: [0, 1.2, 1] }} 
                     transition={{ duration: 0.6 }}
-                    className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-50 text-indigo-500 mb-2 shadow-inner"
+                    className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 mb-2 shadow-inner"
                  >
-                    <Sparkles className="w-8 h-8" />
+                    <CheckCircle2 className="w-7 h-7" />
                  </motion.div>
                  <h2 className="text-xl font-bold text-slate-900 tracking-tight">Visit Complete!</h2>
-                 <p className="text-sm text-slate-500 mt-1">Thank you for visiting Dr. {doctorFirstName}</p>
+                 <p className="text-xs text-slate-500 mt-0.5">Thank you for visiting Dr. {doctorFirstName}</p>
               </div>
 
-              <Card className="border-0 shadow-xl shadow-indigo-100/50 rounded-3xl overflow-hidden bg-white/80 backdrop-blur-xl">
-                <CardContent className="p-5">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    Visit Summary
-                  </h3>
-                  <div className="space-y-4">
-                    {((appointment as any).visitNote.diagnosis) && (
-                      <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Diagnosis</p>
-                        <p className="text-sm font-semibold text-slate-800">{ (appointment as any).visitNote.diagnosis }</p>
-                      </div>
-                    )}
-                    {((appointment as any).visitNote.treatment) && (
-                      <div className="bg-blue-50/50 rounded-2xl p-4 border border-blue-100/50">
-                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Prescription & Treatment</p>
-                        <p className="text-sm font-semibold text-blue-900">{ (appointment as any).visitNote.treatment }</p>
-                      </div>
-                    )}
-                    {((appointment as any).visitNote.vitals || (appointment as any).visitNote.complaint) && (
-                      <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Doctor's Notes</p>
-                        {((appointment as any).visitNote.complaint) && <p className="text-sm text-slate-600 mb-1"><span className="font-semibold text-slate-700">Complaint:</span> { (appointment as any).visitNote.complaint }</p>}
-                        {((appointment as any).visitNote.vitals) && <p className="text-sm text-slate-600"><span className="font-semibold text-slate-700">Vitals:</span> { (appointment as any).visitNote.vitals }</p>}
-                      </div>
-                    )}
+              <Card className="border-0 shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden bg-white">
+                <CardContent className="p-5 space-y-4">
+                  <div className="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">E-Receipt Status</p>
+                      <p className="font-bold text-slate-900 text-sm mt-0.5">Official Receipt Generated</p>
+                    </div>
+                    <Link
+                      href={`/receipt/${appointment.id}`}
+                      target="_blank"
+                      className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl shadow-md hover:bg-slate-800 transition-all active:scale-95"
+                    >
+                      View E-Receipt
+                    </Link>
                   </div>
+
+                  {(appointment as any).visitNote && (
+                    <div className="space-y-3 pt-2">
+                      {((appointment as any).visitNote.diagnosis) && (
+                        <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-100">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Diagnosis</p>
+                          <p className="text-sm font-semibold text-slate-800">{ (appointment as any).visitNote.diagnosis }</p>
+                        </div>
+                      )}
+                      {((appointment as any).visitNote.treatment) && (
+                        <div className="bg-blue-50/50 rounded-2xl p-3.5 border border-blue-100/50">
+                          <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Prescription & Advice</p>
+                          <p className="text-sm font-semibold text-blue-900">{ (appointment as any).visitNote.treatment }</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>

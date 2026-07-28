@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
 import { getAuthUser } from "@/lib/auth";
 import { db } from "@/db";
-import { appointments, clinics, patients, followUps } from "@/db/schema";
+import { appointments, clinics, patients, followUps, qrScans } from "@/db/schema";
 import { eq, and, gte, lte, sql } from "drizzle-orm";
 import { StatCardsGrid, StatCard } from "./components/stat-cards";
 import { AnalyticsChartsDynamic as AnalyticsCharts } from "./components/analytics-charts-dynamic";
+import { QRDecisionIntelligence } from "@/components/dashboard/qr-decision-intelligence";
 import { Users, CalendarCheck, TrendingUp, Activity, Filter } from "lucide-react";
 import { format, subDays, startOfYear, endOfYear, subYears, parseISO } from "date-fns";
 import Link from "next/link";
@@ -56,9 +57,14 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
   const startDateStr = format(startDate, "yyyy-MM-dd");
   const endDateStr = format(endDate, "yyyy-MM-dd");
 
-  // Fetch clinic details for theme and fee
+  // Fetch clinic details for theme, fee, name, and doctorName
   const clinicResult = await db
-    .select({ consultationFee: clinics.consultationFee, themeColor: clinics.themeColor })
+    .select({
+      name: clinics.name,
+      doctorName: clinics.doctorName,
+      consultationFee: clinics.consultationFee,
+      themeColor: clinics.themeColor,
+    })
     .from(clinics)
     .where(eq(clinics.id, authUser.clinicId))
     .limit(1);
@@ -70,7 +76,8 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
   const [
     totalPatientsResult,
     appointmentsResult,
-    followUpsResult
+    followUpsResult,
+    qrScansResult
   ] = await Promise.all([
     // Total Patients (All Time)
     db.select({ count: sql<number>`count(*)` }).from(patients).where(eq(patients.clinicId, authUser.clinicId)),
@@ -96,6 +103,8 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
     db.select({
       id: followUps.id,
       status: followUps.status,
+      isFree: followUps.isFree,
+      followUpAppointmentId: followUps.followUpAppointmentId,
     })
     .from(followUps)
     .where(
@@ -104,7 +113,16 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
         gte(followUps.dueDate, startDateStr),
         lte(followUps.dueDate, endDateStr)
       )
-    )
+    ),
+
+    // QR Scans grouped by placement
+    db.select({
+      placement: qrScans.placement,
+      count: sql<number>`count(*)`,
+    })
+    .from(qrScans)
+    .where(eq(qrScans.clinicId, authUser.clinicId))
+    .groupBy(qrScans.placement)
   ]);
 
   const totalPatients = Number(totalPatientsResult[0]?.count || 0);
@@ -159,12 +177,36 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
     ? Math.round((completedCount / totalAppointmentsInPeriod) * 100) 
     : 0;
 
-  // Follow-up conversion
+  // Follow-up conversion + free/paid split
   const totalFollowUps = followUpsResult.length;
   const completedFollowUps = followUpsResult.filter(f => f.status === "completed").length;
-  const followUpRate = totalFollowUps > 0 
-    ? Math.round((completedFollowUps / totalFollowUps) * 100) 
+  const freeFollowUps = followUpsResult.filter(f => f.isFree && f.status === "completed").length;
+  const paidFollowUps = completedFollowUps - freeFollowUps;
+  const followUpRate = totalFollowUps > 0
+    ? Math.round((completedFollowUps / totalFollowUps) * 100)
     : 0;
+
+  // Set of appointment IDs that are follow-up return visits
+  const followUpApptIds = new Set(
+    followUpsResult
+      .filter(f => f.followUpAppointmentId)
+      .map(f => f.followUpAppointmentId!)
+  );
+
+  // Revenue split: new visits vs follow-up return visits
+  let newVisitRevenue = 0;
+  let followUpVisitRevenue = 0;
+
+  appointmentsResult.forEach(app => {
+    if (app.status === "completed") {
+      const fee = app.feeCollected ?? (clinic.consultationFee || 0);
+      if (followUpApptIds.has(app.id)) {
+        followUpVisitRevenue += fee;
+      } else {
+        newVisitRevenue += fee;
+      }
+    }
+  });
 
   // Format data for Recharts
   const statusData = Object.entries(statusCounts).map(([name, value]) => ({
@@ -198,15 +240,43 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
       ...stats
     }));
 
-  // If period is large, maybe group by week/month, but for now daily is fine for Recharts since it scales
-  
+  const placementConfig: Record<string, { name: string; icon: string }> = {
+    reception: { name: "Reception Poster", icon: "📍" },
+    window: { name: "Outside Window", icon: "🪟" },
+    stand: { name: "Acrylic Standee (4x6)", icon: "📐" },
+    sticker: { name: "Prescription Sticker", icon: "🏷️" },
+    general: { name: "General QR", icon: "📱" },
+  };
+
+  const scanCountsByPlacement: Record<string, number> = {};
+  qrScansResult.forEach((row) => {
+    if (row.placement) scanCountsByPlacement[row.placement] = Number(row.count || 0);
+  });
+
+  const apptCountsByPlacement: Record<string, number> = {};
+  appointmentsResult.forEach((app) => {
+    if (app.acquisitionSource) {
+      const p = app.acquisitionSource.replace("qr_", "");
+      apptCountsByPlacement[p] = (apptCountsByPlacement[p] || 0) + 1;
+    }
+  });
+
+  const placementStats = ["reception", "window", "stand", "sticker"].map((p) => ({
+    placement: p,
+    name: placementConfig[p]?.name || p,
+    icon: placementConfig[p]?.icon || "📱",
+    scans: scanCountsByPlacement[p] || 0,
+    appointments: apptCountsByPlacement[p] || 0,
+    revenue: 0,
+  }));
+
   return (
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-4 md:space-y-0">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Analytics & Intelligence Dashboard</h2>
           <p className="text-muted-foreground mt-1">
-            Insights and operational metrics for your clinic.
+            Operational insights, queue tracking, and physical QR performance for {clinic.doctorName || clinic.name}.
           </p>
         </div>
         
@@ -244,6 +314,13 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
         </div>
       </div>
 
+      {/* 🤖 Physical QR Placement & AI Decision Intelligence */}
+      <QRDecisionIntelligence
+        doctorName={clinic.doctorName}
+        clinicName={clinic.name}
+        placementStats={placementStats}
+      />
+
       <StatCardsGrid>
         <StatCard
           title="Total Patients"
@@ -263,14 +340,14 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
           title="Revenue"
           value={`₹${totalRevenue.toLocaleString()}`}
           icon={<TrendingUp className="w-5 h-5" />}
-          description="Total collected from completed visits"
+          description={`New visits: ₹${newVisitRevenue.toLocaleString()} | Follow-ups: ₹${followUpVisitRevenue.toLocaleString()}`}
           themeColor={clinic.themeColor!}
         />
         <StatCard
           title="Follow-up Success"
           value={`${followUpRate}%`}
           icon={<Activity className="w-5 h-5" />}
-          description={`${completedFollowUps} of ${totalFollowUps} follow-ups resolved`}
+          description={`${completedFollowUps} resolved — ${freeFollowUps} free, ${paidFollowUps} paid`}
           themeColor={clinic.themeColor!}
         />
       </StatCardsGrid>

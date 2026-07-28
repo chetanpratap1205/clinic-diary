@@ -23,15 +23,53 @@ export default async function ConsultationPage(props: {
     )
     .limit(1);
 
-  if (!appointment || !appointment.patientId) {
+  if (!appointment) {
     redirect("/dashboard/queue");
   }
 
-  const [patient] = await db
-    .select()
-    .from(patients)
-    .where(eq(patients.id, appointment.patientId))
-    .limit(1);
+  let patient: any = null;
+  if (appointment.patientId) {
+    const [p] = await db
+      .select()
+      .from(patients)
+      .where(eq(patients.id, appointment.patientId))
+      .limit(1);
+    patient = p;
+  }
+
+  if (!patient && appointment.patientPhone) {
+    const [p] = await db
+      .select()
+      .from(patients)
+      .where(
+        and(
+          eq(patients.clinicId, authUser.clinicId),
+          eq(patients.phone, appointment.patientPhone)
+        )
+      )
+      .limit(1);
+    if (p) {
+      patient = p;
+      await db
+        .update(appointments)
+        .set({ patientId: p.id })
+        .where(eq(appointments.id, appointment.id));
+    }
+  }
+
+  if (!patient) {
+    patient = {
+      id: appointment.patientId || "",
+      clinicId: appointment.clinicId,
+      name: appointment.patientName || "Patient",
+      phone: appointment.patientPhone || "",
+      age: null,
+      gender: null,
+      address: null,
+      medicalNotes: null,
+      createdAt: appointment.createdAt,
+    };
+  }
 
   const [clinic] = await db
     .select()
@@ -39,15 +77,17 @@ export default async function ConsultationPage(props: {
     .where(eq(clinics.id, appointment.clinicId))
     .limit(1);
 
-  const pastVisits = await db
-    .select({
-      note: visitNotes,
-      date: appointments.appointmentDate,
-    })
-    .from(visitNotes)
-    .innerJoin(appointments, eq(visitNotes.appointmentId, appointments.id))
-    .where(eq(visitNotes.patientId, patient.id))
-    .orderBy(desc(visitNotes.createdAt));
+  const pastVisits = patient.id
+    ? await db
+        .select({
+          note: visitNotes,
+          date: appointments.appointmentDate,
+        })
+        .from(visitNotes)
+        .innerJoin(appointments, eq(visitNotes.appointmentId, appointments.id))
+        .where(eq(visitNotes.patientId, patient.id))
+        .orderBy(desc(visitNotes.createdAt))
+    : [];
 
   return (
     // Mobile: full screen minus top header (56px) and bottom nav (64px)

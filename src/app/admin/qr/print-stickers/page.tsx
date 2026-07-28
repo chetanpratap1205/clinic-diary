@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { qrCodes } from "@/db/schema";
-import { inArray } from "drizzle-orm";
+import { qrCodes, clinics } from "@/db/schema";
+import { inArray, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import QRCode from "qrcode";
 import { PrintButton } from "../print/print-button";
@@ -24,8 +24,15 @@ export default async function PrintStickersPage({
   }
 
   const codes = await db
-    .select({ id: qrCodes.id, code: qrCodes.code })
+    .select({
+      id: qrCodes.id,
+      code: qrCodes.code,
+      clinicName: clinics.name,
+      doctorName: clinics.doctorName,
+      doctorSpecialty: clinics.specialty,
+    })
     .from(qrCodes)
+    .leftJoin(clinics, eq(qrCodes.clinicId, clinics.id))
     .where(inArray(qrCodes.id, idsArray))
     .orderBy(qrCodes.code);
 
@@ -36,7 +43,6 @@ export default async function PrintStickersPage({
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://doctor.naturexpress.in";
 
   // Every code gets its own full A4 sheet (24 stickers).
-  // Whether they print 1 clinic or a batch of 10, each gets a full dedicated page.
   const multipliedCodes = codes.flatMap(code => Array(24).fill(code));
 
   const printItems = await Promise.all(
@@ -44,7 +50,7 @@ export default async function PrintStickersPage({
       const url = `${baseUrl}/q/${item.code}`;
       const qrDataUri = await QRCode.toDataURL(`${url}?src=sticker`, {
         width: 600,
-        margin: 2,
+        margin: 1,
         color: { dark: "#060606", light: "#ffffff" },
         errorCorrectionLevel: "M",
       });
@@ -102,7 +108,7 @@ export default async function PrintStickersPage({
           box-shadow: 0 40px 120px rgba(0,0,0,0.7);
           position: relative;
           
-          /* Avery L7159 approx margins: top/bottom 13mm, left/right 7mm */
+          /* Avery L7159 approx margins: top/bottom 13.5mm, left/right 7.2mm */
           padding-top: 13.5mm;
           padding-left: 7.2mm;
           padding-right: 7.2mm;
@@ -123,9 +129,8 @@ export default async function PrintStickersPage({
           background: #ffffff;
           display: flex;
           align-items: center;
-          padding: 3mm 4mm;
+          padding: 2.5mm 3.5mm 2.5mm 4.5mm; /* Bleed safe inner margin */
           
-          /* Visible on screen for preview, invisible on print */
           outline: 1px dashed rgba(15, 23, 42, 0.15);
           outline-offset: -1px;
         }
@@ -137,7 +142,6 @@ export default async function PrintStickersPage({
         /* ─── Ink-Friendly Premium Backgrounds ─── */
         .sticker-bg {
           position: absolute; inset: 0; z-index: 0;
-          /* Very subtle dot pattern */
           background-image: radial-gradient(rgba(13, 148, 136, 0.08) 1px, transparent 1px);
           background-size: 5px 5px;
         }
@@ -148,52 +152,42 @@ export default async function PrintStickersPage({
           z-index: 1;
         }
         
-        /* Vibrant thick accent bar */
+        /* Vibrant thick accent bar with safe 1.5mm offset to prevent edge slice */
         .sticker-accent-bar {
-          position: absolute; top: 0; left: 0; bottom: 0; width: 4.5px;
+          position: absolute; top: 1.5mm; left: 1.5mm; bottom: 1.5mm; width: 3.5px;
           background: linear-gradient(180deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%);
           z-index: 1;
-          box-shadow: 2px 0 8px rgba(13,148,136,0.2);
+          border-radius: 2px;
+          box-shadow: 2px 0 6px rgba(13,148,136,0.2);
         }
 
         /* ─── Content Wrap ─── */
         .sticker-content {
           position: relative; z-index: 2;
           display: flex; width: 100%; height: 100%;
-          align-items: center; gap: 4mm;
+          align-items: center; gap: 3.5mm;
         }
 
         /* ─── QR Code ─── */
         .sticker-qr-wrap {
-          width: 26.5mm; height: 26.5mm;
+          width: 25.5mm; height: 25.5mm;
           flex-shrink: 0; background: #fff;
-          border-radius: 6px; padding: 1.5mm;
-          box-shadow: 0 4px 12px rgba(13, 148, 136, 0.15), 0 0 0 1px rgba(13, 148, 136, 0.25);
+          border-radius: 5px; padding: 1mm;
+          box-shadow: 0 3px 8px rgba(13, 148, 136, 0.15), 0 0 0 1px rgba(13, 148, 136, 0.25);
           display: flex; align-items: center; justify-content: center;
           position: relative;
         }
         .sticker-qr-wrap img { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
-        
-        /* Little scanner corners */
-        .qr-corner { position: absolute; width: 6px; height: 6px; border-style: solid; border-color: #0d9488; }
-        .qr-corner-tl { top: -1px; left: -1px; border-width: 2px 0 0 2px; border-radius: 4px 0 0 0; }
-        .qr-corner-tr { top: -1px; right: -1px; border-width: 2px 2px 0 0; border-radius: 0 4px 0 0; }
-        .qr-corner-bl { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; border-radius: 0 0 0 4px; }
-        .qr-corner-br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; border-radius: 0 0 4px 0; }
 
         /* ─── Text Right Side ─── */
         .sticker-text {
           flex: 1; min-width: 0;
           display: flex; flex-direction: column; justify-content: center;
         }
-        
-        .sticker-header {
-          display: flex; align-items: center; gap: 4px; margin-bottom: 2.5px;
-        }
 
         .sticker-title {
-          font-size: 13.5px; font-weight: 900; color: #0f172a;
-          line-height: 1.1; letter-spacing: -0.3px; margin-bottom: 3.5px;
+          font-size: 12.5px; font-weight: 900; color: #0f172a;
+          line-height: 1.1; letter-spacing: -0.2px; margin-bottom: 2px;
         }
         .sticker-title span { 
           background: linear-gradient(135deg, #0d9488, #0284c7);
@@ -202,29 +196,31 @@ export default async function PrintStickersPage({
         }
 
         .sticker-sub {
-          font-size: 8.5px; font-weight: 800; color: #1e293b;
+          font-size: 9px; font-weight: 800; color: #334155;
           line-height: 1.2; display: flex; align-items: center; gap: 3px;
         }
         
         .sticker-hindi {
           font-family: 'Noto Sans Devanagari', sans-serif;
-          font-size: 8px; font-weight: 900; color: #64748b;
-          margin-top: 3px;
+          font-size: 9px; font-weight: 800; color: #0f766e;
+          margin-top: 2px;
         }
 
         /* Footer branding */
         .sticker-footer {
           position: absolute; bottom: 2mm; right: 3mm;
           display: flex; align-items: center; gap: 4px;
+          z-index: 3;
         }
         .sticker-brand {
-          font-size: 6px; font-weight: 900; color: rgba(15,23,42,0.65);
-          text-transform: uppercase; letter-spacing: 0.5px;
+          font-size: 8.5px; font-weight: 900; color: #0f172a;
+          text-transform: uppercase; letter-spacing: 0.3px;
+          max-width: 25mm; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .sticker-code {
-          font-size: 6.5px; font-weight: 800; color: #0f766e;
+          font-size: 9px; font-weight: 800; color: #0f766e;
           font-family: monospace; letter-spacing: 0.5px;
-          background: #f0fdfa; padding: 1.5px 4px; border-radius: 3px; border: 1px solid #99f6e4;
+          background: #f0fdfa; padding: 1px 4px; border-radius: 3px; border: 1px solid #99f6e4;
         }
       ` }} />
 
@@ -263,14 +259,25 @@ export default async function PrintStickersPage({
                 <div className="sticker-deco" />
                 <div className="sticker-accent-bar" />
                 
+                {/* Subtle visible watermark */}
+                <div style={{
+                  position: "absolute",
+                  top: "2mm",
+                  right: "3mm",
+                  fontSize: "7.5px",
+                  fontWeight: 900,
+                  color: "rgba(13, 148, 136, 0.4)",
+                  letterSpacing: "0.8px",
+                  textTransform: "uppercase",
+                  zIndex: 1,
+                }}>
+                  Doctor Diary
+                </div>
+
                 <div className="sticker-content">
                   <div className="sticker-qr-wrap">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={item.qrDataUri} alt="QR" />
-                    <div className="qr-corner qr-corner-tl" />
-                    <div className="qr-corner qr-corner-tr" />
-                    <div className="qr-corner qr-corner-bl" />
-                    <div className="qr-corner qr-corner-br" />
                   </div>
                   
                   <div className="sticker-text">
@@ -280,18 +287,18 @@ export default async function PrintStickersPage({
                     
                     <div className="sticker-sub">
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                      Avoid the wait queue
+                      Skip wait queue
                     </div>
                     
                     <div className="sticker-hindi">
-                      अगली बार स्कैन कर बुकिंग करें
+                      अगली बार बिना लाइन के
                     </div>
                   </div>
                 </div>
                 
                 <div className="sticker-footer">
-                  <div className="sticker-brand">Doctor Diary</div>
-                  <div className="sticker-code">{item.code}</div>
+                  <div className="sticker-brand">{item.doctorName || item.clinicName || "Doctor Diary"}</div>
+                  <div className="sticker-code">#{item.code}</div>
                 </div>
               </div>
             ))}

@@ -72,6 +72,18 @@ export async function POST(
         eq(appointments.clinicId, appt.clinicId) // extra guard
       ));
 
+    const { followUps } = await import("@/db/schema");
+    await db
+      .update(followUps)
+      .set({ status: "cancelled" })
+      .where(
+        and(
+          eq(followUps.appointmentId, appointmentId),
+          eq(followUps.clinicId, appt.clinicId),
+          eq(followUps.status, "pending")
+        )
+      );
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Cancel appointment error:", error);

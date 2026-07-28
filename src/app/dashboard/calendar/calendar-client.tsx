@@ -21,6 +21,9 @@ export type CalendarEvent = {
   time: string;
   status: string;
   notes: string | null;
+  acquisitionSource?: string | null;
+  isFollowUpFree?: boolean;
+  followUpAppointmentId?: string | null;
 };
 
 interface CalendarClientProps {
@@ -43,6 +46,8 @@ function getStatusBadge(status: string) {
       return <Badge className="bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-50 border border-fuchsia-200 shadow-sm text-[10px] px-2 py-0.5 rounded-full font-semibold">In Consult</Badge>;
     case "pending_follow_up":
       return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 border border-amber-300 shadow-sm text-[10px] px-2 py-0.5 rounded-full font-semibold">Pending Follow-up</Badge>;
+    case "follow_up_booked":
+      return <Badge className="bg-sky-50 text-sky-700 hover:bg-sky-50 border border-sky-200 shadow-sm text-[10px] px-2 py-0.5 rounded-full font-semibold">Appt. Booked</Badge>;
     default:
       return <Badge variant="secondary" className="rounded-full shadow-sm text-[10px] px-2 py-0.5 capitalize">{status.replace('_', ' ')}</Badge>;
   }
@@ -243,13 +248,47 @@ export function CalendarClient({ events }: CalendarClientProps) {
                                   {evt.patientName}
                                 </p>
                                 {getStatusBadge(evt.status)}
+                                {evt.acquisitionSource === "qr_reception" && (
+                                  <Badge className="bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs text-[10px] px-2 py-0.5 rounded-full font-bold">📍 QR Reception</Badge>
+                                )}
+                                {evt.acquisitionSource === "qr_window" && (
+                                  <Badge className="bg-indigo-50 text-indigo-800 border border-indigo-200 shadow-2xs text-[10px] px-2 py-0.5 rounded-full font-bold">🪟 QR Window</Badge>
+                                )}
+                                {evt.acquisitionSource === "qr_stand" && (
+                                  <Badge className="bg-teal-50 text-teal-800 border border-teal-200 shadow-2xs text-[10px] px-2 py-0.5 rounded-full font-bold">📐 QR Standee</Badge>
+                                )}
+                                {evt.acquisitionSource === "qr_sticker" && (
+                                  <Badge className="bg-purple-50 text-purple-800 border border-purple-200 shadow-2xs text-[10px] px-2 py-0.5 rounded-full font-bold">🏷️ QR Sticker</Badge>
+                                )}
+                                {evt.type === 'follow_up' && evt.isFollowUpFree && (
+                                  <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border border-emerald-200 shadow-sm text-[10px] px-2 py-0.5 rounded-full font-semibold">₹0 Free</Badge>
+                                )}
                               </div>
                               <div className="flex items-center gap-3">
                                 <div className="flex items-center gap-1.5">
-                                  {evt.type === 'follow_up' ? <AlertCircle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" /> : <Clock className="w-3.5 h-3.5 text-sky-500 flex-shrink-0" />}
-                                  <span className={`text-xs sm:text-sm font-bold tracking-tight ${evt.type === 'follow_up' ? 'text-amber-700' : 'text-slate-600'}`}>
-                                    {formatTimeDisplay(evt.time)}
-                                  </span>
+                                  {evt.type === 'follow_up' ? (
+                                    evt.followUpAppointmentId ? (
+                                      <>
+                                        <Clock className="w-3.5 h-3.5 text-sky-500 flex-shrink-0" />
+                                        <span className="text-xs sm:text-sm font-bold tracking-tight text-slate-600">
+                                          {formatTimeDisplay(evt.time)}
+                                        </span>
+                                        <Badge className="bg-sky-50 text-sky-700 hover:bg-sky-50 border border-sky-200 shadow-sm text-[10px] px-1.5 py-0 rounded-md font-semibold ml-1">Booked ✓</Badge>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <AlertCircle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                                        <Badge className="bg-amber-50 text-amber-700 hover:bg-amber-50 border border-amber-200 shadow-sm text-[10px] px-1.5 py-0 rounded-md font-semibold">Pending</Badge>
+                                      </>
+                                    )
+                                  ) : (
+                                    <>
+                                      <Clock className="w-3.5 h-3.5 text-sky-500 flex-shrink-0" />
+                                      <span className="text-xs sm:text-sm font-bold tracking-tight text-slate-600">
+                                        {formatTimeDisplay(evt.time)}
+                                      </span>
+                                    </>
+                                  )}
                                 </div>
                                 <div className="hidden sm:flex items-center gap-1.5">
                                   <Phone className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
@@ -266,14 +305,22 @@ export function CalendarClient({ events }: CalendarClientProps) {
                             </div>
                           </div>
 
-                          {/* Actions (only for appointments) */}
+                          {/* Actions */}
                           <div className="flex-shrink-0">
                             {evt.type === 'appointment' ? (
                                <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-50 text-slate-300">
                                  {/* Read Only Indicator */}
                                </div>
                             ) : (
-                               <div className="w-9 h-9" /> // Placeholder to keep alignment
+                               evt.followUpAppointmentId ? (
+                                 <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-emerald-100 flex items-center justify-center border border-emerald-200 mr-1 sm:mr-2">
+                                   <span className="text-emerald-600 font-bold text-sm">✓</span>
+                                 </div>
+                               ) : (
+                                 <div className="px-2 py-1 rounded-md bg-amber-50 border border-amber-100 flex items-center">
+                                   <span className="text-[10px] sm:text-[11px] font-semibold text-amber-600 whitespace-nowrap">Not booked yet</span>
+                                 </div>
+                               )
                             )}
                           </div>
                         </div>

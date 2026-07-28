@@ -160,6 +160,7 @@ export function QrCodeWidget({ clinicId, clinicName, slug, themeColor }: QrCodeW
           
           // Apply proper tracking source based on usageType
           if (qr.usageType === "reception_desk") qrUrl += "?src=reception";
+          else if (qr.usageType === "acrylic_stand") qrUrl += "?src=stand";
           else if (qr.usageType === "outside_window") qrUrl += "?src=window";
           else if (qr.usageType === "patient_file_sticker") qrUrl += "?src=sticker";
           else qrUrl += "?src=general";

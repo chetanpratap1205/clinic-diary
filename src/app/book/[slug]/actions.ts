@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@/db";
-import { appointments, availability, availabilityOverrides, clinics, patients, subscriptions } from "@/db/schema";
-import { eq, and, ne, count, inArray } from "drizzle-orm";
+import { appointments, availability, availabilityOverrides, clinics, patients, subscriptions, followUps } from "@/db/schema";
+import { eq, and, ne, count, inArray, lte, desc } from "drizzle-orm";
 import { parseISO, getDay, format, addMinutes } from "date-fns";
 import { getClinicTodayDate } from "@/lib/timezone";
 import { sendNotification } from "@/lib/notifications";
@@ -188,20 +188,18 @@ export async function createBooking(
         .where(eq(clinics.id, clinicId))
         .for("update");
 
-      const { desc } = await import("drizzle-orm");
-      const [latestAppt] = await tx
-        .select({ tokenNumber: appointments.tokenNumber })
+      const { max } = await import("drizzle-orm");
+      const [maxTokenData] = await tx
+        .select({ maxToken: max(appointments.tokenNumber) })
         .from(appointments)
         .where(
           and(
             eq(appointments.clinicId, clinicId),
             eq(appointments.appointmentDate, dateStr)
           )
-        )
-        .orderBy(desc(appointments.tokenNumber))
-        .limit(1);
+        );
         
-      const nextToken = (latestAppt?.tokenNumber || 0) + 1;
+      const nextToken = (maxTokenData?.maxToken || 0) + 1;
       const cancelToken = crypto.randomUUID();
 
       // Insert the appointment and return the ID
@@ -222,9 +220,55 @@ export async function createBooking(
       finalAppointmentId = newAppointment.id;
     });
 
-    if (!finalAppointmentId) {
+    if (!finalAppointmentId || !finalPatientId) {
       return { error: "Failed to generate appointment." };
     }
+
+    // ─── P0: Link pending follow-up if one exists for this patient ────────────
+    // This covers patients who book online for their follow-up visit
+    const todayStr = getClinicTodayDate();
+    const [pendingFollowUp] = await db
+      .select()
+      .from(followUps)
+      .where(
+        and(
+          eq(followUps.clinicId, clinicId),
+          eq(followUps.patientId, finalPatientId),
+          eq(followUps.status, "pending"),
+          lte(followUps.dueDate, dateStr) // due on or before this booking date
+        )
+      )
+      .orderBy(desc(followUps.dueDate)) // most recent/urgent first
+      .limit(1);
+
+    if (pendingFollowUp) {
+      // Link the golden thread: follow-up → return appointment
+      await db
+        .update(followUps)
+        .set({ followUpAppointmentId: finalAppointmentId })
+        .where(eq(followUps.id, pendingFollowUp.id));
+
+      // If this follow-up is free, pre-set fee and mark appointment for queue
+      if (pendingFollowUp.isFree) {
+        const freeFee = pendingFollowUp.feeOverride !== null && pendingFollowUp.feeOverride !== undefined
+          ? pendingFollowUp.feeOverride
+          : 0;
+        await db
+          .update(appointments)
+          .set({
+            feeCollected: freeFee,
+            notes: "Auto-generated from Follow-up",
+          })
+          .where(eq(appointments.id, finalAppointmentId));
+      } else {
+        // Paid follow-up — just mark it as follow-up type for the queue badge
+        await db
+          .update(appointments)
+          .set({ notes: "Auto-generated from Follow-up" })
+          .where(eq(appointments.id, finalAppointmentId));
+      }
+    }
+    // ─── end P0 ──────────────────────────────────────────────────────────────
 
     // Fetch clinic details for the notification outside transaction
     const clinicRecord = await db.select().from(clinics).where(eq(clinics.id, clinicId)).limit(1);

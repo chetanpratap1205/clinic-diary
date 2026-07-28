@@ -1,6 +1,6 @@
 import { getAuthUser } from "@/lib/auth";
 import { db } from "@/db";
-import { appointments, clinics } from "@/db/schema";
+import { appointments, clinics, followUps } from "@/db/schema";
 import { eq, and, asc, or, lt, inArray } from "drizzle-orm";
 import { getClinicTodayDate } from "@/lib/timezone";
 import { redirect } from "next/navigation";
@@ -41,6 +41,44 @@ export default async function QueuePage() {
 
   const clinicData = clinicDataResult[0];
 
+  // ─── P0: Load follow-up metadata for today's appointments ─────────────────
+  // For each appointment that IS a follow-up return visit, we need to know:
+  //   - is it free? (isFree)
+  //   - what fee override? (feeOverride)
+  // We query follow_ups where followUpAppointmentId matches today's appointment IDs
+  const apptIds = todayAppts.map((a) => a.id);
+  let followUpMap: Record<string, { isFree: boolean; feeOverride: number | null }> = {};
+
+  if (apptIds.length > 0) {
+    const linkedFollowUps = await db
+      .select({
+        followUpAppointmentId: followUps.followUpAppointmentId,
+        isFree: followUps.isFree,
+        feeOverride: followUps.feeOverride,
+      })
+      .from(followUps)
+      .where(
+        and(
+          eq(followUps.clinicId, authUser.clinicId),
+          inArray(followUps.followUpAppointmentId, apptIds)
+        )
+      );
+
+    for (const fu of linkedFollowUps) {
+      if (fu.followUpAppointmentId) {
+        followUpMap[fu.followUpAppointmentId] = {
+          isFree: fu.isFree,
+          feeOverride: fu.feeOverride,
+        };
+      }
+    }
+  }
+
+  // Enrich appointments with follow-up metadata as a JSON notes tag
+  // We inject into a virtual field via notes pattern — but more cleanly,
+  // we pass the followUpMap to QueueClient directly
+  // ─── end P0 ───────────────────────────────────────────────────────────────
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 pb-safe bottom-nav-spacing lg:pb-8">
       <div>
@@ -58,6 +96,7 @@ export default async function QueuePage() {
         initialAppointments={todayAppts}
         clinic={clinicData}
         today={today}
+        followUpMap={followUpMap}
       />
     </div>
   );

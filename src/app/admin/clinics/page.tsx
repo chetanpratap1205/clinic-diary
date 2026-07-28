@@ -64,6 +64,8 @@ export default async function ClinicsPage(props: {
     subscriptionStatus: subscriptions.status,
     planId: subscriptions.planId,
     totalAppointments: sql<number>`(SELECT COUNT(*)::int FROM appointments a WHERE a.clinic_id = clinics.id)`,
+    qrAppointments: sql<number>`(SELECT COUNT(*)::int FROM appointments a WHERE a.clinic_id = clinics.id AND a.acquisition_source LIKE 'qr_%')`,
+    qrScans: sql<number>`(SELECT COUNT(*)::int FROM qr_scans s WHERE s.clinic_id = clinics.id)`,
     apptVolume30d: sql<number>`(SELECT COUNT(*)::int FROM appointments a WHERE a.clinic_id = clinics.id AND a.created_at >= NOW() - INTERVAL '30 days')`,
     totalRevenue: sql<number>`(SELECT COALESCE(SUM(pl.amount_paise), 0)::int FROM payment_logs pl WHERE pl.clinic_id = clinics.id AND pl.status = 'paid')`,
     kitOrderStatus: sql<string | null>`(SELECT status FROM orders o WHERE o.clinic_id = clinics.id ORDER BY o.created_at DESC LIMIT 1)`

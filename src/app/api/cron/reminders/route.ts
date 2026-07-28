@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { appointments, reminderLogs, clinics, followUps, patients } from "@/db/schema";
-import { eq, and, ne, lte, gte } from "drizzle-orm";
+import { eq, and, ne, lte, gte, lt } from "drizzle-orm";
 import { sendNotification } from "@/lib/notifications";
-import { parseISO, differenceInMinutes, addHours } from "date-fns";
+import { parseISO, differenceInMinutes, addHours, subDays } from "date-fns";
 
 // Vercel Cron will hit this endpoint
 export async function GET(request: Request) {
@@ -148,7 +148,26 @@ export async function GET(request: Request) {
     }
 
     console.log(`⏰ Cron scan complete. Appt Reminders: ${processedCount}, Follow-up Alerts Logged: ${followUpLogs}`);
-    return NextResponse.json({ success: true, apptsDispatched: processedCount, followUpsLogged: followUpLogs });
+
+    // ─── P3: Auto-transition expired pending follow-ups to 'missed' ───────────
+    // Follow-ups pending for >3 days past due date become 'missed'
+    const graceCutoff = subDays(now, 3).toISOString().split("T")[0];
+    const missedResult = await db
+      .update(followUps)
+      .set({ status: "missed" })
+      .where(
+        and(
+          eq(followUps.status, "pending"),
+          lt(followUps.dueDate, graceCutoff)
+        )
+      );
+
+    return NextResponse.json({ 
+      success: true, 
+      apptsDispatched: processedCount, 
+      followUpsLogged: followUpLogs,
+      expiredGraceCutoff: graceCutoff
+    });
 
   } catch (error) {
     console.error("Cron failed:", error);

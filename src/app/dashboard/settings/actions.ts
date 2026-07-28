@@ -11,6 +11,7 @@ interface SettingsData {
   doctorName: string;
   specialty: string;
   consultationFee: number;
+  freeFollowupDays: number; // P0: 0 = no free follow-ups, N = free within N days
   address: string | null;
   phone: string;
   themeColor: string | null;
@@ -36,6 +37,7 @@ export async function updateClinicSettings(data: SettingsData) {
         doctorName: data.doctorName,
         specialty: data.specialty,
         consultationFee: data.consultationFee,
+        freeFollowupDays: data.freeFollowupDays ?? 0, // P0
         address: data.address,
         phone: data.phone,
         themeColor: data.themeColor,

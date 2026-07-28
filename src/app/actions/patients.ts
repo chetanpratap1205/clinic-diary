@@ -7,6 +7,7 @@ import { getAuthUser } from "@/lib/auth";
 import { getClinicTodayDate, CLINIC_TIMEZONE } from "@/lib/timezone";
 import { formatInTimeZone } from "date-fns-tz";
 import { revalidatePath } from "next/cache";
+import { parsePatientExtendedData, serializePatientExtendedData, PatientExtendedData } from "@/lib/patient-helpers";
 
 type CreatePatientInput = {
   name: string;
@@ -14,6 +15,12 @@ type CreatePatientInput = {
   age?: string;
   gender?: string;
   address?: string;
+  email?: string;
+  bloodGroup?: string;
+  emergencyContact?: string;
+  allergies?: string;
+  chronicConditions?: string;
+  notes?: string;
   addToQueue?: boolean;
 };
 
@@ -25,7 +32,20 @@ export async function createPatientAction(data: CreatePatientInput) {
     }
     const clinicId = authUser.clinicId;
 
-    const { name, phone, age, gender, address, addToQueue } = data;
+    const {
+      name,
+      phone,
+      age,
+      gender,
+      address,
+      email,
+      bloodGroup,
+      emergencyContact,
+      allergies,
+      chronicConditions,
+      notes,
+      addToQueue,
+    } = data;
 
     if (!name || !phone) {
       return { error: "Name and phone are required" };
@@ -73,7 +93,15 @@ export async function createPatientAction(data: CreatePatientInput) {
         };
       }
     }
-    // -------------------------------------------
+
+    const serializedMedicalNotes = serializePatientExtendedData({
+      notes: notes || "",
+      bloodGroup: bloodGroup || "",
+      email: email || "",
+      emergencyContact: emergencyContact || "",
+      allergies: allergies || "",
+      chronicConditions: chronicConditions || "",
+    });
 
     let newPatientRecord: any = null;
 
@@ -87,9 +115,10 @@ export async function createPatientAction(data: CreatePatientInput) {
           age: age ? parseInt(age) : null,
           gender: gender || null,
           address: address || null,
+          medicalNotes: serializedMedicalNotes,
         })
         .returning();
-      
+
       newPatientRecord = newPatient;
 
       if (addToQueue) {
@@ -106,7 +135,7 @@ export async function createPatientAction(data: CreatePatientInput) {
 
         // Calculate token number safely
         const todayAppointments = await tx
-          .select({ maxToken: max(appointments.tokenNumber) })
+          .select({ appointmentTime: appointments.appointmentTime, tokenNumber: appointments.tokenNumber })
           .from(appointments)
           .where(
             and(
@@ -114,7 +143,13 @@ export async function createPatientAction(data: CreatePatientInput) {
               eq(appointments.appointmentDate, appointmentDate)
             )
           );
-        const nextToken = (todayAppointments[0]?.maxToken || 0) + 1;
+
+        const existingTimes = new Set<string>(todayAppointments.map((a) => a.appointmentTime));
+        const { ensureUniqueTime } = await import("@/lib/appointment-utils");
+        const uniqueAppointmentTime = ensureUniqueTime(appointmentTime, existingTimes);
+
+        const maxToken = todayAppointments.reduce((m, curr) => Math.max(m, curr.tokenNumber || 0), 0);
+        const nextToken = maxToken + 1;
 
         await tx.insert(appointments).values({
           clinicId: clinicId,
@@ -122,7 +157,7 @@ export async function createPatientAction(data: CreatePatientInput) {
           patientName: newPatient.name,
           patientPhone: newPatient.phone,
           appointmentDate,
-          appointmentTime,
+          appointmentTime: uniqueAppointmentTime,
           tokenNumber: nextToken,
           status: "checked_in",
           checkInTime: now,
@@ -150,6 +185,12 @@ type UpdatePatientInput = {
   age?: string;
   gender?: string;
   address?: string;
+  email?: string;
+  bloodGroup?: string;
+  emergencyContact?: string;
+  allergies?: string;
+  chronicConditions?: string;
+  notes?: string;
 };
 
 export async function updatePatientAction(patientId: string, data: UpdatePatientInput) {
@@ -160,7 +201,19 @@ export async function updatePatientAction(patientId: string, data: UpdatePatient
     }
     const clinicId = authUser.clinicId;
 
-    const { name, phone, age, gender, address } = data;
+    const {
+      name,
+      phone,
+      age,
+      gender,
+      address,
+      email,
+      bloodGroup,
+      emergencyContact,
+      allergies,
+      chronicConditions,
+      notes,
+    } = data;
 
     if (!name || !phone) {
       return { error: "Name and phone are required" };
@@ -182,10 +235,30 @@ export async function updatePatientAction(patientId: string, data: UpdatePatient
         )
       );
 
-    const duplicate = existing.find(p => p.id !== patientId);
+    const duplicate = existing.find((p) => p.id !== patientId);
     if (duplicate) {
       return { error: "Another patient with this phone number already exists" };
     }
+
+    // Retrieve existing patient to preserve notes if not provided
+    const [currentPatient] = await db
+      .select()
+      .from(patients)
+      .where(and(eq(patients.id, patientId), eq(patients.clinicId, clinicId)))
+      .limit(1);
+
+    const currentExt = parsePatientExtendedData(currentPatient?.medicalNotes);
+
+    const updatedExt: PatientExtendedData = {
+      notes: notes !== undefined ? notes : currentExt.notes,
+      bloodGroup: bloodGroup !== undefined ? bloodGroup : currentExt.bloodGroup,
+      email: email !== undefined ? email : currentExt.email,
+      emergencyContact: emergencyContact !== undefined ? emergencyContact : currentExt.emergencyContact,
+      allergies: allergies !== undefined ? allergies : currentExt.allergies,
+      chronicConditions: chronicConditions !== undefined ? chronicConditions : currentExt.chronicConditions,
+    };
+
+    const serializedMedicalNotes = serializePatientExtendedData(updatedExt);
 
     const [updatedPatient] = await db
       .update(patients)
@@ -195,6 +268,7 @@ export async function updatePatientAction(patientId: string, data: UpdatePatient
         age: age ? parseInt(age) : null,
         gender: gender || null,
         address: address || null,
+        medicalNotes: serializedMedicalNotes,
       })
       .where(
         and(eq(patients.id, patientId), eq(patients.clinicId, clinicId))

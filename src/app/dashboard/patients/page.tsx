@@ -1,7 +1,7 @@
 import { getAuthUser } from "@/lib/auth";
 import { db } from "@/db";
-import { patients, appointments, subscriptions, clinics } from "@/db/schema";
-import { eq, desc, count, and, ilike, or } from "drizzle-orm";
+import { patients, appointments, subscriptions, clinics, followUps } from "@/db/schema";
+import { eq, desc, count, and, ilike, or, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { Plus } from "lucide-react";
 import Link from "next/link";
@@ -52,6 +52,8 @@ export default async function PatientsPage(props: { searchParams: Promise<{ [key
       address: patients.address,
       createdAt: patients.createdAt,
       visitCount: count(appointments.id),
+      // P1: Count pending follow-ups per patient for the indicator badge
+      pendingFollowUps: sql<number>`count(distinct case when ${followUps.status} = 'pending' then ${followUps.id} end)`,
     })
     .from(patients)
     .leftJoin(
@@ -59,6 +61,13 @@ export default async function PatientsPage(props: { searchParams: Promise<{ [key
       and(
         eq(appointments.patientId, patients.id),
         eq(appointments.clinicId, patients.clinicId)
+      )
+    )
+    .leftJoin(
+      followUps,
+      and(
+        eq(followUps.patientId, patients.id),
+        eq(followUps.clinicId, patients.clinicId)
       )
     )
     .where(whereCondition)

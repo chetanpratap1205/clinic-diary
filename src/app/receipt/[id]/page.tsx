@@ -26,7 +26,7 @@ export default async function ReceiptPage(props: { params: Promise<{ id: string 
     })
     .from(appointments)
     .innerJoin(clinics, eq(appointments.clinicId, clinics.id))
-    .innerJoin(patients, eq(appointments.patientId, patients.id))
+    .leftJoin(patients, eq(appointments.patientId, patients.id))
     .where(eq(appointments.id, id))
     .limit(1);
 
@@ -34,11 +34,25 @@ export default async function ReceiptPage(props: { params: Promise<{ id: string 
     return notFound();
   }
 
-  const { appointment, clinic, patient } = result[0];
+  const { appointment, clinic } = result[0];
+  const patient = result[0].patient || {
+    id: appointment.patientId || "",
+    name: appointment.patientName || "Patient",
+    phone: appointment.patientPhone || "",
+  };
 
   const receiptDate = appointment.consultationEndTime 
     ? new Date(appointment.consultationEndTime) 
     : new Date();
+
+  const { visitNotes } = await import("@/db/schema");
+  const [note] = await db
+    .select()
+    .from(visitNotes)
+    .where(eq(visitNotes.appointmentId, id))
+    .limit(1);
+
+  const hasClinicalSummary = Boolean(note && (note.diagnosis || note.treatment || note.complaint));
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 font-sans selection:bg-slate-200 print:bg-white print:py-0 print:px-0">
@@ -124,6 +138,31 @@ export default async function ReceiptPage(props: { params: Promise<{ id: string 
               <span className="font-bold tracking-wide">Total Paid</span>
               <span className="text-2xl font-black">₹{appointment.feeCollected ?? (clinic.consultationFee || 0)}</span>
             </div>
+
+            {/* Optional Clinical Summary Annexure (Mode B for Digital Doctors) */}
+            {hasClinicalSummary && (
+              <div className="mt-6 pt-6 border-t border-slate-100 space-y-3 text-left">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Clinical Summary & Advice</h4>
+                {note.diagnosis && (
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase">Diagnosis</p>
+                    <p className="text-sm font-semibold text-slate-800">{note.diagnosis}</p>
+                  </div>
+                )}
+                {note.treatment && (
+                  <div className="bg-blue-50/50 p-3.5 rounded-xl border border-blue-100/60">
+                    <p className="text-[10px] font-bold text-blue-400 uppercase">Prescription & Advice</p>
+                    <p className="text-sm font-semibold text-blue-900">{note.treatment}</p>
+                  </div>
+                )}
+                {note.complaint && (
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase">Chief Complaint</p>
+                    <p className="text-sm text-slate-700">{note.complaint}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           
           {/* Footer */}

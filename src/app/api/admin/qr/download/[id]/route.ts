@@ -29,6 +29,8 @@ export async function GET(
     .select({
       code: qrCodes.code,
       clinicName: clinics.name,
+      doctorName: clinics.doctorName,
+      logoUrl: clinics.logoUrl,
     })
     .from(qrCodes)
     .leftJoin(clinics, eq(qrCodes.clinicId, clinics.id))
@@ -39,12 +41,12 @@ export async function GET(
     return new NextResponse("QR code not found", { status: 404 });
   }
 
-  const { code, clinicName } = qrResult[0];
+  const { code, clinicName, doctorName, logoUrl } = qrResult[0];
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://doctor.naturexpress.in";
   const redirectUrl = `${baseUrl}/q/${code}`;
 
   try {
-    const pdfBuffer = await generateQrPdfBuffer(code, redirectUrl, clinicName);
+    const pdfBuffer = await generateQrPdfBuffer(code, redirectUrl, clinicName, doctorName, logoUrl);
 
     return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,

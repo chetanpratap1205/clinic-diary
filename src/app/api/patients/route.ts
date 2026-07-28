@@ -125,13 +125,16 @@ export async function POST(req: NextRequest) {
       .returning();
 
     if (body.addToQueue) {
-      const now = new Date();
-      const appointmentDate = format(now, 'yyyy-MM-dd');
-      const appointmentTime = format(now, 'HH:mm:ss');
+      const { getClinicTodayDate, CLINIC_TIMEZONE } = await import("@/lib/timezone");
+      const { ensureUniqueTime } = await import("@/lib/appointment-utils");
+      const { formatInTimeZone } = await import("date-fns-tz");
 
-      // Calculate token number
-      const todayAppointments = await db
-        .select({ maxToken: max(appointments.tokenNumber) })
+      const now = new Date();
+      const appointmentDate = getClinicTodayDate();
+
+      // Fetch existing appointments for today to determine token and prevent time collisions
+      const todayAppointmentsData = await db
+        .select({ appointmentTime: appointments.appointmentTime, tokenNumber: appointments.tokenNumber })
         .from(appointments)
         .where(
           and(
@@ -139,7 +142,13 @@ export async function POST(req: NextRequest) {
             eq(appointments.appointmentDate, appointmentDate)
           )
         );
-      const nextToken = (todayAppointments[0]?.maxToken || 0) + 1;
+
+      const existingTimes = new Set<string>(todayAppointmentsData.map((a) => a.appointmentTime));
+      const rawTime = formatInTimeZone(now, CLINIC_TIMEZONE, 'HH:mm:ss');
+      const appointmentTime = ensureUniqueTime(rawTime, existingTimes);
+
+      const maxToken = todayAppointmentsData.reduce((max, curr) => Math.max(max, curr.tokenNumber || 0), 0);
+      const nextToken = maxToken + 1;
 
       await db.insert(appointments).values({
         clinicId: authUser.clinicId,

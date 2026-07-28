@@ -2,6 +2,7 @@
 
 import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatWhatsAppPhone } from "@/lib/phone-utils";
 
 interface WhatsAppShareButtonProps {
   patientName: string;
@@ -42,8 +43,9 @@ export function WhatsAppShareButton({ patientName, patientPhone, trackingUrl, cl
       }
     }
 
-    const whatsappUrl = patientPhone 
-      ? `https://wa.me/91${patientPhone.replace(/\D/g, '')}?text=${encodeURIComponent(text!)}`
+    const formattedPhone = formatWhatsAppPhone(patientPhone);
+    const whatsappUrl = formattedPhone 
+      ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(text!)}`
       : `https://wa.me/?text=${encodeURIComponent(text!)}`;
       
     window.open(whatsappUrl, "_blank");

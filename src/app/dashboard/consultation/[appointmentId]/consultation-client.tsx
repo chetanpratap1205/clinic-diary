@@ -29,6 +29,8 @@ import type { Appointment, Patient, VisitNote } from "@/db/schema";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { formatWhatsAppPhone } from "@/lib/phone-utils";
+
 interface ConsultationClientProps {
   appointment: Appointment;
   patient: Patient;
@@ -53,6 +55,7 @@ export function ConsultationClient({
   const [treatment, setTreatment] = useState("");
   const [followUp, setFollowUp] = useState(false);
   const [followUpDays, setFollowUpDays] = useState(7);
+  const [feeCollected, setFeeCollected] = useState<number>(appointment.feeCollected ?? clinic.consultationFee ?? 0);
   const [isCompleted, setIsCompleted] = useState(false);
 
   // Mobile tab state: "patient" = left panel, "consult" = right panel
@@ -68,6 +71,7 @@ export function ConsultationClient({
           treatment,
           followUpRequired: followUp,
           followUpDays,
+          feeCollected,
         };
 
         const res = await fetch(
@@ -107,47 +111,42 @@ export function ConsultationClient({
           Visit Completed!
         </h2>
         <p className="text-slate-500 mb-1 max-w-xs text-sm leading-relaxed">
-          Notes & prescription logged for{" "}
+          Visit completed & logged for{" "}
           <span className="font-semibold text-slate-700">{patient.name}</span>.
         </p>
-        <p className="text-xs text-slate-400 mb-8">
-          {format(new Date(), "MMMM d, yyyy • h:mm a")}
+        <p className="text-xs font-bold text-emerald-600 mb-8">
+          Fee Collected: ₹{feeCollected}
         </p>
 
         {/* Action buttons */}
         <div className="w-full max-w-sm space-y-3">
+          <button
+            onClick={() => {
+              const text = `*INVOICE & VISIT SUMMARY* 🏥\n\nDear ${patient.name},\nThank you for visiting *${clinic.name}* (Dr. ${clinic.doctorName}). We hope you had a comfortable experience!\n\n*Payment Received:* ₹${feeCollected}\n*Date:* ${format(new Date(), "dd MMM yyyy")}\n\n📄 *View & Download your Official E-Receipt here:*\n${window.location.origin}/receipt/${appointment.id}\n\n📅 *Need a Follow-up?*\nBook your next visit online instantly:\n${window.location.origin}/book/${clinic.slug}\n\nWishing you a speedy recovery! 🌿`;
+              const formattedPhone = formatWhatsAppPhone(patient.phone);
+              const url = formattedPhone 
+                ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(text)}`
+                : `https://wa.me/?text=${encodeURIComponent(text)}`;
+              window.open(url, "_blank");
+            }}
+            className="w-full h-12 rounded-2xl bg-[#25D366] text-white hover:bg-[#20bd5a] font-bold shadow-md shadow-[#25D366]/20 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.82 9.82 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.81 11.81 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.88 11.88 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.82 11.82 0 0 0-3.48-8.413Z"/></svg>
+            Send WhatsApp E-Receipt
+          </button>
           <Button
             onClick={() => window.print()}
             variant="outline"
             className="w-full h-12 rounded-2xl border-slate-200 font-semibold gap-2 text-slate-700"
           >
             <Printer className="w-4 h-4" />
-            Print Prescription
+            Print Prescription / Notes
           </Button>
-          <Button
-            onClick={() => {
-              const url = `${window.location.origin}/review/${appointment.id}`;
-              navigator.clipboard.writeText(url);
-              toast.success("Review link copied to clipboard");
-            }}
-            variant="outline"
-            className="w-full h-12 rounded-2xl border-slate-200 font-semibold gap-2 text-slate-700"
-          >
-            <Star className="w-4 h-4 text-amber-500" />
-            Copy Review Link
-          </Button>
-          <WhatsAppShareButton
-            patientName={patient.name}
-            patientPhone={patient.phone}
-            clinicName={clinic.name}
-            doctorName={clinic.doctorName}
-            trackingUrl={`/track/${appointment.id}`}
-          />
           <Button
             onClick={() => router.push("/dashboard/queue")}
             className="w-full h-12 rounded-2xl bg-slate-900 text-white hover:bg-slate-800 font-semibold"
           >
-            Back to Queue
+            Back to Live Queue
           </Button>
         </div>
       </div>
@@ -486,6 +485,29 @@ export function ConsultationClient({
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* P2: Dynamic Free vs Paid Policy Badge */}
+        {followUp && (
+          <div className="mt-2 text-xs">
+            {clinic?.freeFollowupDays > 0 && followUpDays <= clinic.freeFollowupDays ? (
+              <div className="bg-emerald-50 border border-emerald-200/80 text-emerald-800 rounded-xl px-3 py-2 flex items-center gap-2">
+                <span className="text-base">🎉</span>
+                <span className="font-bold">₹0 Free Follow-up</span>
+                <span className="text-[11px] text-emerald-600">(within clinic's {clinic.freeFollowupDays}-day free policy)</span>
+              </div>
+            ) : clinic?.freeFollowupDays > 0 ? (
+              <div className="bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-3 py-2 flex items-center gap-2">
+                <span className="text-base">💳</span>
+                <span className="font-bold">Standard Fee Visit</span>
+                <span className="text-[11px] text-slate-500">(exceeds {clinic.freeFollowupDays}-day free policy)</span>
+              </div>
+            ) : (
+              <div className="bg-slate-50 border border-slate-200 text-slate-600 rounded-xl px-3 py-2 flex items-center gap-2 text-[11px]">
+                <span>ℹ️ Standard consultation fee applies (Configure free window in Settings).</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Complete button — sticky at bottom of form */}

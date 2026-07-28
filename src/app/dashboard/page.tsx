@@ -184,12 +184,13 @@ export default async function DashboardPage() {
     (a) => a.status === "completed"
   ).length;
 
-  const validRevenueAppts = todayAppts.filter(
-    (a) => a.status === "completed"
-  ).length;
-
   const clinicData = clinicResult[0];
-  const todayRevenue = validRevenueAppts * (clinicData?.consultationFee || 0);
+
+  // P0 FIX: Sum actual feeCollected — not count × fixed fee
+  // Free follow-ups (₹0) now correctly contribute ₹0, not the full clinic fee
+  const todayRevenue = todayAppts
+    .filter((a) => a.status === "completed")
+    .reduce((sum, a) => sum + (a.feeCollected ?? clinicData?.consultationFee ?? 0), 0);
   const bookingUrl = `${
     process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in"
   }/book/${clinicData?.slug}`;

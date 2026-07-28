@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { qrCodes, clinics, subscriptions } from "@/db/schema";
+import { qrCodes, clinics, subscriptions, qrScans } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 // Edge-compatible fast redirect — this is the heart of the QR system
@@ -60,6 +60,13 @@ export async function GET(
 
     const urlObj = new URL(_req.url);
     const src = urlObj.searchParams.get("src");
+
+    // 📊 Log placement analytics in background (non-blocking)
+    db.insert(qrScans).values({
+      qrCodeId: qr.id,
+      clinicId: clinic.id,
+      placement: src ?? "general",
+    }).catch(err => console.error("[QR Scan Analytics Log Error]", err));
 
     // ✅ Everything good — redirect to booking page
     let finalUrl = `${baseUrl}/book/${clinic.slug}`;

@@ -67,11 +67,18 @@ export async function PATCH(
           const maxTokenData = todayAppointmentsData.reduce((max, curr) => Math.max(max, curr.tokenNumber || 0), 0);
           const nextToken = maxTokenData + 1;
 
-          let appointmentTime = format(now, "HH:mm:ss");
+          const { CLINIC_TIMEZONE } = await import("@/lib/timezone");
+          const { formatInTimeZone } = await import("date-fns-tz");
+
+          let appointmentTime = formatInTimeZone(now, CLINIC_TIMEZONE, "HH:mm:ss");
           if (todayAppointmentsData.length > 0) {
             const { getWalkInTimeSlot } = await import("@/lib/queue-logic");
             appointmentTime = getWalkInTimeSlot(todayAppointmentsData, now, avgConsultMins);
           }
+
+          const existingTimes = new Set<string>(todayAppointmentsData.map((a) => a.appointmentTime));
+          const { ensureUniqueTime } = await import("@/lib/appointment-utils");
+          appointmentTime = ensureUniqueTime(appointmentTime, existingTimes);
 
           const [newAppt] = await db.insert(appointments).values({
             clinicId: authUser.clinicId,

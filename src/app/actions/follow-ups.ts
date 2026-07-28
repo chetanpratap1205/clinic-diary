@@ -123,6 +123,10 @@ export async function updateFollowUpStatusAction(id: string, status: string) {
               appointmentTime = getWalkInTimeSlot(todayAppointmentsData, now, avgConsultMins);
             }
 
+            const existingTimes = new Set<string>(todayAppointmentsData.map((a) => a.appointmentTime));
+            const { ensureUniqueTime } = await import("@/lib/appointment-utils");
+            appointmentTime = ensureUniqueTime(appointmentTime, existingTimes);
+
             const [newAppt] = await tx.insert(appointments).values({
               clinicId: clinicId,
               patientId: patient.id,

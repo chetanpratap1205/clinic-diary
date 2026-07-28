@@ -37,6 +37,7 @@ const settingsSchema = z.object({
   doctorName: z.string().min(2, "Doctor name must be at least 2 characters"),
   specialty: z.string(),
   consultationFee: z.number().min(0),
+  freeFollowupDays: z.number().min(0).max(365), // P0: required, no default (set in defaultValues)
   address: z.string().nullable(),
   phone: z.string(),
   themeColor: z
@@ -59,6 +60,7 @@ interface SettingsClientProps {
     doctorName: string;
     specialty: string;
     consultationFee: number;
+    freeFollowupDays: number; // P0
     address: string | null;
     phone: string;
     themeColor: string | null;
@@ -128,6 +130,7 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
       doctorName: initialData.doctorName,
       specialty: initialData.specialty || "",
       consultationFee: initialData.consultationFee || 0,
+      freeFollowupDays: initialData.freeFollowupDays ?? 0, // P0
       address: initialData.address || "",
       phone: initialData.phone || "",
       themeColor: initialData.themeColor || "#0ea5e9",
@@ -294,6 +297,40 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
                       {...register("consultationFee", { valueAsNumber: true })}
                       className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
                     />
+                  </div>
+
+                  {/* P0: Free Follow-up Policy */}
+                  <div className="space-y-2">
+                    <label htmlFor="free-followup-days" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-black">₹0</span>
+                      Free Follow-up Window (Days)
+                    </label>
+                    <Input
+                      id="free-followup-days"
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      max={365}
+                      {...register("freeFollowupDays", { valueAsNumber: true })}
+                      className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                    />
+                    <div className="flex gap-2 flex-wrap">
+                      {[0, 3, 7, 14, 30].map((d) => (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => setValue("freeFollowupDays", d, { shouldValidate: true })}
+                          className="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-800 transition-all"
+                        >
+                          {d === 0 ? "No free" : `${d} days`}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      {watchedFields.freeFollowupDays && watchedFields.freeFollowupDays > 0
+                        ? `Patients who return within ${watchedFields.freeFollowupDays} days of their last visit will be marked as a free follow-up (₹0).`
+                        : "Set to 0 to charge full fee for all follow-up visits."}
+                    </p>
                   </div>
                 </div>
 

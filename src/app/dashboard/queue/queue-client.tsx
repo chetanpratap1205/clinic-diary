@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useTransition, useEffect, useCallback } from "react";
+import { useState, useTransition, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { updateAppointmentStatus } from "@/app/dashboard/actions";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, CheckCircle2, User, Play, Check, X, Activity, Undo2 } from "lucide-react";
+import { Clock, CheckCircle2, User, Play, Check, X, Activity, Undo2, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Appointment, Clinic } from "@/db/schema";
 import { format } from "date-fns";
@@ -14,11 +14,14 @@ import { WhatsAppShareButton } from "@/components/dashboard/patients/whatsapp-sh
 import { formatTimeDisplay } from "@/lib/format";
 import { getClinicDelay, getEstimatedStart } from "@/lib/queue-logic";
 import { normalizeAppointment } from "@/lib/appointment-utils";
+import { formatWhatsAppPhone } from "@/lib/phone-utils";
 
 interface QueueClientProps {
   initialAppointments: Appointment[];
   clinic: Clinic;
   today: string;
+  // P0: follow-up metadata keyed by appointmentId
+  followUpMap?: Record<string, { isFree: boolean; feeOverride: number | null }>;
 }
 
 const QueueCard = ({ 
@@ -28,7 +31,8 @@ const QueueCard = ({
   handleStatusChange, 
   router,
   now,
-  delayMinutes
+  delayMinutes,
+  followUpInfo,
 }: { 
   appt: Appointment; 
   clinic: Clinic; 
@@ -37,6 +41,7 @@ const QueueCard = ({
   router: any;
   now: Date;
   delayMinutes: number;
+  followUpInfo?: { isFree: boolean; feeOverride: number | null };
 }) => {
   const { estimatedStart, isDelayed } = getEstimatedStart(appt, delayMinutes, now);
   const adjustedTimeStr = format(estimatedStart, "h:mm a");
@@ -66,9 +71,28 @@ const QueueCard = ({
              </span>
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <p className="font-bold text-slate-900 text-sm">{appt.patientName || "Patient"}</p>
-              {appt.notes?.includes("Quick check-in") ? (
+              {appt.acquisitionSource === "qr_reception" && (
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">📍 QR Reception</span>
+              )}
+              {appt.acquisitionSource === "qr_window" && (
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-indigo-100 text-indigo-800 border border-indigo-200">🪟 QR Window</span>
+              )}
+              {appt.acquisitionSource === "qr_stand" && (
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-teal-100 text-teal-800 border border-teal-200">📐 QR Standee</span>
+              )}
+              {appt.acquisitionSource === "qr_sticker" && (
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200">🏷️ QR Sticker</span>
+              )}
+              {/* P0: Prefer followUpInfo for detection; fall back to notes string for old records */}
+              {followUpInfo ? (
+                followUpInfo.isFree ? (
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700">Free Follow-up</span>
+                ) : (
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-sky-100 text-sky-600">Follow-up</span>
+                )
+              ) : appt.notes?.includes("Quick check-in") ? (
                 <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-slate-100 text-slate-500">Walk-in</span>
               ) : appt.notes?.includes("Auto-generated from Follow-up") ? (
                 <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-sky-100 text-sky-600">Follow-up</span>
@@ -160,10 +184,13 @@ const QueueCard = ({
              {appt.status === "completed" && (
                 <button
                   onClick={() => {
-                     const fee = appt.feeCollected ?? (clinic.consultationFee || 0);
-                     const text = `*INVOICE & VISIT SUMMARY* 🏥\n\nDear ${appt.patientName},\nThank you for visiting *${clinic.name}* (Dr. ${clinic.doctorName}). We hope you had a comfortable experience!\n\n*Payment Received:* ₹${fee}\n*Date:* ${format(new Date(), "dd MMM yyyy")}\n\n📄 *View & Download your Official E-Receipt here:*\n${window.location.origin}/receipt/${appt.id}\n\n📅 *Need a Follow-up?*\nBook your next visit online instantly:\n${window.location.origin}/book/${clinic.slug}\n\nWishing you a speedy recovery! 🌿`;
-                     const url = `https://wa.me/91${appt.patientPhone}?text=${encodeURIComponent(text)}`;
-                     window.open(url, "_blank");
+                      const fee = appt.feeCollected ?? (clinic.consultationFee || 0);
+                      const text = `*INVOICE & VISIT SUMMARY* 🏥\n\nDear ${appt.patientName},\nThank you for visiting *${clinic.name}* (Dr. ${clinic.doctorName}). We hope you had a comfortable experience!\n\n*Payment Received:* ₹${fee}\n*Date:* ${format(new Date(), "dd MMM yyyy")}\n\n📄 *View & Download your Official E-Receipt here:*\n${window.location.origin}/receipt/${appt.id}\n\n📅 *Need a Follow-up?*\nBook your next visit online instantly:\n${window.location.origin}/book/${clinic.slug}\n\nWishing you a speedy recovery! 🌿`;
+                      const formattedPhone = formatWhatsAppPhone(appt.patientPhone);
+                      const url = formattedPhone 
+                        ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(text)}`
+                        : `https://wa.me/?text=${encodeURIComponent(text)}`;
+                      window.open(url, "_blank");
                   }}
                   className="w-full bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white min-h-[36px] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
                   title="Share Receipt via WhatsApp"
@@ -192,7 +219,7 @@ const QueueCard = ({
   );
 };
 
-const Column = ({ title, count, items, icon: Icon, colorClass, clinic, isPending, handleStatusChange, router, now, delayMinutes }: any) => (
+const Column = ({ title, count, items, icon: Icon, colorClass, clinic, isPending, handleStatusChange, router, now, delayMinutes, followUpMap }: any) => (
   <div className="flex-1 min-w-[300px] flex flex-col gap-3 bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
     <div className="flex items-center justify-between mb-2 px-1">
       <h2 className="font-semibold text-slate-800 flex items-center gap-2 text-sm">
@@ -214,6 +241,7 @@ const Column = ({ title, count, items, icon: Icon, colorClass, clinic, isPending
             router={router} 
             now={now}
             delayMinutes={delayMinutes}
+            followUpInfo={followUpMap?.[appt.id]}
           />
         ))}
         {items.length === 0 && (
@@ -232,7 +260,7 @@ const Column = ({ title, count, items, icon: Icon, colorClass, clinic, isPending
   </div>
 );
 
-export function QueueClient({ initialAppointments, clinic, today }: QueueClientProps) {
+export function QueueClient({ initialAppointments, clinic, today, followUpMap = {} }: QueueClientProps) {
   const router = useRouter();
   type Tab = "Scheduled" | "Waiting" | "In Consult" | "Done";
   const [activeTab, setActiveTab] = useState<Tab>("Waiting");
@@ -249,7 +277,10 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
   const [completeModalOpen, setCompleteModalOpen] = useState(false);
   const [receiptState, setReceiptState] = useState<"input" | "success">("input");
   const [completingAppt, setCompletingAppt] = useState<Appointment | null>(null);
+  // P0: fee defaults from followUpMap (free = 0, paid = clinic fee, normal = clinic fee)
   const [feeCollected, setFeeCollected] = useState<number>(clinic.consultationFee || 0);
+
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Sync prop updates if server revalidates
   useEffect(() => {
@@ -282,6 +313,8 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
   // Supabase Realtime for instant updates across devices
   useEffect(() => {
     const supabase = createClient();
+    let isReconnecting = false;
+
     const channel = supabase
       .channel(`queue-dashboard-${clinic.id}`)
       .on(
@@ -295,9 +328,14 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
         (payload) => {
           if (payload.eventType === "UPDATE") {
             const updated = normalizeAppointment(payload.new);
-            setAppointments((prev) =>
-              prev.map((a) => (a.id === updated.id ? updated : a))
-            );
+            setAppointments((prev) => {
+              if (updated.appointmentDate !== today) {
+                return prev.filter((a) => a.id !== updated.id);
+              }
+              const exists = prev.some((a) => a.id === updated.id);
+              if (!exists) return [...prev, updated];
+              return prev.map((a) => (a.id === updated.id ? updated : a));
+            });
           } else if (payload.eventType === "INSERT") {
             const newAppt = normalizeAppointment(payload.new);
             if (newAppt.appointmentDate === today) {
@@ -314,7 +352,11 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
         }
       )
       .subscribe((status) => {
-        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+        if (status === "SUBSCRIBED" && isReconnecting) {
+          isReconnecting = false;
+          router.refresh(); // Reconcile missed events after network drop
+        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          isReconnecting = true;
           router.refresh();
         }
       });
@@ -330,7 +372,19 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
         const apptToComplete = appointments.find((a) => a.id === appointmentId);
         if (apptToComplete) {
           setCompletingAppt(apptToComplete);
-          setFeeCollected(clinic.consultationFee || 0);
+          // P0: Auto-fill fee from followUpMap (free follow-ups default to ₹0)
+          const fuInfo = followUpMap[appointmentId];
+          let defaultFee: number;
+          if (fuInfo) {
+            // It's a follow-up visit
+            defaultFee = fuInfo.isFree
+              ? (fuInfo.feeOverride !== null && fuInfo.feeOverride !== undefined ? fuInfo.feeOverride : 0)
+              : (apptToComplete.feeCollected ?? clinic.consultationFee ?? 0);
+          } else {
+            // Normal appointment or old follow-up without map
+            defaultFee = apptToComplete.feeCollected ?? clinic.consultationFee ?? 0;
+          }
+          setFeeCollected(defaultFee);
           setReceiptState("input");
           setCompleteModalOpen(true);
         }
@@ -371,32 +425,69 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
     [appointments, clinic.consultationFee]
   );
 
-  // Group appointments safely
-  const scheduled = appointments
-    .filter((a) => a && a.status === "confirmed")
-    .sort((a, b) => (a.appointmentTime || "").localeCompare(b.appointmentTime || ""));
-
-  const checkedIn = appointments
-    .filter((a) => a && a.status === "checked_in")
-    .sort((a, b) => (a.tokenNumber || 0) - (b.tokenNumber || 0));
-
-  const inConsultation = appointments
-    .filter((a) => a && a.status === "in_consultation")
-    .sort(
-      (a, b) =>
-        new Date(a.consultationStartTime || 0).getTime() -
-        new Date(b.consultationStartTime || 0).getTime()
-    );
-
-  const completed = appointments
-    .filter((a) => a && ["completed", "cancelled", "no_show"].includes(a.status))
-    .sort((a, b) => {
-       const aTime = a.consultationEndTime ? new Date(a.consultationEndTime).getTime() : new Date(a.createdAt || 0).getTime();
-       const bTime = b.consultationEndTime ? new Date(b.consultationEndTime).getTime() : new Date(b.createdAt || 0).getTime();
-       return bTime - aTime;
+  // Filter & Group appointments with memoization for high-throughput performance
+  const filteredAppointments = useMemo(() => {
+    if (!searchQuery.trim()) return appointments;
+    const q = searchQuery.toLowerCase().trim();
+    return appointments.filter((a) => {
+      if (!a) return false;
+      const nameMatch = (a.patientName || "").toLowerCase().includes(q);
+      const phoneMatch = (a.patientPhone || "").includes(q);
+      const tokenMatch = a.tokenNumber !== null && String(a.tokenNumber).includes(q);
+      return nameMatch || phoneMatch || tokenMatch;
     });
+  }, [appointments, searchQuery]);
 
-  const delayMinutes = getClinicDelay(appointments, now);
+  const scheduled = useMemo(
+    () =>
+      filteredAppointments
+        .filter((a) => a && a.status === "confirmed")
+        .sort((a, b) => (a.appointmentTime || "").localeCompare(b.appointmentTime || "")),
+    [filteredAppointments]
+  );
+
+  const checkedIn = useMemo(
+    () =>
+      filteredAppointments
+        .filter((a) => a && a.status === "checked_in")
+        .sort((a, b) => {
+          const tA = a.tokenNumber ?? 999999;
+          const tB = b.tokenNumber ?? 999999;
+          if (tA !== tB) return tA - tB;
+          return (a.appointmentTime || "").localeCompare(b.appointmentTime || "");
+        }),
+    [filteredAppointments]
+  );
+
+  const inConsultation = useMemo(
+    () =>
+      filteredAppointments
+        .filter((a) => a && a.status === "in_consultation")
+        .sort(
+          (a, b) =>
+            new Date(a.consultationStartTime || 0).getTime() -
+            new Date(b.consultationStartTime || 0).getTime()
+        ),
+    [filteredAppointments]
+  );
+
+  const completed = useMemo(
+    () =>
+      filteredAppointments
+        .filter((a) => a && ["completed", "cancelled", "no_show"].includes(a.status))
+        .sort((a, b) => {
+          const aTime = a.consultationEndTime
+            ? new Date(a.consultationEndTime).getTime()
+            : new Date(a.createdAt || 0).getTime();
+          const bTime = b.consultationEndTime
+            ? new Date(b.consultationEndTime).getTime()
+            : new Date(b.createdAt || 0).getTime();
+          return bTime - aTime;
+        }),
+    [filteredAppointments]
+  );
+
+  const delayMinutes = useMemo(() => getClinicDelay(appointments, now), [appointments, now]);
 
   const tabs: { id: Tab; label: string; count: number }[] = [
     { id: "Scheduled", label: "Scheduled", count: scheduled.length },
@@ -407,6 +498,27 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
 
   return (
     <div className="space-y-4 relative">
+      {/* Live Queue Instant Search Bar */}
+      <div className="bg-white/80 backdrop-blur-md p-2 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Filter queue by token #, patient name, or mobile..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-8 py-2 bg-transparent text-xs sm:text-sm font-medium text-slate-800 focus:outline-none placeholder:text-slate-400"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 hover:text-slate-600"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+      </div>
       {/* Complete Appointment Modal */}
       {completeModalOpen && completingAppt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -417,6 +529,17 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
                 <p className="text-sm text-slate-500 mb-6">Record fee collected for {completingAppt.patientName}</p>
                 
                 <div className="space-y-4">
+                  {/* P0: Show free follow-up context if applicable */}
+                  {completingAppt && followUpMap[completingAppt.id]?.isFree && (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-2">
+                      <span className="text-emerald-600 text-lg">🎉</span>
+                      <div>
+                        <p className="text-xs font-bold text-emerald-800">Free Follow-up Visit</p>
+                        <p className="text-[11px] text-emerald-600 mt-0.5">Within clinic's free follow-up window. Fee pre-set to ₹0.</p>
+                      </div>
+                    </div>
+                  )}
+
                   <div>
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 block">Amount Collected (₹)</label>
                     <div className="relative">
@@ -494,7 +617,10 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
                     <button 
                       onClick={() => {
                         const text = `*INVOICE & VISIT SUMMARY* 🏥\n\nDear ${completingAppt.patientName},\nThank you for visiting *${clinic.name}* (Dr. ${clinic.doctorName}). We hope you had a comfortable experience!\n\n*Payment Received:* ₹${feeCollected}\n*Date:* ${format(new Date(), "dd MMM yyyy")}\n\n📄 *View & Download your Official E-Receipt here:*\n${window.location.origin}/receipt/${completingAppt.id}\n\n📅 *Need a Follow-up?*\nBook your next visit online instantly:\n${window.location.origin}/book/${clinic.slug}\n\nWishing you a speedy recovery! 🌿`;
-                        const url = `https://wa.me/91${completingAppt.patientPhone}?text=${encodeURIComponent(text)}`;
+                        const formattedPhone = formatWhatsAppPhone(completingAppt.patientPhone);
+                        const url = formattedPhone
+                          ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(text)}`
+                          : `https://wa.me/?text=${encodeURIComponent(text)}`;
                         window.open(url, "_blank");
                         setCompleteModalOpen(false);
                       }}
@@ -550,6 +676,7 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
             router={router}
             now={now}
             delayMinutes={delayMinutes}
+            followUpMap={followUpMap}
           />
         </div>
         <div className={cn("min-w-full lg:min-w-0 lg:flex-1 transition-opacity", activeTab === "Waiting" ? "block" : "hidden lg:block")}>
@@ -565,6 +692,7 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
             router={router}
             now={now}
             delayMinutes={delayMinutes}
+            followUpMap={followUpMap}
           />
         </div>
         <div className={cn("min-w-full lg:min-w-0 lg:flex-1 transition-opacity", activeTab === "In Consult" ? "block" : "hidden lg:block")}>
@@ -580,6 +708,7 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
             router={router}
             now={now}
             delayMinutes={delayMinutes}
+            followUpMap={followUpMap}
           />
         </div>
         <div className={cn("min-w-full lg:min-w-0 lg:flex-1 transition-opacity", activeTab === "Done" ? "block" : "hidden lg:block")}>
@@ -595,6 +724,7 @@ export function QueueClient({ initialAppointments, clinic, today }: QueueClientP
             router={router}
             now={now}
             delayMinutes={delayMinutes}
+            followUpMap={followUpMap}
           />
         </div>
       </div>

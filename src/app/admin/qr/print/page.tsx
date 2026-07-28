@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { qrCodes } from "@/db/schema";
-import { inArray } from "drizzle-orm";
+import { qrCodes, clinics } from "@/db/schema";
+import { inArray, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import QRCode from "qrcode";
 import { PrintButton } from "./print-button";
@@ -104,8 +104,17 @@ export default async function PrintQrPage({
   }
 
   const codes = await db
-    .select({ id: qrCodes.id, code: qrCodes.code })
+    .select({
+      id: qrCodes.id,
+      code: qrCodes.code,
+      clinicName: clinics.name,
+      doctorName: clinics.doctorName,
+      doctorSpecialty: clinics.specialty,
+      clinicLogo: clinics.logoUrl,
+      doctorPhoto: clinics.heroImageUrl,
+    })
     .from(qrCodes)
+    .leftJoin(clinics, eq(qrCodes.clinicId, clinics.id))
     .where(inArray(qrCodes.id, idsArray))
     .orderBy(qrCodes.code);
 
@@ -143,12 +152,12 @@ export default async function PrintQrPage({
     <span style={{ fontFamily: "'Noto Sans Devanagari', 'Mangal', sans-serif" }}>{s}</span>
   );
 
-  // ─── Step data: Inside card ───────────────────────────────────────────────
+  // ─── Step data: Inside card (Live Queue Focus) ──────────────────────────────────
   const insideSteps = [
-    { Icon: IconScan,    bg: "rgba(52,211,153,0.18)",  border: "rgba(52,211,153,0.35)",  color: C.em400,  accentBar: C.em400,  en: "Scan QR with camera",        hi: "QR स्कैन करें" },
-    { Icon: IconClock,   bg: "rgba(234,179,8,0.18)",   border: "rgba(234,179,8,0.35)",   color: C.yw400,  accentBar: C.yw400,  en: "Choose your time slot",      hi: "समय चुनें" },
-    { Icon: IconTicket,  bg: "rgba(45,212,191,0.18)",  border: "rgba(45,212,191,0.35)",  color: C.tl400,  accentBar: C.tl400,  en: "Get instant token number",   hi: "टोकन नंबर मिलेगा" },
-    { Icon: IconArrive,  bg: "rgba(110,231,183,0.15)", border: "rgba(110,231,183,0.3)",  color: C.em300,  accentBar: C.em300,  en: "Arrive on time — no queue!", hi: "समय पर आएं — लाइन नहीं" },
+    { Icon: IconScan,    bg: "rgba(52,211,153,0.18)",  border: "rgba(52,211,153,0.35)",  color: C.em400,  accentBar: C.em400,  en: "Scan QR with phone camera",   hi: "अपने फोन से स्कैन करें" },
+    { Icon: IconClock,   bg: "rgba(234,179,8,0.18)",   border: "rgba(234,179,8,0.35)",   color: C.yw400,  accentBar: C.yw400,  en: "Track Live Doctor Queue",     hi: "लाइव टोकन स्थिति देखें" },
+    { Icon: IconTicket,  bg: "rgba(45,212,191,0.18)",  border: "rgba(45,212,191,0.35)",  color: C.tl400,  accentBar: C.tl400,  en: "Know your exact turn time",   hi: "अपनी बारी का समय जानें" },
+    { Icon: IconArrive,  bg: "rgba(110,231,183,0.15)", border: "rgba(110,231,183,0.3)",  color: C.em300,  accentBar: C.em300,  en: "Arrive on time — zero queue!", hi: "समय पर आएं — 0 वेटिंग" },
   ];
 
   // ─── Step data: Outside card ──────────────────────────────────────────────
@@ -773,8 +782,29 @@ export default async function PrintQrPage({
                     <div className="code-watermark">#{item.code}</div>
                   </div>
 
-                  {/* Blank box — doctor handwrites clinic details after printing */}
-                  <div className="blank-box" />
+                  {item.clinicName ? (
+                    <div style={{
+                      flexShrink: 0,
+                      background: "#ffffff",
+                      border: "2px solid #34d399",
+                      borderRadius: 6,
+                      minWidth: "65mm",
+                      height: 38,
+                      padding: "0 12px",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                    }}>
+                      <div style={{ fontSize: 11, fontWeight: 900, color: "#064e3b", lineHeight: 1.1 }}>
+                        {item.doctorName || item.clinicName}
+                      </div>
+                      <div style={{ fontSize: 9, fontWeight: 700, color: "#059669", marginTop: 1 }}>
+                        {item.clinicName}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="blank-box" />
+                  )}
                 </div>
               </div>
             </div>
@@ -828,10 +858,10 @@ export default async function PrintQrPage({
                   <div className="left-col">
                     <div className="benefit-pill benefit-pill-outside">✨ Your Time Matters</div>
                     <div className="headline-primary">
-                      CLINIC CLOSED?<br />
-                      <span className="headline-accent-outside">Book Online</span>
+                      CLINIC CLOSED OR DOCTOR OUT?<br />
+                      <span className="headline-accent-outside">Book Slot Online</span>
                     </div>
-                    <div className="headline-hindi">{hi("ऑनलाइन बुकिंग — अगला दिन")}</div>
+                    <div className="headline-hindi">{hi("क्लिनिक बंद है या डॉक्टर बाहर हैं? • ऑनलाइन स्लॉट बुक करें")}</div>
                     <div className="flow-label">How it works</div>
                     <div className="steps">
                       {outsideSteps.map(({ Icon, bg, border, color, accentBar, en, hi: hiText }, i) => (
@@ -889,8 +919,6 @@ export default async function PrintQrPage({
                         Any phone camera &nbsp;•&nbsp; {hi("किसी भी कैमरे से")}
                       </div>
                     </div>
-
-                    {/* Auth label removed — was overlapping */}
                   </div>
                 </div>
 
@@ -903,8 +931,29 @@ export default async function PrintQrPage({
                     <div className="code-watermark">#{item.code}</div>
                   </div>
 
-                  {/* Blank box — doctor handwrites clinic details after printing */}
-                  <div className="blank-box" />
+                  {item.clinicName ? (
+                    <div style={{
+                      flexShrink: 0,
+                      background: "#ffffff",
+                      border: "2px solid #818cf8",
+                      borderRadius: 6,
+                      minWidth: "65mm",
+                      height: 38,
+                      padding: "0 12px",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                    }}>
+                      <div style={{ fontSize: 11, fontWeight: 900, color: "#1e1b4b", lineHeight: 1.1 }}>
+                        {item.doctorName || item.clinicName}
+                      </div>
+                      <div style={{ fontSize: 9, fontWeight: 700, color: "#4338ca", marginTop: 1 }}>
+                        {item.clinicName}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="blank-box" />
+                  )}
                 </div>
               </div>
             </div>

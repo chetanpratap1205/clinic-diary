@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { appointments, visitNotes, followUps } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { appointments, visitNotes, followUps, clinics } from "@/db/schema";
+import { eq, and, lte, desc } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 
 export async function POST(
@@ -38,46 +38,94 @@ export async function POST(
     const now = new Date();
 
     // 1. Save visit note
-    await db.insert(visitNotes).values({
-      clinicId: authUser.clinicId,
-      patientId: appointment.patientId,
-      appointmentId,
-      complaint: complaint || null,
-      vitals: vitals || null,
-      diagnosis: diagnosis || null,
-      treatment: treatment || null,
-      followUpRequired: followUpRequired || false,
-    });
-
-    // 2. Schedule follow-up if requested
-    if (followUpRequired && body.followUpDays) {
-      const d = new Date();
-      d.setDate(d.getDate() + Number(body.followUpDays));
-      const dueDateStr = d.toISOString().split("T")[0];
-
-      await db.insert(followUps).values({
+    if (complaint || vitals || diagnosis || treatment) {
+      await db.insert(visitNotes).values({
         clinicId: authUser.clinicId,
         patientId: appointment.patientId,
         appointmentId,
-        dueDate: dueDateStr,
-        status: "pending",
-        notes: complaint ? `Follow-up for: ${complaint}` : null,
+        complaint: complaint || null,
+        vitals: vitals || null,
+        diagnosis: diagnosis || null,
+        treatment: treatment || null,
+        followUpRequired: followUpRequired || false,
       });
     }
 
-    // 3. Mark appointment as completed
+    // 2. Mark appointment as completed with fee
+    const updateData: any = {
+      status: "completed",
+      consultationEndTime: now,
+    };
+    if (body.feeCollected !== undefined && body.feeCollected !== null) {
+      updateData.feeCollected = Number(body.feeCollected);
+    }
+
     await db
       .update(appointments)
-      .set({
-        status: "completed",
-        consultationEndTime: now,
-      })
+      .set(updateData)
       .where(
         and(
           eq(appointments.id, appointmentId),
           eq(appointments.clinicId, authUser.clinicId)
         )
       );
+
+    // ─── P0: Golden Thread — complete all linked follow-ups ──────────────────
+    // Path 1: follow-up that ORIGINATED this appointment (appointmentId reference)
+    await db
+      .update(followUps)
+      .set({ status: "completed", completedAt: now })
+      .where(
+        and(
+          eq(followUps.appointmentId, appointmentId),
+          eq(followUps.clinicId, authUser.clinicId),
+          eq(followUps.status, "pending")
+        )
+      );
+    // Path 2: follow-up whose RETURN appointment = this one (followUpAppointmentId reference)
+    await db
+      .update(followUps)
+      .set({ status: "completed", completedAt: now })
+      .where(
+        and(
+          eq(followUps.followUpAppointmentId, appointmentId),
+          eq(followUps.clinicId, authUser.clinicId),
+          eq(followUps.status, "pending")
+        )
+      );
+    // ─── end golden thread ────────────────────────────────────────────────────
+
+    // 3. Schedule new follow-up if requested
+    if (followUpRequired && body.followUpDays && appointment.patientId) {
+      const { CLINIC_TIMEZONE } = await import("@/lib/timezone");
+      const { formatInTimeZone } = await import("date-fns-tz");
+      const { addDays } = await import("date-fns");
+      const targetDate = addDays(now, Number(body.followUpDays));
+      const dueDateStr = formatInTimeZone(targetDate, CLINIC_TIMEZONE, "yyyy-MM-dd");
+
+      // ─── P0: Determine free vs paid based on clinic policy ────────────────
+      const [clinicData] = await db
+        .select({ freeFollowupDays: clinics.freeFollowupDays })
+        .from(clinics)
+        .where(eq(clinics.id, authUser.clinicId))
+        .limit(1);
+
+      const freeWindow = clinicData?.freeFollowupDays ?? 0;
+      const isFree = freeWindow > 0 && Number(body.followUpDays) <= freeWindow;
+
+      await db.insert(followUps).values({
+        clinicId: authUser.clinicId,
+        patientId: appointment.patientId,
+        appointmentId, // originating appointment
+        dueDate: dueDateStr,
+        status: "pending",
+        isFree,
+        feeOverride: isFree ? 0 : null,
+        sourceType: "auto",
+        notes: complaint ? `Follow-up for: ${complaint}` : null,
+      });
+      // ─── end P0 ──────────────────────────────────────────────────────────
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {

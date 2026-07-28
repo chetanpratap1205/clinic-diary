@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { qrCodes, clinics, subscriptions } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { AdminQrClient } from "./admin-qr-client";
 
 export const metadata = { title: "QR Code Manager | Doctor Diary Admin" };
@@ -24,6 +24,8 @@ export default async function AdminQrPage() {
         doctorName: clinics.doctorName,
         subStatus: subscriptions.status,
         subEnd: subscriptions.currentPeriodEnd,
+        totalScans: sql<number>`(SELECT COUNT(*)::int FROM qr_scans s WHERE s.qr_code_id = qr_codes.id)`,
+        qrAppts: sql<number>`(SELECT COUNT(*)::int FROM appointments a WHERE a.clinic_id = qr_codes.clinic_id AND a.acquisition_source LIKE 'qr_%')`,
       })
       .from(qrCodes)
       .leftJoin(clinics, eq(qrCodes.clinicId, clinics.id))

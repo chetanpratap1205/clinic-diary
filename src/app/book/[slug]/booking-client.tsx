@@ -804,7 +804,7 @@ export function BookingClient({
         </div>
 
         {/* Tab toggle */}
-        <div className="p-1.5 bg-slate-100/80 rounded-2xl m-4 sm:m-5 mb-2 flex gap-1 relative z-10">
+        <div className="p-1.5 bg-slate-100/90 rounded-2xl m-4 sm:m-5 mb-2 flex gap-1 relative z-10 border border-slate-200/50">
           <button
             onClick={() => setMode("book")}
             className={`flex-1 py-2.5 text-sm font-bold transition-all relative rounded-xl ${
@@ -812,9 +812,12 @@ export function BookingClient({
             }`}
           >
             {mode === "book" && (
-              <motion.div layoutId="activeTab" className="absolute inset-0 bg-white rounded-xl" transition={{ type: "spring", stiffness: 400, damping: 30 }} />
+              <motion.div layoutId="activeTab" className="absolute inset-0 bg-white rounded-xl shadow-2xs" transition={{ type: "spring", stiffness: 400, damping: 30 }} />
             )}
-            <span className="relative z-10">{t.bookAppointment}</span>
+            <span className="relative z-10 flex items-center justify-center gap-2">
+              <CalendarCheck className="w-4 h-4 text-teal-600" />
+              {t.bookAppointment}
+            </span>
           </button>
           <button
             onClick={() => setMode("track")}
@@ -823,9 +826,12 @@ export function BookingClient({
             }`}
           >
             {mode === "track" && (
-              <motion.div layoutId="activeTab" className="absolute inset-0 bg-white rounded-xl" transition={{ type: "spring", stiffness: 400, damping: 30 }} />
+              <motion.div layoutId="activeTab" className="absolute inset-0 bg-white rounded-xl shadow-2xs" transition={{ type: "spring", stiffness: 400, damping: 30 }} />
             )}
-            <span className="relative z-10">{t.myAppointment}</span>
+            <span className="relative z-10 flex items-center justify-center gap-2">
+              <Search className="w-4 h-4 text-indigo-600" />
+              {t.myAppointment}
+            </span>
           </button>
         </div>
 

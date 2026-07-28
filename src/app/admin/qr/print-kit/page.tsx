@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { qrCodes } from "@/db/schema";
-import { inArray } from "drizzle-orm";
+import { qrCodes, clinics } from "@/db/schema";
+import { inArray, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import QRCode from "qrcode";
 import { PrintButton } from "../print/print-button";
@@ -24,8 +24,15 @@ export default async function PrintKitPage({
   }
 
   const codes = await db
-    .select({ id: qrCodes.id, code: qrCodes.code })
+    .select({
+      id: qrCodes.id,
+      code: qrCodes.code,
+      clinicName: clinics.name,
+      doctorName: clinics.doctorName,
+      doctorSpecialty: clinics.specialty,
+    })
     .from(qrCodes)
+    .leftJoin(clinics, eq(qrCodes.clinicId, clinics.id))
     .where(inArray(qrCodes.id, idsArray))
     .orderBy(qrCodes.code);
 
@@ -117,7 +124,6 @@ export default async function PrintKitPage({
           background-position: center 20%;
           position: relative;
         }
-        /* Gradient mask to blend image into white bottom */
         .p1-hero::after {
           content: '';
           position: absolute; bottom: 0; left: 0; width: 100%; height: 60mm;
@@ -200,66 +206,21 @@ export default async function PrintKitPage({
         
         .p2-footer { margin-top: auto; margin-bottom: 10mm; color: rgba(255,255,255,0.7); font-size: 16px; font-weight: 600; }
 
-        /* ─── PAGE 3: ACRYLIC STAND (4x6 on A4) ─── */
+        /* ─── PAGE 3: ACRYLIC STAND (4x6 Double-Sided) ─── */
         .stand-page { 
           display: flex; align-items: center; justify-content: center; 
           background: #f8fafc;
         }
-        /* 4x6 inches = 101.6mm x 152.4mm */
         .stand-cut-area {
-          width: 101.6mm; height: 152.4mm;
+          width: 195mm; height: 145mm;
           background: #ffffff;
           position: relative;
-          box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+          border: 1.5px dashed #cbd5e1;
+          display: flex;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.08);
         }
-        
-        .cm-line { position: absolute; background: #cbd5e1; }
-        .cm-t { top: 0; left: -10mm; right: -10mm; height: 1px; border-top: 1px dashed #cbd5e1; background: transparent; }
-        .cm-b { bottom: 0; left: -10mm; right: -10mm; height: 1px; border-bottom: 1px dashed #cbd5e1; background: transparent; }
-        .cm-l { left: 0; top: -10mm; bottom: -10mm; width: 1px; border-left: 1px dashed #cbd5e1; background: transparent; }
-        .cm-r { right: 0; top: -10mm; bottom: -10mm; width: 1px; border-right: 1px dashed #cbd5e1; background: transparent; }
 
-        .stand-inner {
-          width: 100%; height: 100%;
-          position: relative; overflow: hidden;
-          display: flex; flex-direction: column; align-items: center; text-align: center;
-        }
-        
-        .st-bg {
-          position: absolute; top: 0; left: 0; width: 100%; height: 50%;
-          background-image: url('/assets/images/teal_abstract.jpg');
-          background-size: cover; background-position: center;
-        }
-        .st-bg::after {
-          content: ''; position: absolute; inset: 0;
-          background: linear-gradient(to bottom, rgba(10,92,85,0.4) 0%, rgba(255,255,255,1) 100%);
-        }
-        
-        .st-content {
-          position: relative; z-index: 10; width: 100%; height: 100%;
-          display: flex; flex-direction: column; align-items: center;
-          padding: 8mm;
-        }
-        
-        .st-logo {
-          background: #fff; color: var(--teal-brand); font-weight: 900; font-size: 12px;
-          padding: 1.5mm 4mm; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-          margin-top: 2mm; text-transform: uppercase; letter-spacing: 1px;
-        }
-        
-        .st-title-en { font-size: 26px; font-weight: 900; color: var(--slate-900); line-height: 1.1; margin-top: 8mm; }
-        .st-title-hi { font-size: 16px; font-weight: 800; color: var(--teal-600); line-height: 1.2; margin-top: 2mm; }
-        
-        .st-qr-box {
-          margin-top: 8mm; width: 68mm; height: 68mm;
-          background: #fff; border-radius: 4mm; padding: 2.5mm;
-          box-shadow: 0 15px 35px rgba(10,92,85,0.15), 0 0 0 1px rgba(10,92,85,0.05);
-        }
-        .st-qr-box img { width: 100%; height: 100%; object-fit: contain; }
-        
-        .st-id { margin-top: auto; font-size: 9px; font-family: monospace; color: var(--slate-400); }
-
-        /* ─── PAGE 4-6: STICKERS (Avery L7159 - 3x8) ─── */
+        /* ─── PAGE 4: STICKERS (Avery L7159 - 3x8) ─── */
         .sticker-page {
           padding-top: 13.5mm; padding-left: 7.2mm; padding-right: 7.2mm;
           display: grid; grid-template-columns: repeat(3, 63.5mm); grid-template-rows: repeat(8, 33.9mm);
@@ -275,22 +236,22 @@ export default async function PrintKitPage({
         @media print { .sticker { outline: none; } }
         
         .stk-qr {
-          width: 29mm; height: 29mm; flex-shrink: 0;
+          width: 26mm; height: 26mm; flex-shrink: 0;
           background: #fff; border-radius: 2mm; padding: 0.5mm;
           border: 2px solid var(--teal-brand);
         }
         .stk-qr img { width: 100%; height: 100%; image-rendering: pixelated; }
         
         .stk-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
-        .stk-en { font-size: 14px; font-weight: 900; color: var(--slate-900); line-height: 1.1; letter-spacing: -0.3px; }
-        .stk-hi { font-size: 11px; font-weight: 800; color: var(--teal-700); line-height: 1.2; margin-top: 1.5mm; }
-        .stk-foot { font-size: 7px; font-weight: 700; color: var(--slate-400); margin-top: 4mm; font-family: monospace; }
+        .stk-en { font-size: 13px; font-weight: 900; color: var(--slate-900); line-height: 1.1; letter-spacing: -0.3px; }
+        .stk-hi { font-size: 10px; font-weight: 800; color: var(--teal-700); line-height: 1.2; margin-top: 1.5mm; }
+        .stk-foot { font-size: 9px; font-weight: 800; color: var(--slate-900); margin-top: 3mm; font-family: monospace; }
       ` }} />
 
       <div className="no-print" style={{ background: "#0f172a", borderBottom: "1px solid #1e293b", padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ color: "#fff" }}>
           <h1 style={{ fontSize: "20px", fontWeight: 900, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Premium Enterprise QR Kit</h1>
-          <p style={{ fontSize: "14px", color: "#94a3b8" }}>1 Kit = 6 Pages (Inside, Outside, Acrylic Stand 4x6, 72 Stickers). Print Margins: None.</p>
+          <p style={{ fontSize: "14px", color: "#94a3b8" }}>1 Kit = 4 Pages (Inside Poster, Outside Poster, Acrylic Stand 4x6, 24 Stickers Sheet). Margins: None.</p>
         </div>
         <PrintButton />
       </div>
@@ -305,6 +266,11 @@ export default async function PrintKitPage({
               <div className="p1-content">
                 <div className="p1-title-en head">Skip the Waiting Area</div>
                 <div className="p1-title-hi hi">इंतज़ार से बचें, सीधा डॉक्टर से मिलें</div>
+                {kit.doctorName && (
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "#0d9488", marginTop: 4 }}>
+                    {kit.doctorName} · {kit.clinicName}
+                  </div>
+                )}
                 
                 <div className="p1-qr-container">
                   <div className="p1-qr-box">
@@ -334,8 +300,8 @@ export default async function PrintKitPage({
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                       </div>
                       <div>
-                        <div className="p1-step-txt-en">3. Relax & Wait</div>
-                        <div className="p1-step-txt-hi hi">आराम से अपनी बारी का इंतज़ार करें</div>
+                        <div className="p1-step-txt-en">3. Arrive On Time</div>
+                        <div className="p1-step-txt-hi hi">समय पर आएं — लाइन नहीं</div>
                       </div>
                     </div>
                   </div>
@@ -347,10 +313,15 @@ export default async function PrintKitPage({
             <div className="page-a4">
               <div className="p2-bg" />
               <div className="p2-content">
-                <div className="p2-badge">24/7 Booking Engine</div>
-                <div className="p2-title-en head">Clinic Closed?</div>
-                <div className="p2-title-en head" style={{marginTop:"-5px"}}>Book Instantly.</div>
-                <div className="p2-title-hi hi">क्लिनिक बंद है? फिर भी कल की बुकिंग करें</div>
+                <div className="p2-badge">24/7 Online Token Engine</div>
+                <div className="p2-title-en head">Clinic Closed or Doctor Out?</div>
+                <div className="p2-title-en head" style={{marginTop:"-5px"}}>Book Slot Instantly.</div>
+                <div className="p2-title-hi hi">क्लिनिक बंद है या डॉक्टर बाहर हैं? ऑनलाइन स्लॉट बुक करें</div>
+                {kit.doctorName && (
+                  <div style={{ fontSize: 20, fontWeight: 800, color: "#6ee7b7", marginTop: 8 }}>
+                    {kit.doctorName} · {kit.clinicName}
+                  </div>
+                )}
                 
                 <div className="p2-qr-wrapper">
                   <div className="p2-qr-box">
@@ -358,53 +329,47 @@ export default async function PrintKitPage({
                   </div>
                 </div>
                 
-                <div className="p2-footer">Secure your appointment for tomorrow right now. No need to call!</div>
+                <div className="p2-footer">Book your next visit for any open date in 30 seconds. No phone call needed!</div>
               </div>
             </div>
 
-            {/* ─── PAGE 3: ACRYLIC STAND (4x6) ─── */}
+            {/* ─── PAGE 3: ACRYLIC STAND (4x6 DOUBLE-SIDED) ─── */}
             <div className="page-a4 stand-page">
-              <div className="stand-cut-area">
-                <div className="cm-line cm-t" />
-                <div className="cm-line cm-b" />
-                <div className="cm-line cm-l" />
-                <div className="cm-line cm-r" />
-                
-                <div className="stand-inner">
-                  <div className="st-bg" />
-                  <div className="st-content">
-                    <div className="st-logo head">NatureXpress</div>
-                    
-                    <div className="st-title-en head">Scan & Book</div>
-                    <div className="st-title-hi hi">अगली बुकिंग यहाँ से करें</div>
-                    
-                    <div className="st-qr-box">
-                      <img src={kit.qrStand} alt="QR Code" />
-                    </div>
-                    
-                    <div className="st-id">ID: {kit.code}</div>
-                  </div>
+              <div className="stand-cut-area" style={{ padding: "6mm", display: "flex", gap: "4mm" }}>
+                {/* Panel 1 */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between", borderRight: "1px dashed #cbd5e1", paddingRight: "4mm" }}>
+                  <div style={{ background: "#0f766e", color: "#fff", fontSize: "10px", fontWeight: 800, padding: "2px 8px", borderRadius: "4px" }}>FRONT SIDE</div>
+                  <div style={{ fontSize: "18px", fontWeight: 900, textAlign: "center" }}>Scan to <span style={{ color: "#0d9488" }}>Join Queue</span></div>
+                  <div style={{ width: "48mm", height: "48mm" }}><img src={kit.qrStand} alt="QR" style={{ width: "100%", height: "100%" }} /></div>
+                  <div style={{ fontSize: "9px", color: "#64748b", fontFamily: "monospace" }}>#{kit.code}</div>
+                </div>
+
+                {/* Panel 2 */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ background: "#312e81", color: "#fff", fontSize: "10px", fontWeight: 800, padding: "2px 8px", borderRadius: "4px" }}>BACK SIDE</div>
+                  <div style={{ fontSize: "16px", fontWeight: 900, textAlign: "center" }}>{kit.doctorName || kit.clinicName || "Doctor Diary"}</div>
+                  <div style={{ fontSize: "11px", color: "#0f766e", textAlign: "center" }}>Real-time Live Token Tracking</div>
+                  <div style={{ fontSize: "9px", color: "#64748b", fontFamily: "monospace" }}>#{kit.code}</div>
                 </div>
               </div>
             </div>
 
-            {/* ─── PAGE 4, 5, 6: STICKERS (3x24 = 72 stickers) ─── */}
-            {[1, 2, 3].map((pageNum) => (
-              <div key={pageNum} className="page-a4 sticker-page">
-                {Array.from({ length: 24 }).map((_, i) => (
-                  <div key={i} className="sticker">
-                    <div className="stk-qr">
-                      <img src={kit.qrSticker} alt="QR" />
-                    </div>
-                    <div className="stk-txt">
-                      <div className="stk-en head">Book Next<br/>Visit Online</div>
-                      <div className="stk-hi hi">अगली बार बिना लाइन<br/>के बुकिंग करें</div>
-                      <div className="stk-foot">{kit.code}</div>
-                    </div>
+            {/* ─── PAGE 4: STICKERS (Avery L7159 - 24 stickers) ─── */}
+            <div className="page-a4 sticker-page">
+              {Array.from({ length: 24 }).map((_, i) => (
+                <div key={i} className="sticker">
+                  <div style={{ position: "absolute", top: "1.5mm", right: "2.5mm", fontSize: "7px", fontWeight: 900, color: "rgba(13,148,136,0.35)", letterSpacing: "0.5px", textTransform: "uppercase" }}>Doctor Diary</div>
+                  <div className="stk-qr">
+                    <img src={kit.qrSticker} alt="QR" />
                   </div>
-                ))}
-              </div>
-            ))}
+                  <div className="stk-txt">
+                    <div className="stk-en head">Book Next<br/>Visit Online</div>
+                    <div className="stk-hi hi">अगली बार बिना लाइन के</div>
+                    <div className="stk-foot">{kit.doctorName || kit.clinicName || kit.code} · #{kit.code}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
 
           </div>
         ))}

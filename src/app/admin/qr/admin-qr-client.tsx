@@ -34,6 +34,8 @@ type QrCodeRow = {
   doctorName: string | null;
   subStatus: string | null;
   subEnd: Date | null;
+  totalScans?: number;
+  qrAppts?: number;
 };
 
 type ClinicOption = {
@@ -175,11 +177,18 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
     window.open(`/admin/qr/print-kit?ids=${id}`, "_blank");
   };
 
+  const printSingleFormat = (id: string, format: "poster" | "stand" | "sticker" | "kit" | "sales-pack") => {
+    if (format === "poster") window.open(`/admin/qr/print?ids=${id}`, "_blank");
+    else if (format === "stand") window.open(`/admin/qr/print-stand?ids=${id}`, "_blank");
+    else if (format === "sticker") window.open(`/admin/qr/print-stickers?ids=${id}`, "_blank");
+    else if (format === "sales-pack") window.open(`/api/admin/qr/sales-pack?id=${id}`, "_blank");
+    else window.open(`/admin/qr/print-kit?ids=${id}`, "_blank");
+  };
+
   const unprintedUnassignedCodes = codes.filter((c) => !c.clinicId && !c.printedAt);
 
-  const handleBatchPrint = () => {
+  const handleBatchPrintPosters = () => {
     if (unprintedUnassignedCodes.length === 0) return;
-    
     startTransition(async () => {
       const ids = unprintedUnassignedCodes.map(c => c.id);
       const res = await fetch("/api/admin/qr", {
@@ -187,11 +196,28 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids }),
       });
-      
       if (res.ok) {
-        toast.success("Codes marked as printed!");
-        const idParams = ids.join(",");
-        window.open(`/admin/qr/print-kit?ids=${idParams}`, "_blank");
+        toast.success("Posters generated and marked as printed!");
+        window.open(`/admin/qr/print?ids=${ids.join(",")}`, "_blank");
+        await refresh();
+      } else {
+        toast.error("Failed to mark as printed");
+      }
+    });
+  };
+
+  const handleBatchPrintStands = () => {
+    if (unprintedUnassignedCodes.length === 0) return;
+    startTransition(async () => {
+      const ids = unprintedUnassignedCodes.map(c => c.id);
+      const res = await fetch("/api/admin/qr", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      if (res.ok) {
+        toast.success("Acrylic Standees generated and marked as printed!");
+        window.open(`/admin/qr/print-stand?ids=${ids.join(",")}`, "_blank");
         await refresh();
       } else {
         toast.error("Failed to mark as printed");
@@ -201,7 +227,6 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
 
   const handleBatchPrintStickers = () => {
     if (unprintedUnassignedCodes.length === 0) return;
-    
     startTransition(async () => {
       const ids = unprintedUnassignedCodes.map(c => c.id);
       const res = await fetch("/api/admin/qr", {
@@ -209,11 +234,28 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids }),
       });
-      
       if (res.ok) {
-        toast.success("Codes marked as printed!");
-        const idParams = ids.join(",");
-        window.open(`/admin/qr/print-kit?ids=${idParams}`, "_blank");
+        toast.success("Sticker sheets generated and marked as printed!");
+        window.open(`/admin/qr/print-stickers?ids=${ids.join(",")}`, "_blank");
+        await refresh();
+      } else {
+        toast.error("Failed to mark as printed");
+      }
+    });
+  };
+
+  const handleBatchPrintKit = () => {
+    if (unprintedUnassignedCodes.length === 0) return;
+    startTransition(async () => {
+      const ids = unprintedUnassignedCodes.map(c => c.id);
+      const res = await fetch("/api/admin/qr", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      if (res.ok) {
+        toast.success("Full Enterprise Kits generated and marked as printed!");
+        window.open(`/admin/qr/print-kit?ids=${ids.join(",")}`, "_blank");
         await refresh();
       } else {
         toast.error("Failed to mark as printed");
@@ -320,20 +362,40 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
               </span>
             </div>
             <button
-              onClick={handleBatchPrint}
+              onClick={handleBatchPrintPosters}
               disabled={isPending}
-              className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold px-4 py-2 rounded-xl transition-all disabled:opacity-50 active:scale-95 shadow-md shadow-teal-500/20"
+              className="flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all disabled:opacity-50 active:scale-95 shadow-sm"
+              title="Print 2-in-1 A4 Inside + Outside Posters"
             >
-              <FileText className="w-4 h-4" />
-              Print Posters
+              <FileText className="w-3.5 h-3.5" />
+              Posters
+            </button>
+            <button
+              onClick={handleBatchPrintStands}
+              disabled={isPending}
+              className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all disabled:opacity-50 active:scale-95 shadow-sm"
+              title="Print 4x6 Double-Sided Acrylic Table Standees"
+            >
+              <QrCode className="w-3.5 h-3.5" />
+              Standees
             </button>
             <button
               onClick={handleBatchPrintStickers}
               disabled={isPending}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-4 py-2 rounded-xl transition-all disabled:opacity-50 active:scale-95 shadow-md shadow-indigo-500/20"
+              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all disabled:opacity-50 active:scale-95 shadow-sm"
+              title="Print A4 Sticker Sheets (24 per page)"
             >
-              <StickyNote className="w-4 h-4" />
-              Print Stickers
+              <StickyNote className="w-3.5 h-3.5" />
+              Stickers
+            </button>
+            <button
+              onClick={handleBatchPrintKit}
+              disabled={isPending}
+              className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all disabled:opacity-50 active:scale-95 shadow-sm"
+              title="Print Full Enterprise Kit (Posters + Stand + Stickers)"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Full Kit
             </button>
           </div>
         )}
@@ -444,9 +506,14 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
                 <div className="flex-1 min-w-0">
                   {row.clinicId ? (
                     <div>
-                      <p className="text-slate-800 font-semibold truncate text-sm">
-                        {row.doctorName} <span className="text-slate-400 font-normal ml-1">· {row.clinicName}</span>
-                      </p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-slate-800 font-semibold truncate text-sm">
+                          {row.doctorName} <span className="text-slate-400 font-normal ml-1">· {row.clinicName}</span>
+                        </p>
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-black tracking-tight">
+                          📍 {row.qrAppts || 0} Appts ({row.totalScans || 0} Scans)
+                        </span>
+                      </div>
                       {row.notes && (
                         <p className="text-slate-500 text-xs mt-1 flex items-center gap-1.5 truncate">
                           <FileText className="w-3.5 h-3.5" />
@@ -474,14 +541,46 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
                     {copiedCode === row.code ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                   </button>
 
-                  <button
-                    onClick={() => downloadQrKit(row.id, row.code)}
-                    className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-teal-600 font-semibold text-xs transition-all"
-                    title="Download Clinic Kit (Posters + Stand + Stickers)"
-                  >
-                    <Download className="w-4 h-4" />
-                    Print Kit
-                  </button>
+                  {/* Print Selector Group */}
+                  <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 gap-1">
+                    <button
+                      onClick={() => printSingleFormat(row.id, "poster")}
+                      className="px-2 py-1.5 rounded-lg bg-white text-slate-700 hover:text-teal-700 font-semibold text-[11px] hover:bg-teal-50 border border-slate-200/60 shadow-2xs transition-all"
+                      title="Print A4 Inside + Outside Posters"
+                    >
+                      Posters
+                    </button>
+                    <button
+                      onClick={() => printSingleFormat(row.id, "stand")}
+                      className="px-2 py-1.5 rounded-lg bg-white text-slate-700 hover:text-teal-700 font-semibold text-[11px] hover:bg-teal-50 border border-slate-200/60 shadow-2xs transition-all"
+                      title="Print 4x6 Acrylic Table Standee"
+                    >
+                      Standee
+                    </button>
+                    <button
+                      onClick={() => printSingleFormat(row.id, "sticker")}
+                      className="px-2 py-1.5 rounded-lg bg-white text-slate-700 hover:text-indigo-700 font-semibold text-[11px] hover:bg-indigo-50 border border-slate-200/60 shadow-2xs transition-all"
+                      title="Print A4 Sticker Sheet"
+                    >
+                      Stickers
+                    </button>
+                    <button
+                      onClick={() => printSingleFormat(row.id, "kit")}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold text-[11px] shadow-xs transition-all"
+                      title="Print Full Enterprise Kit (All 4 Formats)"
+                    >
+                      <Download className="w-3 h-3" />
+                      Kit
+                    </button>
+                    <button
+                      onClick={() => printSingleFormat(row.id, "sales-pack")}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] shadow-xs transition-all"
+                      title="1-Click Sales Pack PDF (Commercial Print Ready)"
+                    >
+                      <Download className="w-3 h-3" />
+                      Sales Pack
+                    </button>
+                  </div>
 
                   {row.clinicId ? (
                     <button
@@ -547,8 +646,9 @@ export function AdminQrClient({ initialCodes, allClinics, baseUrl }: AdminQrClie
                       className="w-full bg-white border border-slate-300 text-slate-900 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 shadow-sm"
                     >
                       <option value="general">General (Unspecified)</option>
-                      <option value="reception_desk">Reception Desk (Standee)</option>
-                      <option value="outside_window">Outside Window</option>
+                      <option value="reception_desk">Reception Desk Poster</option>
+                      <option value="acrylic_stand">Acrylic Standee (4x6 Table Frame)</option>
+                      <option value="outside_window">Outside Window Poster</option>
                       <option value="patient_file_sticker">Patient File Sticker</option>
                     </select>
                     <input

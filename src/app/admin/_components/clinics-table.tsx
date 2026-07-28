@@ -25,6 +25,8 @@ export type ClinicRow = {
   subscriptionStatus: string | null;
   planId: string | null;
   totalAppointments: number;
+  qrAppointments?: number;
+  qrScans?: number;
   apptVolume30d?: number;
   totalRevenue: number;
   kitOrderStatus?: string | null;
@@ -170,6 +172,7 @@ export function ClinicsTable({
               <TableHead className="font-semibold whitespace-nowrap hidden sm:table-cell">Specialty</TableHead>
               <TableHead className="font-semibold whitespace-nowrap hidden md:table-cell">Joined</TableHead>
               <TableHead className="font-semibold text-right whitespace-nowrap hidden lg:table-cell">Appts (30d/All)</TableHead>
+              <TableHead className="font-semibold text-right whitespace-nowrap hidden xl:table-cell">QR Appts (Scans)</TableHead>
               <TableHead className="font-semibold text-right whitespace-nowrap hidden lg:table-cell">Revenue</TableHead>
               <TableHead className="font-semibold whitespace-nowrap hidden xl:table-cell">Kit Status</TableHead>
               <TableHead className="font-semibold whitespace-nowrap">Subscription</TableHead>
@@ -213,6 +216,10 @@ export function ClinicsTable({
                     <span className="text-teal-600 font-bold">{clinic.apptVolume30d || 0}</span>
                     <span className="text-slate-400 mx-1">/</span>
                     <span className="text-slate-500 text-xs">{clinic.totalAppointments.toLocaleString()}</span>
+                  </TableCell>
+                  <TableCell className="text-sm font-medium text-right hidden xl:table-cell whitespace-nowrap">
+                    <span className="text-emerald-700 font-extrabold">{clinic.qrAppointments || 0} appts</span>
+                    <span className="text-slate-400 text-xs ml-1">({clinic.qrScans || 0} scans)</span>
                   </TableCell>
                   <TableCell className="text-sm font-semibold text-emerald-700 text-right hidden lg:table-cell whitespace-nowrap">
                     ₹{(clinic.totalRevenue / 100).toLocaleString("en-IN")}

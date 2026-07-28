@@ -1,5 +1,7 @@
 import { Appointment } from "@/db/schema";
 import { format, differenceInMinutes, parse, isAfter } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
+import { CLINIC_TIMEZONE } from "@/lib/timezone";
 
 function safeParseTime(timeStr: string | undefined | null, defaultDate: Date): Date {
   if (!timeStr || typeof timeStr !== "string") {
@@ -40,8 +42,14 @@ export function getClinicDelay(appointments: Appointment[], now: Date): number {
     const diffMins = differenceInMinutes(now, scheduledTime);
     if (diffMins > 0) delayMinutes = diffMins;
   } else if (waitingRoom.length > 0) {
-    const firstWaiting = waitingRoom[0];
-    const scheduledTime = safeParseTime(firstWaiting.appointmentTime, now);
+    // If any checked-in patient is overdue compared to now, delay is calculated from the first overdue patient
+    const overdueWaiting = waitingRoom.find(w => {
+      const scheduledTime = safeParseTime(w.appointmentTime, now);
+      return isAfter(now, scheduledTime);
+    });
+
+    const targetPatient = overdueWaiting || waitingRoom[0];
+    const scheduledTime = safeParseTime(targetPatient.appointmentTime, now);
     const diffMins = differenceInMinutes(now, scheduledTime);
     if (diffMins > 0) delayMinutes = diffMins;
   }
@@ -95,7 +103,7 @@ export function getWalkInTimeSlot(appointments: Appointment[], now: Date, avgCon
     const nextIntervalMins = Math.ceil((now.getMinutes() + 1) / avgConsultationTime) * avgConsultationTime;
     const nextSlot = new Date(now);
     nextSlot.setMinutes(nextIntervalMins, 0, 0);
-    return format(nextSlot, "HH:mm:ss");
+    return formatInTimeZone(nextSlot, CLINIC_TIMEZONE, "HH:mm:ss");
   }
 
   // Find the latest appointment time
@@ -110,13 +118,13 @@ export function getWalkInTimeSlot(appointments: Appointment[], now: Date, avgCon
   if (isAfter(latestScheduledTime, now)) {
     // The latest appointment is in the future. Add them after that exact slot.
     const newSlot = new Date(latestScheduledTime.getTime() + avgConsultationTime * 60000);
-    return format(newSlot, "HH:mm:ss");
+    return formatInTimeZone(newSlot, CLINIC_TIMEZONE, "HH:mm:ss");
   } else {
     // The latest appointment is in the past. 
     // They are walking into an empty schedule. Give them the next round interval from NOW.
     const nextIntervalMins = Math.ceil((now.getMinutes() + 1) / avgConsultationTime) * avgConsultationTime;
     const nextSlot = new Date(now);
     nextSlot.setMinutes(nextIntervalMins, 0, 0);
-    return format(nextSlot, "HH:mm:ss");
+    return formatInTimeZone(nextSlot, CLINIC_TIMEZONE, "HH:mm:ss");
   }
 }

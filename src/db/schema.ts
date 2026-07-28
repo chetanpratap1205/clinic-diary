@@ -21,6 +21,7 @@ export const clinics = pgTable("clinics", {
   phone: text("phone").notNull(),
   logoUrl: text("logo_url"),
   consultationFee: integer("consultation_fee").default(0),
+  freeFollowupDays: integer("free_followup_days").default(0),
   averageConsultationMinutes: integer("average_consultation_minutes").default(15).notNull(),
   themeColor: text("theme_color").default("#0ea5e9"),
   address: text("address"),
@@ -145,9 +146,19 @@ export const followUps = pgTable(
     patientId: uuid("patient_id")
       .notNull()
       .references(() => patients.id, { onDelete: "cascade" }),
+    // appointmentId = the ORIGINATING appointment (visit that created this follow-up)
     appointmentId: uuid("appointment_id").references(() => appointments.id, { onDelete: "set null" }),
+    // followUpAppointmentId = the RETURN appointment (when patient comes back for follow-up)
+    // This is the GOLDEN THREAD that ties everything together
+    followUpAppointmentId: uuid("follow_up_appointment_id").references(() => appointments.id, { onDelete: "set null" }),
     dueDate: date("due_date").notNull(),
-    status: text("status").notNull().default("pending"), // pending/completed/missed
+    status: text("status").notNull().default("pending"), // pending/completed/missed/cancelled
+    // isFree: true if this follow-up is within the clinic's free follow-up window
+    isFree: boolean("is_free").default(false).notNull(),
+    // feeOverride: explicit fee to charge (0 for free, null = use clinic default)
+    feeOverride: integer("fee_override"),
+    // sourceType: how this follow-up was created
+    sourceType: text("source_type").default("manual").notNull(), // manual | auto
     notes: text("notes"),
     reminderSent3d: boolean("reminder_sent_3d").default(false),
     reminderSent1d: boolean("reminder_sent_1d").default(false),
@@ -163,6 +174,10 @@ export const followUps = pgTable(
     ),
     index("follow_ups_status_idx").on(table.status),
     index("follow_ups_patient_idx").on(table.patientId),
+    // P0 scale indexes
+    index("follow_ups_follow_up_appointment_id_idx").on(table.followUpAppointmentId),
+    index("follow_ups_clinic_patient_status_idx").on(table.clinicId, table.patientId, table.status),
+    index("follow_ups_due_date_status_idx").on(table.dueDate, table.status),
   ]
 );
 
@@ -247,7 +262,7 @@ export const qrCodes = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     code: text("code").notNull().unique(),          // e.g. "Q-001", "DD-X4K2"
     clinicId: uuid("clinic_id").references(() => clinics.id, { onDelete: "set null" }),
-    usageType: text("usage_type").notNull().default("general"), // general, reception, window, sticker
+    usageType: text("usage_type").notNull().default("general"), // general, reception_desk, acrylic_stand, outside_window, patient_file_sticker
     assignedAt: timestamp("assigned_at"),
     printedAt: timestamp("printed_at"),
     notes: text("notes"),                            // e.g. "Given to Dr. Sharma, Pune demo"
@@ -256,6 +271,23 @@ export const qrCodes = pgTable(
   (table) => [
     index("qr_codes_clinic_id_idx").on(table.clinicId),
     index("qr_codes_code_idx").on(table.code),
+  ]
+);
+
+// ─── QR Scan Analytics (Placement breakdown tracking) ─────────────────────────
+export const qrScans = pgTable(
+  "qr_scans",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    qrCodeId: uuid("qr_code_id").references(() => qrCodes.id, { onDelete: "cascade" }),
+    clinicId: uuid("clinic_id").references(() => clinics.id, { onDelete: "cascade" }),
+    placement: text("placement").notNull().default("general"), // reception, window, stand, sticker, general
+    scannedAt: timestamp("scanned_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("qr_scans_qr_code_id_idx").on(table.qrCodeId),
+    index("qr_scans_clinic_id_idx").on(table.clinicId),
+    index("qr_scans_placement_idx").on(table.placement),
   ]
 );
 
@@ -365,6 +397,10 @@ export const doctorLeads = pgTable("doctor_leads", {
   source: text("source").notNull().default("online"), // online, field_visit, referral, imported
   status: text("status").notNull().default("new"),     // new, contacted, demo_scheduled, converted, rejected
   priority: text("priority").notNull().default("normal"), // hot, warm, normal, cold
+  // Playbook tracking fields
+  leadCategory: text("lead_category").notNull().default("A"), // A=cold, B=visited, C=inbound
+  messageSentStep: integer("message_sent_step").notNull().default(0), // 0=none, 1,2,3=step sent
+  domainPillar: text("domain_pillar"), // growth, efficiency, continuity
   notes: text("notes"),
   followUpDate: timestamp("follow_up_date"),
   lastContactedAt: timestamp("last_contacted_at"),
@@ -379,6 +415,7 @@ export const doctorLeads = pgTable("doctor_leads", {
   index("doctor_leads_priority_idx").on(table.priority),
   index("doctor_leads_assigned_to_idx").on(table.assignedTo),
   index("doctor_leads_created_at_idx").on(table.createdAt),
+  index("doctor_leads_category_idx").on(table.leadCategory),
 ]);
 
 // ─── Lead Activities (Visits, Calls, Notes) ────────────────────────────────────

@@ -2,8 +2,10 @@ import { db } from "@/db";
 import { clinics, availability, availabilityOverrides, reviews, appointments, clinicServices, clinicGallery } from "@/db/schema";
 import { eq, desc, avg, count } from "drizzle-orm";
 import { notFound } from "next/navigation";
+import { getSpecialtyConfig } from "@/lib/specialty-taxonomy";
 import { BookingClient } from "./booking-client";
 import { ClinicLogo } from "./clinic-logo";
+import { FAQAccordion } from "./faq-accordion";
 import {
   MapPin,
   Phone,
@@ -19,6 +21,8 @@ import {
   MessageCircle,
   Image as ImageIcon,
   Sparkles,
+  HelpCircle,
+  Search,
 } from "lucide-react";
 
 const Instagram = ({ className }: { className?: string }) => (
@@ -96,21 +100,47 @@ export async function generateMetadata({
     specialty: clinic.specialty || "",
     fee: String(clinic.consultationFee ?? ""),
   });
+  const specialtyConfig = getSpecialtyConfig(clinic.specialty);
+  const canonicalUrl = `${BASE_URL}/book/${slug}`;
+  const titleText = `${displayDoctorName} (${specialtyConfig.displayName}) — ${clinic.name} | Book Appointment Online`;
+  const descText = `Book a direct appointment with ${displayDoctorName} at ${clinic.name}.${specialtyConfig.displayName} in ${clinic.address || "clinic"}. Real-time live queue token tracking on mobile.`;
 
   return {
-    title: `${clinic.name} — Book Appointment Online`,
-    description: `Book a consultation with ${displayDoctorName}${clinic.specialty ? `, ${clinic.specialty}` : ""} at ${clinic.name}.${clinic.address ? ` Based in ${clinic.address}.` : ""} Instant confirmation. No signup required.`,
+    title: titleText,
+    description: descText,
+    keywords: [
+      displayDoctorName,
+      clinic.name,
+      specialtyConfig.displayName,
+      specialtyConfig.hindiName,
+      ...specialtyConfig.keywords,
+      clinic.address || "",
+    ].filter(Boolean) as string[],
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
     openGraph: {
-      title: `${clinic.name} — ${displayDoctorName}`,
-      description: `Book your consultation online. Instant confirmation, no signup required.`,
-      images: [{ url: `${BASE_URL}/api/og?${ogParams}`, width: 1200, height: 630 }],
-      url: `${BASE_URL}/book/${slug}`,
+      title: `${displayDoctorName} — ${clinic.name}`,
+      description: descText,
+      images: [{ url: `${BASE_URL}/api/og?${ogParams}`, width: 1200, height: 630, alt: `${clinic.name} — ${displayDoctorName}` }],
+      url: canonicalUrl,
       type: "website",
+      siteName: "Doctor Diary",
     },
     twitter: {
       card: "summary_large_image",
-      title: `${clinic.name} — Book Online`,
-      description: `Consult ${displayDoctorName}. No signup required.`,
+      title: `${displayDoctorName} — Book Online Token`,
+      description: descText,
       images: [`${BASE_URL}/api/og?${ogParams}`],
     },
   };
@@ -130,6 +160,9 @@ export default async function BookingPage({
     ? clinic.doctorName
     : `Dr. ${clinic.doctorName}`;
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in";
+  const specialtyConfig = getSpecialtyConfig(clinic.specialty);
+
+  const fallbackHeroImage = specialtyConfig.heroImage;
 
   const [availRecords, overrideRecords, clinicReviews, statsResult, services, gallery] = await Promise.all([
     db.select().from(availability).where(eq(availability.clinicId, clinic.id)),
@@ -180,22 +213,99 @@ export default async function BookingPage({
   // Safe logo: only a direct image file URL, never a webpage URL
   const safeLogoUrl = isSafeImageUrl(clinic.logoUrl) ? clinic.logoUrl : null;
 
-  // JSON-LD structured data
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": ["MedicalBusiness", "Physician"],
-    name: clinic.name,
-    description: clinic.about || `${displayDoctorName} — ${clinic.specialty || "Medical Clinic"}. Book appointments online.`,
-    url: `${BASE_URL}/book/${slug}`,
-    ...(clinic.phone && { telephone: clinic.phone }),
-    ...(clinic.address && { address: { "@type": "PostalAddress", streetAddress: clinic.address } }),
-    ...(clinic.specialty && { medicalSpecialty: clinic.specialty }),
-    ...(clinic.consultationFee && { priceRange: `₹${clinic.consultationFee}` }),
-    ...(safeLogoUrl && { image: safeLogoUrl }),
-    ...(workingDays.length > 0 && {
-      openingHours: availRecords.map((a) => `${DAY_NAMES[a.dayOfWeek]} ${a.startTime.slice(0, 5)}-${a.endTime.slice(0, 5)}`),
-    }),
-  };
+  const faqItems = [
+    {
+      question: `How do I book an appointment with ${displayDoctorName}?`,
+      answer: `Select your preferred date and convenient time slot on this page, enter your patient name and mobile number, and click 'Confirm Booking'. Your live queue token will be generated instantly with zero booking fee.`
+    },
+    {
+      question: `What is the consultation fee at ${clinic.name}?`,
+      answer: clinic.consultationFee ? `The OPD consultation fee for ${displayDoctorName} is ₹${clinic.consultationFee}. You pay directly at the clinic desk during your visit.` : `Please contact ${clinic.name} directly for consultation fee details.`
+    },
+    {
+      question: `Can I track my live OPD queue position?`,
+      answer: `Yes! Once booked, you can track your live queue token number and estimated turn time in real-time on your mobile phone without sitting in a crowded waiting room.`
+    },
+    {
+      question: `Where is ${clinic.name} located?`,
+      answer: clinic.address ? `${clinic.name} is located at ${clinic.address}. You can click the 'Get Directions' button on this page for Google Maps turn-by-turn navigation.` : `${clinic.name} location details are available on this booking page.`
+    }
+  ];
+
+  // Comprehensive Multi-Schema JSON-LD structured data for Google, Bing & AI Models (ChatGPT, Perplexity, Gemini, Claude)
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": ["MedicalBusiness", "Physician", "LocalBusiness"],
+      name: clinic.name,
+      legalName: clinic.name,
+      alternateName: `${displayDoctorName} Clinic`,
+      description: clinic.about || `${displayDoctorName} — ${clinic.specialty || "Medical Clinic"}. Book appointments online with instant OPD queue token confirmation.`,
+      url: `${BASE_URL}/book/${slug}`,
+      isAcceptingNewPatients: true,
+      availableLanguage: ["English", "Hindi"],
+      knowsAbout: [
+        clinic.specialty || "General Medicine",
+        "Outpatient Consultation",
+        "Live Queue Token Tracking",
+        "Preventive Healthcare",
+      ],
+      ...(clinic.phone && { telephone: clinic.phone }),
+      ...(clinic.address && { address: { "@type": "PostalAddress", streetAddress: clinic.address } }),
+      ...(clinic.specialty && { medicalSpecialty: clinic.specialty }),
+      ...(clinic.consultationFee && { priceRange: `₹${clinic.consultationFee}` }),
+      ...(safeLogoUrl && { image: safeLogoUrl }),
+      ...(services.length > 0 && {
+        hasOfferCatalog: {
+          "@type": "OfferCatalog",
+          name: `${clinic.name} Services & OPD Treatments`,
+          itemListElement: services.map((s) => ({
+            "@type": "Offer",
+            itemOffered: {
+              "@type": "MedicalProcedure",
+              name: s.name,
+              description: s.description || s.name,
+            },
+            price: s.pricePaise ? (s.pricePaise / 100).toString() : (clinic.consultationFee ? clinic.consultationFee.toString() : "0"),
+            priceCurrency: "INR",
+          })),
+        },
+      }),
+      ...(totalReviews > 0 && {
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: averageRating,
+          reviewCount: totalReviews,
+          bestRating: "5",
+          worstRating: "1",
+        },
+      }),
+      ...(workingDays.length > 0 && {
+        openingHours: availRecords.map((a) => `${DAY_NAMES[a.dayOfWeek]} ${a.startTime.slice(0, 5)}-${a.endTime.slice(0, 5)}`),
+      }),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faqItems.map((item) => ({
+        "@type": "Question",
+        name: item.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.answer,
+        },
+      })),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
+        { "@type": "ListItem", position: 2, name: "Doctors", item: `${BASE_URL}/book` },
+        { "@type": "ListItem", position: 3, name: displayDoctorName, item: `${BASE_URL}/book/${slug}` },
+      ],
+    },
+  ];
 
   const today = new Date().getDay();
 
@@ -205,9 +315,9 @@ export default async function BookingPage({
 
       {/* ─────────────── HERO BANNER ─────────────── */}
       <header className="relative overflow-hidden mb-8 sm:mb-12 -mx-4 sm:-mx-6 lg:-mx-8 bg-white border-b border-slate-100 pb-8 sm:pb-12 pt-10 sm:pt-14 shadow-sm min-h-[260px] flex items-end">
-        {clinic.heroImageUrl ? (
+        {clinic.heroImageUrl || fallbackHeroImage ? (
           <>
-            <img src={clinic.heroImageUrl} alt={clinic.name} className="absolute inset-0 w-full h-full object-cover z-0" />
+            <img src={clinic.heroImageUrl || fallbackHeroImage!} alt={clinic.name} className="absolute inset-0 w-full h-full object-cover z-0" />
             <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent z-0" />
           </>
         ) : (
@@ -248,10 +358,15 @@ export default async function BookingPage({
 
             {/* Identity */}
             <div className="flex-1 text-center sm:text-left">
-              {/* Verified badge */}
-              <div className="inline-flex items-center gap-1.5 text-emerald-600 text-[11px] font-bold tracking-widest uppercase mb-3 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100 backdrop-blur-md">
-                <BadgeCheck className="w-3.5 h-3.5" />
-                Verified Clinic
+              {/* Verified badge + Specialty Hero Badge */}
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-3">
+                <div className="inline-flex items-center gap-1.5 text-emerald-600 text-[11px] font-bold tracking-widest uppercase bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100 backdrop-blur-md">
+                  <BadgeCheck className="w-3.5 h-3.5" />
+                  Verified Clinic
+                </div>
+                <div className="inline-flex items-center gap-1.5 text-teal-800 text-[11px] font-extrabold tracking-wide uppercase bg-teal-100/80 px-2.5 py-1 rounded-full border border-teal-200">
+                  {specialtyConfig.heroBadge}
+                </div>
               </div>
 
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>
@@ -330,6 +445,25 @@ export default async function BookingPage({
             {label}
           </div>
         ))}
+      </div>
+
+      {/* ─────────────── LIVE OPD QUEUE STATUS BANNER ─────────────── */}
+      <div className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-teal-950 via-slate-900 to-emerald-950 text-white shadow-md border border-teal-800/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3 text-center sm:text-left">
+          <div className="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-300 flex items-center justify-center flex-shrink-0 border border-teal-500/30">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+            </span>
+          </div>
+          <div>
+            <h3 className="font-extrabold text-sm text-emerald-300 tracking-wide uppercase">Live OPD Token System Active</h3>
+            <p className="text-xs text-slate-300 mt-0.5">Book online to get your exact token number & track your live turn status on mobile.</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/15 text-xs font-mono">
+          <span className="text-emerald-400 font-bold">⚡ Zero Waiting Room Stress</span>
+        </div>
       </div>
 
       {/* ─────────────── MAIN CONTENT GRID ─────────────── */}
@@ -620,10 +754,19 @@ export default async function BookingPage({
               </div>
             </section>
           )}
+
+          {/* Frequently Asked Questions — SEO FAQ Accordion */}
+          <section>
+            <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+              <HelpCircle className="w-3.5 h-3.5" style={{ color: themeColor }} />
+              Frequently Asked Questions
+            </h2>
+            <FAQAccordion faqs={faqItems} themeColor={themeColor} />
+          </section>
         </aside>
 
         {/* RIGHT: Booking Widget — order 1 on mobile */}
-        <div className="lg:col-span-7 order-1 lg:order-2">
+        <div id="booking-widget" className="lg:col-span-7 order-1 lg:order-2">
           <div className="lg:sticky lg:top-6 lg:z-30">
             <div className="mb-4">
               <p className="text-slate-500 text-sm font-medium">
@@ -645,6 +788,25 @@ export default async function BookingPage({
 
           </div>
         </div>
+      </div>
+
+      {/* ─────────────── MOBILE FLOATING ACTION BAR ─────────────── */}
+      <div className="fixed bottom-0 left-0 right-0 p-3 bg-white/95 backdrop-blur-md border-t border-slate-200 z-50 lg:hidden shadow-2xl flex items-center gap-2">
+        <a
+          href="#booking-widget"
+          className="flex-1 py-3 px-4 rounded-xl text-white font-extrabold text-xs tracking-wide flex items-center justify-center gap-2 shadow-md transition-all active:scale-95"
+          style={{ backgroundColor: themeColor }}
+        >
+          <CalendarCheck className="w-4 h-4" />
+          <span>Book Appointment {clinic.consultationFee ? `(₹${clinic.consultationFee})` : ""}</span>
+        </a>
+        <a
+          href="#booking-widget"
+          className="py-3 px-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95"
+        >
+          <Search className="w-4 h-4 text-teal-600" />
+          <span>Track Token</span>
+        </a>
       </div>
     </>
   );

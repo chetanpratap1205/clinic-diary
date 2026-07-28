@@ -8,6 +8,7 @@ import type { Appointment } from "@/db/schema";
 import { format } from "date-fns";
 import Link from "next/link";
 import { normalizeAppointment } from "@/lib/appointment-utils";
+import { getClinicTodayDate } from "@/lib/timezone";
 
 interface NowServingBannerProps {
   clinicId: string;
@@ -28,6 +29,8 @@ export function NowServingBanner({ clinicId, initialAppointments, themeColor }: 
 
   useEffect(() => {
     const supabase = createClient();
+    let isReconnecting = false;
+
     const channel = supabase
       .channel(`now-serving-${clinicId}`)
       .on(
@@ -39,14 +42,20 @@ export function NowServingBanner({ clinicId, initialAppointments, themeColor }: 
           filter: `clinic_id=eq.${clinicId}`,
         },
         (payload) => {
+          const today = getClinicTodayDate();
           if (payload.eventType === "UPDATE") {
             const updated = normalizeAppointment(payload.new);
-            setAppointments((prev) =>
-              prev.map((a) => (a.id === updated.id ? updated : a))
-            );
+            setAppointments((prev) => {
+              if (updated.appointmentDate !== today) {
+                return prev.filter((a) => a.id !== updated.id);
+              }
+              const exists = prev.some((a) => a.id === updated.id);
+              if (!exists) return [...prev, updated];
+              return prev.map((a) => (a.id === updated.id ? updated : a));
+            });
           } else if (payload.eventType === "INSERT") {
             const newAppt = normalizeAppointment(payload.new);
-            if (newAppt.appointmentDate === format(new Date(), "yyyy-MM-dd")) {
+            if (newAppt.appointmentDate === today) {
               setAppointments((prev) => {
                 if (prev.some((a) => a.id === newAppt.id)) return prev;
                 return [...prev, newAppt];
@@ -59,7 +68,13 @@ export function NowServingBanner({ clinicId, initialAppointments, themeColor }: 
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED" && isReconnecting) {
+          isReconnecting = false;
+        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          isReconnecting = true;
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
