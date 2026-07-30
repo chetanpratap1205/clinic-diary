@@ -88,7 +88,7 @@ export function Sidebar({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto" aria-label="Dashboard navigation">
+      <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto scrollbar-hide" aria-label="Dashboard navigation">
         {navItems.map((item) => {
           const active = pathname === item.href;
           return (
@@ -137,7 +137,7 @@ export function Sidebar({
       </nav>
 
       {/* Footer Actions */}
-      <div className="p-3 pb-8 lg:pb-24 border-t border-slate-100 bg-slate-50/50">
+      <div className="p-3 pb-6 border-t border-slate-100 bg-slate-50/50 mt-auto">
         <Link
           href="/dashboard/settings"
           onClick={() => setMobileOpen(false)}

@@ -12,6 +12,7 @@ import { requestGrowthService } from "./actions";
 interface GrowthClientProps {
   consultationFee: number;
   themeColor: string;
+  requestedServices?: Record<string, string>;
 }
 
 const growClinicServices: Omit<GrowthCardProps, 'onAction'>[] = [
@@ -249,9 +250,41 @@ const premiumTools: Omit<GrowthCardProps, 'onAction'>[] = [
   }
 ];
 
-export function GrowthClient({ consultationFee, themeColor }: GrowthClientProps) {
+const growthBundles: Omit<GrowthCardProps, 'onAction'>[] = [
+  {
+    id: "bundle-digital-dominance",
+    title: "Digital Dominance Pack",
+    description: "The ultimate growth engine. Get a Premium Website, Local SEO, and Google Business Profile Optimization combined.",
+    icon: <Target className="text-white" />,
+    badge: { text: "15% OFF", variant: "premium" },
+    price: 12999,
+    pricingPeriod: "setup",
+    stats: [
+      { label: "New Patients", value: "5x" },
+      { label: "Online Trust", value: "Max" }
+    ],
+    features: ["Website Included", "SEO Included", "GMB Included"]
+  },
+  {
+    id: "bundle-modern-reception",
+    title: "Modern Reception Pack",
+    description: "Transform your physical clinic. Premium QR Kit, 1000 Visiting Cards, and Custom Reception Branding.",
+    icon: <Building2 className="text-white" />,
+    badge: { text: "10% OFF", variant: "success" },
+    price: 5499,
+    pricingPeriod: "setup",
+    stats: [
+      { label: "Queue Wait", value: "-40%" },
+      { label: "Brand Recall", value: "High" }
+    ],
+    features: ["QR Kit Included", "1000 Cards Included", "Standees Included"]
+  }
+];
+
+export function GrowthClient({ consultationFee, themeColor, requestedServices = {} }: GrowthClientProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<any>(null);
+  const [selectedGoal, setSelectedGoal] = useState<string>("footfall");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAction = (service: any) => {
@@ -266,7 +299,7 @@ export function GrowthClient({ consultationFee, themeColor }: GrowthClientProps)
       const res = await requestGrowthService({
         id: selectedService.id,
         title: selectedService.title,
-        description: selectedService.description,
+        description: selectedService.description + ` (Goal: ${selectedGoal})`,
         price: selectedService.price,
         category: "growth_service",
       });
@@ -274,6 +307,7 @@ export function GrowthClient({ consultationFee, themeColor }: GrowthClientProps)
       if (res.success) {
         toast.success("Request sent successfully! Our growth team will contact you soon.");
         setIsDialogOpen(false);
+        // Optimistically update the UI by setting it in state if needed, or rely on revalidation
       } else {
         toast.error(res.error || "Failed to send request. Please try again.");
       }
@@ -367,6 +401,29 @@ export function GrowthClient({ consultationFee, themeColor }: GrowthClientProps)
         </div>
       </section>
 
+      {/* Section 0: Premium Growth Bundles */}
+      <section id="grow-section" className="space-y-8 mb-16 relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-violet-50 via-fuchsia-50 to-blue-50 transform -skew-y-1 rounded-[3rem] -z-10" />
+        <div className="max-w-3xl pt-8 px-4">
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
+            <Sparkles className="w-8 h-8 text-fuchsia-600" />
+            Premium Growth Bundles
+          </h2>
+          <p className="text-slate-600 mt-2 text-lg font-medium">
+            Unlock massive discounts by bundling essential clinic growth services together.
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 pb-12">
+          {growthBundles.map((service) => (
+            <div key={service.id} className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-[1.5rem] blur opacity-20 group-hover:opacity-40 transition-opacity" />
+              <GrowthCard {...service} onAction={() => handleAction(service)} requestStatus={requestedServices[service.title]} />
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ROI & Trust Section (Replaced Pain Points) */}
       <section className="mb-20">
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -416,7 +473,7 @@ export function GrowthClient({ consultationFee, themeColor }: GrowthClientProps)
       </section>
 
       {/* Section 1: Grow My Clinic */}
-      <section id="grow-section" className="space-y-8 mb-16">
+      <section className="space-y-8 mb-16">
         <div className="max-w-3xl">
           <h2 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
             <TrendingUp className="w-8 h-8 text-blue-600" />
@@ -429,7 +486,7 @@ export function GrowthClient({ consultationFee, themeColor }: GrowthClientProps)
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {growClinicServices.map((service) => (
-            <GrowthCard key={service.id} {...service} onAction={() => handleAction(service)} />
+            <GrowthCard key={service.id} {...service} onAction={() => handleAction(service)} requestStatus={requestedServices[service.title]} />
           ))}
         </div>
       </section>
@@ -448,7 +505,7 @@ export function GrowthClient({ consultationFee, themeColor }: GrowthClientProps)
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {brandClinicServices.map((service) => (
-            <GrowthCard key={service.id} {...service} onAction={() => handleAction(service)} />
+            <GrowthCard key={service.id} {...service} onAction={() => handleAction(service)} requestStatus={requestedServices[service.title]} />
           ))}
         </div>
       </section>
@@ -467,7 +524,7 @@ export function GrowthClient({ consultationFee, themeColor }: GrowthClientProps)
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {trustedPartners.map((service) => (
-            <GrowthCard key={service.id} {...service} onAction={() => handleAction(service)} />
+            <GrowthCard key={service.id} {...service} onAction={() => handleAction(service)} requestStatus={requestedServices[service.title]} />
           ))}
         </div>
       </section>
@@ -486,7 +543,7 @@ export function GrowthClient({ consultationFee, themeColor }: GrowthClientProps)
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {premiumTools.map((service) => (
-            <GrowthCard key={service.id} {...service} onAction={() => handleAction(service)} />
+            <GrowthCard key={service.id} {...service} onAction={() => handleAction(service)} requestStatus={requestedServices[service.title]} />
           ))}
         </div>
       </section>
@@ -508,9 +565,32 @@ export function GrowthClient({ consultationFee, themeColor }: GrowthClientProps)
             </DialogDescription>
           </DialogHeader>
           
-          <div className="py-6">
-            <p className="text-sm text-blue-800 bg-blue-50 p-4 rounded-xl border border-blue-100 font-medium">
-              Our team will get in touch with you shortly to configure this service for your clinic.
+          <div className="py-5 space-y-4">
+            <div className="space-y-3">
+              <label className="text-sm font-bold text-slate-700">What is your primary goal?</label>
+              <div className="grid grid-cols-1 gap-2">
+                {[
+                  { id: "footfall", label: "Increase new patient footfall" },
+                  { id: "retention", label: "Retain existing patients" },
+                  { id: "branding", label: "Premium clinic branding" }
+                ].map(goal => (
+                  <label key={goal.id} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${selectedGoal === goal.id ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-500 shadow-sm' : 'border-slate-200 hover:bg-slate-50'}`}>
+                    <input 
+                      type="radio" 
+                      name="primaryGoal" 
+                      value={goal.id} 
+                      checked={selectedGoal === goal.id}
+                      onChange={() => setSelectedGoal(goal.id)}
+                      className="w-4 h-4 text-blue-600 focus:ring-blue-500" 
+                    />
+                    <span className={`text-sm font-semibold ${selectedGoal === goal.id ? 'text-blue-900' : 'text-slate-700'}`}>{goal.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <p className="text-xs text-blue-800 bg-blue-50 p-3 rounded-xl border border-blue-100 font-medium">
+              💡 Our expert will design a custom plan tailored to your goal and get in touch with you shortly.
             </p>
           </div>
           

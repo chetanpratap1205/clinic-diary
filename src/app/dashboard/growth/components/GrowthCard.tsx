@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2, TrendingUp } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock } from "lucide-react";
 
 export interface GrowthCardProps {
   id: string;
@@ -19,6 +19,7 @@ export interface GrowthCardProps {
   price?: number;
   pricingPeriod?: string;
   onAction?: () => void;
+  requestStatus?: string;
 }
 
 export function GrowthCard({
@@ -28,22 +29,28 @@ export function GrowthCard({
   badge,
   stats,
   features,
-  ctaText = "Explore Solution",
+  ctaText = "Request",
   isIntegrated = false,
   price,
   pricingPeriod,
   onAction,
+  requestStatus,
 }: GrowthCardProps) {
+  
+  // Determine if it's currently processing or already active
+  const isPending = requestStatus === "pending";
+  const isActive = isIntegrated || requestStatus === "active" || requestStatus === "paid";
+
   return (
-    <div className="group relative flex flex-col h-full bg-white border border-slate-200 hover:border-blue-200 rounded-[1.5rem] overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-blue-900/5 hover:-translate-y-1">
+    <div className={`group relative flex flex-col h-full bg-white border ${isActive ? 'border-emerald-200' : isPending ? 'border-amber-200' : 'border-slate-200 hover:border-blue-200'} rounded-[1.5rem] overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-blue-900/5 hover:-translate-y-1`}>
       
       {/* Header Accent & Icon */}
       <div className="px-6 pt-6 pb-4 flex items-start justify-between relative overflow-hidden">
         {/* Subtle background glow based on hover */}
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-50 rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
         
-        <div className="relative z-10 w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:shadow-lg group-hover:border-blue-100 transition-all duration-300">
-          <div className="text-slate-600 group-hover:text-blue-600 transition-colors [&>svg]:w-7 [&>svg]:h-7">
+        <div className={`relative z-10 w-14 h-14 rounded-2xl ${isActive ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : isPending ? 'bg-amber-50 border-amber-100 text-amber-600' : 'bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200 text-slate-600 group-hover:text-blue-600 group-hover:border-blue-100'} border flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300`}>
+          <div className="[&>svg]:w-7 [&>svg]:h-7">
             {icon}
           </div>
         </div>
@@ -101,14 +108,19 @@ export function GrowthCard({
       </div>
 
       {/* Footer / CTA */}
-      <div className="p-6 pt-5 bg-slate-50 border-t border-slate-100 flex items-center justify-between mt-auto group-hover:bg-blue-50/10 transition-colors">
-        {isIntegrated ? (
-          <div className="flex items-center justify-center gap-2 text-sm font-bold text-emerald-600 py-2 w-full bg-emerald-100/50 border border-emerald-200 rounded-xl shadow-inner">
+      <div className={`p-6 pt-5 border-t mt-auto transition-colors ${isActive ? 'bg-emerald-50/50 border-emerald-100' : isPending ? 'bg-amber-50/50 border-amber-100' : 'bg-slate-50 border-slate-100 group-hover:bg-blue-50/10'}`}>
+        {isActive ? (
+          <div className="flex items-center justify-center gap-2 text-sm font-bold text-emerald-700 py-2 w-full bg-emerald-100/80 border border-emerald-200 rounded-xl shadow-inner cursor-default">
             <CheckCircle2 className="w-5 h-5" />
-            Integration Active
+            Service Active
+          </div>
+        ) : isPending ? (
+          <div className="flex items-center justify-center gap-2 text-sm font-bold text-amber-700 py-2 w-full bg-amber-100/80 border border-amber-200 rounded-xl shadow-inner cursor-default animate-pulse">
+            <Clock className="w-5 h-5" />
+            Requested
           </div>
         ) : (
-          <>
+          <div className="flex items-center justify-between">
             <div className="flex flex-col">
               {price !== undefined ? (
                 <>
@@ -127,9 +139,9 @@ export function GrowthCard({
               className="bg-slate-900 hover:bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-slate-900/10 hover:shadow-blue-600/30 hover:-translate-y-0.5 transition-all px-6 active:scale-95"
               onClick={onAction}
             >
-              Request
+              {ctaText}
             </Button>
-          </>
+          </div>
         )}
       </div>
     </div>

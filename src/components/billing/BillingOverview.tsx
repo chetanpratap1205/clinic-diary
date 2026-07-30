@@ -22,14 +22,12 @@ interface BillingOverviewProps {
   totalPaid: number;
 }
 
-const PLANS = {
-  monthly: { price: "₹499", name: "1 Month Plan", duration: "/ month" },
-  quarterly: { price: "₹1299", name: "3 Months Plan", duration: "/ 3 months" },
-  yearly: { price: "₹4999", name: "12 Months Plan", duration: "/ 12 months" },
-};
+import { PRICING_PLANS } from "@/lib/config/pricing";
 
 export function BillingOverview({ activeSub, appointmentCount, totalPaid }: BillingOverviewProps) {
-  const planDetails = activeSub ? PLANS[activeSub.planId as keyof typeof PLANS] : null;
+  const planDetails = activeSub && activeSub.planId in PRICING_PLANS 
+    ? PRICING_PLANS[activeSub.planId as keyof typeof PRICING_PLANS] 
+    : null;
 
   const renewalDate = activeSub?.currentPeriodEnd
     ? format(new Date(activeSub.currentPeriodEnd), "MMMM dd, yyyy")
@@ -100,7 +98,7 @@ export function BillingOverview({ activeSub, appointmentCount, totalPaid }: Bill
                     <span className="text-5xl font-black tracking-tight text-white drop-shadow-sm">
                       {planDetails?.price}
                     </span>
-                    <span className="text-sm font-semibold text-slate-300 uppercase tracking-wider">{planDetails?.duration}</span>
+                    <span className="text-sm font-semibold text-slate-300 uppercase tracking-wider">{planDetails?.shortDuration}</span>
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-center gap-4 text-sm text-slate-200 bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 shadow-sm transition-all hover:bg-white/15">

@@ -23,6 +23,7 @@ export function NowServingBanner({ clinicId, initialAppointments, themeColor }: 
 
   useEffect(() => {
     if (initialAppointments) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAppointments(initialAppointments.map(normalizeAppointment));
     }
   }, [initialAppointments]);

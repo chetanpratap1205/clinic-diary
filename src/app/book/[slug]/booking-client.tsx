@@ -169,7 +169,12 @@ export function BookingClient({
   const [mode, setMode] = useState<"book" | "track">("book");
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [logoError, setLogoError] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date>(startOfToday());
+  const today = startOfToday();
+  const next14Days = Array.from({ length: 14 }).map((_, i) => addDays(today, i));
+  
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    return next14Days.find(d => workingDays.includes(d.getDay()) && !closedDates.includes(format(d, "yyyy-MM-dd"))) || today;
+  });
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
@@ -197,9 +202,6 @@ export function BookingClient({
     resolver: zodResolver(bookingSchema),
     shouldUnregister: false,
   });
-
-  const today = startOfToday();
-  const next14Days = Array.from({ length: 14 }).map((_, i) => addDays(today, i));
 
   useEffect(() => {
     if (mode === "book" && (step === 1 || step === 2)) {
@@ -278,7 +280,7 @@ export function BookingClient({
     const text = encodeURIComponent(`Appointment with Dr. ${doctorFirstName}`);
     const details = encodeURIComponent(`Consultation at ${clinic.name}`);
     const location = encodeURIComponent(clinic.address || clinic.name);
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${startStr}/${startStr}&details=${details}&location=${location}`;
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${startStr}/${startStr}&details=${details}&location=${location}&ctz=Asia/Kolkata`;
   };
 
   const shareAppointment = () => {
@@ -474,7 +476,8 @@ export function BookingClient({
 
       <button
         onClick={() => setStep(2)}
-        className={`w-full h-14 rounded-2xl ${getContrastYIQ(themeColor)} font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] mt-2 flex items-center justify-center gap-2`}
+        disabled={!(workingDays.includes(selectedDate.getDay()) && !closedDates.includes(format(selectedDate, "yyyy-MM-dd")))}
+        className={`w-full h-14 rounded-2xl ${getContrastYIQ(themeColor)} font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] mt-2 flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:translate-y-0 disabled:active:scale-100 disabled:cursor-not-allowed`}
         style={{
           backgroundColor: themeColor,
           backgroundImage: `linear-gradient(to right, ${themeColor}, ${themeColor}cc)`,

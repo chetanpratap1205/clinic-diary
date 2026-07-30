@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getAuthUser } from "@/lib/auth";
 import { db } from "@/db";
 import { appointments, clinics, followUps } from "@/db/schema";
@@ -86,11 +87,13 @@ export default async function QueuePage() {
           Live Queue
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          Manage today's appointments in real-time. Patients track this automatically.
+          Manage today&apos;s appointments in real-time. Patients track this automatically.
         </p>
       </div>
 
-      <QueueQuickAdd />
+      <Suspense fallback={<div className="h-20 animate-pulse bg-slate-100 rounded-3xl"></div>}>
+        <QueueQuickAdd />
+      </Suspense>
 
       <QueueClient
         initialAppointments={todayAppts}

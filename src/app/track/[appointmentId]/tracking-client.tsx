@@ -18,7 +18,8 @@ import {
   Navigation2,
   Info,
   Users,
-  Timer
+  Timer,
+  Star
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Appointment, Clinic } from "@/db/schema";
@@ -420,8 +421,29 @@ export function TrackingClient({
                     <CheckCircle2 className="w-7 h-7" />
                  </motion.div>
                  <h2 className="text-xl font-bold text-slate-900 tracking-tight">Visit Complete!</h2>
-                 <p className="text-xs text-slate-500 mt-0.5">Thank you for visiting Dr. {doctorFirstName}</p>
+                 <p className="text-xs text-slate-500 mt-0.5 mb-4">Thank you for visiting Dr. {doctorFirstName}</p>
               </div>
+
+              {/* ⭐ THE "WOW" RATING INTERCEPTOR */}
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mb-4">
+                <Card className="border-0 shadow-xl shadow-amber-500/10 rounded-3xl overflow-hidden bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200/50 ring-1 ring-amber-200/50">
+                  <CardContent className="p-6 text-center">
+                    <h3 className="text-lg font-black text-amber-900 mb-1">How was your visit?</h3>
+                    <p className="text-xs text-amber-700/80 mb-4">Tap a star to rate your experience with Dr. {doctorFirstName}</p>
+                    <div className="flex items-center justify-center gap-1 sm:gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Link
+                          key={star}
+                          href={`/review/${appointment.id}?rating=${star}`}
+                          className="group transition-transform hover:scale-125 active:scale-95 focus:outline-none"
+                        >
+                          <Star className="w-11 h-11 sm:w-12 sm:h-12 text-amber-300 fill-amber-200 group-hover:text-amber-400 group-hover:fill-amber-400 transition-colors drop-shadow-sm" />
+                        </Link>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
 
               <Card className="border-0 shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden bg-white">
                 <CardContent className="p-5 space-y-4">

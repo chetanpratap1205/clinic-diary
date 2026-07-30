@@ -8,6 +8,7 @@ import { AnalyticsChartsDynamic as AnalyticsCharts } from "./components/analytic
 import { QRDecisionIntelligence } from "@/components/dashboard/qr-decision-intelligence";
 import { Users, CalendarCheck, TrendingUp, Activity, Filter } from "lucide-react";
 import { format, subDays, startOfYear, endOfYear, subYears, parseISO } from "date-fns";
+import { ExportButton } from "./components/export-button";
 import Link from "next/link";
 import {
   Select,
@@ -154,7 +155,14 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
     statusCounts[app.status] = (statusCounts[app.status] || 0) + 1;
     
     // Daily breakdown
-    const dateStr = app.date;
+    // Fix: pg returns Date objects for Postgres date types, stringifying it into keys causes parseISO to crash
+    let dateStr = "";
+    if (typeof app.date === "string") {
+      dateStr = app.date.split("T")[0];
+    } else {
+      dateStr = String(app.date);
+    }
+
     if (!dailyMap[dateStr]) {
       dailyMap[dateStr] = { appointments: 0, revenue: 0 };
     }
@@ -235,10 +243,18 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
 
   const dailyData = Object.entries(dailyMap)
     .sort(([dateA], [dateB]) => new Date(dateA).getTime() - new Date(dateB).getTime())
-    .map(([date, stats]) => ({
-      date: format(parseISO(date), "MMM dd"),
-      ...stats
-    }));
+    .map(([date, stats]) => {
+      let formattedDate = date;
+      try {
+        formattedDate = format(parseISO(date), "MMM dd");
+      } catch (err) {
+        // Fallback if date is somehow invalid
+      }
+      return {
+        date: formattedDate,
+        ...stats
+      };
+    });
 
   const placementConfig: Record<string, { name: string; icon: string }> = {
     reception: { name: "Reception Poster", icon: "📍" },
@@ -274,13 +290,25 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-4 md:space-y-0">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Analytics & Intelligence Dashboard</h2>
-          <p className="text-muted-foreground mt-1">
-            Operational insights, queue tracking, and physical QR performance for {clinic.doctorName || clinic.name}.
+          <div className="flex items-center gap-3">
+            <h2 className="text-3xl font-black tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
+              Analytics & Intelligence
+            </h2>
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-100/80 border border-emerald-200">
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">Live</span>
+            </div>
+          </div>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Operational insights, queue tracking, and physical QR performance for <span className="font-semibold text-slate-700">{clinic.doctorName || clinic.name}</span>.
           </p>
         </div>
         
-        <div className="flex items-center gap-2 bg-slate-200/50 p-1 rounded-xl shadow-inner h-auto inline-flex overflow-x-auto no-scrollbar w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner overflow-x-auto no-scrollbar w-full sm:w-auto">
           <Link 
             href="?period=7d" 
             className={`px-4 py-2 text-sm rounded-lg transition-all whitespace-nowrap ${period === '7d' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900 font-medium'}`}
@@ -305,12 +333,14 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
           >
             Last Year
           </Link>
-          <Link 
-            href="?period=all_time" 
-            className={`px-4 py-2 text-sm rounded-lg transition-all whitespace-nowrap ${period === 'all_time' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900 font-medium'}`}
-          >
-            All Time
-          </Link>
+            <Link 
+              href="?period=all_time" 
+              className={`px-4 py-2 text-sm rounded-lg transition-all whitespace-nowrap ${period === 'all_time' ? 'bg-white text-slate-900 shadow-sm border border-slate-200/50 font-bold' : 'text-slate-500 hover:text-slate-900 font-medium'}`}
+            >
+              All Time
+            </Link>
+          </div>
+          <ExportButton />
         </div>
       </div>
 
@@ -327,28 +357,28 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
           value={totalPatients}
           icon={<Users className="w-5 h-5" />}
           description="All time registered patients"
-          themeColor={clinic.themeColor!}
+          themeColor={clinic.themeColor || "#0ea5e9"}
         />
         <StatCard
           title="Appointments"
           value={totalAppointmentsInPeriod}
           icon={<CalendarCheck className="w-5 h-5" />}
           description={`Selected period (${completionRate}% completed)`}
-          themeColor={clinic.themeColor!}
+          themeColor={clinic.themeColor || "#0ea5e9"}
         />
         <StatCard
           title="Revenue"
           value={`₹${totalRevenue.toLocaleString()}`}
           icon={<TrendingUp className="w-5 h-5" />}
           description={`New visits: ₹${newVisitRevenue.toLocaleString()} | Follow-ups: ₹${followUpVisitRevenue.toLocaleString()}`}
-          themeColor={clinic.themeColor!}
+          themeColor={clinic.themeColor || "#0ea5e9"}
         />
         <StatCard
           title="Follow-up Success"
           value={`${followUpRate}%`}
           icon={<Activity className="w-5 h-5" />}
           description={`${completedFollowUps} resolved — ${freeFollowUps} free, ${paidFollowUps} paid`}
-          themeColor={clinic.themeColor!}
+          themeColor={clinic.themeColor || "#0ea5e9"}
         />
       </StatCardsGrid>
 
@@ -356,7 +386,7 @@ export default async function AnalyticsPage(props: { searchParams: Promise<Searc
         dailyData={dailyData} 
         statusData={statusData} 
         sourceData={sourceData}
-        themeColor={clinic.themeColor!} 
+        themeColor={clinic.themeColor || "#0ea5e9"} 
       />
     </div>
   );

@@ -29,7 +29,12 @@ export default async function BillingPage() {
     db
       .select()
       .from(paymentLogs)
-      .where(eq(paymentLogs.clinicId, authUser.clinicId))
+      .where(
+        and(
+          eq(paymentLogs.clinicId, authUser.clinicId),
+          eq(paymentLogs.status, "paid")
+        )
+      )
       .orderBy(desc(paymentLogs.paidAt)),
   ]);
 
@@ -83,7 +88,7 @@ export default async function BillingPage() {
         <div className="flex-1 text-center sm:text-left z-10">
           <h3 className="text-sm font-bold text-teal-400 uppercase tracking-widest mb-2">A Note From Finance</h3>
           <p className="text-slate-300 text-sm sm:text-base leading-relaxed italic mb-4">
-            "We don't view Doctor Diary as a cost for your clinic, but as a growth investment. My team ensures our pricing model is fully transparent with zero hidden fees. If you aren't seeing a clear ROI in your first month, we want to know about it."
+            &quot;We don&apos;t view Doctor Diary as a cost for your clinic, but as a growth investment. My team ensures our pricing model is fully transparent with zero hidden fees. If you aren&apos;t seeing a clear ROI in your first month, we want to know about it.&quot;
           </p>
           <div className="font-semibold text-white">Finance Leadership Team</div>
           <div className="text-slate-400 text-xs uppercase tracking-wide">Doctor Diary</div>

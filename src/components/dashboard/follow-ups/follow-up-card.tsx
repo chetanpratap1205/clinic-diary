@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, MessageSquare, Phone, Sparkles, Send, Calendar, HeartPulse, ShieldAlert, X } from "lucide-react";
+import { CheckCircle2, MessageSquare, Phone, Sparkles, Send, Calendar, HeartPulse, ShieldAlert, X, MoreVertical, UserMinus } from "lucide-react";
 import { updateFollowUpStatusAction } from "@/app/actions/follow-ups";
 import { Card, CardContent } from "@/components/ui/card";
 import { differenceInDays, format } from "date-fns";
@@ -39,6 +39,7 @@ export function FollowUpCard({ followUp, variant, clinic }: FollowUpCardProps) {
   const [isMarking, setIsMarking] = useState(false);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0);
+  const [openMenu, setOpenMenu] = useState(false);
 
   const handleMarkDone = async () => {
     setIsMarking(true);
@@ -56,6 +57,17 @@ export function FollowUpCard({ followUp, variant, clinic }: FollowUpCardProps) {
     }
   };
 
+  const handleStatusChange = async (newStatus: "cancelled" | "missed") => {
+    try {
+      const result = await updateFollowUpStatusAction(followUp.id, newStatus);
+      if (result.error) throw new Error(result.error);
+      toast.success(`Follow-up marked as ${newStatus}`);
+      setOpenMenu(false);
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
   const origin = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in");
   const bookingLink = `${origin}/book/${clinic.slug}`;
   const formattedDueDate = format(new Date(followUp.dueDate), "dd MMM yyyy");
@@ -63,6 +75,12 @@ export function FollowUpCard({ followUp, variant, clinic }: FollowUpCardProps) {
 
   // High-converting revenue-multiplier preset messages
   const templates = [
+    {
+      id: "no_show",
+      title: "🚨 No-Show Recovery & Slot Re-booking",
+      tag: "Urgent Action",
+      message: `*Missed Appointment Alert - ${clinic.name}* 🚨\n\nDear ${followUp.patient.name},\n${doctorName} missed you yesterday! 🩺\n\nSince your token was marked as a No-Show, it has expired. The clinic queue is filling up fast today, but we have temporarily held a priority re-booking slot for you.\n\n👉 *Tap here to instantly secure a new token before the queue closes:*\n${bookingLink}\n\nReply to this message if you need assistance!`,
+    },
     {
       id: "routine",
       title: "📅 Scheduled Follow-up & Session Due",
@@ -146,14 +164,34 @@ export function FollowUpCard({ followUp, variant, clinic }: FollowUpCardProps) {
               </Link>
             </div>
             
-            <span className={cn(
-              "text-[10px] font-bold px-2 py-1 rounded-md shadow-sm border shrink-0",
-              variant === "overdue" ? "bg-red-100 text-red-800 border-red-200" :
-              variant === "today" ? "bg-amber-100 text-amber-800 border-amber-200" :
-              "bg-sky-100 text-sky-800 border-sky-200"
-            )}>
-              {getDaysText()}
-            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className={cn(
+                "text-[10px] font-bold px-2 py-1 rounded-md shadow-sm border",
+                variant === "overdue" ? "bg-red-100 text-red-800 border-red-200" :
+                variant === "today" ? "bg-amber-100 text-amber-800 border-amber-200" :
+                "bg-sky-100 text-sky-800 border-sky-200"
+              )}>
+                {getDaysText()}
+              </span>
+              <div className="relative">
+                <button onClick={() => setOpenMenu(!openMenu)} className="p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 rounded-full transition-colors">
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+                {openMenu && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setOpenMenu(false)} />
+                    <div className="absolute right-0 top-8 mt-1 w-40 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-20 animate-in fade-in zoom-in-95 duration-100">
+                      <button onClick={() => handleStatusChange("missed")} className="w-full text-left px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 flex items-center gap-2">
+                        <UserMinus className="w-4 h-4" /> No Answer
+                      </button>
+                      <button onClick={() => handleStatusChange("cancelled")} className="w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50 flex items-center gap-2">
+                        <X className="w-4 h-4" /> Patient Refused
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
 
           {followUp.notes && (
@@ -178,7 +216,7 @@ export function FollowUpCard({ followUp, variant, clinic }: FollowUpCardProps) {
               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50"
             >
               <CheckCircle2 className="w-4 h-4" />
-              {isMarking ? "Checking In..." : "Check In"}
+              {isMarking ? "Processing..." : "Walk-in Today"}
             </button>
           </div>
         </CardContent>
@@ -219,7 +257,7 @@ export function FollowUpCard({ followUp, variant, clinic }: FollowUpCardProps) {
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500 line-clamp-2 italic">
-                    "{tpl.message.slice(0, 100)}..."
+                    &quot;{tpl.message.slice(0, 100)}...&quot;
                   </p>
                 </button>
               );

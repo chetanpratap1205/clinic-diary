@@ -3,6 +3,7 @@ import { appointments, clinics, reviews } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import { Suspense } from "react";
 import { ReviewForm } from "./review-form";
 import { CheckCircle2, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
@@ -111,12 +112,14 @@ export default async function ReviewPage({
                 How was your consultation with {doctorName}? Your feedback is greatly appreciated.
               </p>
               
-              <ReviewForm 
-                appointmentId={appointmentId} 
-                themeColor={themeColor} 
-                googleMapsUrl={clinic?.googleMapsUrl}
-                doctorName={doctorName}
-              />
+              <Suspense fallback={<div className="h-40 flex items-center justify-center text-slate-400">Loading form...</div>}>
+                <ReviewForm 
+                  appointmentId={appointmentId} 
+                  themeColor={themeColor} 
+                  googleMapsUrl={clinic?.googleMapsUrl}
+                  doctorName={doctorName}
+                />
+              </Suspense>
             </>
           )}
         </div>

@@ -50,12 +50,13 @@ export function BillingHistory({ paymentHistory }: BillingHistoryProps) {
                   <TableHead className="font-semibold text-gray-700">Plan</TableHead>
                   <TableHead className="font-semibold text-gray-700">Amount</TableHead>
                   <TableHead className="font-semibold text-gray-700">Status</TableHead>
+                  <TableHead className="font-semibold text-gray-700 text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paymentHistory.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                       No payment history found.
                     </TableCell>
                   </TableRow>
@@ -74,6 +75,15 @@ export function BillingHistory({ paymentHistory }: BillingHistoryProps) {
                         <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 capitalize">
                           {invoice.status}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Link
+                          href={`/dashboard/billing/invoice/${invoice.id}`}
+                          className="inline-flex items-center justify-center rounded-lg text-xs font-semibold px-3 py-1.5 text-sky-600 hover:text-sky-700 hover:bg-sky-50 transition-colors"
+                        >
+                          <Download className="w-4 h-4 mr-1.5" />
+                          Invoice
+                        </Link>
                       </TableCell>
                     </TableRow>
                   ))

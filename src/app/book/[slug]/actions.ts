@@ -4,7 +4,8 @@ import { db } from "@/db";
 import { appointments, availability, availabilityOverrides, clinics, patients, subscriptions, followUps } from "@/db/schema";
 import { eq, and, ne, count, inArray, lte, desc } from "drizzle-orm";
 import { parseISO, getDay, format, addMinutes } from "date-fns";
-import { getClinicTodayDate } from "@/lib/timezone";
+import { getClinicTodayDate, CLINIC_TIMEZONE } from "@/lib/timezone";
+import { toZonedTime } from "date-fns-tz";
 import { sendNotification } from "@/lib/notifications";
 
 export async function getAvailableSlots(clinicId: string, dateStr: string) {
@@ -85,7 +86,22 @@ export async function getAvailableSlots(clinicId: string, dateStr: string) {
     );
 
     // 5. Filter out booked slots
-    const availableSlots = slots.filter((slot) => !bookedTimes.has(slot));
+    let availableSlots = slots.filter((slot) => !bookedTimes.has(slot));
+
+    // 6. Filter out past slots if booking for today
+    const todayStr = getClinicTodayDate();
+    if (dateStr === todayStr) {
+      const nowInClinic = toZonedTime(new Date(), CLINIC_TIMEZONE);
+      const currentHour = nowInClinic.getHours();
+      const currentMinute = nowInClinic.getMinutes();
+      
+      availableSlots = availableSlots.filter(slot => {
+        const [h, m] = slot.split(":").map(Number);
+        if (h > currentHour) return true;
+        if (h === currentHour && m > currentMinute) return true;
+        return false;
+      });
+    }
 
     return { slots: availableSlots };
   } catch (error) {

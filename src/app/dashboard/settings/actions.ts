@@ -21,6 +21,10 @@ interface SettingsData {
   billingAddress?: string | null;
   state?: string | null;
   gstin?: string | null;
+  vitalsPresets: string[];
+  complaintPresets: string[];
+  diagnosisPresets: string[];
+  treatmentPresets: string[];
 }
 
 export async function updateClinicSettings(data: SettingsData) {
@@ -47,6 +51,10 @@ export async function updateClinicSettings(data: SettingsData) {
         billingAddress: data.billingAddress,
         state: data.state,
         gstin: data.gstin,
+        vitalsPresets: data.vitalsPresets,
+        complaintPresets: data.complaintPresets,
+        diagnosisPresets: data.diagnosisPresets,
+        treatmentPresets: data.treatmentPresets,
       })
       .where(eq(clinics.id, user.clinicId));
 

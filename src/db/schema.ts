@@ -35,6 +35,10 @@ export const clinics = pgTable("clinics", {
   whatsappNumber: text("whatsapp_number"),
   facebookUrl: text("facebook_url"),
   referredBy: uuid("referred_by").references(() => growthPartners.id, { onDelete: "set null" }),
+  vitalsPresets: text("vitals_presets").array().default([]).notNull(),
+  complaintPresets: text("complaint_presets").array().default([]).notNull(),
+  diagnosisPresets: text("diagnosis_presets").array().default([]).notNull(),
+  treatmentPresets: text("treatment_presets").array().default([]).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => [
   index("clinics_created_at_idx").on(table.createdAt),

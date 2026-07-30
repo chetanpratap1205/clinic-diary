@@ -73,3 +73,73 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
+
+export async function POST(req: NextRequest) {
+  try {
+    const authUser = await getAuthUser();
+    if (!authUser || !authUser.clinicId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { patientId, appointmentDate, appointmentTime, notes } = body;
+
+    if (!patientId || !appointmentDate || !appointmentTime) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    const { patients } = await import("@/db/schema");
+    const [patient] = await db
+      .select()
+      .from(patients)
+      .where(and(eq(patients.id, patientId), eq(patients.clinicId, authUser.clinicId)))
+      .limit(1);
+
+    if (!patient) {
+      return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+    }
+
+    const [newAppt] = await db.insert(appointments).values({
+      clinicId: authUser.clinicId,
+      patientId: patient.id,
+      patientName: patient.name,
+      patientPhone: patient.phone,
+      appointmentDate,
+      appointmentTime,
+      status: "confirmed", // Since booked from dashboard
+      notes,
+    }).returning();
+
+    // Auto-Resolve pending follow-ups for this patient
+    const { followUps } = await import("@/db/schema");
+    const pendingFollowUps = await db
+      .select()
+      .from(followUps)
+      .where(
+        and(
+          eq(followUps.patientId, patient.id),
+          eq(followUps.clinicId, authUser.clinicId),
+          eq(followUps.status, "pending")
+        )
+      )
+      .orderBy(followUps.dueDate);
+
+    if (pendingFollowUps.length > 0) {
+      // Complete the oldest pending follow-up and link this new appointment to it
+      const targetFu = pendingFollowUps[0];
+      await db
+        .update(followUps)
+        .set({
+          status: "completed",
+          completedAt: new Date(),
+          followUpAppointmentId: newAppt.id,
+        })
+        .where(eq(followUps.id, targetFu.id));
+    }
+
+    return NextResponse.json({ appointment: newAppt });
+  } catch (err) {
+    console.error("[Appointments POST] Error:", err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+}

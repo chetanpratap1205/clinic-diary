@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Star, Loader2, MessageSquareText, ExternalLink, CheckCircle2 } from "lucide-react";
 import { submitReview } from "./actions";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 export function ReviewForm({
@@ -23,6 +23,13 @@ export function ReviewForm({
   const [isPending, startTransition] = useTransition();
   const [submitted, setSubmitted] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Pre-fill rating from URL (e.g., ?rating=5)
+  useState(() => {
+    const r = parseInt(searchParams.get("rating") || "0", 10);
+    if (r >= 1 && r <= 5) setRating(r);
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

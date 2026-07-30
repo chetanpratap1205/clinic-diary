@@ -241,7 +241,7 @@ export async function updateLead(
       updateData.demoScheduledAt = data.demoScheduledAt ? new Date(data.demoScheduledAt) : null;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await db.update(doctorLeads).set(updateData as unknown as typeof doctorLeads.$inferInsert).where(eq(doctorLeads.id, id));
 
     revalidatePath("/admin/leads");

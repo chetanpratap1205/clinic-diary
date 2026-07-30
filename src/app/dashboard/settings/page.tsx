@@ -8,7 +8,7 @@ import { SettingsClient } from "./settings-client";
 import { AvailabilityClient } from "./availability-client";
 import { HolidayClient } from "./holiday-client";
 import { QrCodeWidget } from "@/components/dashboard/qr-code-widget";
-import { MessageCircle, Sparkles, ShieldCheck } from "lucide-react";
+import { MessageCircle, Sparkles, ShieldCheck, Link as LinkIcon, ExternalLink, Download } from "lucide-react";
 
 export const metadata = {
   title: "Your Website | Doctor Diary",
@@ -61,6 +61,10 @@ export default async function SettingsPage() {
     billingAddress: clinic.billingAddress,
     state: clinic.state,
     gstin: clinic.gstin,
+    vitalsPresets: clinic.vitalsPresets || [],
+    complaintPresets: clinic.complaintPresets || [],
+    diagnosisPresets: clinic.diagnosisPresets || [],
+    treatmentPresets: clinic.treatmentPresets || [],
   };
 
   return (
@@ -75,19 +79,52 @@ export default async function SettingsPage() {
         </p>
       </div>
 
-      <SettingsClient initialData={initialData} slug={clinic.slug} />
-
-      {/* QR Code Widget */}
-      <div>
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight mb-1">Your Booking QR Code</h2>
-        <p className="text-slate-500 text-sm mb-4">Physical QR card for your clinic — patients scan to book instantly.</p>
-        <QrCodeWidget
-          clinicId={clinic.id}
-          clinicName={clinic.name}
-          slug={clinic.slug}
-          themeColor={clinic.themeColor ?? "#0ea5e9"}
-        />
+      {/* Public Presence & Sharing */}
+      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col md:flex-row">
+        <div className="p-6 sm:p-8 flex-1 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col justify-center">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-600 text-xs font-bold tracking-wide mb-4 w-fit">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            Live on Internet
+          </div>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 mb-2">Your Public Booking Page</h2>
+          <p className="text-sm text-slate-500 mb-6 max-w-md">
+            This is your clinic's digital front door. Share this link on WhatsApp, Instagram, or Google My Business.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1 flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+              <LinkIcon className="w-5 h-5 text-slate-400 flex-shrink-0" />
+              <input
+                type="text"
+                readOnly
+                value={`https://doctor.naturexpress.in/book/${clinic.slug}`}
+                className="bg-transparent text-sm font-semibold text-slate-700 w-full focus:outline-none"
+              />
+            </div>
+            <a
+              href={`/book/${clinic.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 px-5 py-3 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Visit
+            </a>
+          </div>
+        </div>
+        <div className="p-6 sm:p-8 bg-slate-50/50 flex flex-col items-center justify-center md:min-w-[320px]">
+          <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+            Booking QR Code
+          </h3>
+          <QrCodeWidget
+            clinicId={clinic.id}
+            clinicName={clinic.name}
+            slug={clinic.slug}
+            themeColor={clinic.themeColor ?? "#0ea5e9"}
+          />
+        </div>
       </div>
+
+      <SettingsClient initialData={initialData} slug={clinic.slug} />
 
       {/* Working Hours & Holidays */}
       <div className="pt-2 sm:pt-4 space-y-6">
@@ -101,18 +138,21 @@ export default async function SettingsPage() {
 
       {/* Customer Success Note */}
       <div className="pt-4 sm:pt-8">
-        <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-[60px] pointer-events-none" />
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full flex items-center justify-center flex-shrink-0 border-2 border-indigo-200 shadow-sm z-10">
-            <MessageCircle className="w-8 h-8 text-indigo-500/70" />
+        <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-indigo-950 border border-indigo-500/20 rounded-[2rem] p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none" />
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-indigo-500/20 backdrop-blur-md rounded-2xl flex items-center justify-center flex-shrink-0 border border-indigo-400/30 shadow-inner z-10 rotate-3">
+            <MessageCircle className="w-8 h-8 text-indigo-300" />
           </div>
           <div className="flex-1 text-center sm:text-left z-10">
-            <h3 className="text-sm font-bold text-indigo-700 uppercase tracking-widest mb-2">A Note From Customer Success</h3>
-            <p className="text-slate-700 text-sm sm:text-base leading-relaxed italic mb-4">
-              "Software is only as good as the people behind it. My team's only KPI is your clinic's success. Whether it's a quick question or a full staff training session, we are right here to help you get the maximum value out of Doctor Diary."
+            <h3 className="text-xs sm:text-sm font-black text-indigo-400 uppercase tracking-widest mb-3 flex items-center justify-center sm:justify-start gap-2">
+              <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+              Dedicated Success Manager
+            </h3>
+            <p className="text-indigo-100/90 text-sm sm:text-base leading-relaxed mb-5 font-medium max-w-2xl">
+              "We believe software should serve the doctor, not the other way around. My team's only mission is your clinic's success. Need a feature tweaked? Want staff training? We are right here to help you get the maximum value."
             </p>
-            <div className="font-semibold text-slate-900">Customer Success Leadership</div>
-            <div className="text-slate-500 text-xs uppercase tracking-wide">Doctor Diary</div>
+            <div className="font-bold text-white text-base">Customer Success Leadership</div>
+            <div className="text-indigo-300/70 text-xs font-bold uppercase tracking-widest mt-0.5">Doctor Diary VIP Support</div>
           </div>
         </div>
       </div>

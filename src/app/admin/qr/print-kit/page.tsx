@@ -66,7 +66,7 @@ export default async function PrintKitPage({
 
   return (
     <>
-      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      { }
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@600;800&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" />

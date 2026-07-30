@@ -25,6 +25,7 @@ export function QrCodeWidget({ clinicId, clinicName, slug, themeColor }: QrCodeW
   const [origin, setOrigin] = useState("https://doctor.naturexpress.in");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOrigin(window.location.origin);
     fetch(`/api/qr/${clinicId}`)
       .then((res) => {
@@ -97,7 +98,7 @@ export function QrCodeWidget({ clinicId, clinicName, slug, themeColor }: QrCodeW
           </div>
           <div>
             <h2 className="font-bold text-slate-900 text-base sm:text-lg">Your Booking QR Code</h2>
-            <p className="text-slate-500 text-sm mt-0.5">For your clinic's appointment card</p>
+            <p className="text-slate-500 text-sm mt-0.5">For your clinic&apos;s appointment card</p>
           </div>
         </div>
 

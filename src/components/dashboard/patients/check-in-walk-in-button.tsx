@@ -6,7 +6,10 @@ import { UserCheck, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { checkInWalkIn } from "@/app/dashboard/actions";
 
+import { useRouter } from "next/navigation";
+
 export function CheckInWalkInButton({ patientId, disabled }: { patientId: string, disabled?: boolean }) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const handleCheckIn = () => {
@@ -16,6 +19,7 @@ export function CheckInWalkInButton({ patientId, disabled }: { patientId: string
         toast.error(result.error);
       } else {
         toast.success("Patient added to today's queue!");
+        router.push("/dashboard/queue");
       }
     });
   };
@@ -27,7 +31,7 @@ export function CheckInWalkInButton({ patientId, disabled }: { patientId: string
       className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm gap-2 w-full sm:w-auto"
     >
       {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserCheck className="w-4 h-4" />}
-      Add to Today's Queue
+      Add to Today&apos;s Queue
     </Button>
   );
 }

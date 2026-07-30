@@ -6,9 +6,10 @@ import { Copy, Check, ExternalLink } from "lucide-react";
 
 interface CopyLinkButtonProps {
   url: string;
+  className?: string;
 }
 
-export function CopyLinkButton({ url }: CopyLinkButtonProps) {
+export function CopyLinkButton({ url, className }: CopyLinkButtonProps) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {

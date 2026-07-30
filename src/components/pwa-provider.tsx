@@ -26,6 +26,7 @@ export function PWAProvider() {
 
     // Check if already installed as PWA
     if (window.matchMedia("(display-mode: standalone)").matches) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsInstalled(true);
       return;
     }
@@ -137,6 +138,7 @@ export function InstallButton({ className = "" }: { className?: string }) {
 
   useEffect(() => {
     if (window.matchMedia("(display-mode: standalone)").matches) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsInstalled(true);
       return;
     }

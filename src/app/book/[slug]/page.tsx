@@ -199,15 +199,10 @@ export default async function BookingPage({
   const workingDays = [...new Set(availRecords.map((a) => a.dayOfWeek))];
   const closedDates = [...new Set(overrideRecords.filter((o) => o.isClosed).map((o) => o.date as string))];
 
-  const directionsUrl = clinic.address
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinic.address)}`
-    : null;
-
-  // Map embed — use specific embed URL if provided, otherwise fallback to address text
-  const mapEmbedUrl = clinic.googleMapsUrl
+  const directionsUrl = clinic.googleMapsUrl && clinic.googleMapsUrl.startsWith("http")
     ? clinic.googleMapsUrl
     : clinic.address
-    ? `https://maps.google.com/maps?q=${encodeURIComponent(clinic.address)}&output=embed&hl=en&z=15`
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinic.address)}`
     : null;
 
   // Safe logo: only a direct image file URL, never a webpage URL
@@ -220,10 +215,10 @@ export default async function BookingPage({
     },
     {
       question: `What is the consultation fee at ${clinic.name}?`,
-      answer: clinic.consultationFee ? `The OPD consultation fee for ${displayDoctorName} is ₹${clinic.consultationFee}. You pay directly at the clinic desk during your visit.` : `Please contact ${clinic.name} directly for consultation fee details.`
+      answer: clinic.consultationFee ? `The in-clinic consultation fee for ${displayDoctorName} is ₹${clinic.consultationFee}. You pay directly at the clinic desk during your visit.` : `Please contact ${clinic.name} directly for consultation fee details.`
     },
     {
-      question: `Can I track my live OPD queue position?`,
+      question: `Can I track my live queue position?`,
       answer: `Yes! Once booked, you can track your live queue token number and estimated turn time in real-time on your mobile phone without sitting in a crowded waiting room.`
     },
     {
@@ -246,8 +241,8 @@ export default async function BookingPage({
       availableLanguage: ["English", "Hindi"],
       knowsAbout: [
         clinic.specialty || "General Medicine",
-        "Outpatient Consultation",
-        "Live Queue Token Tracking",
+        "In-Clinic Consultation",
+        "Live Smart Queue",
         "Preventive Healthcare",
       ],
       ...(clinic.phone && { telephone: clinic.phone }),
@@ -258,7 +253,7 @@ export default async function BookingPage({
       ...(services.length > 0 && {
         hasOfferCatalog: {
           "@type": "OfferCatalog",
-          name: `${clinic.name} Services & OPD Treatments`,
+          name: `${clinic.name} Services & Treatments`,
           itemListElement: services.map((s) => ({
             "@type": "Offer",
             itemOffered: {
@@ -315,10 +310,10 @@ export default async function BookingPage({
 
       {/* ─────────────── HERO BANNER ─────────────── */}
       <header className="relative overflow-hidden mb-8 sm:mb-12 -mx-4 sm:-mx-6 lg:-mx-8 bg-white border-b border-slate-100 pb-8 sm:pb-12 pt-10 sm:pt-14 shadow-sm min-h-[260px] flex items-end">
-        {clinic.heroImageUrl || fallbackHeroImage ? (
+        {clinic.heroImageUrl || "/assets/booking-hero-universal.jpg" ? (
           <>
-            <img src={clinic.heroImageUrl || fallbackHeroImage!} alt={clinic.name} className="absolute inset-0 w-full h-full object-cover z-0" />
-            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent z-0" />
+            <img src={clinic.heroImageUrl || "/assets/booking-hero-universal.jpg"} alt={clinic.name} className="absolute inset-0 w-full h-full object-cover z-0" />
+            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/90 to-transparent z-0" />
           </>
         ) : (
           <>
@@ -447,7 +442,7 @@ export default async function BookingPage({
         ))}
       </div>
 
-      {/* ─────────────── LIVE OPD QUEUE STATUS BANNER ─────────────── */}
+      {/* ─────────────── LIVE SMART QUEUE STATUS BANNER ─────────────── */}
       <div className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-teal-950 via-slate-900 to-emerald-950 text-white shadow-md border border-teal-800/60 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3 text-center sm:text-left">
           <div className="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-300 flex items-center justify-center flex-shrink-0 border border-teal-500/30">
@@ -457,7 +452,7 @@ export default async function BookingPage({
             </span>
           </div>
           <div>
-            <h3 className="font-extrabold text-sm text-emerald-300 tracking-wide uppercase">Live OPD Token System Active</h3>
+            <h3 className="font-extrabold text-sm text-emerald-300 tracking-wide uppercase">Live Smart Queue Active</h3>
             <p className="text-xs text-slate-300 mt-0.5">Book online to get your exact token number & track your live turn status on mobile.</p>
           </div>
         </div>
@@ -467,7 +462,7 @@ export default async function BookingPage({
       </div>
 
       {/* ─────────────── MAIN CONTENT GRID ─────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 pb-24 lg:pb-8">
 
         {/* LEFT: Clinic Information — order 2 on mobile */}
         <aside className="lg:col-span-5 order-2 lg:order-1 space-y-7">
@@ -615,23 +610,7 @@ export default async function BookingPage({
             </section>
           )}
 
-          {/* Map */}
-          {mapEmbedUrl && (
-            <section>
-              <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
-                <iframe
-                  src={mapEmbedUrl}
-                  width="100%"
-                  height="220"
-                  style={{ border: 0, display: "block" }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title={`${clinic.name} location`}
-                />
-              </div>
-            </section>
-          )}
+
 
           {/* Working Hours */}
           {availRecords.length > 0 && (
@@ -789,6 +768,74 @@ export default async function BookingPage({
           </div>
         </div>
       </div>
+
+      {/* ─────────────── MASTER SEO & AI CONTEXT SECTION ─────────────── */}
+      <section className="mt-16 mb-24 lg:mb-10 bg-slate-50/80 border-t border-slate-100 py-12 lg:py-16 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-start">
+            {/* Left: Authoritative Content for AI & Search */}
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mb-5 leading-snug" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Expert {clinic.specialty || "Medical"} Care at {clinic.name}
+              </h2>
+              <div className="space-y-4 text-slate-600 leading-relaxed text-[15px]">
+                <p>
+                  Welcome to <strong>{clinic.name}</strong>, a premier destination for advanced {clinic.specialty ? clinic.specialty.toLowerCase() : "healthcare"} services. Led by the highly experienced <strong>{displayDoctorName}</strong>, our facility is committed to delivering personalized, state-of-the-art care tailored to every patient's unique needs.
+                </p>
+                <p>
+                  We understand that your time is incredibly valuable. That is why we have revolutionized the traditional patient experience with our proprietary <strong>Smart Queue System</strong>. When you book your appointment online, you secure a precise live token. This empowers you to track your exact turn status in real-time, completely eliminating the stress of crowded waiting rooms. 
+                </p>
+                <p>
+                  Whether you are seeking a routine checkup, an expert second opinion, or specialized treatment, our dedicated team ensures a seamless, transparent, and world-class clinical visit from the moment you book.
+                </p>
+              </div>
+            </div>
+            
+            {/* Right: Structured Local Data & Trust Signals */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200/60 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-5 flex items-center gap-2">
+                  <BadgeCheck className="w-4 h-4 text-emerald-500" />
+                  Why Choose Our Clinic?
+                </h3>
+                <ul className="space-y-4 text-[14px] text-slate-700">
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <span><strong>Top-Rated Expertise:</strong> Consult directly with {displayDoctorName}, a highly trusted and verified specialist in the region.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <span><strong>Zero Waiting Time:</strong> Monitor your live appointment status straight from your mobile device. Arrive exactly when it is your turn.</span>
+                  </li>
+                  {clinic.consultationFee && (
+                    <li className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                      <span><strong>Transparent Pricing:</strong> Clear, upfront in-clinic consultation fee of ₹{clinic.consultationFee}. No hidden booking charges.</span>
+                    </li>
+                  )}
+                </ul>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200/60 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-teal-500"></div>
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-teal-500" />
+                  Location & Accessibility
+                </h3>
+                <p className="text-[14px] text-slate-600 leading-relaxed">
+                  Conveniently located at <strong>{clinic.address || "our modern facility"}</strong>, {clinic.name} is easily accessible for patients seeking top-tier {clinic.specialty ? clinic.specialty.toLowerCase() : "medical"} care. 
+                  {directionsUrl && (
+                    <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-teal-700 font-bold hover:text-teal-800 transition-colors mt-2">
+                      Get Turn-by-Turn Directions <Navigation className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ─────────────── MOBILE FLOATING ACTION BAR ─────────────── */}
       <div className="fixed bottom-0 left-0 right-0 p-3 bg-white/95 backdrop-blur-md border-t border-slate-200 z-50 lg:hidden shadow-2xl flex items-center gap-2">

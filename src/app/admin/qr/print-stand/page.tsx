@@ -68,7 +68,7 @@ export default async function PrintStandPage({
 
   return (
     <>
-      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      { }
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <link

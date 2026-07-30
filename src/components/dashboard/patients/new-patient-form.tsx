@@ -180,7 +180,7 @@ export function NewPatientForm() {
                   className="w-5 h-5 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500/20"
                 />
                 <div>
-                  <div className="font-medium text-slate-900 text-sm">Add to Today's Queue</div>
+                  <div className="font-medium text-slate-900 text-sm">Add to Today&apos;s Queue</div>
                   <div className="text-xs text-slate-500 mt-0.5">Automatically checks the patient in for a visit right now.</div>
                 </div>
               </label>

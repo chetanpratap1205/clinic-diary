@@ -76,13 +76,15 @@ export default async function InvoicePage(props: { params: Promise<{ id: string 
             <div className="text-2xl font-black text-sky-600 tracking-tight mb-1">
               Doctor Diary <span className="text-sm font-medium text-slate-500">by NatureXpress</span>
             </div>
-            <div className="text-gray-600 space-y-0.5 mt-2">
-              <p className="font-bold text-gray-900">PRATWI SOLUTIONS PRIVATE LIMITED</p>
-              <p>Bhagirathi Enclave, Narora,</p>
-              <p>Bulandshahr, Uttar Pradesh 203389</p>
-              <p className="pt-1"><span className="font-semibold">GSTIN:</span> 09AANCP9915B1Z4</p>
-              <p><span className="font-semibold">PAN:</span> AANCP9915B</p>
-              <p><span className="font-semibold">State:</span> Uttar Pradesh (Code: 09)</p>
+            <div className="text-gray-600 space-y-0.5 mt-2 text-xs">
+              <p className="font-bold text-gray-900 text-sm">PRATWI SOLUTIONS PRIVATE LIMITED</p>
+              <p><span className="font-semibold">CIN:</span> U62011UP2023PTC187090</p>
+              <p className="pt-1"><span className="font-semibold">Reg. Office:</span> Bhagirathi Enclave, Narora,</p>
+              <p>Debai, Bulandshahr-203389, Uttar Pradesh</p>
+              <p className="pt-1"><span className="font-semibold">Corp. Office:</span> 124, Heera bagh, Vijay nagar,</p>
+              <p>Indore, MP 452010</p>
+              <p className="pt-1"><span className="font-semibold">GSTIN:</span> 09AANCP9915B1Z4 &nbsp;|&nbsp; <span className="font-semibold">PAN:</span> AANCP9915B</p>
+              <p><span className="font-semibold">Mobile:</span> +91 8077170715</p>
             </div>
           </div>
           <div className="text-right">
@@ -94,7 +96,7 @@ export default async function InvoicePage(props: { params: Promise<{ id: string 
               <p><span className="font-semibold">Invoice No:</span> {invoiceRecord.razorpayOrderId.replace('order_', 'INV-')}</p>
               <p><span className="font-semibold">Order ID:</span> {invoiceRecord.razorpayOrderId}</p>
               <p><span className="font-semibold">Invoice Date:</span> {format(new Date(invoiceRecord.paidAt), "dd-MMM-yyyy")}</p>
-              <p><span className="font-semibold">Place of Supply:</span> {clinicRecord.state || "Not Provided"}</p>
+              <p><span className="font-semibold">Place of Supply:</span> {clinicRecord.state || "Unregistered (B2C)"}</p>
               <p><span className="font-semibold">Reverse Charge:</span> N.A.</p>
             </div>
           </div>
@@ -105,18 +107,20 @@ export default async function InvoicePage(props: { params: Promise<{ id: string 
           <div className="w-1/2">
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Billed To / Customer Details:</h3>
             <div className="text-gray-900 font-bold text-lg mb-1">{clinicRecord.name}</div>
-            <div className="text-gray-600 space-y-0.5">
+            <div className="text-gray-600 space-y-0.5 text-sm">
               <p>Attn: Dr. {clinicRecord.doctorName}</p>
               {clinicRecord.billingAddress ? (
                 <p>{clinicRecord.billingAddress}</p>
               ) : clinicRecord.address ? (
                 <p>{clinicRecord.address}</p>
               ) : null}
-              <p>Phone: {clinicRecord.phone}</p>
+              {clinicRecord.phone && <p>Phone: {clinicRecord.phone}</p>}
               {clinicRecord.state && <p>State: {clinicRecord.state}</p>}
-              <p className="pt-1">
-                <span className="font-semibold">GSTIN:</span> {clinicRecord.gstin || "Unregistered"}
-              </p>
+              {clinicRecord.gstin && (
+                <p className="pt-1">
+                  <span className="font-semibold">GSTIN:</span> {clinicRecord.gstin}
+                </p>
+              )}
             </div>
           </div>
           <div className="text-right">

@@ -29,8 +29,23 @@ import {
   Star,
   ShieldCheck,
   CalendarDays,
+  Sparkles,
+  Wand2,
+  Bot,
+  Building2,
+  Fingerprint,
+  Activity,
+  Landmark,
+  Compass,
+  Feather,
+  Zap,
+  Command,
+  Layers,
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PresetsManager } from "./components/presets-manager";
 import { motion } from "framer-motion";
+import { SPECIALTY_LIST } from "@/lib/specialty-taxonomy";
 
 const settingsSchema = z.object({
   name: z.string().min(2, "Clinic name must be at least 2 characters"),
@@ -50,6 +65,10 @@ const settingsSchema = z.object({
   billingAddress: z.string().nullable().optional(),
   state: z.string().nullable().optional(),
   gstin: z.string().nullable().optional(),
+  vitalsPresets: z.array(z.string()),
+  complaintPresets: z.array(z.string()),
+  diagnosisPresets: z.array(z.string()),
+  treatmentPresets: z.array(z.string()),
 });
 
 type SettingsData = z.infer<typeof settingsSchema>;
@@ -70,6 +89,10 @@ interface SettingsClientProps {
     billingAddress?: string | null;
     state?: string | null;
     gstin?: string | null;
+    vitalsPresets: string[];
+    complaintPresets: string[];
+    diagnosisPresets: string[];
+    treatmentPresets: string[];
   };
   slug: string;
 }
@@ -140,6 +163,10 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
       billingAddress: initialData.billingAddress || "",
       state: initialData.state || "",
       gstin: initialData.gstin || "",
+      vitalsPresets: initialData.vitalsPresets || [],
+      complaintPresets: initialData.complaintPresets || [],
+      diagnosisPresets: initialData.diagnosisPresets || [],
+      treatmentPresets: initialData.treatmentPresets || [],
     },
   });
 
@@ -150,8 +177,7 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
     ? watchedFields.doctorName
     : `Dr. ${watchedFields.doctorName || "Doctor Name"}`;
 
-  const hasValidMapsUrl =
-    watchedFields.googleMapsUrl && isValidEmbedUrl(watchedFields.googleMapsUrl);
+  const hasValidMapsUrl = !!watchedFields.googleMapsUrl && watchedFields.googleMapsUrl.startsWith("http");
 
   const onSubmit = (data: SettingsData) => {
     startTransition(async () => {
@@ -162,6 +188,35 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
         toast.success("Website updated successfully!");
       }
     });
+  };
+
+  const generateSmartAbout = () => {
+    const { name, doctorName, specialty, address } = watchedFields;
+    const docName = doctorName || "our lead specialist";
+    const clinicName = name || "Our clinic";
+    const spec = specialty || "medical care";
+    const loc = address ? ` in ${address.split(',')[0]}` : "";
+    
+    const template = `Welcome to ${clinicName}, a premium healthcare destination${loc}. Led by ${docName}, a highly trusted expert in ${spec}, we are committed to revolutionizing your healthcare experience. \n\nWe understand that your time is valuable. That's why we've implemented a state-of-the-art digital booking system with transparent live queues, ensuring zero waiting room anxiety. \n\nWhether you need routine consultations or specialized treatments, our patient-first approach guarantees personalized, compassionate care from the moment you book. Experience modern healthcare without the hassle—book your appointment today.`;
+    
+    setValue("about", template, { shouldDirty: true, shouldValidate: true });
+    toast.success("Premium 'About' section generated!");
+  };
+
+  const copyAIPrompt = async () => {
+    const { name, doctorName, specialty, address } = watchedFields;
+    const prompt = `Act as an expert healthcare copywriter. Write a premium, highly SEO-optimized "About Clinic" section (max 3 short paragraphs) for my clinic. 
+    
+Here are my details:
+Clinic Name: ${name || "[My Clinic]"}
+Doctor Name: ${doctorName || "[My Name]"}
+Specialty: ${specialty || "[My Specialty]"}
+Location: ${address || "[My City]"}
+
+Make it sound extremely premium, trustworthy, and empathetic. Emphasize that we use a modern SaaS platform (Doctor Diary) that offers instant online booking, live queue tracking, and zero waiting time. The tone should be welcoming but highly professional, highlighting our patient-first approach and eliminating the pain points of traditional crowded clinics. Do not include any placeholder brackets in the final output.`;
+    
+    await navigator.clipboard.writeText(prompt);
+    toast.success("AI Prompt copied to clipboard!");
   };
 
   const copyLink = async () => {
@@ -179,72 +234,31 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
 
   return (
     <div className="space-y-6">
-
-      {/* ── SHARE YOUR WEBSITE CARD ─────────────────────────────────── */}
-      <Card className="border-0 shadow-lg rounded-3xl overflow-hidden" style={{ background: `linear-gradient(135deg, ${themeColor}15 0%, ${themeColor}08 100%)` }}>
-        <CardContent className="p-5 sm:p-7">
-          <div className="flex items-start gap-3 mb-4">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm" style={{ backgroundColor: themeColor }}>
-              <Globe className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="font-bold text-slate-900 text-base sm:text-lg">Your Clinic Website</h2>
-              <p className="text-slate-500 text-sm mt-0.5">
-                Share this link with patients. Print it on your visiting card. Add it to your Instagram bio.
-              </p>
-            </div>
-          </div>
-
-          {/* URL Display */}
-          <div className="flex items-center gap-2 bg-white rounded-2xl border border-slate-200 p-2 pr-3 mb-3 shadow-sm">
-            <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-semibold text-slate-700 truncate px-2">
-                {bookingUrl}
-              </p>
-            </div>
-            <button
-              onClick={copyLink}
-              className="flex-shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl text-white transition-all active:scale-95"
-              style={{ backgroundColor: themeColor }}
-            >
-              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-              {copied ? "Copied!" : "Copy"}
-            </button>
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              onClick={shareOnWhatsApp}
-              className="flex-1 flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm font-bold py-3 rounded-xl transition-all active:scale-95 shadow-sm"
-            >
-              <Share2 className="w-4 h-4" />
-              Share on WhatsApp
-            </button>
-            <a
-              href={bookingUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold py-3 rounded-xl hover:bg-slate-50 transition-all active:scale-95"
-            >
-              <ExternalLink className="w-4 h-4" />
-              Preview Page
-            </a>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* ── MAIN FORM + LIVE PREVIEW ────────────────────────────────── */}
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 sm:gap-8">
 
         {/* LEFT: Form */}
         <div className="xl:col-span-3 space-y-5 sm:space-y-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <Tabs defaultValue="profile" className="w-full">
+              <TabsList className="w-full h-auto p-1.5 bg-slate-100 rounded-2xl grid grid-cols-3 gap-1 mb-6">
+                <TabsTrigger value="profile" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm">Profile & Brand</TabsTrigger>
+                <TabsTrigger value="location" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm">Location & Billing</TabsTrigger>
+                <TabsTrigger value="presets" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                  Presets
+                </TabsTrigger>
+              </TabsList>
 
-            {/* ── SECTION: Clinic Profile ── */}
+              <TabsContent value="profile" className="space-y-5 focus:outline-none">
+                {/* ── SECTION: Clinic Profile ── */}
             <Card className="border-slate-100 shadow-sm rounded-2xl sm:rounded-3xl overflow-hidden">
               <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-4 px-4 sm:px-6">
-                <CardTitle className="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
-                  <User className="w-4 h-4 text-slate-400" /> Clinic Profile
+                <CardTitle className="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-[10px] flex items-center justify-center border shadow-sm transition-colors" style={{ backgroundColor: `${themeColor}15`, borderColor: `${themeColor}30`, color: themeColor }}>
+                    <Building2 className="w-4 h-4" />
+                  </div>
+                  Clinic Profile
                 </CardTitle>
                 <p className="text-xs text-slate-500 mt-0.5">Appears as your website headline</p>
               </CardHeader>
@@ -277,14 +291,20 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label htmlFor="specialty" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                      <Stethoscope className="w-3.5 h-3.5 text-slate-400" /> Specialty
+                      <Activity className="w-3.5 h-3.5 text-slate-400" /> Domain / Specialty
                     </label>
                     <Input
                       id="specialty"
+                      list="specialty-list"
                       {...register("specialty")}
-                      placeholder="e.g. Cardiologist"
+                      placeholder="Type or select a specialty..."
                       className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
                     />
+                    <datalist id="specialty-list">
+                      {SPECIALTY_LIST.map((spec) => (
+                        <option key={spec} value={spec} />
+                      ))}
+                    </datalist>
                   </div>
                   <div className="space-y-2">
                     <label htmlFor="consultation-fee" className="text-sm font-semibold text-slate-700">
@@ -334,7 +354,7 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <label htmlFor="about" className="text-sm font-semibold text-slate-700">
                     About the Clinic / Doctor
                   </label>
@@ -342,168 +362,46 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
                     id="about"
                     {...register("about")}
                     placeholder="E.g. Dr. Sharma has 15+ years of experience in cardiology. Our clinic is equipped with modern diagnostic tools..."
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 resize-none h-28 shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 resize-none h-32 shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
                   />
-                  <p className="text-xs text-slate-400">This appears on your public website. A good about section builds patient trust.</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* ─── BILLING DETAILS ─────────────────────────────────────────── */}
-            <Card className="rounded-3xl border-slate-200 shadow-sm overflow-hidden bg-white/70 backdrop-blur-xl">
-              <div className="h-1.5 w-full bg-slate-800" />
-              <CardHeader className="pb-4">
-                <CardTitle className="text-xl font-bold flex items-center gap-2">
-                  <BadgeCheck className="w-5 h-5 text-slate-800" />
-                  Billing & Tax Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2 pt-2 border-t border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label htmlFor="clinic-gstin" className="text-sm font-semibold text-slate-700">
-                        GSTIN (Optional)
-                      </label>
-                      <Input
-                        id="clinic-gstin"
-                        {...register("gstin")}
-                        placeholder="e.g. 29ABCDE1234F1Z5"
-                        className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors uppercase"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="clinic-state" className="text-sm font-semibold text-slate-700">
-                        State (For Tax Calculation)
-                      </label>
-                      <Input
-                        id="clinic-state"
-                        {...register("state")}
-                        placeholder="e.g. Maharashtra"
-                        className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
-                      />
+                  
+                  {/* AI Generation Tools */}
+                  <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-4">
+                    <p className="text-xs font-bold text-indigo-800 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                      <Feather className="w-3.5 h-3.5" /> Need help writing?
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <button
+                          type="button"
+                          onClick={generateSmartAbout}
+                          className="w-full flex items-center justify-center gap-2 bg-white border border-indigo-200 text-indigo-700 text-xs font-bold py-2.5 px-3 rounded-lg hover:bg-indigo-50 transition-colors shadow-sm"
+                        >
+                          <Zap className="w-3.5 h-3.5" />
+                          Auto-Generate (Instant)
+                        </button>
+                        <p className="text-[10px] text-slate-500 leading-tight">
+                          Fills in a premium, SEO-optimized template instantly using your details.
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <button
+                          type="button"
+                          onClick={copyAIPrompt}
+                          className="w-full flex items-center justify-center gap-2 bg-slate-800 text-white text-xs font-bold py-2.5 px-3 rounded-lg hover:bg-slate-700 transition-colors shadow-sm"
+                        >
+                          <Command className="w-3.5 h-3.5" />
+                          Copy Prompt for ChatGPT
+                        </button>
+                        <ol className="text-[10px] text-slate-500 leading-tight list-decimal pl-3 space-y-0.5">
+                          <li>Click copy</li>
+                          <li>Open ChatGPT or Gemini</li>
+                          <li>Paste and hit send</li>
+                          <li>Paste the result back above</li>
+                        </ol>
+                      </div>
                     </div>
                   </div>
-                  <div className="space-y-2 pt-4">
-                    <label htmlFor="clinic-billing-address" className="text-sm font-semibold text-slate-700">
-                      Registered Billing Address
-                    </label>
-                    <Input
-                      id="clinic-billing-address"
-                      {...register("billingAddress")}
-                      placeholder="Full registered address for tax invoices"
-                      className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
-                    />
-                  </div>
-                  <p className="text-xs text-slate-400 flex items-start gap-1.5 pt-1">
-                    <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                    These details will be printed on the Tax Invoices you receive for your Doctor Diary subscription.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* ── SECTION: Contact & Location ── */}
-            <Card className="border-slate-100 shadow-sm rounded-2xl sm:rounded-3xl overflow-hidden">
-              <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-4 px-4 sm:px-6">
-                <CardTitle className="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-slate-400" /> Contact & Location
-                </CardTitle>
-                <p className="text-xs text-slate-500 mt-0.5">Patients can call and find your clinic from your website</p>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-6 space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label htmlFor="clinic-phone" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                      <Phone className="w-3.5 h-3.5 text-slate-400" /> Phone Number
-                    </label>
-                    <Input
-                      id="clinic-phone"
-                      {...register("phone")}
-                      type="tel"
-                      inputMode="tel"
-                      className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="clinic-address" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                      <Navigation className="w-3.5 h-3.5 text-slate-400" /> Clinic Address
-                    </label>
-                    <Input
-                      id="clinic-address"
-                      {...register("address")}
-                      placeholder="Full address for Google Maps directions"
-                      className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
-                    />
-                  </div>
-                </div>
-                <p className="text-xs text-slate-400 flex items-start gap-1.5">
-                  <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                  The address you enter automatically becomes a clickable "Get Directions" link on your website — patients can tap to open Google Maps.
-                </p>
-
-                {/* Google Maps Embed */}
-                <div className="space-y-2 pt-2 border-t border-slate-100">
-                  <div className="flex items-center justify-between">
-                    <label htmlFor="google-maps-url" className="text-sm font-semibold text-slate-700">
-                      Google Maps Embed (Optional)
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setShowMapsGuide(!showMapsGuide)}
-                      className="text-xs font-bold flex items-center gap-1 hover:underline"
-                      style={{ color: themeColor }}
-                    >
-                      <Info className="w-3 h-3" />
-                      {showMapsGuide ? "Hide Guide" : "How to get the link?"}
-                    </button>
-                  </div>
-
-                  {showMapsGuide && (
-                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm text-slate-600 space-y-2">
-                      <p className="font-bold text-slate-800">Step-by-step:</p>
-                      <ol className="space-y-1.5 list-decimal pl-4">
-                        <li>Open <strong>Google Maps</strong> and search your clinic</li>
-                        <li>Click <strong>Share</strong> → then click <strong>"Embed a map"</strong> tab</li>
-                        <li>Copy the URL inside <code className="bg-slate-200 px-1 rounded text-xs">src="..."</code> — it starts with <code className="bg-slate-200 px-1 rounded text-xs">https://www.google.com/maps/embed?pb=</code></li>
-                        <li>Paste that URL below</li>
-                      </ol>
-                      <p className="text-xs text-amber-600 font-semibold mt-2">⚠️ Don't paste the regular share link — it must be the embed src link.</p>
-                    </div>
-                  )}
-
-                  <Input
-                    id="google-maps-url"
-                    {...register("googleMapsUrl")}
-                    placeholder="https://www.google.com/maps/embed?pb=..."
-                    className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
-                  />
-                  {errors.googleMapsUrl && <p className="text-xs text-red-500">{errors.googleMapsUrl.message}</p>}
-
-                  {/* Live map preview */}
-                  {watchedFields.googleMapsUrl && (
-                    <div className="rounded-2xl overflow-hidden border border-slate-200 mt-2">
-                      {hasValidMapsUrl ? (
-                        <iframe
-                          src={watchedFields.googleMapsUrl!}
-                          width="100%"
-                          height="200"
-                          style={{ border: 0 }}
-                          allowFullScreen
-                          loading="lazy"
-                          title="Map preview"
-                        />
-                      ) : (
-                        <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
-                          <Info className="w-5 h-5 text-amber-500 flex-shrink-0" />
-                          <div>
-                            <p className="text-sm font-bold text-amber-800">Invalid embed URL</p>
-                            <p className="text-xs text-amber-600">This doesn't look like a Google Maps embed link. Follow the guide above to get the correct URL.</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -511,8 +409,11 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
             {/* ── SECTION: Brand & Logo ── */}
             <Card className="border-slate-100 shadow-sm rounded-2xl sm:rounded-3xl overflow-hidden">
               <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-4 px-4 sm:px-6">
-                <CardTitle className="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
-                  <Palette className="w-4 h-4 text-slate-400" /> Brand & Logo
+                <CardTitle className="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-[10px] flex items-center justify-center border shadow-sm transition-colors" style={{ backgroundColor: `${themeColor}15`, borderColor: `${themeColor}30`, color: themeColor }}>
+                    <Fingerprint className="w-4 h-4" />
+                  </div>
+                  Brand & Logo
                 </CardTitle>
                 <p className="text-xs text-slate-500 mt-0.5">Customize how your website looks</p>
               </CardHeader>
@@ -580,18 +481,216 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
                         key={color}
                         type="button"
                         onClick={() => setValue("themeColor", color)}
-                        className="w-9 h-9 rounded-full flex items-center justify-center transition-transform hover:scale-110 active:scale-95 shadow-sm"
+                        className="w-9 h-9 rounded-full flex items-center justify-center transition-transform hover:scale-110 active:scale-95 shadow-sm border border-black/5"
                         style={{ backgroundColor: color }}
                         aria-label={`Set theme color to ${color}`}
                       >
-                        {themeColor === color && <CheckCircle2 className="w-4 h-4 text-white" />}
+                        {themeColor === color && <CheckCircle2 className="w-4 h-4 text-white drop-shadow-md" />}
                       </button>
                     ))}
+                    <div className="w-px h-6 bg-slate-200 mx-1" />
+                    <label
+                      htmlFor="custom-color"
+                      className="w-9 h-9 rounded-full flex items-center justify-center transition-transform hover:scale-110 active:scale-95 shadow-sm border border-slate-200 overflow-hidden relative cursor-pointer group"
+                      title="Pick custom color"
+                      style={{ backgroundColor: !PRESET_COLORS.includes(themeColor) ? themeColor : "#ffffff" }}
+                    >
+                      <input
+                        type="color"
+                        id="custom-color"
+                        value={themeColor}
+                        onChange={(e) => setValue("themeColor", e.target.value)}
+                        className="absolute inset-[-10px] w-20 h-20 opacity-0 cursor-pointer"
+                      />
+                      <Palette className={`w-4 h-4 ${!PRESET_COLORS.includes(themeColor) ? "text-white drop-shadow-md" : "text-slate-400 group-hover:text-slate-600"}`} />
+                    </label>
                   </div>
                   {errors.themeColor && <p className="text-xs text-red-500">{errors.themeColor.message}</p>}
                 </div>
               </CardContent>
             </Card>
+              </TabsContent>
+
+              <TabsContent value="location" className="space-y-5 focus:outline-none">
+            {/* ── SECTION: Billing & Tax Details ── */}
+            <Card className="rounded-3xl border-slate-200 shadow-sm overflow-hidden bg-white/70 backdrop-blur-xl">
+              <div className="h-1.5 w-full bg-slate-800" />
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl font-bold flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-[10px] flex items-center justify-center border border-slate-200 bg-slate-50 shadow-sm text-slate-600">
+                    <Landmark className="w-4 h-4" />
+                  </div>
+                  Billing & Tax Details
+                </CardTitle>
+                <p className="text-sm text-slate-500 mt-1">Configure your B2B invoice details for Doctor Diary subscriptions.</p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                
+                <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Info className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-blue-900 mb-0.5">Claim 18% Input Tax Credit (ITC)</h4>
+                    <p className="text-xs text-blue-800/80 leading-relaxed">
+                      If your clinic is GST registered, enter your GSTIN and registered billing address below. We will automatically generate B2B Tax Invoices for your subscription, allowing your CA to claim ITC and effectively making your subscription 18% cheaper.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-2 border-t border-slate-100">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label htmlFor="clinic-gstin" className="text-sm font-semibold text-slate-700 flex items-center justify-between">
+                        GSTIN
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded uppercase tracking-wider">Optional</span>
+                      </label>
+                      <Input
+                        id="clinic-gstin"
+                        {...register("gstin")}
+                        placeholder="e.g. 29ABCDE1234F1Z5"
+                        className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors uppercase font-mono"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="clinic-state" className="text-sm font-semibold text-slate-700">
+                        State (For Tax Calculation)
+                      </label>
+                      <Input
+                        id="clinic-state"
+                        {...register("state")}
+                        placeholder="e.g. Maharashtra"
+                        className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="clinic-billing-address" className="text-sm font-semibold text-slate-700">
+                      Registered Billing Address
+                    </label>
+                    <Input
+                      id="clinic-billing-address"
+                      {...register("billingAddress")}
+                      placeholder="Full registered address for tax invoices"
+                      className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* ── SECTION: Contact & Location ── */}
+            <Card className="border-slate-100 shadow-sm rounded-2xl sm:rounded-3xl overflow-hidden">
+              <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-4 px-4 sm:px-6">
+                <CardTitle className="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-[10px] flex items-center justify-center border shadow-sm transition-colors" style={{ backgroundColor: `${themeColor}15`, borderColor: `${themeColor}30`, color: themeColor }}>
+                    <Compass className="w-4 h-4" />
+                  </div>
+                  Contact & Location
+                </CardTitle>
+                <p className="text-xs text-slate-500 mt-0.5">Patients can call and find your clinic from your website</p>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="clinic-phone" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-slate-400" /> Phone Number
+                    </label>
+                    <Input
+                      id="clinic-phone"
+                      {...register("phone")}
+                      type="tel"
+                      inputMode="tel"
+                      className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="clinic-address" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                      <Navigation className="w-3.5 h-3.5 text-slate-400" /> Clinic Address
+                    </label>
+                    <Input
+                      id="clinic-address"
+                      {...register("address")}
+                      placeholder="Full address for Google Maps directions"
+                      className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-slate-400 flex items-start gap-1.5">
+                  <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                  The address you enter automatically becomes a clickable "Get Directions" link on your website — patients can tap to open Google Maps.
+                </p>
+
+                {/* Google Maps Link */}
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="google-maps-url" className="text-sm font-semibold text-slate-700">
+                      Google Maps Link (Optional)
+                    </label>
+                  </div>
+                  <p className="text-xs text-slate-400 font-medium">
+                    Open your clinic in Google Maps, tap Share, and paste the link here (e.g. <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-600">https://maps.app.goo.gl/...</code>).
+                  </p>
+                  <Input
+                    id="google-maps-url"
+                    {...register("googleMapsUrl")}
+                    placeholder="https://maps.app.goo.gl/..."
+                    className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                  />
+                  {errors.googleMapsUrl && <p className="text-xs text-red-500">{errors.googleMapsUrl.message}</p>}
+                </div>
+              </CardContent>
+            </Card>
+            </TabsContent>
+
+              <TabsContent value="presets" className="space-y-5 focus:outline-none">
+                <Card className="border-slate-100 shadow-sm rounded-2xl sm:rounded-3xl overflow-hidden">
+                  <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-4 px-4 sm:px-6">
+                    <CardTitle className="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-[10px] flex items-center justify-center border shadow-sm transition-colors" style={{ backgroundColor: `${themeColor}15`, borderColor: `${themeColor}30`, color: themeColor }}>
+                        <Layers className="w-4 h-4" />
+                      </div>
+                      1-Tap Clinical Presets
+                    </CardTitle>
+                    <p className="text-xs text-slate-500 mt-0.5">Speed up consultations with quick-tap pills.</p>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 space-y-4">
+                    <PresetsManager
+                      title="Vitals Presets"
+                      description="Common vitals templates."
+                      placeholder="e.g. BP 120/80, WT 75kg"
+                      items={watchedFields.vitalsPresets}
+                      onChange={(items) => setValue("vitalsPresets", items, { shouldDirty: true })}
+                      themeColor={themeColor}
+                    />
+                    <PresetsManager
+                      title="Complaint Presets"
+                      description="Most frequent patient complaints."
+                      placeholder="e.g. Fever for 3 days"
+                      items={watchedFields.complaintPresets}
+                      onChange={(items) => setValue("complaintPresets", items, { shouldDirty: true })}
+                      themeColor={themeColor}
+                    />
+                    <PresetsManager
+                      title="Diagnosis Presets"
+                      description="Standard diagnoses you assign."
+                      placeholder="e.g. Viral Pharyngitis"
+                      items={watchedFields.diagnosisPresets}
+                      onChange={(items) => setValue("diagnosisPresets", items, { shouldDirty: true })}
+                      themeColor={themeColor}
+                    />
+                    <PresetsManager
+                      title="Treatment / Rx Presets"
+                      description="Combinations of medicines you often prescribe."
+                      placeholder="e.g. Tab Paracetamol 500mg 1-0-1"
+                      items={watchedFields.treatmentPresets}
+                      onChange={(items) => setValue("treatmentPresets", items, { shouldDirty: true })}
+                      themeColor={themeColor}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
 
             {/* Save Button */}
             <Button

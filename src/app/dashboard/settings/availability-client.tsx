@@ -52,10 +52,9 @@ const SLOT_OPTIONS = [
   { label: "1 hr",   value: 60 },
 ];
 
-// ─── Presets ───────────────────────────────────────────────────────────────────
 const PRESETS = [
   {
-    label: "Morning OPD",
+    label: "Morning Session",
     emoji: "🌅",
     description: "Mon–Sat, 9am–1pm",
     apply: (): Partial<DaySchedule>[] =>
@@ -66,7 +65,7 @@ const PRESETS = [
       })),
   },
   {
-    label: "Full Day",
+    label: "Standard Day",
     emoji: "☀️",
     description: "Mon–Sat, 9am–5pm",
     apply: (): Partial<DaySchedule>[] =>

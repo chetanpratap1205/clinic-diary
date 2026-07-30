@@ -22,6 +22,7 @@ export function QuoteFooter() {
   useEffect(() => {
     // Pick a random quote on mount so it differs per session/reload, but stable during navigation
     const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setQuote(randomQuote);
   }, []);
 

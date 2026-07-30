@@ -9,39 +9,9 @@ import { PremiumIcon } from "@/components/ui/premium-icon";
 import { toast } from "sonner";
 import Script from "next/script";
 
-const plans = [
-  {
-    id: "quarterly",
-    name: "Quarterly",
-    price: "₹1,499",
-    basePrice: 1499,
-    duration: "per 3 months",
-    description: "Perfect for getting started and testing the waters.",
-    features: [
-      "One Complete Product",
-      "Unlimited Patients & Appointments",
-      "Free Premium Starter Kit",
-      "Smart WhatsApp & SMS Ready",
-      "Executive Analytics",
-    ],
-    popular: false,
-  },
-  {
-    id: "yearly",
-    name: "Annual",
-    price: "₹4,999",
-    basePrice: 4999,
-    duration: "per year",
-    description: "Maximum ROI for established clinics.",
-    features: [
-      "Everything in Quarterly",
-      "Dedicated Account Manager",
-      "Priority Support Channel",
-      "Annual Performance Reviews",
-    ],
-    popular: true,
-  },
-];
+import { PRICING_PLANS } from "@/lib/config/pricing";
+
+const plans = Object.values(PRICING_PLANS);
 
 const PLAN_RANKS: Record<string, number> = { quarterly: 1, yearly: 2 };
 
