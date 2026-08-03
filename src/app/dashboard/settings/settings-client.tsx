@@ -41,6 +41,8 @@ import {
   Zap,
   Command,
   Layers,
+  MessageCircle,
+  Link,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PresetsManager } from "./components/presets-manager";
@@ -50,6 +52,7 @@ import { SPECIALTY_LIST } from "@/lib/specialty-taxonomy";
 const settingsSchema = z.object({
   name: z.string().min(2, "Clinic name must be at least 2 characters"),
   doctorName: z.string().min(2, "Doctor name must be at least 2 characters"),
+  degree: z.string().nullable().optional(),
   specialty: z.string(),
   consultationFee: z.number().min(0),
   freeFollowupDays: z.number().min(0).max(365), // P0: required, no default (set in defaultValues)
@@ -61,6 +64,7 @@ const settingsSchema = z.object({
     .nullable(),
   about: z.string().nullable().optional(),
   logoUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
+  heroImageUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
   googleMapsUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
   billingAddress: z.string().nullable().optional(),
   state: z.string().nullable().optional(),
@@ -69,6 +73,9 @@ const settingsSchema = z.object({
   complaintPresets: z.array(z.string()),
   diagnosisPresets: z.array(z.string()),
   treatmentPresets: z.array(z.string()),
+  whatsappNumber: z.string().nullable().optional(),
+  instagramUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
+  facebookUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
 });
 
 type SettingsData = z.infer<typeof settingsSchema>;
@@ -77,6 +84,7 @@ interface SettingsClientProps {
   initialData: {
     name: string;
     doctorName: string;
+    degree: string | null;
     specialty: string;
     consultationFee: number;
     freeFollowupDays: number; // P0
@@ -85,10 +93,14 @@ interface SettingsClientProps {
     themeColor: string | null;
     about?: string | null;
     logoUrl?: string | null;
+    heroImageUrl?: string | null;
     googleMapsUrl?: string | null;
     billingAddress?: string | null;
     state?: string | null;
     gstin?: string | null;
+    whatsappNumber?: string | null;
+    instagramUrl?: string | null;
+    facebookUrl?: string | null;
     vitalsPresets: string[];
     complaintPresets: string[];
     diagnosisPresets: string[];
@@ -151,6 +163,7 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
     defaultValues: {
       name: initialData.name,
       doctorName: initialData.doctorName,
+      degree: initialData.degree || "",
       specialty: initialData.specialty || "",
       consultationFee: initialData.consultationFee || 0,
       freeFollowupDays: initialData.freeFollowupDays ?? 0, // P0
@@ -159,10 +172,14 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
       themeColor: initialData.themeColor || "#0ea5e9",
       about: initialData.about || "",
       logoUrl: initialData.logoUrl || "",
+      heroImageUrl: initialData.heroImageUrl || "",
       googleMapsUrl: initialData.googleMapsUrl || "",
       billingAddress: initialData.billingAddress || "",
       state: initialData.state || "",
       gstin: initialData.gstin || "",
+      whatsappNumber: initialData.whatsappNumber || "",
+      instagramUrl: initialData.instagramUrl || "",
+      facebookUrl: initialData.facebookUrl || "",
       vitalsPresets: initialData.vitalsPresets || [],
       complaintPresets: initialData.complaintPresets || [],
       diagnosisPresets: initialData.diagnosisPresets || [],
@@ -286,9 +303,73 @@ Make it sound extremely premium, trustworthy, and empathetic. Emphasize that we 
                     />
                     {errors.doctorName && <p className="text-xs text-red-500">{errors.doctorName.message}</p>}
                   </div>
+                  <div className="space-y-2">
+                    <label htmlFor="degree" className="text-sm font-semibold text-slate-700">
+                      Degree & Qualifications (SEO)
+                    </label>
+                    <Input
+                      id="degree"
+                      {...register("degree")}
+                      placeholder="e.g. MBBS, MD (Medicine)"
+                      className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                    />
+                    {errors.degree && <p className="text-xs text-red-500">{errors.degree.message}</p>}
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Logo URL */}
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  <label htmlFor="logo-url" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                    <ImageIcon className="w-3.5 h-3.5 text-slate-400" /> Clinic Logo URL
+                  </label>
+                  <div className="flex gap-3 items-start">
+                    {/* Logo Preview */}
+                    <div
+                      className="w-14 h-14 rounded-2xl flex-shrink-0 border-2 border-slate-200 flex items-center justify-center text-white font-black text-xl overflow-hidden shadow-sm"
+                      style={{ backgroundColor: watchedFields.themeColor || "#0ea5e9" }}
+                    >
+                      {watchedFields.logoUrl && !logoError ? (
+                        <img
+                          src={watchedFields.logoUrl}
+                          alt={watchedFields.name || "logo"}
+                          className="w-full h-full object-cover"
+                          onError={() => setLogoError(true)}
+                          onLoad={() => setLogoError(false)}
+                        />
+                      ) : (
+                        <span>{watchedFields.name?.[0]?.toUpperCase() || "C"}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <Input
+                        id="logo-url"
+                        {...register("logoUrl", {
+                          onChange: () => setLogoError(false),
+                        })}
+                        placeholder="https://example.com/logo.png"
+                        className="h-11 rounded-xl text-sm shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                      />
+                      {errors.logoUrl && <p className="text-xs text-red-500">{errors.logoUrl.message}</p>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Hero Image URL */}
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  <label htmlFor="hero-image-url" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                    <ImageIcon className="w-3.5 h-3.5 text-slate-400" /> Doctor Hero Image URL
+                  </label>
+                  <p className="text-xs text-slate-500 pb-1">This image appears beautifully cropped on your public booking page.</p>
+                  <Input
+                    id="hero-image-url"
+                    {...register("heroImageUrl")}
+                    placeholder="https://example.com/doctor.jpg"
+                    className="h-11 rounded-xl text-sm shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                  />
+                  {errors.heroImageUrl && <p className="text-xs text-red-500">{errors.heroImageUrl.message}</p>}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
                   <div className="space-y-2">
                     <label htmlFor="specialty" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
                       <Activity className="w-3.5 h-3.5 text-slate-400" /> Domain / Specialty
@@ -641,6 +722,71 @@ Make it sound extremely premium, trustworthy, and empathetic. Emphasize that we 
                 </div>
               </CardContent>
             </Card>
+
+            {/* ── SECTION: Social & Contact Links ── */}
+            <Card className="rounded-3xl border-slate-200 shadow-sm overflow-hidden bg-white/70 backdrop-blur-xl">
+              <div className="h-1.5 w-full bg-slate-800" />
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl font-bold flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-[10px] flex items-center justify-center border border-slate-200 bg-slate-50 shadow-sm text-slate-600">
+                    <Globe className="w-4 h-4" />
+                  </div>
+                  Social & Contact Links
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                
+                {/* WhatsApp */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="whatsappNumber" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                      <MessageCircle className="w-4 h-4 text-[#25D366]" /> WhatsApp Number
+                    </label>
+                  </div>
+                  <Input
+                    id="whatsappNumber"
+                    {...register("whatsappNumber")}
+                    placeholder="e.g. 9876543210"
+                    className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                  />
+                  {errors.whatsappNumber && <p className="text-xs text-red-500">{errors.whatsappNumber.message}</p>}
+                </div>
+
+                {/* Instagram */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="instagramUrl" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                      <Link className="w-4 h-4 text-pink-500" /> Instagram Link
+                    </label>
+                  </div>
+                  <Input
+                    id="instagramUrl"
+                    {...register("instagramUrl")}
+                    placeholder="https://instagram.com/yourclinic"
+                    className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                  />
+                  {errors.instagramUrl && <p className="text-xs text-red-500">{errors.instagramUrl.message}</p>}
+                </div>
+
+                {/* Facebook */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="facebookUrl" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                      <Link className="w-4 h-4 text-blue-500" /> Facebook Link
+                    </label>
+                  </div>
+                  <Input
+                    id="facebookUrl"
+                    {...register("facebookUrl")}
+                    placeholder="https://facebook.com/yourclinic"
+                    className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                  />
+                  {errors.facebookUrl && <p className="text-xs text-red-500">{errors.facebookUrl.message}</p>}
+                </div>
+
+              </CardContent>
+            </Card>
+
             </TabsContent>
 
               <TabsContent value="presets" className="space-y-5 focus:outline-none">

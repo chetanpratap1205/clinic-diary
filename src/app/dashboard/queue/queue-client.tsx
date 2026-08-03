@@ -212,7 +212,7 @@ export function QueueClient({ initialAppointments, clinic, today, followUpMap = 
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Filter queue by token #, patient name, or mobile..."
+            placeholder="Instant live search by token #, patient name, or 3-digit phone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-8 py-2 bg-transparent text-xs sm:text-sm font-medium text-slate-800 focus:outline-none placeholder:text-slate-400"

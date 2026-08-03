@@ -16,15 +16,23 @@ type Subscription = {
   currentPeriodEnd: Date | null;
 };
 
+export type ClinicAccessStatus = {
+  hasAccess: boolean;
+  status: "active" | "trial_active" | "trial_expired";
+  daysRemaining: number | null;
+  trialEndDate: Date | null;
+};
+
 interface BillingOverviewProps {
   activeSub: Subscription | null;
+  accessStatus?: ClinicAccessStatus | null;
   appointmentCount: number;
   totalPaid: number;
 }
 
 import { PRICING_PLANS } from "@/lib/config/pricing";
 
-export function BillingOverview({ activeSub, appointmentCount, totalPaid }: BillingOverviewProps) {
+export function BillingOverview({ activeSub, accessStatus, appointmentCount, totalPaid }: BillingOverviewProps) {
   const planDetails = activeSub && activeSub.planId in PRICING_PLANS 
     ? PRICING_PLANS[activeSub.planId as keyof typeof PRICING_PLANS] 
     : null;
@@ -40,9 +48,12 @@ export function BillingOverview({ activeSub, appointmentCount, totalPaid }: Bill
   const isRenewalSoon = daysUntilRenewal !== null && daysUntilRenewal <= 5 && daysUntilRenewal >= 0;
   const isExpired = daysUntilRenewal !== null && daysUntilRenewal < 0;
 
+  const isTrialActive = accessStatus?.status === "trial_active";
+  const isTrialExpired = accessStatus?.status === "trial_expired";
+
   return (
     <div className="space-y-6">
-      {/* Alert for expired plan */}
+      {/* Alert for expired subscription */}
       {isExpired && (
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
           <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
@@ -50,6 +61,19 @@ export function BillingOverview({ activeSub, appointmentCount, totalPaid }: Bill
             <AlertTitle>Plan Expired</AlertTitle>
             <AlertDescription>
               Your {planDetails?.name} expired on {renewalDate}. Please renew immediately to avoid disruption of services.
+            </AlertDescription>
+          </Alert>
+        </motion.div>
+      )}
+
+      {/* Alert for expired trial */}
+      {isTrialExpired && !activeSub && (
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+          <Alert variant="destructive" className="border-amber-200 bg-amber-50 text-amber-900">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>14-Day Free Trial Expired</AlertTitle>
+            <AlertDescription>
+              Your 14-day free trial period has completed. Please subscribe to an active plan to continue adding new patients.
             </AlertDescription>
           </Alert>
         </motion.div>
@@ -80,13 +104,19 @@ export function BillingOverview({ activeSub, appointmentCount, totalPaid }: Bill
                 <div>
                   <CardTitle className="text-xl text-white font-bold tracking-tight">Current Plan</CardTitle>
                   <CardDescription className="mt-1 text-slate-300 font-medium">
-                    {activeSub ? `You are currently on the ${planDetails?.name}` : "You don't have an active subscription"}
+                    {activeSub ? `You are currently on the ${planDetails?.name}` : isTrialActive ? "14-Day Enterprise Free Trial" : "Trial Expired"}
                   </CardDescription>
                 </div>
                 {activeSub && activeSub.status === "active" && (
                   <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex gap-1.5 items-center px-3 py-1 shadow-inner backdrop-blur-md">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     Active
+                  </Badge>
+                )}
+                {!activeSub && isTrialActive && (
+                  <Badge className="bg-sky-500/20 text-sky-300 border border-sky-500/30 flex gap-1.5 items-center px-3 py-1 shadow-inner backdrop-blur-md">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    {accessStatus?.daysRemaining} Days Left
                   </Badge>
                 )}
               </div>
@@ -121,13 +151,28 @@ export function BillingOverview({ activeSub, appointmentCount, totalPaid }: Bill
                     </div>
                   </div>
                 </>
+              ) : isTrialActive ? (
+                <div className="py-6 flex flex-col items-center justify-center text-center text-slate-300 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 mt-2 shadow-inner p-6">
+                  <div className="bg-sky-500/20 p-4 rounded-full mb-3 border border-sky-400/30">
+                    <Sparkles className="w-8 h-8 text-sky-300" />
+                  </div>
+                  <h4 className="text-lg font-bold text-white mb-1">14-Day Free Trial</h4>
+                  <p className="max-w-[300px] text-sm text-slate-300 font-medium mb-4">
+                    Enjoy unlimited patient entries and premium features during your trial period.
+                  </p>
+                  {accessStatus?.trialEndDate && (
+                    <span className="text-xs text-sky-200 bg-sky-950/60 px-3 py-1.5 rounded-lg border border-sky-800/50">
+                      Trial ends on {format(new Date(accessStatus.trialEndDate), "MMMM dd, yyyy")}
+                    </span>
+                  )}
+                </div>
               ) : (
                 <div className="py-12 flex flex-col items-center justify-center text-center text-slate-300 bg-white/5 backdrop-blur-sm rounded-2xl border border-dashed border-white/20 mt-4 shadow-inner">
                   <div className="bg-white/10 p-4 rounded-full mb-4">
                     <Sparkles className="w-8 h-8 text-slate-200" />
                   </div>
-                  <h4 className="text-lg font-bold text-white mb-1">No Active Plan</h4>
-                  <p className="max-w-[250px] text-sm font-medium">Upgrade to a premium plan to unlock all features and grow your clinic.</p>
+                  <h4 className="text-lg font-bold text-white mb-1">Trial Expired</h4>
+                  <p className="max-w-[250px] text-sm font-medium">Upgrade to a premium plan to unlock unlimited patients and continue growing your clinic.</p>
                 </div>
               )}
             </CardContent>

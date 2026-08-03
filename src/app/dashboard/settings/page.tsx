@@ -49,6 +49,7 @@ export default async function SettingsPage() {
   const initialData = {
     name: clinic.name,
     doctorName: clinic.doctorName,
+    degree: clinic.degree,
     specialty: clinic.specialty,
     consultationFee: clinic.consultationFee || 0,
     freeFollowupDays: clinic.freeFollowupDays ?? 0, // P0
@@ -57,10 +58,14 @@ export default async function SettingsPage() {
     themeColor: clinic.themeColor,
     about: clinic.about,
     logoUrl: clinic.logoUrl,
+    heroImageUrl: clinic.heroImageUrl,
     googleMapsUrl: clinic.googleMapsUrl,
     billingAddress: clinic.billingAddress,
     state: clinic.state,
     gstin: clinic.gstin,
+    whatsappNumber: clinic.whatsappNumber,
+    instagramUrl: clinic.instagramUrl,
+    facebookUrl: clinic.facebookUrl,
     vitalsPresets: clinic.vitalsPresets || [],
     complaintPresets: clinic.complaintPresets || [],
     diagnosisPresets: clinic.diagnosisPresets || [],

@@ -20,8 +20,10 @@ export async function generateMetadata({ params }: { params: Promise<{ appointme
   }
 }
 
-export default async function TrackingPage({ params }: { params: Promise<{ appointmentId: string }> }) {
+export default async function TrackingPage({ params, searchParams }: { params: Promise<{ appointmentId: string }>; searchParams?: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const { appointmentId } = await params;
+  const sp = await searchParams;
+  const lang = sp?.lang === "hi" ? "hi" : "en";
   let apptResult: any[] = [];
   try {
     const { visitNotes } = await import("@/db/schema");
@@ -69,5 +71,5 @@ export default async function TrackingPage({ params }: { params: Promise<{ appoi
       )
     );
 
-  return <TrackingClient appointment={appointment} clinic={clinic} todayAppts={todayAppts} />;
+  return <TrackingClient appointment={appointment} clinic={clinic} todayAppts={todayAppts} lang={lang} />;
 }

@@ -40,13 +40,13 @@ export function QueueQuickAdd() {
     }
   }, [searchParams, selectedPatient, isCreatingNew]);
 
-  // Debounced Search
+  // Debounced Search (Instant 1+ char matching)
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
-      if (searchTerm.trim().length >= 2 && !selectedPatient && !isCreatingNew) {
+      if (searchTerm.trim().length >= 1 && !selectedPatient && !isCreatingNew) {
         setIsSearching(true);
         try {
-          const res = await fetch(`/api/patients?search=${encodeURIComponent(searchTerm)}&t=${Date.now()}`, { cache: "no-store" });
+          const res = await fetch(`/api/patients?search=${encodeURIComponent(searchTerm.trim())}&t=${Date.now()}`, { cache: "no-store" });
           const data = await res.json();
           if (data.patients) {
             setSearchResults(data.patients);
@@ -61,7 +61,7 @@ export function QueueQuickAdd() {
         setSearchResults([]);
         setShowDropdown(false);
       }
-    }, 300);
+    }, 200); // 200ms fast debounce
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, selectedPatient, isCreatingNew]);
@@ -204,7 +204,7 @@ export function QueueQuickAdd() {
                       </button>
                     ))}
                   </div>
-                ) : searchTerm.trim().length >= 2 ? (
+                ) : searchTerm.trim().length >= 1 ? (
                   <div className="px-4 py-6 text-center">
                     <p className="text-sm text-slate-500 mb-3">No matching patients found.</p>
                     <Button onClick={handleStartCreateNew} size="sm" variant="outline" className="rounded-full">

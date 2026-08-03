@@ -30,6 +30,7 @@ import { RotatingSpecialty } from "./_components/rotating-specialty";
 import { HeroRedesign } from "./_components/hero-redesign";
 import { HomeNav } from "./_components/home-nav";
 import { LeadMagnetSection } from "./_components/lead-magnet";
+import { HomePricingSection } from "./_components/home-pricing-section";
 
 export default function HomePage() {
   return (
@@ -57,6 +58,23 @@ export default function HomePage() {
              <p className="text-slate-400">Calculate how much revenue you are losing to empty slots.</p>
           </div>
           <HomeRoiCalculator />
+        </div>
+      </section>
+
+      {/* 0% Commission Guarantee Section */}
+      <section className="py-16 px-4 sm:px-6 bg-[#00B7A8]/5 border-y border-[#00B7A8]/20 relative overflow-hidden flex flex-col items-center">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00B7A8]/5 to-transparent pointer-events-none" />
+        <div className="max-w-4xl mx-auto text-center relative z-10 flex flex-col items-center gap-6">
+          <div className="inline-flex items-center justify-center p-3 bg-[#00B7A8]/20 rounded-2xl border border-[#00B7A8]/30 mb-2">
+            <Lock className="w-8 h-8 text-[#00B7A8]" />
+          </div>
+          <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight">
+            We build your software.<br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">We never touch your money.</span>
+          </h2>
+          <p className="text-slate-300 text-lg sm:text-xl font-medium max-w-2xl leading-relaxed">
+            Unlike aggregator apps, we charge <strong className="text-white">0% commission</strong> on patient fees. You take payments directly from your patients, exactly as you do now. No interference. No hidden cuts.
+          </p>
         </div>
       </section>
 
@@ -88,10 +106,10 @@ export default function HomePage() {
                
                <ul className="space-y-5 pr-2">
                  {[
-                   "The phone never stops ringing.",
-                   "Staff waste hours manually calling to confirm appointments.",
-                   "Angry patients crowd a chaotic, delayed waiting room.",
-                   "Revenue leaks through messy ledgers and no-shows."
+                   "Paying 15%+ commissions to booking apps.",
+                   "Competing on price with 100s of doctors on the same platform.",
+                   "Staff waste hours manually managing calls and chaotic queues.",
+                   "Losing patient loyalty because the platform owns their data."
                  ].map((item, i) => (
                    <li key={i} className="flex items-start gap-3 text-red-100/70 text-sm font-medium">
                      <div className="mt-0.5 bg-red-500/10 border border-red-500/20 rounded-full p-1 flex-shrink-0">
@@ -123,10 +141,10 @@ export default function HomePage() {
                
                <ul className="space-y-6">
                  {[
-                   "Patients self-book 24/7 via a beautiful digital portal.",
-                   "Automated WhatsApp alerts keep everyone perfectly informed.",
-                   "Your receptionist manages a flawless queue from a single iPad.",
-                   "100% digital records. Zero paper. Zero stress."
+                   "You keep 100% of patient revenue. 0% commission fees.",
+                   "Patients see YOUR premium brand, not your competitors.",
+                   "Self-booking in Hindi, Marathi, Punjabi, Tamil & English.",
+                   "Your front desk manages a flawless digital queue on autopilot."
                  ].map((item, i) => (
                    <li key={i} className="flex items-start gap-4 text-slate-200 font-medium text-sm sm:text-base">
                      <div className="mt-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded-full p-1 flex-shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
@@ -281,116 +299,7 @@ export default function HomePage() {
       </section>
 
       {/* Premium Pricing Tier */}
-      <section id="pricing" className="py-16 sm:py-32 px-4 sm:px-6 bg-[#0a0a0a] relative border-t border-white/5 overflow-hidden">
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-20 max-w-3xl mx-auto">
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-6 tracking-tighter">
-              An Investment That <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Pays For Itself.</span>
-            </h2>
-            <p className="text-slate-400 text-lg sm:text-xl leading-relaxed">
-              The average clinic using Doctor Diary sees a <strong className="text-white font-bold">₹25,000 to ₹50,000</strong> increase in monthly revenue simply by eliminating no-shows and streamlining operations.
-            </p>
-          </div>
-          
-          {/* Starter Kit Unboxing Block */}
-          <div className="mb-16 bg-gradient-to-br from-[#111] to-[#0A0A0A] border border-emerald-500/30 rounded-3xl p-6 sm:p-10 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-[0_20px_50px_rgba(16,185,129,0.1)] max-w-5xl mx-auto group">
-            <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-emerald-500/10 to-transparent -z-10 group-hover:from-emerald-500/20 transition-all duration-700" />
-            <div className="w-24 h-24 rounded-2xl bg-[#151515] border border-white/10 shadow-2xl flex items-center justify-center flex-shrink-0 relative overflow-hidden transform group-hover:scale-105 transition-transform duration-500">
-              <div className="absolute inset-0 bg-emerald-500/20 blur-xl" />
-              <Star className="w-10 h-10 text-emerald-400 relative z-10 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
-            </div>
-            <div>
-              <div className="inline-block bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-3 border border-emerald-500/20">Included Free (Worth ₹1,999)</div>
-              <h3 className="text-2xl font-bold text-white mb-3">Premium Clinic Starter Kit</h3>
-              <p className="text-slate-400 text-base max-w-2xl leading-relaxed">
-                Every subscription includes our physical onboarding kit shipped to your door: Premium Acrylic QR Stands, Weatherproof Shutters QR Decals, and a live Dedicated Staff Training session.
-              </p>
-            </div>
-          </div>
-
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2.5 bg-emerald-500/10 backdrop-blur-md border border-emerald-400/30 text-emerald-400 rounded-full px-5 py-2 text-sm font-bold mb-4 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
-              Founding Clinic Pricing — Limited Time
-            </div>
-            <p className="text-slate-400 text-sm sm:text-base max-w-2xl mx-auto">
-              Founding clinics get lifetime-locked pricing and exclusive rights to their service area. Once a nearby clinic claims your zone, founding pricing and exclusivity for your area are no longer available.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto items-center">
-            {/* Quarterly */}
-            <div className="bg-[#0f0f0f] border border-white/10 rounded-[32px] p-6 sm:p-10 hover:bg-[#111] transition-colors relative z-0">
-              <h3 className="text-2xl font-bold text-white mb-2">Quarterly</h3>
-              <p className="text-base text-slate-400 mb-8 min-h-[48px]">Perfect for getting started — lock in founding pricing before it increases.</p>
-              <div className="mb-6 flex items-baseline gap-2">
-                <span className="text-5xl font-black text-white">₹1,499</span>
-                <span className="text-slate-500 font-medium">/ 3 mo</span>
-              </div>
-              <div className="mb-8 inline-block bg-white/5 text-slate-300 text-sm font-semibold px-4 py-2 rounded-xl border border-white/10">
-                Less than ₹17/day for your entire clinic
-              </div>
-              <ul className="space-y-4 mb-10">
-                {["One Complete Product", "Unlimited Patients & Appointments", "Free Premium Starter Kit", "Smart WhatsApp & SMS Ready", "Executive Analytics"].map((feat, i) => (
-                  <li key={i} className="flex items-start gap-3 text-slate-300 text-base font-medium">
-                    <Check className="w-5 h-5 text-slate-500 flex-shrink-0 mt-0.5" /> 
-                    <span>{feat}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Link href="/signup" className="block w-full">
-                <Button variant="outline" className="w-full rounded-2xl bg-[#151515] border-white/10 text-white hover:bg-white/10 h-16 text-lg font-bold">
-                  Start Free Setup
-                </Button>
-              </Link>
-            </div>
-
-            {/* Annual - Enterprise Card (Dominant) */}
-            <div className="bg-[#050505] rounded-[32px] p-[2px] relative z-10 transform md:scale-105 shadow-[0_30px_100px_rgba(16,185,129,0.25)] group hover:-translate-y-2 transition-transform duration-500">
-              {/* Animated Glowing Border */}
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 rounded-[32px] opacity-70 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 rounded-[32px] opacity-100" />
-              
-              <div className="bg-[#0A0A0A] rounded-[30px] p-6 sm:p-12 relative h-full w-full overflow-hidden">
-                <div className="absolute -top-20 -right-20 w-64 h-64 bg-emerald-500/20 rounded-full blur-[80px]" />
-                
-                <div className="absolute top-6 right-6 bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
-                  Best Value
-                </div>
-                
-                <h3 className="text-2xl font-bold text-white mb-2">Annual</h3>
-                <p className="text-base text-emerald-100/60 mb-8 min-h-[48px]">Maximum ROI, plus your area exclusivity locked in as a founding partner clinic.</p>
-                <div className="mb-6 flex items-baseline gap-2">
-                  <span className="text-5xl sm:text-7xl font-black text-white tracking-tighter">₹4,999</span>
-                  <span className="text-slate-400 font-medium">/ yr</span>
-                </div>
-                
-                {/* The Chai Anchor */}
-                <div className="mb-8 inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-400 text-sm font-bold px-4 py-2.5 rounded-xl border border-emerald-500/30">
-                  <span className="animate-pulse">☕</span> Less than ₹14/day. (Cheaper than a cup of chai)
-                </div>
-                
-                <ul className="space-y-5 mb-10 relative z-10">
-                  {["Everything in Quarterly", "Dedicated Account Manager", "Priority Support Channel", "Annual Performance Reviews"].map((feat, i) => (
-                    <li key={i} className="flex items-start gap-3 text-white text-base font-semibold">
-                      <div className="mt-0.5 bg-emerald-500/20 rounded-full p-1 border border-emerald-500/30">
-                        <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      </div>
-                      <span>{feat}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link href="/signup" className="block w-full relative z-10">
-                  <Button className="w-full rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-slate-950 font-black h-16 text-lg shadow-[0_0_30px_rgba(16,185,129,0.3)] hover:shadow-[0_0_50px_rgba(16,185,129,0.5)] transition-all">
-                    Claim Your Area Exclusivity
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HomePricingSection />
 
       {/* Lead Magnet Section for Capturing Non-Ready Doctor Leads */}
       <LeadMagnetSection />
@@ -404,15 +313,15 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 gap-12 items-center relative z-10 text-left mb-24">
             <div>
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-6 tracking-tighter">
-                Wake up to a<br/>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">full calendar.</span>
+                Secure your area's<br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">digital dominance.</span>
               </h2>
               <p className="text-slate-400 text-lg mb-10 font-medium max-w-md">
-                Join 1,200+ top-tier doctors who have transformed their clinic into a 24/7 premium brand and automated their growth.
+                Patients are searching for premium clinics right now. Claim your 0% commission infrastructure before local competitors do.
               </p>
               <Link href="/signup">
                 <Button size="lg" className="rounded-full bg-white text-black hover:bg-slate-200 h-14 px-10 font-bold text-lg shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 transition-all">
-                  Get Started Today
+                  Start Your Free Trial Now
                 </Button>
               </Link>
             </div>

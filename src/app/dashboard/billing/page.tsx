@@ -9,6 +9,7 @@ import { db } from "@/db";
 import { subscriptions, paymentLogs, appointments } from "@/db/schema";
 import { eq, and, gte, lte, count, desc } from "drizzle-orm";
 import { format, startOfMonth, endOfMonth } from "date-fns";
+import { getClinicAccessStatus } from "@/lib/subscription";
 
 export const metadata = {
   title: "Billing & Subscriptions - Doctor Diary",
@@ -20,7 +21,7 @@ export default async function BillingPage() {
   if (!authUser?.clinicId) redirect("/login");
 
   // Fetch all billing data in parallel
-  const [activeSubResult, paymentHistory] = await Promise.all([
+  const [activeSubResult, paymentHistory, accessStatus] = await Promise.all([
     db
       .select()
       .from(subscriptions)
@@ -36,6 +37,7 @@ export default async function BillingPage() {
         )
       )
       .orderBy(desc(paymentLogs.paidAt)),
+    getClinicAccessStatus(authUser.clinicId),
   ]);
 
   const activeSub = activeSubResult[0] || null;
@@ -103,7 +105,7 @@ export default async function BillingPage() {
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4 outline-none">
-          <BillingOverview activeSub={activeSub} appointmentCount={appointmentCount} totalPaid={totalPaid} />
+          <BillingOverview activeSub={activeSub} accessStatus={accessStatus} appointmentCount={appointmentCount} totalPaid={totalPaid} />
         </TabsContent>
         
         <TabsContent value="plans" className="outline-none">

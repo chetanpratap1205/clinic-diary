@@ -17,6 +17,7 @@ export const clinics = pgTable("clinics", {
   slug: text("slug").notNull().unique(),
   name: text("name").notNull(),
   doctorName: text("doctor_name").notNull(),
+  degree: text("degree"),
   specialty: text("specialty").notNull(),
   phone: text("phone").notNull(),
   logoUrl: text("logo_url"),

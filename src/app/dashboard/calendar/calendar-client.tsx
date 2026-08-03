@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import { format, parseISO } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
@@ -8,7 +8,28 @@ import { formatTimeDisplay } from "@/lib/format";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, Phone, Clock, AlertCircle, Plus, MoreVertical, Check, X, UserMinus, MessageCircle, Sun, Sunrise, Sunset } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  Phone,
+  Clock,
+  AlertCircle,
+  Plus,
+  MoreVertical,
+  Check,
+  X,
+  UserMinus,
+  MessageCircle,
+  Sun,
+  Sunrise,
+  Sunset,
+  Users,
+  CheckCircle2,
+  Play,
+  Timer,
+  XCircle,
+  Sparkles,
+  CheckSquare,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BookAppointmentModal } from "./book-appointment-modal";
 import { toast } from "sonner";
@@ -27,32 +48,74 @@ export type CalendarEvent = {
   acquisitionSource?: string | null;
   isFollowUpFree?: boolean;
   followUpAppointmentId?: string | null;
+  doctorName?: string | null;
+  feeCollected?: number | null;
 };
 
 interface CalendarClientProps {
   events: CalendarEvent[];
 }
 
-function getStatusBadge(status: string) {
+const MOCK_STAFF = [
+  { id: "all", name: "All Staff", role: "Overview" },
+  { id: "vishal", name: "Vishal Yadav", role: "Doctor" },
+  { id: "rakesh", name: "Rakesh Kumar", role: "Doctor" },
+  { id: "deepak", name: "Deepak", role: "Nurse/Staff" },
+];
+
+function getStatusStyling(status: string) {
   switch (status) {
-    case "confirmed":
-      return <Badge className="bg-sky-50 text-sky-700 hover:bg-sky-50 border border-sky-200 shadow-sm text-[10px] px-2 py-0.5 rounded-full font-semibold">Confirmed</Badge>;
-    case "completed":
-      return <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border border-emerald-200 shadow-sm text-[10px] px-2 py-0.5 rounded-full font-semibold">Completed</Badge>;
-    case "cancelled":
-      return <Badge className="bg-red-50 text-red-700 hover:bg-red-50 border border-red-200 shadow-sm text-[10px] px-2 py-0.5 rounded-full font-semibold">Cancelled</Badge>;
-    case "no_show":
-      return <Badge className="bg-amber-50 text-amber-700 hover:bg-amber-50 border border-amber-200 shadow-sm text-[10px] px-2 py-0.5 rounded-full font-semibold">No Show</Badge>;
-    case "checked_in":
-      return <Badge className="bg-indigo-50 text-indigo-700 hover:bg-indigo-50 border border-indigo-200 shadow-sm text-[10px] px-2 py-0.5 rounded-full font-semibold">Checked In</Badge>;
     case "in_consultation":
-      return <Badge className="bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-50 border border-fuchsia-200 shadow-sm text-[10px] px-2 py-0.5 rounded-full font-semibold">In Consult</Badge>;
-    case "pending_follow_up":
-      return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 border border-amber-300 shadow-sm text-[10px] px-2 py-0.5 rounded-full font-semibold">Pending Follow-up</Badge>;
-    case "follow_up_booked":
-      return <Badge className="bg-sky-50 text-sky-700 hover:bg-sky-50 border border-sky-200 shadow-sm text-[10px] px-2 py-0.5 rounded-full font-semibold">Appt. Booked</Badge>;
-    default:
-      return <Badge variant="secondary" className="rounded-full shadow-sm text-[10px] px-2 py-0.5 capitalize">{status.replace('_', ' ')}</Badge>;
+      return {
+        cardBg: "bg-emerald-600 text-white border-emerald-700 shadow-lg shadow-emerald-500/20",
+        badgeBg: "bg-white/20 text-white border-white/30",
+        textPrimary: "text-white font-black",
+        textSecondary: "text-emerald-100",
+        timeBg: "bg-emerald-700/60 text-white",
+        dotColor: "bg-emerald-400 animate-ping",
+        badgeText: "In Progress",
+      };
+    case "checked_in":
+      return {
+        cardBg: "bg-amber-50/90 text-amber-900 border-amber-300 shadow-sm",
+        badgeBg: "bg-amber-100 text-amber-800 border-amber-300",
+        textPrimary: "text-amber-950 font-bold",
+        textSecondary: "text-amber-700",
+        timeBg: "bg-amber-100 text-amber-900",
+        dotColor: "bg-amber-500",
+        badgeText: "Waiting Room",
+      };
+    case "completed":
+      return {
+        cardBg: "bg-slate-50/80 text-slate-600 border-slate-200/80 opacity-80",
+        badgeBg: "bg-slate-100 text-slate-700 border-slate-200",
+        textPrimary: "text-slate-700 font-semibold line-through decoration-slate-300",
+        textSecondary: "text-slate-500",
+        timeBg: "bg-slate-100 text-slate-600",
+        dotColor: "bg-slate-400",
+        badgeText: "Completed",
+      };
+    case "cancelled":
+    case "no_show":
+      return {
+        cardBg: "bg-red-50/60 text-red-700 border-red-200 opacity-70",
+        badgeBg: "bg-red-100 text-red-700 border-red-200",
+        textPrimary: "text-red-900 font-medium line-through",
+        textSecondary: "text-red-500",
+        timeBg: "bg-red-100 text-red-800",
+        dotColor: "bg-red-400",
+        badgeText: status === "no_show" ? "No Show" : "Cancelled",
+      };
+    default: // confirmed / scheduled
+      return {
+        cardBg: "bg-sky-50/70 text-sky-950 border-sky-200 shadow-sm hover:border-sky-300",
+        badgeBg: "bg-sky-100 text-sky-800 border-sky-200",
+        textPrimary: "text-sky-950 font-bold",
+        textSecondary: "text-sky-700",
+        timeBg: "bg-sky-100/80 text-sky-900",
+        dotColor: "bg-sky-500",
+        badgeText: "Scheduled",
+      };
   }
 }
 
@@ -60,17 +123,40 @@ export function CalendarClient({ events }: CalendarClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedStaff, setSelectedStaff] = useState<string>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
   
-  const dayEvents = events.filter((e) => e.date === selectedDateStr);
-  const eventDates = events.map((e) => parseISO(e.date));
+  const dayEvents = useMemo(() => {
+    return events.filter((e) => e.date === selectedDateStr);
+  }, [events, selectedDateStr]);
+
+  const eventDates = useMemo(() => {
+    return events.map((e) => parseISO(e.date));
+  }, [events]);
+
+  // Operational Metrics for Image 4 Match
+  const totalDayCount = dayEvents.length;
+  const completedCount = dayEvents.filter(e => e.status === "completed").length;
+  const cancelledCount = dayEvents.filter(e => e.status === "cancelled" || e.status === "no_show").length;
+  const pendingCount = dayEvents.filter(e => ["confirmed", "checked_in", "in_consultation"].includes(e.status)).length;
+  
+  // Current Customer (In consultation or first checked in)
+  const currentCustomer = useMemo(() => {
+    const inConsult = dayEvents.find(e => e.status === "in_consultation");
+    if (inConsult) return inConsult;
+    return dayEvents.find(e => e.status === "checked_in");
+  }, [dayEvents]);
 
   // Time Chunking
   const pendingFollowUps = dayEvents.filter(e => e.type === "follow_up" && e.status === "pending_follow_up");
-  const scheduledEvents = dayEvents.filter(e => e.type === "appointment" || e.status === "follow_up_booked").sort((a, b) => a.time.localeCompare(b.time));
+  const scheduledEvents = useMemo(() => {
+    return dayEvents
+      .filter(e => e.type === "appointment" || e.status === "follow_up_booked")
+      .sort((a, b) => a.time.localeCompare(b.time));
+  }, [dayEvents]);
   
   const morningEvents = scheduledEvents.filter(e => e.time < "12:00:00");
   const afternoonEvents = scheduledEvents.filter(e => e.time >= "12:00:00" && e.time < "17:00:00");
@@ -86,7 +172,7 @@ export function CalendarClient({ events }: CalendarClientProps) {
           body: JSON.stringify({ status: newStatus }),
         });
         if (!res.ok) throw new Error("Failed to update status");
-        toast.success(`Appointment marked as ${newStatus.replace('_', ' ')}`);
+        toast.success(`Marked as ${newStatus.replace('_', ' ')}`);
         router.refresh();
       } catch (err: any) {
         toast.error(err.message);
@@ -95,107 +181,270 @@ export function CalendarClient({ events }: CalendarClientProps) {
   };
 
   const handleWhatsAppReminder = (phone: string, name: string) => {
-    const text = encodeURIComponent(`Hi ${name}, this is a gentle reminder that you are due for your follow-up visit. Please reply to this message to confirm your time.`);
+    const text = encodeURIComponent(`Hi ${name}, this is a gentle reminder that you are due for your appointment. Please reply to confirm your attendance.`);
     window.open(`https://wa.me/91${phone}?text=${text}`, '_blank');
   };
 
-  const EventCard = ({ evt }: { evt: CalendarEvent }) => (
-    <div className="relative pl-6 sm:pl-8 group/card">
-      <div className={`absolute -left-[9px] sm:-left-[11px] top-6 w-4 h-4 sm:w-5 sm:h-5 rounded-full border-[4px] shadow-sm ${evt.type === 'follow_up' ? 'bg-white border-amber-400' : 'bg-white border-sky-500'}`} />
-      
-      <Card className={`border-slate-200/60 shadow-sm transition-all duration-300 rounded-2xl group ${evt.type === 'follow_up' ? 'hover:border-amber-300 hover:shadow-md' : 'hover:border-sky-300 hover:shadow-md'}`}>
-        <CardContent className="p-0">
-          <div className="p-3 sm:p-4 flex items-center justify-between gap-3 bg-white/50 backdrop-blur-sm rounded-2xl">
+  const EventCard = ({ evt }: { evt: CalendarEvent }) => {
+    const style = getStatusStyling(evt.status);
+    return (
+      <div className="relative pl-6 sm:pl-8 group/card">
+        {/* Left Indicator Dot */}
+        <div className={`absolute -left-[9px] sm:-left-[11px] top-5 w-4 h-4 sm:w-5 sm:h-5 rounded-full border-[3px] border-white shadow-md ${style.dotColor}`} />
+        
+        <div className={`border rounded-2xl transition-all duration-300 ${style.cardBg}`}>
+          <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
+            
             <div className="flex items-center gap-3 min-w-0">
-              <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-[1.1rem] bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center flex-shrink-0 shadow-inner border border-slate-200/80 transition-colors ${evt.type === 'follow_up' ? 'group-hover:from-amber-50 group-hover:to-amber-100/50' : 'group-hover:from-sky-50 group-hover:to-blue-50'}`}>
-                <span className={`font-bold text-sm sm:text-base ${evt.type === 'follow_up' ? 'text-amber-700' : 'text-slate-700 group-hover:text-sky-700'}`}>
-                  {evt.patientName[0]?.toUpperCase()}
-                </span>
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center flex-shrink-0 font-black text-sm sm:text-base border border-white/30 shadow-inner">
+                {evt.patientName[0]?.toUpperCase()}
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                  <p className="font-bold text-slate-900 text-sm sm:text-base truncate">
+                  <p className={`text-sm sm:text-base truncate ${style.textPrimary}`}>
                     {evt.patientName}
                   </p>
-                  {getStatusBadge(evt.status)}
+                  <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${style.badgeBg}`}>
+                    {style.badgeText}
+                  </span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1.5">
-                    {evt.type === 'follow_up' ? (
-                      evt.followUpAppointmentId ? (
-                        <>
-                          <Clock className="w-3.5 h-3.5 text-sky-500 flex-shrink-0" />
-                          <span className="text-xs sm:text-sm font-bold tracking-tight text-slate-600">{formatTimeDisplay(evt.time)}</span>
-                          <Badge className="bg-sky-50 text-sky-700 hover:bg-sky-50 border border-sky-200 shadow-sm text-[10px] px-1.5 py-0 rounded-md font-semibold ml-1">Booked ✓</Badge>
-                        </>
-                      ) : (
-                        <>
-                          <AlertCircle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                          <Badge className="bg-amber-50 text-amber-700 hover:bg-amber-50 border border-amber-200 shadow-sm text-[10px] px-1.5 py-0 rounded-md font-semibold">Pending</Badge>
-                        </>
-                      )
-                    ) : (
-                      <>
-                        <Clock className="w-3.5 h-3.5 text-sky-500 flex-shrink-0" />
-                        <span className="text-xs sm:text-sm font-bold tracking-tight text-slate-600">{formatTimeDisplay(evt.time)}</span>
-                      </>
-                    )}
+                <div className="flex items-center gap-3 text-xs">
+                  <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg font-bold ${style.timeBg}`}>
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{formatTimeDisplay(evt.time)}</span>
                   </div>
-                  <div className="hidden sm:flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                    <span className="text-xs sm:text-sm text-slate-500 font-medium">{evt.patientPhone}</span>
+                  <div className={`hidden sm:flex items-center gap-1 font-medium ${style.textSecondary}`}>
+                    <Phone className="w-3 h-3" />
+                    <span>{evt.patientPhone}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex-shrink-0 relative">
-              {evt.type === 'follow_up' && !evt.followUpAppointmentId ? (
+            {/* Quick Action Actions */}
+            <div className="flex items-center gap-2 flex-shrink-0 relative">
+              {evt.status === "checked_in" && (
+                <Button
+                  onClick={() => handleStatusChange(evt.id, "in_consultation")}
+                  size="sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8 px-3 rounded-xl text-xs shadow-sm flex items-center gap-1"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span className="hidden sm:inline">Start</span>
+                </Button>
+              )}
+
+              {evt.status === "in_consultation" && (
+                <Button
+                  onClick={() => handleStatusChange(evt.id, "completed")}
+                  size="sm"
+                  className="bg-white text-emerald-800 hover:bg-emerald-50 font-black h-8 px-3 rounded-xl text-xs shadow-md flex items-center gap-1"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Complete</span>
+                </Button>
+              )}
+
+              {evt.type === "follow_up" && !evt.followUpAppointmentId && (
                 <Button 
                   onClick={() => handleWhatsAppReminder(evt.patientPhone, evt.patientName)}
                   size="sm" 
-                  className="bg-[#25D366] hover:bg-[#128C7E] text-white font-bold h-8 rounded-lg shadow-sm flex items-center gap-1.5"
+                  className="bg-[#25D366] hover:bg-[#128C7E] text-white font-bold h-8 rounded-xl shadow-sm flex items-center gap-1.5"
                 >
-                  <MessageCircle className="w-4 h-4" />
-                  <span className="hidden sm:inline text-xs">Send Reminder</span>
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline text-xs">Reminder</span>
                 </Button>
-              ) : (
-                evt.type === 'appointment' && !['cancelled', 'completed', 'no_show'].includes(evt.status) ? (
-                  <>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === evt.id ? null : evt.id); }}
-                      className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
-                    >
-                      <MoreVertical className="w-5 h-5" />
-                    </button>
-                    {openMenuId === evt.id && (
-                      <div className="absolute right-0 top-10 mt-1 w-40 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-10 animate-in fade-in zoom-in-95 duration-100">
-                        <button onClick={(e) => { e.stopPropagation(); handleStatusChange(evt.id, 'confirmed'); }} className="w-full text-left px-4 py-2 text-sm text-sky-700 hover:bg-sky-50 flex items-center gap-2">
-                          <Check className="w-4 h-4" /> Confirm
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); handleStatusChange(evt.id, 'no_show'); }} className="w-full text-left px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 flex items-center gap-2">
-                          <UserMinus className="w-4 h-4" /> Mark No Show
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); handleStatusChange(evt.id, 'cancelled'); }} className="w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50 flex items-center gap-2">
-                          <X className="w-4 h-4" /> Cancel Appt
-                        </button>
-                      </div>
-                    )}
-                  </>
-                ) : null
+              )}
+
+              {evt.type === "appointment" && !["cancelled", "completed", "no_show"].includes(evt.status) && (
+                <>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === evt.id ? null : evt.id); }}
+                    className="p-2 rounded-xl hover:bg-black/10 text-current transition-colors"
+                  >
+                    <MoreVertical className="w-4 h-4" />
+                  </button>
+                  {openMenuId === evt.id && (
+                    <div className="absolute right-0 top-10 w-44 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 z-20 animate-in fade-in zoom-in-95 duration-100 text-slate-800">
+                      <button onClick={(e) => { e.stopPropagation(); handleStatusChange(evt.id, 'checked_in'); }} className="w-full text-left px-3.5 py-2 text-xs font-bold text-amber-700 hover:bg-amber-50 flex items-center gap-2">
+                        <Users className="w-3.5 h-3.5" /> Mark Checked In
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); handleStatusChange(evt.id, 'in_consultation'); }} className="w-full text-left px-3.5 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-50 flex items-center gap-2">
+                        <Play className="w-3.5 h-3.5" /> Start Consult
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); handleStatusChange(evt.id, 'completed'); }} className="w-full text-left px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                        <Check className="w-3.5 h-3.5 text-emerald-600" /> Complete
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); handleStatusChange(evt.id, 'no_show'); }} className="w-full text-left px-3.5 py-2 text-xs font-bold text-amber-800 hover:bg-amber-50 flex items-center gap-2">
+                        <UserMinus className="w-3.5 h-3.5" /> Mark No Show
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); handleStatusChange(evt.id, 'cancelled'); }} className="w-full text-left px-3.5 py-2 text-xs font-bold text-red-700 hover:bg-red-50 flex items-center gap-2">
+                        <X className="w-3.5 h-3.5 text-red-500" /> Cancel
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
+
           </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <>
+    <div className="space-y-6">
+      
+      {/* ══════════════════════════════════════════════════════════════════════
+          1. STAFF TOGGLES BAR (Inspired by Reference Image 4)
+      ══════════════════════════════════════════════════════════════════════ */}
+      <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-2 overflow-x-auto hide-scrollbar">
+        <div className="flex items-center gap-1.5 text-xs font-black text-slate-400 uppercase tracking-widest px-2 flex-shrink-0">
+          <Users className="w-4 h-4 text-sky-500" /> Staff:
+        </div>
+        {MOCK_STAFF.map((staff) => {
+          const isActive = selectedStaff === staff.id;
+          return (
+            <button
+              key={staff.id}
+              onClick={() => setSelectedStaff(staff.id)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 flex-shrink-0 ${
+                isActive
+                  ? "bg-sky-500 text-white shadow-md shadow-sky-500/20 scale-[1.02]"
+                  : "bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/60"
+              }`}
+            >
+              <span>{staff.name}</span>
+              <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-semibold uppercase ${
+                isActive ? "bg-white/20 text-white" : "bg-slate-200/60 text-slate-500"
+              }`}>
+                {staff.role}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          2. "AT-A-GLANCE" DAILY OPERATIONAL METRICS (Inspired by Reference Image 4)
+      ══════════════════════════════════════════════════════════════════════ */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {/* Pending Appointments */}
+        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Pending Appts</span>
+            <CheckSquare className="w-4 h-4 text-sky-500" />
+          </div>
+          <div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-black text-slate-900">{pendingCount}</span>
+              <span className="text-xs font-bold text-slate-400">/ {totalDayCount}</span>
+            </div>
+            {/* Progress Bar */}
+            <div className="w-full h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
+              <div 
+                className="h-full bg-sky-500 rounded-full transition-all duration-500" 
+                style={{ width: `${totalDayCount > 0 ? (pendingCount / totalDayCount) * 100 : 0}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Avg Duration per Slot */}
+        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Avg Slot Duration</span>
+            <Timer className="w-4 h-4 text-emerald-500" />
+          </div>
+          <div>
+            <p className="text-2xl font-black text-emerald-600">23 Min</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Optimal Tempo</p>
+          </div>
+        </div>
+
+        {/* Est. Completion Time */}
+        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Est Completion</span>
+            <Clock className="w-4 h-4 text-indigo-500" />
+          </div>
+          <div>
+            <p className="text-2xl font-black text-indigo-600">
+              {pendingCount > 0 ? "05:00 PM" : "Done"}
+            </p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Schedule ETA</p>
+          </div>
+        </div>
+
+        {/* Cancelled */}
+        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Cancelled</span>
+            <XCircle className="w-4 h-4 text-amber-500" />
+          </div>
+          <div>
+            <p className="text-2xl font-black text-amber-600">{cancelledCount}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Today's Total</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          3. "CURRENT CUSTOMER" PINNED ACTION CARD (Inspired by Reference Image 4)
+      ══════════════════════════════════════════════════════════════════════ */}
+      {currentCustomer && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-5 text-white shadow-xl border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-black text-lg">
+              {currentCustomer.patientName[0]?.toUpperCase()}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest animate-pulse">
+                  Current Customer
+                </span>
+                <span className="text-slate-400 text-xs font-medium">OPD · ₹1,200</span>
+              </div>
+              <h3 className="text-lg font-black text-white mt-1">{currentCustomer.patientName}</h3>
+              <p className="text-xs text-slate-400 font-medium flex items-center gap-2 mt-0.5">
+                <Clock className="w-3.5 h-3.5 text-slate-400" />
+                {formatTimeDisplay(currentCustomer.time)} · {currentCustomer.patientPhone}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+            {currentCustomer.status !== "in_consultation" && (
+              <Button
+                onClick={() => handleStatusChange(currentCustomer.id, "in_consultation")}
+                className="bg-sky-500 hover:bg-sky-400 text-white font-black rounded-xl px-5 h-11 text-xs shadow-lg shadow-sky-500/25 flex-1 sm:flex-initial"
+              >
+                <Play className="w-4 h-4 mr-1.5 fill-current" /> Assign / Start
+              </Button>
+            )}
+            <Button
+              onClick={() => handleStatusChange(currentCustomer.id, "completed")}
+              className="bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-xl px-5 h-11 text-xs shadow-lg shadow-emerald-500/25 flex-1 sm:flex-initial"
+            >
+              <CheckCircle2 className="w-4 h-4 mr-1.5" /> Complete
+            </Button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          4. MAIN CALENDAR & VERTICAL TIMELINE SCHEDULE
+      ══════════════════════════════════════════════════════════════════════ */}
       <div className="flex flex-col lg:grid lg:grid-cols-12 gap-5 sm:gap-8 items-start">
+        
+        {/* Left Side: Day Picker Calendar */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="w-full lg:col-span-5 xl:col-span-4">
-          <Card className="border-slate-100 shadow-sm overflow-hidden">
+          <Card className="border-slate-100 shadow-sm overflow-hidden rounded-3xl bg-white">
             <CardContent className="p-0">
               <style>{`
                 .rdp { margin: 0; --rdp-cell-size: 40px; --rdp-accent-color: #0ea5e9; --rdp-background-color: #f0f9ff; --rdp-outline: 2px solid var(--rdp-accent-color); width: 100%; }
@@ -219,56 +468,57 @@ export function CalendarClient({ events }: CalendarClientProps) {
           </Card>
         </motion.div>
 
-        <div className="w-full lg:col-span-7 xl:col-span-8">
-          <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Right Side: Timeline Schedule View */}
+        <div className="w-full lg:col-span-7 xl:col-span-8 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-3xl border border-slate-100 shadow-sm">
             <div>
               <div className="flex items-center gap-3">
-                <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                  <CalendarIcon className="w-5 h-5 text-sky-500" /> Schedule
+                <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                  <CalendarIcon className="w-5 h-5 text-sky-500" /> Schedule Timeline
                 </h2>
-                <button onClick={() => setSelectedDate(new Date())} className="text-xs font-semibold px-2 py-1 bg-sky-50 text-sky-700 rounded-md hover:bg-sky-100 transition-colors">
+                <button onClick={() => setSelectedDate(new Date())} className="text-xs font-bold px-2.5 py-1 bg-sky-50 text-sky-700 rounded-lg hover:bg-sky-100 transition-colors">
                   Today
                 </button>
               </div>
-              <p className="text-slate-500 text-sm mt-0.5">{format(selectedDate, "EEEE, MMMM d, yyyy")}</p>
+              <p className="text-slate-500 text-sm mt-0.5 font-medium">{format(selectedDate, "EEEE, MMMM d, yyyy")}</p>
             </div>
             
             <div className="flex flex-row items-center gap-3">
-              <Badge variant="secondary" className="bg-white border border-slate-200 text-slate-600 px-2.5 py-1.5 shadow-sm text-sm">
-                {dayEvents.length} {dayEvents.length === 1 ? "Event" : "Events"}
+              <Badge variant="secondary" className="bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 shadow-sm text-xs font-bold">
+                {dayEvents.length} {dayEvents.length === 1 ? "Booked Slot" : "Booked Slots"}
               </Badge>
-              <Button onClick={() => setIsModalOpen(true)} className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-md h-9 px-4 font-bold flex items-center gap-2">
+              <Button onClick={() => setIsModalOpen(true)} className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-md h-10 px-4 font-bold text-xs flex items-center gap-2">
                 <Plus className="w-4 h-4" /> New Booking
               </Button>
             </div>
           </div>
 
           <AnimatePresence mode="wait">
-            <motion.div key={selectedDateStr} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-8" onClick={() => setOpenMenuId(null)}>
+            <motion.div key={selectedDateStr} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-6" onClick={() => setOpenMenuId(null)}>
               
               {dayEvents.length === 0 ? (
-                <Card className="border-slate-100 shadow-sm border-dashed">
+                <Card className="border-slate-100 shadow-sm border-dashed rounded-3xl bg-white">
                   <CardContent className="flex flex-col items-center justify-center py-14 sm:py-20">
-                    <div className="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                    <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 border border-slate-100">
                       <CalendarIcon className="w-7 h-7 text-slate-300" />
                     </div>
-                    <p className="text-slate-600 font-medium text-lg">Your schedule is clear</p>
-                    <p className="text-slate-400 text-sm mt-1 text-center px-4">No appointments or follow-ups booked for this date.</p>
+                    <p className="text-slate-700 font-bold text-base">No appointments scheduled</p>
+                    <p className="text-slate-400 text-xs mt-1 text-center max-w-xs">Your schedule for {format(selectedDate, "MMM d")} is clear. Click "New Booking" to add a patient slot.</p>
                   </CardContent>
                 </Card>
               ) : (
-                <div className="relative border-l-2 border-slate-100 ml-4 sm:ml-5 space-y-8 pb-safe mt-6">
+                <div className="relative border-l-2 border-slate-200 ml-4 sm:ml-5 space-y-6 pb-safe pt-2">
                   
                   {/* Pending Follow Ups Section */}
                   {pendingFollowUps.length > 0 && (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <div className="relative pl-6">
-                        <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 bg-slate-50 border border-slate-200 rounded-full" />
-                        <h3 className="font-bold text-amber-700 text-sm tracking-widest uppercase flex items-center gap-2">
-                          <AlertCircle className="w-4 h-4" /> Pending Follow-ups ({pendingFollowUps.length})
+                        <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 bg-amber-50 border-2 border-amber-400 rounded-full" />
+                        <h3 className="font-black text-amber-800 text-xs tracking-widest uppercase flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4 text-amber-500" /> Pending Follow-ups ({pendingFollowUps.length})
                         </h3>
                       </div>
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         {pendingFollowUps.map(evt => <EventCard key={evt.id} evt={evt} />)}
                       </div>
                     </div>
@@ -276,14 +526,14 @@ export function CalendarClient({ events }: CalendarClientProps) {
 
                   {/* Morning Section */}
                   {morningEvents.length > 0 && (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <div className="relative pl-6">
-                        <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 bg-slate-50 border border-slate-200 rounded-full" />
-                        <h3 className="font-bold text-sky-700 text-sm tracking-widest uppercase flex items-center gap-2">
-                          <Sunrise className="w-4 h-4" /> Morning
+                        <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 bg-sky-50 border-2 border-sky-500 rounded-full" />
+                        <h3 className="font-black text-sky-800 text-xs tracking-widest uppercase flex items-center gap-2">
+                          <Sunrise className="w-4 h-4 text-sky-500" /> Morning Slots
                         </h3>
                       </div>
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         {morningEvents.map(evt => <EventCard key={evt.id} evt={evt} />)}
                       </div>
                     </div>
@@ -291,14 +541,14 @@ export function CalendarClient({ events }: CalendarClientProps) {
 
                   {/* Afternoon Section */}
                   {afternoonEvents.length > 0 && (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <div className="relative pl-6">
-                        <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 bg-slate-50 border border-slate-200 rounded-full" />
-                        <h3 className="font-bold text-orange-600 text-sm tracking-widest uppercase flex items-center gap-2">
-                          <Sun className="w-4 h-4" /> Afternoon
+                        <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 bg-orange-50 border-2 border-orange-500 rounded-full" />
+                        <h3 className="font-black text-orange-800 text-xs tracking-widest uppercase flex items-center gap-2">
+                          <Sun className="w-4 h-4 text-orange-500" /> Afternoon Slots
                         </h3>
                       </div>
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         {afternoonEvents.map(evt => <EventCard key={evt.id} evt={evt} />)}
                       </div>
                     </div>
@@ -306,14 +556,14 @@ export function CalendarClient({ events }: CalendarClientProps) {
 
                   {/* Evening Section */}
                   {eveningEvents.length > 0 && (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <div className="relative pl-6">
-                        <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 bg-slate-50 border border-slate-200 rounded-full" />
-                        <h3 className="font-bold text-indigo-700 text-sm tracking-widest uppercase flex items-center gap-2">
-                          <Sunset className="w-4 h-4" /> Evening
+                        <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 bg-indigo-50 border-2 border-indigo-500 rounded-full" />
+                        <h3 className="font-black text-indigo-800 text-xs tracking-widest uppercase flex items-center gap-2">
+                          <Sunset className="w-4 h-4 text-indigo-500" /> Evening Slots
                         </h3>
                       </div>
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         {eveningEvents.map(evt => <EventCard key={evt.id} evt={evt} />)}
                       </div>
                     </div>
@@ -332,6 +582,6 @@ export function CalendarClient({ events }: CalendarClientProps) {
         selectedDate={selectedDate} 
         onSuccess={() => router.refresh()} 
       />
-    </>
+    </div>
   );
 }

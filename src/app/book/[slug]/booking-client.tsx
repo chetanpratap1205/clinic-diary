@@ -2,103 +2,38 @@
 
 import { useState, useEffect, useTransition, useRef } from "react";
 import { format, addDays, startOfToday, isSameDay } from "date-fns";
-import { getAvailableSlots, createBooking, findPatientAppointment } from "./actions";
+import { getAvailableSlots, createBooking } from "./actions";
 import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
+
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
+
+
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
-  Search, Clock, Calendar as CalendarIcon, CheckCircle2, User,
+  Clock, Calendar as CalendarIcon, CheckCircle2, User,
   Loader2, ArrowRight, Sparkles, CalendarCheck, Calendar, Phone,
-  Mail, ChevronLeft, ChevronRight, Sun, Sunset, Moon, ShieldCheck, Share2, Globe
+  Mail, ChevronLeft, ChevronRight, Sun, Sunset, Moon, ShieldCheck, Share2,
+  FileText
 } from "lucide-react";
 import { formatTimeDisplay } from "@/lib/format";
+import { PatientLoginModal } from "@/components/patient-login-modal";
+import confetti from "canvas-confetti";
+import { DICTIONARY, Language } from "@/lib/i18n";
 
-type Language = "en" | "hi";
-
-function getContrastYIQ(hexcolor: string) {
-  if (!hexcolor) return "text-white";
-  hexcolor = hexcolor.replace("#", "");
-  const r = parseInt(hexcolor.substring(0, 2), 16);
-  const g = parseInt(hexcolor.substring(2, 2), 16);
-  const b = parseInt(hexcolor.substring(4, 2), 16);
+function getContrastColor(hexcolor: string): string {
+  if (!hexcolor) return "#ffffff";
+  const hex = hexcolor.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
   const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq >= 128 ? "text-slate-900" : "text-white";
+  return yiq >= 128 ? "#0f172a" : "#ffffff";
 }
 
-const translations = {
-  en: {
-    bookAppointment: "Book Appointment",
-    myAppointment: "My Appointment",
-    pickDate: "Pick a Date",
-    pickDateDesc: "Choose your preferred day for the consultation.",
-    availableSlots: "Available Slots",
-    morning: "Morning",
-    afternoon: "Afternoon",
-    evening: "Evening",
-    fullyBooked: "Fully Booked",
-    fullyBookedDesc: (name: string) => `Dr. ${name} is fully booked on this day. Please select another date.`,
-    checkingAvailability: "Checking availability...",
-    yourDetails: "Your Details",
-    yourDetailsDesc: "Almost done — just your name and phone number.",
-    date: "Date",
-    time: "Time",
-    fullName: "Full Name",
-    mobileNumber: "Mobile Number",
-    email: "Email",
-    optional: "(Optional)",
-    confirmBooking: "Confirm Booking",
-    trustNote: "Free Booking · Pay at Clinic · Instant confirmation",
-    findMyAppointment: "Find My Appointment",
-    trackDesc: "Already booked? Enter your mobile number to track your live queue position.",
-    bookingConfirmed: "Booking Confirmed!",
-    bookingConfirmedDesc: (name: string) => `Your slot is reserved with Dr. ${name}. Save the details below.`,
-    viewQueue: "View Queue Status",
-    addToCalendar: "Add to Calendar",
-    share: "Share",
-    back: "Back",
-    slots: "slots",
-    secureNote: "Your appointment is saved and secure"
-  },
-  hi: {
-    bookAppointment: "अपॉइंटमेंट बुक करें",
-    myAppointment: "मेरा अपॉइंटमेंट",
-    pickDate: "तारीख चुनें",
-    pickDateDesc: "परामर्श के लिए अपना पसंदीदा दिन चुनें।",
-    availableSlots: "उपलब्ध स्लॉट",
-    morning: "सुबह",
-    afternoon: "दोपहर",
-    evening: "शाम",
-    fullyBooked: "पूरी तरह बुक",
-    fullyBookedDesc: (name: string) => `डॉ. ${name} इस दिन पूरी तरह बुक हैं। कृपया दूसरी तारीख चुनें।`,
-    checkingAvailability: "उपलब्धता जांची जा रही है...",
-    yourDetails: "आपका विवरण",
-    yourDetailsDesc: "लगभग पूरा हो गया — बस अपना नाम और फोन नंबर दें।",
-    date: "तारीख",
-    time: "समय",
-    fullName: "पूरा नाम",
-    mobileNumber: "मोबाइल नंबर",
-    email: "ईमेल",
-    optional: "(वैकल्पिक)",
-    confirmBooking: "बुकिंग पक्की करें",
-    trustNote: "मुफ्त बुकिंग · क्लिनिक में भुगतान करें · तुरंत पुष्टि",
-    findMyAppointment: "मेरा अपॉइंटमेंट खोजें",
-    trackDesc: "पहले से बुक किया है? अपनी लाइव कतार स्थिति ट्रैक करने के लिए अपना मोबाइल नंबर दर्ज करें।",
-    bookingConfirmed: "बुकिंग पक्की हो गई!",
-    bookingConfirmedDesc: (name: string) => `आपका स्लॉट डॉ. ${name} के साथ सुरक्षित है। नीचे दिया गया विवरण सहेजें।`,
-    viewQueue: "कतार की स्थिति देखें",
-    addToCalendar: "कैलेंडर में जोड़ें",
-    share: "साझा करें",
-    back: "वापस",
-    slots: "स्लॉट",
-    secureNote: "आपका अपॉइंटमेंट सुरक्षित रूप से सहेजा गया है"
-  }
-};
 
 interface ClinicData {
   id: string;
@@ -117,32 +52,30 @@ const bookingSchema = z.object({
   patientName: z.string().min(2, "Name must be at least 2 characters"),
   patientPhone: z
     .string()
-    .regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian phone number"),
-  patientEmail: z.string().email("Please enter a valid email address").optional().or(z.literal("")),
+    .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian mobile number"),
+  patientEmail: z
+    .string()
+    .email("Enter a valid email")
+    .optional()
+    .or(z.literal("")),
+  isFirstTime: z.boolean(),
 });
-
 type BookingData = z.infer<typeof bookingSchema>;
 
-function stripDrPrefix(name: string): string {
+function stripDr(name: string) {
   return name.replace(/^dr\.?\s*/i, "").trim();
 }
 
-/** Only treat as image if URL ends with a known image extension */
-function isSafeImageUrl(url: string | null | undefined): boolean {
-  if (!url) return false;
-  return /\.(png|jpg|jpeg|webp|gif|svg|avif)(\?.*)?$/i.test(url.trim());
-}
 
-/** Group time slots into Morning / Afternoon / Evening */
-function groupSlots(slots: string[]): { morning: string[]; afternoon: string[]; evening: string[] } {
-  const morning: string[] = [];
-  const afternoon: string[] = [];
-  const evening: string[] = [];
-  for (const slot of slots) {
-    const hour = parseInt(slot.split(":")[0], 10);
-    if (hour < 12) morning.push(slot);
-    else if (hour < 17) afternoon.push(slot);
-    else evening.push(slot);
+function groupSlots(slots: string[]) {
+  const morning: string[] = [],
+    afternoon: string[] = [],
+    evening: string[] = [];
+  for (const s of slots) {
+    const h = parseInt(s.split(":")[0], 10);
+    if (h < 12) morning.push(s);
+    else if (h < 17) afternoon.push(s);
+    else evening.push(s);
   }
   return { morning, afternoon, evening };
 }
@@ -151,120 +84,136 @@ export function BookingClient({
   clinic,
   workingDays,
   closedDates,
+  lexicon,
+  lang,
 }: {
   clinic: ClinicData;
   workingDays: number[];
   closedDates: string[];
-}) {
-  const [lang, setLang] = useState<Language>("en");
-  const scrollRef = useRef<HTMLDivElement>(null);
-  
-  const scroll = (dir: "left" | "right") => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: dir === "left" ? -200 : 200, behavior: "smooth" });
-    }
+  lexicon: {
+    doctorTitle: string;
+    patientTitle: string;
+    consultationTerm: string;
+    clinicType: string;
   };
-  const t = translations[lang];
+  lang: Language;
+}) {
+  const t = DICTIONARY[lang];
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const [mode, setMode] = useState<"book" | "track">("book");
+  const scroll = (dir: "left" | "right") =>
+    scrollRef.current?.scrollBy({ left: dir === "left" ? -180 : 180, behavior: "smooth" });
+
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [logoError, setLogoError] = useState(false);
   const today = startOfToday();
-  const next14Days = Array.from({ length: 14 }).map((_, i) => addDays(today, i));
-  
-  const [selectedDate, setSelectedDate] = useState<Date>(() => {
-    return next14Days.find(d => workingDays.includes(d.getDay()) && !closedDates.includes(format(d, "yyyy-MM-dd"))) || today;
-  });
+  const next14 = Array.from({ length: 14 }, (_, i) => addDays(today, i));
+
+  const [selectedDate, setSelectedDate] = useState<Date>(
+    () =>
+      next14.find(
+        (d) =>
+          workingDays.includes(d.getDay()) &&
+          !closedDates.includes(format(d, "yyyy-MM-dd"))
+      ) || today
+  );
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
-  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [slots, setSlots] = useState<string[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [successData, setSuccessData] = useState<{
     appointmentId: string;
     date: string;
     time: string;
   } | null>(null);
+
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
   const router = useRouter();
   const searchParams = useSearchParams();
-  const acquisitionSource = searchParams.get("source") || undefined;
-
-  const [trackPhone, setTrackPhone] = useState("");
-  const [isTracking, setIsTracking] = useState(false);
+  const acqSource = searchParams.get("source") || undefined;
 
   const themeColor = clinic.themeColor ?? "#0ea5e9";
-  const doctorFirstName = stripDrPrefix(clinic.doctorName);
+  const textColor = getContrastColor(themeColor);
+  const doctorFirst = stripDr(clinic.doctorName);
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
-  } = useForm<BookingData>({
-    resolver: zodResolver(bookingSchema),
+  } = useForm<BookingData>({ 
+    resolver: zodResolver(bookingSchema), 
     shouldUnregister: false,
+    defaultValues: { isFirstTime: true }
   });
 
+  // Pillar 2: Zero-Friction Patient UX (Auto-fill Memory)
   useEffect(() => {
-    if (mode === "book" && (step === 1 || step === 2)) {
-      setIsLoadingSlots(true);
+    try {
+      const savedName = localStorage.getItem("dd_patient_name");
+      const savedPhone = localStorage.getItem("dd_patient_phone");
+      if (savedName) setValue("patientName", savedName);
+      if (savedPhone) setValue("patientPhone", savedPhone);
+    } catch (e) {
+      // Ignore localStorage errors (e.g., incognito)
+    }
+  }, [setValue]);
+
+  useEffect(() => {
+    if (step <= 2) {
+      setLoadingSlots(true);
       getAvailableSlots(clinic.id, format(selectedDate, "yyyy-MM-dd"))
-        .then((res) => {
-          if (res.slots) setAvailableSlots(res.slots);
-        })
-        .finally(() => setIsLoadingSlots(false));
+        .then((r) => { if (r.slots) setSlots(r.slots); })
+        .finally(() => setLoadingSlots(false));
     }
-  }, [selectedDate, clinic.id, step, mode]);
-
-  const handleDateSelect = (date: Date) => {
-    setSelectedDate(date);
-    setSelectedTime(null);
-    setStep(2);
-  };
-
-  const handleTimeSelect = (time: string) => {
-    setSelectedTime(time);
-    setStep(3);
-  };
-
-  const handleTrackSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!/^[6-9]\d{9}$/.test(trackPhone)) {
-      toast.error("Please enter a valid 10-digit mobile number");
-      return;
-    }
-    setIsTracking(true);
-    const res = await findPatientAppointment(clinic.id, trackPhone);
-    setIsTracking(false);
-    if (res.error) {
-      toast.error(res.error);
-    } else if (res.appointmentId) {
-      router.push(`/track/${res.appointmentId}`);
-    }
-  };
+  }, [selectedDate, clinic.id, step]);
 
   const onSubmit = (data: BookingData) => {
     if (!selectedTime) return;
+
+    // Pillar 4: Bulletproof Data (Phone Normalization)
+    let cleanPhone = data.patientPhone.replace(/\D/g, "");
+    if (cleanPhone.length > 10 && cleanPhone.startsWith("91")) {
+      cleanPhone = cleanPhone.slice(-10);
+    }
+
+    // Save to memory for future frictionless bookings
+    try {
+      localStorage.setItem("dd_patient_name", data.patientName);
+      localStorage.setItem("dd_patient_phone", cleanPhone);
+    } catch (e) {}
+
     startTransition(async () => {
       const res = await createBooking(
         clinic.id,
         format(selectedDate, "yyyy-MM-dd"),
         selectedTime,
         data.patientName,
-        data.patientPhone,
+        cleanPhone,
         data.patientEmail,
-        acquisitionSource
+        acqSource
       );
       if (res.error) {
         toast.error(res.error);
         if (res.error.includes("taken")) {
           setStep(2);
           setSelectedTime(null);
-          setIsLoadingSlots(true);
+          setLoadingSlots(true);
           getAvailableSlots(clinic.id, format(selectedDate, "yyyy-MM-dd")).then((r) => {
-            if (r.slots) setAvailableSlots(r.slots);
-            setIsLoadingSlots(false);
+            if (r.slots) setSlots(r.slots);
+            setLoadingSlots(false);
           });
         }
       } else if ("appointmentId" in res && (res as any).appointmentId) {
+        // Fire Confetti
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: [themeColor, '#ffffff']
+        });
+        
         setSuccessData({
           appointmentId: (res as any).appointmentId,
           date: format(selectedDate, "EEE, MMM d, yyyy"),
@@ -274,189 +223,257 @@ export function BookingClient({
     });
   };
 
-  const getGoogleCalendarUrl = () => {
+  const calUrl = () => {
     if (!successData || !selectedTime) return "#";
-    const startStr = format(selectedDate, "yyyyMMdd") + "T" + selectedTime.replace(":", "") + "00";
-    const text = encodeURIComponent(`Appointment with Dr. ${doctorFirstName}`);
-    const details = encodeURIComponent(`Consultation at ${clinic.name}`);
-    const location = encodeURIComponent(clinic.address || clinic.name);
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${startStr}/${startStr}&details=${details}&location=${location}&ctz=Asia/Kolkata`;
+    const start = format(selectedDate, "yyyyMMdd") + "T" + selectedTime.replace(":", "") + "00";
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Appointment – Dr. ${doctorFirst}`)}&dates=${start}/${start}&details=${encodeURIComponent(`Consultation at ${clinic.name}`)}&location=${encodeURIComponent(clinic.address || clinic.name)}&ctz=Asia/Kolkata`;
   };
 
-  const shareAppointment = () => {
+  const downloadIcs = () => {
+    if (!successData || !selectedTime) return;
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+    const day = String(selectedDate.getDate()).padStart(2, "0");
+    const [h, m] = (selectedTime || "10:00").split(":");
+    const startTimeStr = `${year}${month}${day}T${h}${m}00`;
+    const endHour = String((parseInt(h, 10) + 1) % 24).padStart(2, "0");
+    const endTimeStr = `${year}${month}${day}T${endHour}${m}00`;
+
+    const icsContent = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//Doctor Diary//EN",
+      "BEGIN:VEVENT",
+      `SUMMARY:Appointment - Dr. ${doctorFirst}`,
+      `DESCRIPTION:Consultation with Dr. ${doctorFirst} at ${clinic.name}`,
+      `LOCATION:${clinic.address || clinic.name}`,
+      `DTSTART:${startTimeStr}`,
+      `DTEND:${endTimeStr}`,
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ].join("\r\n");
+
+    const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `appointment-dr-${doctorFirst.toLowerCase().replace(/\s+/g, "-")}.ics`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const shareWA = () => {
     if (!successData) return;
-    const msg = `My appointment at ${clinic.name} is confirmed!\nDate: ${successData.date}\nTime: ${successData.time}\nTrack: ${window.location.origin}/track/${successData.appointmentId}`;
+    const msg = `My appointment at ${clinic.name} is confirmed!\nDate: ${successData.date}\nTime: ${successData.time}\nTrack my turn live 👉 ${window.location.origin}/track/${successData.appointmentId}\n\nBooked via Doctor Diary 📋`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
-  // ─── SUCCESS SCREEN ────────────────────────────────────────────────────
+  // ── SUCCESS ──────────────────────────────────────────────────────────────
   if (successData) {
     return (
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ type: "spring", stiffness: 300, damping: 25 }}
-        className="w-full"
+        transition={{ type: "spring", stiffness: 300, damping: 28 }}
       >
-        <Card className="border-0 shadow-2xl rounded-3xl overflow-hidden bg-white ring-1 ring-slate-900/5 relative">
-          {/* Top accent bar */}
-          <div className="absolute top-0 left-0 w-full h-1.5" style={{ backgroundColor: themeColor }} />
-
-          <CardContent className="p-8 md:p-10 text-center relative z-10 flex flex-col items-center pt-10">
-            {/* Check animation */}
+        <div className="relative overflow-hidden rounded-3xl bg-white ring-1 ring-slate-900/5 shadow-2xl">
+          <div className="h-2 w-full" style={{ background: `linear-gradient(90deg, ${themeColor}, ${themeColor}99)` }} />
+          <div className="p-8 flex flex-col items-center text-center">
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.1 }}
-              className="w-20 h-20 rounded-full flex items-center justify-center shadow-xl mb-5"
-              style={{ backgroundImage: `linear-gradient(to bottom right, ${themeColor}, ${themeColor}cc)` }}
+              className="w-20 h-20 rounded-full flex items-center justify-center shadow-xl mb-4"
+              style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}bb)` }}
             >
               <CheckCircle2 className="w-10 h-10 text-white" />
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">
-                {t.bookingConfirmed}
-              </h2>
-              <p className="text-slate-500 text-sm mb-6 max-w-xs mx-auto">
-                {t.bookingConfirmedDesc(doctorFirstName)}
-              </p>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+              <h2 className="text-2xl font-black text-slate-900 mb-1">{t.confirmed}</h2>
+              <p className="text-slate-500 text-sm max-w-[280px] mx-auto mb-6">{t.confirmedSub(doctorFirst, lexicon?.doctorTitle || "Dr.")}</p>
             </motion.div>
 
-            {/* Date / Time card */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.4 }}
-              className="w-full max-w-sm rounded-2xl ring-1 ring-slate-100 shadow-sm p-5 text-left mb-6 flex gap-4"
+              className="w-full max-w-sm rounded-2xl border border-slate-100 bg-slate-50 p-4 flex justify-around gap-4 mb-5 shadow-inner"
             >
-              <div className="flex-1 flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0">
-                  <CalendarCheck className="w-5 h-5 text-slate-600" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">{t.date}</p>
-                  <p className="text-sm font-bold text-slate-900">{successData.date}</p>
-                </div>
+              <div className="text-center">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.dateLabel}</p>
+                <p className="text-sm font-bold text-slate-900">{successData.date}</p>
               </div>
-              <div className="w-px bg-slate-100" />
-              <div className="flex-1 flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0">
-                  <Clock className="w-5 h-5 text-slate-600" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">{t.time}</p>
-                  <p className="text-sm font-bold text-slate-900">{successData.time}</p>
-                </div>
+              <div className="w-px bg-slate-200" />
+              <div className="text-center">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t.timeLabel}</p>
+                <p className="text-sm font-bold text-slate-900">{successData.time}</p>
               </div>
             </motion.div>
 
-            {/* Action buttons */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="w-full max-w-sm flex flex-col gap-3"
+              className="w-full max-w-sm space-y-3"
             >
               <button
-                onClick={() => router.push(`/track/${successData.appointmentId}`)}
-                className="w-full rounded-2xl text-white font-bold text-sm shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2 py-3.5"
-                style={{ backgroundColor: themeColor }}
+                onClick={() => router.push(`/track/${successData.appointmentId}?lang=${lang}`)}
+                className="w-full py-4 rounded-2xl font-black text-sm shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2"
+                style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}cc)`, color: textColor }}
               >
                 <Sparkles className="w-4 h-4" />
-                {t.viewQueue}
-                <ArrowRight className="w-4 h-4 ml-1" />
+                {t.trackCta}
+                <ArrowRight className="w-4 h-4" />
               </button>
 
-              <div className="flex gap-3 w-full">
+              <div className="flex gap-2">
                 <a
-                  href={getGoogleCalendarUrl()}
+                  href={calUrl()}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 bg-white border border-slate-200 text-slate-700 py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-slate-50 transition-all active:scale-[0.98] shadow-sm"
+                  className="flex-1 border border-slate-200 bg-white text-slate-700 py-3 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1 hover:bg-slate-50 transition-all shadow-sm"
                 >
                   <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                  {t.addToCalendar}
+                  Save to Android
                 </a>
                 <button
-                  onClick={shareAppointment}
-                  className="flex-1 bg-[#25D366] text-white py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#20bd5a] transition-all active:scale-[0.98] shadow-sm"
+                  onClick={downloadIcs}
+                  className="flex-1 border border-slate-200 bg-white text-slate-700 py-3 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1 hover:bg-slate-50 transition-all shadow-sm"
                 >
-                  <Share2 className="w-3.5 h-3.5" />
-                  {t.share}
+                  <CalendarCheck className="w-3.5 h-3.5 text-slate-400" />
+                  Save to iPhone
+                </button>
+                <button
+                  onClick={shareWA}
+                  className="w-11 bg-[#25D366] text-white py-3 rounded-xl font-bold text-xs flex items-center justify-center hover:bg-[#1fba5a] transition-all shadow-sm flex-shrink-0"
+                  aria-label="Share via WhatsApp"
+                >
+                  <Share2 className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Trust note */}
-              <p className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1.5 mt-1">
+              <p className="text-[11px] text-slate-400 flex items-center justify-center gap-1.5 pt-1 mb-4">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                {t.secureNote}
+                {t.secure}
               </p>
+
+              {/* Patient Portal Upsell */}
+              <div 
+                onClick={() => setIsLoginModalOpen(true)}
+                className="w-full relative overflow-hidden rounded-2xl cursor-pointer group hover:shadow-lg transition-all border border-blue-100/50"
+                style={{ background: `linear-gradient(to right, ${themeColor}15, ${themeColor}05)` }}
+              >
+                <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: themeColor }} />
+                <div className="p-4 flex items-center gap-4 relative z-10">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-sm flex-shrink-0">
+                    <FileText className="w-5 h-5" style={{ color: themeColor }} />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-bold text-slate-900 mb-0.5 group-hover:text-blue-700 transition-colors">Access Patient Portal</p>
+                    <p className="text-[11px] text-slate-500 font-medium">Save details for 1-tap booking & view digital records.</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-300 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+
             </motion.div>
-          </CardContent>
-        </Card>
+          </div>
+
+          <PatientLoginModal 
+            isOpen={isLoginModalOpen} 
+            onClose={() => setIsLoginModalOpen(false)} 
+            themeColor={themeColor} 
+            clinicName={clinic.name} 
+          />
+
+          {/* Attribution */}
+          <div className="border-t border-slate-50 px-5 py-3 flex items-center justify-center gap-2">
+            <div className="w-4 h-4 rounded-sm flex items-center justify-center" style={{ backgroundColor: themeColor }}>
+              <span style={{ color: textColor, fontSize: "7px", fontWeight: 900 }}>DD</span>
+            </div>
+            <p className="text-[10px] text-slate-400">
+              Powered by <span className="font-bold text-slate-500">Doctor Diary</span>
+            </p>
+          </div>
+        </div>
       </motion.div>
     );
   }
 
-  // ─── STEP 1: DATE SELECTION ─────────────────────────────────────────────
+  // ── STEP 1: DATE ─────────────────────────────────────────────────────────
   const renderStep1 = () => (
     <motion.div
       key="step1"
-      initial={{ opacity: 0, x: -20, filter: "blur(4px)" }}
+      layout
+      initial={{ opacity: 0, x: -16, filter: "blur(3px)" }}
       animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-      exit={{ opacity: 0, x: -20, filter: "blur(4px)" }}
-      transition={{ duration: 0.3 }}
-      className="space-y-5 pt-2"
+      exit={{ opacity: 0, x: -16, filter: "blur(3px)" }}
+      transition={{ duration: 0.28, layout: { duration: 0.3, type: "spring", bounce: 0 } }}
+      className="space-y-5"
     >
-      <div>
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">{t.pickDate}</h2>
-        <p className="text-slate-500 text-sm mt-1">{t.pickDateDesc}</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-lg font-black text-slate-900">{t.pickDate}</h2>
+          <p className="text-slate-500 text-sm mt-0.5">{t.pickDateSub}</p>
+        </div>
+        {!isSameDay(selectedDate, today) && workingDays.includes(today.getDay()) && !closedDates.includes(format(today, "yyyy-MM-dd")) && (
+          <button 
+            onClick={() => { 
+              setSelectedDate(today);
+              scrollRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
+            }} 
+            className="text-[10px] font-bold uppercase tracking-widest text-slate-500 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg transition-colors"
+          >
+            Today
+          </button>
+        )}
       </div>
 
-      <div className="relative group flex items-center">
+      <div className="relative flex items-center">
         <button
           onClick={() => scroll("left")}
-          className="absolute left-0 z-10 w-8 h-8 hidden sm:flex items-center justify-center bg-white shadow-md border border-slate-100 rounded-full text-slate-600 transition-opacity disabled:opacity-0 -ml-4"
+          className="absolute -left-3 z-10 w-7 h-7 hidden sm:flex items-center justify-center bg-white shadow-md border border-slate-100 rounded-full text-slate-500 hover:text-slate-800 transition-colors"
+          aria-label="Scroll dates left"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-3.5 h-3.5" />
         </button>
-        <div ref={scrollRef} className="flex overflow-x-auto snap-x gap-3 pb-4 pt-1 -mx-5 px-5 sm:mx-0 sm:px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full">
-          {next14Days.map((date) => {
+        <div
+          ref={scrollRef}
+          className="flex overflow-x-auto snap-x gap-2 pb-3 pt-1 -mx-5 px-5 sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full"
+        >
+          {next14.map((date) => {
             const isSelected = isSameDay(date, selectedDate);
             const isToday = isSameDay(date, today);
             const dateStr = format(date, "yyyy-MM-dd");
-            const dayOfWeek = date.getDay();
-            const isWorkingDay = workingDays.includes(dayOfWeek) && !closedDates.includes(dateStr);
-
+            const isWorking = workingDays.includes(date.getDay()) && !closedDates.includes(dateStr);
             return (
               <button
                 key={date.toISOString()}
-                onClick={() => handleDateSelect(date)}
-                disabled={!isWorkingDay}
-                className={`flex-shrink-0 w-[72px] flex flex-col items-center justify-center h-[90px] rounded-2xl border transition-all duration-200 snap-center relative overflow-hidden ${
+                onClick={() => {
+                  setSelectedDate(date);
+                  setSelectedTime(null);
+                  setStep(2);
+                }}
+                disabled={!isWorking}
+                className={`flex-shrink-0 w-[66px] flex flex-col items-center justify-center h-[84px] rounded-2xl border-2 transition-all duration-200 snap-center ${
                   isSelected
-                    ? `border-transparent ${getContrastYIQ(themeColor)} shadow-lg scale-[1.02]`
-                    : !isWorkingDay
-                    ? "border-slate-100 bg-slate-50/50 opacity-35 cursor-not-allowed"
-                    : "border-slate-200/60 bg-slate-50/50 text-slate-500 hover:border-slate-300 hover:bg-slate-50 active:scale-[0.97] hover:shadow-sm"
+                    ? "border-transparent shadow-lg scale-[1.05]"
+                    : !isWorking
+                    ? "border-slate-100 bg-slate-50/40 opacity-25 cursor-not-allowed"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:shadow-sm active:scale-95"
                 }`}
-                style={
-                  isSelected
-                    ? {
-                        backgroundColor: themeColor,
-                        backgroundImage: `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}dd 100%)`,
-                      }
-                    : {}
-                }
+                style={isSelected ? { backgroundColor: themeColor } : {}}
               >
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${isSelected ? "opacity-85" : "text-slate-400"}`}>
+                <span className={`text-[9px] font-black uppercase tracking-widest ${isSelected ? "opacity-70" : "text-slate-400"}`} style={isSelected ? { color: textColor } : {}}>
                   {format(date, "EEE")}
                 </span>
-                <span className="text-xl font-black mt-1 tracking-tight">
+                <span className={`text-[22px] font-black mt-0.5 leading-none`} style={{ color: isSelected ? textColor : undefined }}>
                   {format(date, "d")}
                 </span>
-                <span className={`text-[10px] uppercase font-bold mt-0.5 ${isSelected ? "opacity-75" : "text-slate-400"}`}>
+                <span className={`text-[9px] uppercase font-bold mt-0.5 ${isSelected ? "opacity-70" : "text-slate-400"}`} style={isSelected ? { color: textColor } : {}}>
                   {format(date, "MMM")}
                 </span>
                 {isToday && !isSelected && (
@@ -468,87 +485,108 @@ export function BookingClient({
         </div>
         <button
           onClick={() => scroll("right")}
-          className="absolute right-0 z-10 w-8 h-8 hidden sm:flex items-center justify-center bg-white shadow-md border border-slate-100 rounded-full text-slate-600 transition-opacity disabled:opacity-0 -mr-4"
+          className="absolute -right-3 z-10 w-7 h-7 hidden sm:flex items-center justify-center bg-white shadow-md border border-slate-100 rounded-full text-slate-500 hover:text-slate-800 transition-colors"
+          aria-label="Scroll dates right"
         >
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-3.5 h-3.5" />
         </button>
       </div>
 
       <button
         onClick={() => setStep(2)}
-        disabled={!(workingDays.includes(selectedDate.getDay()) && !closedDates.includes(format(selectedDate, "yyyy-MM-dd")))}
-        className={`w-full h-14 rounded-2xl ${getContrastYIQ(themeColor)} font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] mt-2 flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:translate-y-0 disabled:active:scale-100 disabled:cursor-not-allowed`}
-        style={{
-          backgroundColor: themeColor,
-          backgroundImage: `linear-gradient(to right, ${themeColor}, ${themeColor}cc)`,
-        }}
+        disabled={!workingDays.includes(selectedDate.getDay()) || closedDates.includes(format(selectedDate, "yyyy-MM-dd"))}
+        className="w-full h-13 py-3.5 rounded-2xl font-black text-sm shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-40 disabled:translate-y-0 disabled:cursor-not-allowed"
+        style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}cc)`, color: textColor }}
       >
-        Continue <ArrowRight className="w-4 h-4 ml-1" />
+        {t.seeMore} <ArrowRight className="w-4 h-4" />
       </button>
     </motion.div>
   );
 
-  // ─── STEP 2: TIME SELECTION (grouped) ──────────────────────────────────
+  // ── STEP 2: TIME ─────────────────────────────────────────────────────────
   const renderStep2 = () => {
-    const { morning, afternoon, evening } = groupSlots(availableSlots);
+    const { morning, afternoon, evening } = groupSlots(slots);
     const groups = [
-      { label: t.morning, icon: Sun, slots: morning },
-      { label: t.afternoon, icon: Sunset, slots: afternoon },
-      { label: t.evening, icon: Moon, slots: evening },
-    ].filter((g) => g.slots.length > 0);
+      { label: t.morning, icon: Sun, items: morning },
+      { label: t.afternoon, icon: Sunset, items: afternoon },
+      { label: t.evening, icon: Moon, items: evening },
+    ].filter((g) => g.items.length > 0);
 
     return (
       <motion.div
         key="step2"
-        initial={{ opacity: 0, x: 20, filter: "blur(4px)" }}
+        layout
+        initial={{ opacity: 0, x: 16, filter: "blur(3px)" }}
         animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-        exit={{ opacity: 0, x: 20, filter: "blur(4px)" }}
-        transition={{ duration: 0.3 }}
-        className="space-y-5 pt-2"
+        exit={{ opacity: 0, x: 16, filter: "blur(3px)" }}
+        transition={{ duration: 0.28, layout: { duration: 0.3, type: "spring", bounce: 0 } }}
+        className="space-y-5"
       >
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">{t.availableSlots}</h2>
-          <p className="text-slate-500 text-sm mt-1 flex items-center gap-2">
-            <CalendarIcon className="w-4 h-4" />
-            {format(selectedDate, "EEEE, MMMM d, yyyy")}
+          <h2 className="text-lg font-black text-slate-900">{t.pickTime}</h2>
+          <p className="text-slate-500 text-sm mt-0.5 flex items-center gap-1.5">
+            <CalendarIcon className="w-3.5 h-3.5" />
+            {format(selectedDate, "EEEE, MMMM d")}
           </p>
         </div>
 
-        {isLoadingSlots ? (
-          <div className="flex flex-col items-center justify-center py-14 bg-slate-50/50 rounded-3xl border border-slate-100">
-            <Loader2 className="w-8 h-8 animate-spin mb-3" style={{ color: themeColor }} />
-            <p className="text-slate-500 text-sm font-medium">{t.checkingAvailability}</p>
+        {loadingSlots ? (
+          <div className="space-y-5 animate-pulse mt-4">
+            {[1, 2].map((i) => (
+              <div key={i}>
+                <div className="w-24 h-4 bg-slate-200 rounded-full mb-3 opacity-50" />
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {[1, 2, 3, 4].map((j) => (
+                    <div key={j} className="h-11 bg-slate-100 rounded-xl opacity-70" />
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
-        ) : availableSlots.length === 0 ? (
-          <div className="text-center py-14 bg-slate-50/80 rounded-3xl border border-slate-100">
-            <div className="w-14 h-14 rounded-full bg-slate-200/50 flex items-center justify-center mx-auto mb-4">
-              <Clock className="w-7 h-7 text-slate-400" />
+        ) : slots.length === 0 ? (
+          <div className="text-center py-12 bg-slate-50 rounded-3xl border border-slate-100">
+            <div className="w-12 h-12 rounded-full bg-slate-200/60 flex items-center justify-center mx-auto mb-3">
+              <Clock className="w-6 h-6 text-slate-400" />
             </div>
-            <p className="text-slate-900 font-bold text-base">{t.fullyBooked}</p>
-            <p className="text-slate-500 text-sm mt-1 max-w-[220px] mx-auto">
-              {t.fullyBookedDesc(doctorFirstName)}
+            <p className="font-bold text-slate-700 text-sm">{t.fullyBooked}</p>
+            <p className="text-[13px] text-slate-500 mt-1.5 leading-relaxed font-medium">
+              {t.fullyBookedSub(stripDr(clinic.doctorName), lexicon?.doctorTitle || "Dr.")}
             </p>
           </div>
         ) : (
           <div className="space-y-5">
-            {groups.map(({ label, icon: Icon, slots }) => (
+            {groups.map(({ label, icon: Icon, items }) => (
               <div key={label}>
-                <div className="flex items-center gap-2 mb-2.5">
+                <div className="flex items-center gap-2 mb-3">
                   <Icon className="w-3.5 h-3.5 text-slate-400" />
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{label}</span>
-                  <span className="text-xs text-slate-300 font-medium">({slots.length} {t.slots})</span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
+                  <span className="text-[10px] text-slate-300 font-medium">({items.length} {t.slots})</span>
                 </div>
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
-                  {slots.map((time) => (
-                    <button
-                      key={time}
-                      onClick={() => handleTimeSelect(time)}
-                      className="py-3.5 px-2 rounded-2xl border-2 border-slate-100 bg-white text-slate-700 font-bold text-[13px] sm:text-sm hover:border-slate-300 hover:shadow-md transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 group"
-                    >
-                      <Clock className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-400 transition-colors" />
-                      {formatTimeDisplay(time)}
-                    </button>
-                  ))}
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {items.map((time) => {
+                    const isSelected = selectedTime === time;
+                    return (
+                      <button
+                        key={time}
+                        onClick={() => {
+                          setSelectedTime(time);
+                          // Slight delay to allow layoutId animation to play before sliding out
+                          setTimeout(() => setStep(3), 150);
+                        }}
+                        className={`relative py-3 rounded-xl border-2 transition-all active:scale-95 text-center overflow-hidden font-bold text-[12px] ${isSelected ? "border-transparent text-white" : "border-slate-100 bg-white text-slate-700 hover:border-slate-300 hover:shadow-sm"}`}
+                      >
+                        {isSelected && (
+                          <motion.div
+                            layoutId="active-time-pill"
+                            className="absolute inset-0"
+                            style={{ backgroundColor: themeColor }}
+                            transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                          />
+                        )}
+                        <span className="relative z-10">{formatTimeDisplay(time)}</span>
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
             ))}
@@ -558,325 +596,216 @@ export function BookingClient({
     );
   };
 
-  // ─── STEP 3: PATIENT DETAILS ────────────────────────────────────────────
+  // ── STEP 3: DETAILS ───────────────────────────────────────────────────────
   const renderStep3 = () => (
     <motion.div
       key="step3"
-      initial={{ opacity: 0, x: 20, filter: "blur(4px)" }}
+      layout
+      initial={{ opacity: 0, x: 16, filter: "blur(3px)" }}
       animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-      exit={{ opacity: 0, x: 20, filter: "blur(4px)" }}
-      transition={{ duration: 0.3 }}
-      className="space-y-5 pt-2"
+      exit={{ opacity: 0, x: 16, filter: "blur(3px)" }}
+      transition={{ duration: 0.28, layout: { duration: 0.3, type: "spring", bounce: 0 } }}
+      className="space-y-5"
     >
       <div>
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">{t.yourDetails}</h2>
-        <p className="text-slate-500 text-sm mt-1">{t.yourDetailsDesc}</p>
+        <h2 className="text-lg font-black text-slate-900">{t.details}</h2>
+        <p className="text-slate-500 text-sm mt-0.5">{t.detailsSub}</p>
       </div>
 
-      {/* Appointment summary */}
-      <div className="rounded-2xl border-2 border-slate-100 bg-slate-50 p-4 flex gap-4 relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-          <CalendarCheck className="w-20 h-20" />
-        </div>
-        <div className="flex items-center gap-3 relative z-10">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white shadow-sm border border-slate-100">
+      {/* Summary */}
+      <div className="rounded-2xl border-2 border-slate-100 bg-slate-50 p-4 flex gap-4 items-center">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white border border-slate-100 shadow-sm">
             <Calendar className="w-4 h-4" style={{ color: themeColor }} />
           </div>
           <div>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{t.date}</p>
+            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">{t.dateLabel}</p>
             <p className="text-xs font-bold text-slate-900">{format(selectedDate, "MMM d, yyyy")}</p>
           </div>
         </div>
-        <div className="hidden sm:block w-px bg-slate-200 relative z-10" />
-        <div className="flex items-center gap-3 relative z-10">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white shadow-sm border border-slate-100">
+        <div className="w-px h-8 bg-slate-200" />
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white border border-slate-100 shadow-sm">
             <Clock className="w-4 h-4" style={{ color: themeColor }} />
           </div>
           <div>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{t.time}</p>
+            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">{t.timeLabel}</p>
             <p className="text-xs font-bold text-slate-900">{selectedTime && formatTimeDisplay(selectedTime)}</p>
           </div>
         </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="space-y-1.5">
-          <label htmlFor="patient-name" className="text-sm font-bold text-slate-700 flex items-center gap-2">
-            <User className="w-4 h-4 text-slate-400" /> {t.fullName}
-          </label>
-          <Input
-            id="patient-name"
-            placeholder="E.g. Rahul Sharma"
-            {...register("patientName")}
-            className={`h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all shadow-inner focus:shadow-none focus:border-slate-300 ${
-              errors.patientName ? "border-red-400 focus-visible:ring-red-300" : "focus-visible:ring-slate-900/10"
-            }`}
-          />
-          {errors.patientName && <p className="text-xs text-red-500 font-medium px-1">{errors.patientName.message}</p>}
+        {/* Name */}
+        <div className="space-y-1">
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <User className="w-5 h-5 text-slate-400 group-focus-within:text-[var(--theme-color)] transition-colors" style={{ '--theme-color': themeColor } as React.CSSProperties} />
+            </div>
+            <Input
+              id="p-name"
+              placeholder={`${lexicon?.patientTitle || 'Patient'} Name (e.g. Rahul Sharma)`}
+              {...register("patientName")}
+              className={`h-14 pl-12 py-4 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white text-base font-medium transition-all focus:ring-4 focus:border-transparent ${errors.patientName ? "border-red-400 focus:ring-red-400/20" : ""}`}
+              style={{ '--tw-ring-color': `${themeColor}30` } as React.CSSProperties}
+            />
+          </div>
+          {errors.patientName && <p className="text-xs text-red-500 font-medium px-2">{errors.patientName.message}</p>}
         </div>
 
-        <div className="space-y-1.5">
-          <label htmlFor="patient-phone" className="text-sm font-bold text-slate-700 flex items-center gap-2">
-            <Phone className="w-4 h-4 text-slate-400" /> {t.mobileNumber}
-          </label>
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-slate-400 text-sm">+91</span>
+        {/* Phone */}
+        <div className="space-y-1">
+          <div className="relative group flex">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+              <Phone className="w-5 h-5 text-slate-400 group-focus-within:text-[var(--theme-color)] transition-colors" style={{ '--theme-color': themeColor } as React.CSSProperties} />
+            </div>
+            <div className="absolute inset-y-0 left-12 flex items-center pointer-events-none z-10">
+              <span className="font-bold text-slate-400 text-base select-none">+91</span>
+            </div>
             <Input
-              id="patient-phone"
+              id="p-phone"
               type="tel"
-              placeholder="9876543210"
+              inputMode="numeric"
+              placeholder="98765 43210"
               {...register("patientPhone")}
-              className={`h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all shadow-inner focus:shadow-none focus:border-slate-300 pl-12 ${
-                errors.patientPhone ? "border-red-400 focus-visible:ring-red-300" : "focus-visible:ring-slate-900/10"
-              }`}
+              className={`h-14 pl-24 py-4 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white text-base font-medium transition-all focus:ring-4 focus:border-transparent ${errors.patientPhone ? "border-red-400 focus:ring-red-400/20" : ""}`}
+              style={{ '--tw-ring-color': `${themeColor}30` } as React.CSSProperties}
             />
           </div>
-          {errors.patientPhone && <p className="text-xs text-red-500 font-medium px-1">{errors.patientPhone.message}</p>}
+          {errors.patientPhone && <p className="text-xs text-red-500 font-medium px-2">{errors.patientPhone.message}</p>}
         </div>
 
-        <div className="space-y-1.5">
-          <label htmlFor="patient-email" className="text-sm font-bold text-slate-700 flex items-center gap-2">
-            <Mail className="w-4 h-4 text-slate-400" /> {t.email} <span className="text-slate-400 font-normal ml-1">{t.optional}</span>
-          </label>
-          <Input
-            id="patient-email"
-            type="email"
-            placeholder="your@email.com"
-            {...register("patientEmail")}
-            className={`h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all shadow-inner focus:shadow-none focus:border-slate-300 ${
-              errors.patientEmail ? "border-red-400 focus-visible:ring-red-300" : "focus-visible:ring-slate-900/10"
-            }`}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={isPending}
-          className={`w-full h-14 rounded-2xl ${getContrastYIQ(themeColor)} font-bold text-base shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100`}
-          style={{
-            backgroundColor: themeColor,
-            backgroundImage: `linear-gradient(to right, ${themeColor}, ${themeColor}cc)`,
-          }}
-        >
-          {isPending ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : (
-            <>
-              {t.confirmBooking}
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </>
-          )}
-        </button>
-
-        {/* Trust note under CTA */}
-        <p className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-          {t.trustNote}
-        </p>
-      </form>
-    </motion.div>
-  );
-
-  // ─── TRACK VIEW ─────────────────────────────────────────────────────────
-  const renderTrackView = () => (
-    <motion.div
-      key="track"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 10 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-5 pt-2"
-    >
-      <div className="text-center py-4">
-        <div className="w-14 h-14 rounded-full mx-auto flex items-center justify-center bg-slate-50 border border-slate-100 mb-4">
-          <Search className="w-7 h-7 text-slate-400" />
-        </div>
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">{t.findMyAppointment}</h2>
-        <p className="text-slate-500 text-sm mt-2 max-w-xs mx-auto leading-relaxed">
-          {t.trackDesc}
-        </p>
-      </div>
-
-      <form onSubmit={handleTrackSubmit} className="space-y-4">
-        <div className="space-y-1.5">
-          <label htmlFor="track-phone" className="text-sm font-bold text-slate-700 flex items-center gap-2">
-            <Phone className="w-4 h-4 text-slate-400" /> {t.mobileNumber}
-          </label>
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-slate-400 text-sm">+91</span>
+        {/* Email */}
+        <div className="space-y-1">
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Mail className="w-5 h-5 text-slate-400 group-focus-within:text-[var(--theme-color)] transition-colors" style={{ '--theme-color': themeColor } as React.CSSProperties} />
+            </div>
             <Input
-              id="track-phone"
-              type="tel"
-              placeholder="9876543210"
-              value={trackPhone}
-              onChange={(e) => setTrackPhone(e.target.value)}
-              required
-              className="h-12 rounded-2xl bg-slate-50 border-transparent focus:bg-white text-base transition-all shadow-inner focus:shadow-none focus:border-slate-300 pl-12 focus-visible:ring-slate-900/10"
+              id="p-email"
+              type="email"
+              placeholder={`${t.emailLabel} ${t.optional}`}
+              {...register("patientEmail")}
+              className="h-14 pl-12 py-4 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white text-base font-medium transition-all focus:ring-4 focus:border-transparent"
+              style={{ '--tw-ring-color': `${themeColor}30` } as React.CSSProperties}
             />
           </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={isTracking || trackPhone.length !== 10}
-          className={`w-full h-12 rounded-2xl ${getContrastYIQ(themeColor)} font-bold text-sm shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100`}
-          style={{
-            backgroundColor: themeColor,
-            backgroundImage: `linear-gradient(to right, ${themeColor}, ${themeColor}cc)`,
-          }}
-        >
-          {isTracking ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : (
-            <>
-              {t.findMyAppointment}
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </>
-          )}
-        </button>
-      </form>
-    </motion.div>
-  );
-
-  // ─── MAIN WIDGET ─────────────────────────────────────────────────────────
-  return (
-    <div className="w-full">
-      {/* Back button */}
-      {mode === "book" && step > 1 && (
-        <button
-          onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)}
-          className="flex items-center gap-1.5 text-sm font-bold text-slate-400 hover:text-slate-800 transition-colors mb-3 px-2.5 py-1.5 bg-white rounded-xl shadow-sm border border-slate-100 w-fit"
-        >
-          <ChevronLeft className="w-4 h-4" /> {t.back}
-        </button>
-      )}
-
-      {/* Language Toggle */}
-      <div className="flex justify-end mb-2">
-        <div className="bg-white p-1 rounded-full shadow-sm border border-slate-100 inline-flex items-center">
-          <button
-            onClick={() => setLang("en")}
-            className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${lang === "en" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-800"}`}
-          >
-            EN
-          </button>
-          <button
-            onClick={() => setLang("hi")}
-            className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${lang === "hi" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-800"}`}
-          >
-            हिंदी
-          </button>
-        </div>
-      </div>
-
-      <Card className="border-0 shadow-2xl rounded-3xl overflow-hidden bg-white ring-1 ring-slate-900/5 relative min-h-[480px]">
-        {/* Clinic identity strip */}
-        <div
-          className="flex items-center gap-3 px-4 sm:px-6 py-3 border-b border-slate-50"
-          style={{ background: `linear-gradient(to right, ${themeColor}08, transparent)` }}
-        >
-          <div
-            className="relative w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-sm font-black overflow-hidden"
-            style={{ backgroundColor: themeColor }}
-          >
-            {isSafeImageUrl(clinic.logoUrl) && !logoError ? (
-              <Image
-                src={clinic.logoUrl!}
-                alt={clinic.name}
-                fill
-                sizes="32px"
-                className="object-cover"
-                onError={() => setLogoError(true)}
+        {/* First Time Visitor Toggle */}
+        <div className="pt-2">
+          <label className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100 cursor-pointer hover:bg-slate-100/50 transition-colors">
+            <div className="relative flex items-center justify-center">
+              <input 
+                type="checkbox" 
+                {...register("isFirstTime")} 
+                className="peer appearance-none w-5 h-5 rounded-md border-2 border-slate-300 checked:border-[var(--theme-color)] checked:bg-[var(--theme-color)] transition-all cursor-pointer"
+                style={{ '--theme-color': themeColor } as React.CSSProperties}
               />
+              <CheckCircle2 className="w-3.5 h-3.5 text-white absolute opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" />
+            </div>
+            <span className="text-sm font-bold text-slate-700 select-none">First time visiting this clinic?</span>
+          </label>
+        </div>
+
+        {/* CTA + Trust note */}
+        <div className="space-y-3 pt-1">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            disabled={isPending}
+            className="relative overflow-hidden w-full h-[56px] rounded-2xl font-black text-base shadow-xl flex items-center justify-center gap-2 disabled:opacity-70 group"
+            style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}cc)`, color: textColor, boxShadow: `0 10px 25px -5px ${themeColor}60` }}
+          >
+            <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-[20deg]" />
+            {isPending ? (
+              <Loader2 className="w-5 h-5 animate-spin relative z-10" />
             ) : (
-              clinic.name[0]?.toUpperCase()
+              <span className="relative z-10 flex items-center gap-2">{t.ctaConfirm} <ArrowRight className="w-4 h-4" /></span>
             )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-black text-slate-800 truncate">{clinic.name}</p>
-            <p className="text-[10px] text-slate-400 font-medium truncate">
-              {doctorFirstName.startsWith("Dr.") ? doctorFirstName : `Dr. ${doctorFirstName}`}
-              {clinic.specialty ? ` · ${clinic.specialty}` : ""}
+          </motion.button>
+
+          {/* Explicit free booking notice */}
+          <div className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-50 border border-emerald-100">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+            <p className="text-[11px] text-emerald-700 font-bold text-center leading-tight">
+              {t.trustNote(clinic.consultationFee)}
             </p>
           </div>
-          {clinic.consultationFee ? (
-            <span className="flex-shrink-0 text-xs font-bold px-2.5 py-1 rounded-lg text-white" style={{ backgroundColor: themeColor }}>
-              ₹{clinic.consultationFee}
-            </span>
-          ) : null}
         </div>
+      </form>
+    </motion.div>
+  );
 
-        {/* Tab toggle */}
-        <div className="p-1.5 bg-slate-100/90 rounded-2xl m-4 sm:m-5 mb-2 flex gap-1 relative z-10 border border-slate-200/50">
-          <button
-            onClick={() => setMode("book")}
-            className={`flex-1 py-2.5 text-sm font-bold transition-all relative rounded-xl ${
-              mode === "book" ? "text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            {mode === "book" && (
-              <motion.div layoutId="activeTab" className="absolute inset-0 bg-white rounded-xl shadow-2xs" transition={{ type: "spring", stiffness: 400, damping: 30 }} />
-            )}
-            <span className="relative z-10 flex items-center justify-center gap-2">
-              <CalendarCheck className="w-4 h-4 text-teal-600" />
-              {t.bookAppointment}
-            </span>
-          </button>
-          <button
-            onClick={() => setMode("track")}
-            className={`flex-1 py-2.5 text-sm font-bold transition-all relative rounded-xl ${
-              mode === "track" ? "text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            {mode === "track" && (
-              <motion.div layoutId="activeTab" className="absolute inset-0 bg-white rounded-xl shadow-2xs" transition={{ type: "spring", stiffness: 400, damping: 30 }} />
-            )}
-            <span className="relative z-10 flex items-center justify-center gap-2">
-              <Search className="w-4 h-4 text-indigo-600" />
-              {t.myAppointment}
-            </span>
-          </button>
-        </div>
+  // ── WIDGET SHELL ─────────────────────────────────────────────────────────
+  return (
+    <div className="w-full" id="booking">
+
+      <div className="relative bg-white rounded-3xl overflow-hidden">
+        {/* Top color bar */}
+        <div className="h-2 w-full" style={{ background: `linear-gradient(90deg, ${themeColor}, ${themeColor}88)` }} />
 
         {/* Progress bar */}
-        {mode === "book" && (
-          <div className="h-1 w-full bg-slate-100 relative overflow-hidden">
-            <motion.div
-              className="absolute top-0 bottom-0 left-0"
-              style={{ backgroundColor: themeColor }}
-              initial={{ width: "33%" }}
-              animate={{ width: `${(step / 3) * 100}%` }}
-              transition={{ duration: 0.5, ease: "anticipate" }}
-            />
-          </div>
-        )}
+        <div className="h-0.5 w-full bg-slate-100 relative overflow-hidden">
+          <motion.div
+            className="absolute inset-y-0 left-0"
+            style={{ backgroundColor: themeColor }}
+            initial={{ width: "33%" }}
+            animate={{ width: `${(step / 3) * 100}%` }}
+            transition={{ duration: 0.5, ease: "anticipate" }}
+          />
+        </div>
 
-        {/* Step indicator dots */}
-        {mode === "book" && (
-          <div className="absolute top-[64px] right-5 flex items-center gap-1.5 z-20">
+        {/* Back + step dots row */}
+        <div className="flex items-center justify-between px-5 pt-4 pb-0 min-h-[36px]">
+          {step > 1 ? (
+            <button
+              onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)}
+              className="flex items-center gap-1 text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" /> {t.back}
+            </button>
+          ) : (
+            <div />
+          )}
+          <div className="flex items-center gap-1.5">
             {[1, 2, 3].map((s) => (
               <div
                 key={s}
-                className="rounded-full transition-all duration-500 ease-out"
+                className="rounded-full transition-all duration-400"
                 style={{
-                  width: s === step ? "20px" : "6px",
-                  height: "6px",
-                  backgroundColor: s <= step ? themeColor : "#f1f5f9",
+                  width: s === step ? "20px" : "5px",
+                  height: "5px",
+                  backgroundColor: s <= step ? themeColor : "#e2e8f0",
                 }}
               />
             ))}
           </div>
-        )}
+        </div>
 
-        <CardContent className="p-5 sm:p-7 pt-4">
+        {/* Step content */}
+        <div className="p-5 sm:p-7 pt-4">
           <AnimatePresence mode="wait">
-            {mode === "book" && step === 1 && renderStep1()}
-            {mode === "book" && step === 2 && renderStep2()}
-            {mode === "book" && step === 3 && renderStep3()}
-            {mode === "track" && renderTrackView()}
+            {step === 1 && renderStep1()}
+            {step === 2 && renderStep2()}
+            {step === 3 && renderStep3()}
           </AnimatePresence>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Doctor Diary attribution */}
+        <div className="border-t border-slate-50 px-5 py-3 flex items-center justify-center gap-2">
+          <div
+            className="w-4 h-4 rounded-sm flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: themeColor }}
+          >
+            <span style={{ color: textColor, fontSize: "7px", fontWeight: 900, lineHeight: 1 }}>DD</span>
+          </div>
+          <p className="text-[10px] text-slate-400 font-medium">
+            Powered by <span className="font-bold text-slate-600">Doctor Diary</span> · Smart Queue System
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

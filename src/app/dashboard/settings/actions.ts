@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 interface SettingsData {
   name: string;
   doctorName: string;
+  degree?: string | null;
   specialty: string;
   consultationFee: number;
   freeFollowupDays: number; // P0: 0 = no free follow-ups, N = free within N days
@@ -17,10 +18,14 @@ interface SettingsData {
   themeColor: string | null;
   about?: string | null;
   logoUrl?: string | null;
+  heroImageUrl?: string | null;
   googleMapsUrl?: string | null;
   billingAddress?: string | null;
   state?: string | null;
   gstin?: string | null;
+  whatsappNumber?: string | null;
+  instagramUrl?: string | null;
+  facebookUrl?: string | null;
   vitalsPresets: string[];
   complaintPresets: string[];
   diagnosisPresets: string[];
@@ -39,6 +44,7 @@ export async function updateClinicSettings(data: SettingsData) {
       .set({
         name: data.name,
         doctorName: data.doctorName,
+        degree: data.degree,
         specialty: data.specialty,
         consultationFee: data.consultationFee,
         freeFollowupDays: data.freeFollowupDays ?? 0, // P0
@@ -47,10 +53,14 @@ export async function updateClinicSettings(data: SettingsData) {
         themeColor: data.themeColor,
         about: data.about,
         logoUrl: data.logoUrl,
+        heroImageUrl: data.heroImageUrl,
         googleMapsUrl: data.googleMapsUrl,
         billingAddress: data.billingAddress,
         state: data.state,
         gstin: data.gstin,
+        whatsappNumber: data.whatsappNumber,
+        instagramUrl: data.instagramUrl,
+        facebookUrl: data.facebookUrl,
         vitalsPresets: data.vitalsPresets,
         complaintPresets: data.complaintPresets,
         diagnosisPresets: data.diagnosisPresets,

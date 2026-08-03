@@ -5,6 +5,7 @@ import { patients, subscriptions, appointments } from "@/db/schema";
 import { eq, and, ilike, or, count, max } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { format } from "date-fns";
+import { getClinicAccessStatus } from "@/lib/subscription";
 
 export async function GET(req: NextRequest) {
   try {
@@ -81,36 +82,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // --- Subscription & Patient Limit Check ---
-    const [{ count: patientCount }] = await db
-      .select({ count: count() })
-      .from(patients)
-      .where(eq(patients.clinicId, authUser.clinicId));
-
-    if (patientCount >= 5) {
-      // Check if clinic has an active subscription
-      const activeSubs = await db
-        .select()
-        .from(subscriptions)
-        .where(
-          and(
-            eq(subscriptions.clinicId, authUser.clinicId),
-            eq(subscriptions.status, "active")
-          )
-        )
-        .limit(1);
-
-      if (activeSubs.length === 0) {
-        return NextResponse.json(
-          {
-            error: "FREE_LIMIT_REACHED",
-            message: "You have reached the 5 patient limit on the free plan. Please upgrade to continue.",
-          },
-          { status: 403 }
-        );
-      }
+    // --- Subscription & 14-Day Enterprise Trial Check ---
+    const accessStatus = await getClinicAccessStatus(authUser.clinicId);
+    if (!accessStatus.hasAccess) {
+      return NextResponse.json(
+        {
+          error: "TRIAL_EXPIRED",
+          message: "Your 14-day free trial has expired. Upgrade your plan to continue adding new patients.",
+        },
+        { status: 403 }
+      );
     }
-    // -------------------------------------------
 
     const [newPatient] = await db
       .insert(patients)

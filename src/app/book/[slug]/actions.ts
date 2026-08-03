@@ -7,6 +7,7 @@ import { parseISO, getDay, format, addMinutes } from "date-fns";
 import { getClinicTodayDate, CLINIC_TIMEZONE } from "@/lib/timezone";
 import { toZonedTime } from "date-fns-tz";
 import { sendNotification } from "@/lib/notifications";
+import { getClinicAccessStatus } from "@/lib/subscription";
 
 export async function getAvailableSlots(clinicId: string, dateStr: string) {
   try {
@@ -141,30 +142,11 @@ export async function createBooking(
       if (existingPatient.length > 0) {
         patientId = existingPatient[0].id;
       } else {
-        // --- Subscription & Patient Limit Check ---
-        const [{ count: patientCount }] = await tx
-          .select({ count: count() })
-          .from(patients)
-          .where(eq(patients.clinicId, clinicId));
-
-        if (patientCount >= 5) {
-          // Check if clinic has an active subscription
-          const activeSubs = await tx
-            .select()
-            .from(subscriptions)
-            .where(
-              and(
-                eq(subscriptions.clinicId, clinicId),
-                eq(subscriptions.status, "active")
-              )
-            )
-            .limit(1);
-
-          if (activeSubs.length === 0) {
-            throw new Error("This clinic is currently not accepting new patients.");
-          }
+        // --- Subscription & 14-Day Enterprise Trial Check ---
+        const accessStatus = await getClinicAccessStatus(clinicId);
+        if (!accessStatus.hasAccess) {
+          throw new Error("This clinic is currently not accepting new patient registrations online.");
         }
-        // -------------------------------------------
 
         const [newPatient] = await tx
           .insert(patients)

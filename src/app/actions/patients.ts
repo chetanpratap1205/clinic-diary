@@ -8,6 +8,7 @@ import { getClinicTodayDate, CLINIC_TIMEZONE } from "@/lib/timezone";
 import { formatInTimeZone } from "date-fns-tz";
 import { revalidatePath } from "next/cache";
 import { parsePatientExtendedData, serializePatientExtendedData, PatientExtendedData } from "@/lib/patient-helpers";
+import { getClinicAccessStatus } from "@/lib/subscription";
 
 type CreatePatientInput = {
   name: string;
@@ -69,29 +70,12 @@ export async function createPatientAction(data: CreatePatientInput) {
       return { error: "Patient with this phone number already exists" };
     }
 
-    // --- Subscription & Patient Limit Check ---
-    const [{ count: patientCount }] = await db
-      .select({ count: count() })
-      .from(patients)
-      .where(eq(patients.clinicId, clinicId));
-
-    if (patientCount >= 5) {
-      const activeSubs = await db
-        .select()
-        .from(subscriptions)
-        .where(
-          and(
-            eq(subscriptions.clinicId, clinicId),
-            eq(subscriptions.status, "active")
-          )
-        )
-        .limit(1);
-
-      if (activeSubs.length === 0) {
-        return {
-          error: "You have reached the 5 patient limit on the free plan. Please upgrade to continue.",
-        };
-      }
+    // --- Subscription & 14-Day Enterprise Trial Check ---
+    const accessStatus = await getClinicAccessStatus(clinicId);
+    if (!accessStatus.hasAccess) {
+      return {
+        error: "Your 14-day free trial has expired. Upgrade your plan to continue adding new patients.",
+      };
     }
 
     const serializedMedicalNotes = serializePatientExtendedData({

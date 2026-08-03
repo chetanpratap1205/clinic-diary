@@ -70,6 +70,12 @@ export function HomeNav() {
 
         {/* CTA & Mobile Toggle */}
         <div className="flex items-center gap-3 sm:gap-4 flex-1 justify-end">
+          <Link href="/signup" className="hidden sm:inline-flex">
+            <Button size="sm" className="bg-[#00B7A8] hover:bg-[#00998c] text-white font-bold rounded-full px-5 h-9 sm:h-10 text-xs sm:text-sm shadow-md shadow-[#00B7A8]/20 transition-all">
+              14-Day Free Trial
+            </Button>
+          </Link>
+
           <InstallButton className="!bg-[#0B132B] hover:!bg-[#1a2b5e] !text-white hover:!text-white !border-transparent !rounded-full !font-bold shadow-md px-4 sm:px-6 h-9 sm:h-10" />
           
           <button 

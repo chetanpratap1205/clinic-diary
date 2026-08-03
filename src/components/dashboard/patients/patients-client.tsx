@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { format } from "date-fns";
-import { Search, User, Phone, CalendarDays, Activity, MessageCircle, Plus, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Search, User, Phone, CalendarDays, Activity, MessageCircle, Plus, ChevronLeft, ChevronRight, Loader2, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PremiumIcon } from "@/components/ui/premium-icon";
 import Link from "next/link";
@@ -42,6 +42,22 @@ export function PatientsClient({
   const totalPages = totalCount && pageSize ? Math.ceil(totalCount / pageSize) : 1;
   const current = currentPage || 1;
 
+  // Live Instant Debounced Search (triggers automatically as user types 1+ chars)
+  useEffect(() => {
+    if (search === (initialSearch || "")) return;
+
+    const timer = setTimeout(() => {
+      startTransition(() => {
+        const params = new URLSearchParams();
+        if (search.trim()) params.set("search", search.trim());
+        params.set("page", "1");
+        router.push(`/dashboard/patients?${params.toString()}`);
+      });
+    }, 250); // 250ms instant debounce
+
+    return () => clearTimeout(timer);
+  }, [search, initialSearch, router]);
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     startTransition(() => {
@@ -49,6 +65,13 @@ export function PatientsClient({
       if (search.trim()) params.set("search", search.trim());
       params.set("page", "1");
       router.push(`/dashboard/patients?${params.toString()}`);
+    });
+  };
+
+  const handleClear = () => {
+    setSearch("");
+    startTransition(() => {
+      router.push("/dashboard/patients");
     });
   };
 
@@ -70,19 +93,24 @@ export function PatientsClient({
         </div>
         <input
           type="text"
-          placeholder="Search patients by name or phone..."
+          placeholder="Search live by name, 3-digit phone, or ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-11 sm:pl-14 pr-12 py-3.5 sm:py-4 bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl text-sm sm:text-base text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-sky-500/15 focus:border-sky-400 transition-all shadow-sm hover:shadow-md"
+          className="w-full pl-11 sm:pl-14 pr-20 py-3.5 sm:py-4 bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl text-sm sm:text-base text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-sky-500/15 focus:border-sky-400 transition-all shadow-sm hover:shadow-md"
         />
-        <div className="absolute inset-y-0 right-3.5 flex items-center">
+        <div className="absolute inset-y-0 right-3.5 flex items-center gap-1.5">
            {isPending ? (
              <Loader2 className="w-5 h-5 animate-spin text-sky-500" />
-           ) : (
-             <button type="submit" className="text-xs font-bold text-slate-500 border border-slate-200 rounded-lg px-2.5 py-1 bg-slate-50 shadow-sm hover:bg-slate-100 transition-colors">
-               Search
+           ) : search ? (
+             <button
+               type="button"
+               onClick={handleClear}
+               className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+               title="Clear search"
+             >
+               <X className="w-4 h-4" />
              </button>
-           )}
+           ) : null}
         </div>
       </form>
 
