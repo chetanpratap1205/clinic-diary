@@ -20,12 +20,12 @@ const LOCATIONS = [
 ];
 
 const ACTIONS = [
-  { text: "just upgraded to the Annual Enterprise Plan", icon: Award, color: "text-indigo-400", bg: "bg-indigo-500/10" },
-  { text: "reduced patient no-shows to near zero", icon: Shield, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-  { text: "launched their premium digital front-desk", icon: Star, color: "text-amber-400", bg: "bg-amber-500/10" },
-  { text: "acquired 45+ new patients via QR storefront", icon: Users, color: "text-cyan-400", bg: "bg-cyan-500/10" },
-  { text: "recovered ₹30,000+ in previously lost revenue", icon: TrendingUp, color: "text-teal-400", bg: "bg-teal-500/10" },
-  { text: "secured their exclusive area availability", icon: Zap, color: "text-rose-400", bg: "bg-rose-500/10" }
+  { text: "just upgraded to the Annual Enterprise Plan", icon: Award, color: "text-[#00B7A8]", bg: "bg-emerald-50" },
+  { text: "reduced patient no-shows to near zero", icon: Shield, color: "text-[#00B7A8]", bg: "bg-emerald-50" },
+  { text: "launched their premium digital front-desk", icon: Star, color: "text-amber-500", bg: "bg-amber-50" },
+  { text: "acquired 45+ new patients via QR storefront", icon: Users, color: "text-cyan-600", bg: "bg-cyan-50" },
+  { text: "recovered ₹30,000+ in previously lost revenue", icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50" },
+  { text: "secured their exclusive area availability", icon: Zap, color: "text-[#00B7A8]", bg: "bg-teal-50" }
 ];
 
 export function SocialProofPopup() {
@@ -82,22 +82,19 @@ export function SocialProofPopup() {
           animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-50 w-72 sm:w-80 bg-white/95 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden pointer-events-none"
+          className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-50 w-72 sm:w-80 bg-white border border-slate-200 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.12)] overflow-hidden pointer-events-none"
         >
-          {/* Shimmer effect */}
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-slate-200/50 to-transparent" />
-          
-          <div className="p-4 flex gap-4 items-start">
-            <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border border-white/50 shadow-sm ${currentNotification.action.bg}`}>
-              <currentNotification.action.icon className={`w-5 h-5 ${currentNotification.action.color.replace('400', '600').replace('500', '600')}`} />
+          <div className="p-4 flex gap-3.5 items-start">
+            <div className={`mt-0.5 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border border-slate-200 shadow-sm ${currentNotification.action.bg}`}>
+              <currentNotification.action.icon className={`w-5 h-5 ${currentNotification.action.color}`} />
             </div>
             
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-start mb-1">
-                <p className="text-sm font-bold text-slate-900 truncate pr-2">
+                <p className="text-sm font-black text-[#0B132B] truncate pr-2">
                   {currentNotification.clinic}
                 </p>
-                <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap pt-0.5">
+                <span className="text-[10px] text-slate-400 font-semibold whitespace-nowrap pt-0.5">
                   {currentNotification.timeAgo}
                 </span>
               </div>
@@ -105,7 +102,7 @@ export function SocialProofPopup() {
                 {currentNotification.action.text}
               </p>
               <div className="flex items-center gap-1.5 mt-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00B7A8] animate-pulse"></span>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                   Verified • {currentNotification.location}
                 </p>

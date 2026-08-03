@@ -23,34 +23,28 @@ export function HomeRoiCalculator() {
   const recoveredRevenue = recoveredPatients * fee;
 
   return (
-    <div className="relative w-full max-w-4xl mx-auto mt-16 z-20">
-      {/* Glow behind the calculator */}
-      <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-[32px] blur opacity-20 animate-pulse" />
-      
-      <div className="relative bg-[#0A0A0A]/80 backdrop-blur-2xl border border-white/10 rounded-[32px] p-6 sm:p-10 shadow-2xl overflow-hidden">
+    <div className="relative w-full max-w-4xl mx-auto mt-8 z-20">
+      <div className="relative bg-white border border-slate-200/90 rounded-[32px] p-6 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.06)] overflow-hidden">
         
-        {/* Subtle inner top glow */}
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
-
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
           
           {/* Left Side: Sliders */}
           <div className="space-y-8">
             <div>
-              <h3 className="text-2xl font-bold text-white mb-2 tracking-tight flex items-center gap-2">
-                <TrendingUp className="w-6 h-6 text-emerald-400" />
+              <h3 className="text-2xl font-bold text-[#0B132B] mb-2 tracking-tight flex items-center gap-2">
+                <TrendingUp className="w-6 h-6 text-[#00B7A8]" />
                 Revenue Recovery Calculator
               </h3>
-              <p className="text-slate-400 text-sm">
-                See exactly how much you are losing to no-shows and how much Doctor Diary recovers for you automatically.
+              <p className="text-slate-600 text-sm font-medium">
+                Calculate how much revenue Doctor Diary recovers for your practice each month by eliminating no-shows.
               </p>
             </div>
 
             <div className="space-y-6">
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <label className="text-sm font-medium text-slate-300">Average Consultation Fee</label>
-                  <span className="text-sm font-bold text-emerald-400">₹{fee.toLocaleString()}</span>
+                  <label className="text-sm font-bold text-slate-700">Average Consultation Fee</label>
+                  <span className="text-sm font-black text-[#00B7A8]">₹{fee.toLocaleString()}</span>
                 </div>
                 <Slider 
                   value={[fee]} 
@@ -58,14 +52,14 @@ export function HomeRoiCalculator() {
                   max={5000} 
                   step={100}
                   onValueChange={(val) => setFee(val[0])}
-                  className="[&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-emerald-400"
+                  className="[&_[role=slider]]:bg-[#00B7A8] [&_[role=slider]]:border-[#00B7A8]"
                 />
               </div>
 
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <label className="text-sm font-medium text-slate-300">Patients Per Day</label>
-                  <span className="text-sm font-bold text-emerald-400">{patientsPerDay}</span>
+                  <label className="text-sm font-bold text-slate-700">Patients Per Day</label>
+                  <span className="text-sm font-black text-[#00B7A8]">{patientsPerDay}</span>
                 </div>
                 <Slider 
                   value={[patientsPerDay]} 
@@ -73,46 +67,46 @@ export function HomeRoiCalculator() {
                   max={150} 
                   step={1}
                   onValueChange={(val) => setPatientsPerDay(val[0])}
-                  className="[&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-emerald-400"
+                  className="[&_[role=slider]]:bg-[#00B7A8] [&_[role=slider]]:border-[#00B7A8]"
                 />
               </div>
             </div>
           </div>
 
-          {/* Right Side: Results */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -z-10" />
-            
+          {/* Right Side: Results Card */}
+          <div className="bg-[#F8FAFC] border border-slate-200 rounded-2xl p-6 relative overflow-hidden shadow-inner">
             <div className="space-y-6">
               <div>
-                <p className="text-slate-400 text-sm mb-1">Your current lost revenue (monthly)</p>
-                <p className="text-2xl font-semibold text-slate-300 line-through decoration-red-500/50">
+                <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Estimated Monthly No-Show Loss</p>
+                <p className="text-2xl font-bold text-slate-400 line-through decoration-red-500/60">
                   ₹{lostRevenueMonth.toLocaleString()}
                 </p>
               </div>
               
-              <div className="pt-4 border-t border-white/10">
-                <p className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
+              <div className="pt-4 border-t border-slate-200">
+                <p className="text-[#00B7A8] text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
                   <Users className="w-4 h-4" />
-                  Monthly Revenue Recovered
+                  Recovered Revenue With Doctor Diary
                 </p>
-                <div className="text-4xl sm:text-5xl font-black text-white tracking-tighter break-words">
-                  +₹{recoveredRevenue.toLocaleString()}
+                <div className="text-3xl sm:text-4xl font-black text-[#0B132B] tracking-tight break-words">
+                  +₹{recoveredRevenue.toLocaleString()}<span className="text-sm font-semibold text-slate-500"> / month</span>
                 </div>
-                <p className="text-slate-400 text-xs mt-2">
-                  Based on 85% recovery rate using 24/7 automated WhatsApp reminders.
+                <p className="text-xs text-slate-500 mt-2 font-medium">
+                  Based on automated 24h & 2h WhatsApp appointment reminders.
                 </p>
               </div>
 
-              <Link href="/signup" className="block mt-4">
-                <Button className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-base h-12 rounded-xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)]">
-                  Start Recovering Revenue
-                  <ArrowRight className="w-4 h-4 ml-2" />
+              <Link href="/signup" className="block pt-2">
+                <Button className="w-full h-12 bg-[#00B7A8] hover:bg-[#00998c] text-white font-bold rounded-xl shadow-md flex items-center justify-center gap-2">
+                  <span>Recover This Revenue Now</span>
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
           </div>
+
         </div>
+
       </div>
     </div>
   );
