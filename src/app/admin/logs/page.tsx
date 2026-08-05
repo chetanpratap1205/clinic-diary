@@ -1,110 +1,81 @@
-import { db } from "@/db";
-import { reminderLogs, appointments, clinics } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { CalendarClock, Mail, MessageSquare, Smartphone } from "lucide-react";
+import { getSystemLogs } from "./actions";
+import { LogsClient } from "./logs-client";
 
-export default async function LogsPage() {
-  const recentLogs = await db
-    .select({
-      id: reminderLogs.id,
-      channel: reminderLogs.channel,
-      triggerType: reminderLogs.triggerType,
-      sentAt: reminderLogs.sentAt,
-      status: reminderLogs.status,
-      message: reminderLogs.message,
-      clinicName: clinics.name,
-      patientName: appointments.patientName,
-    })
-    .from(reminderLogs)
-    .leftJoin(appointments, eq(reminderLogs.appointmentId, appointments.id))
-    .leftJoin(clinics, eq(appointments.clinicId, clinics.id))
-    .orderBy(desc(reminderLogs.sentAt))
-    .limit(100);
+export const dynamic = "force-dynamic";
 
-  const getChannelIcon = (channel: string) => {
-    switch (channel) {
-      case "sms": return <Smartphone className="w-4 h-4 text-slate-500" />;
-      case "whatsapp": return <MessageSquare className="w-4 h-4 text-green-500" />;
-      case "email": return <Mail className="w-4 h-4 text-blue-500" />;
-      default: return <CalendarClock className="w-4 h-4 text-slate-500" />;
-    }
-  };
+export const metadata = {
+  title: "System Logs & Telemetry | Admin Console",
+};
+
+export default async function AdminLogsPage() {
+  const { notificationLogs, auditLogs, paymentAuditLogs, marketingLogs } = await getSystemLogs();
+
+  // Metrics calculation
+  const totalNotifications = notificationLogs.length;
+  const failedCount = notificationLogs.filter((l) => l.status === "failed").length;
+  const successCount = totalNotifications - failedCount;
+  const successRate = totalNotifications > 0 ? ((successCount / totalNotifications) * 100).toFixed(1) : "100.0";
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">System Logs</h2>
-        <p className="text-slate-500 mt-1">Monitor automated reminder delivery and system events.</p>
-      </div>
-
-      <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto min-w-full shadow-sm">
-        <div className="min-w-[600px]">
-        <Table>
-          <TableHeader className="bg-slate-50">
-            <TableRow>
-              <TableHead className="whitespace-nowrap">Time</TableHead>
-              <TableHead className="whitespace-nowrap">Channel</TableHead>
-              <TableHead className="hidden sm:table-cell whitespace-nowrap">Type</TableHead>
-              <TableHead className="whitespace-nowrap">Clinic / Patient</TableHead>
-              <TableHead className="whitespace-nowrap">Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {recentLogs.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-slate-500">
-                  No logs found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              recentLogs.map((log) => (
-                <TableRow key={log.id}>
-                  <TableCell className="whitespace-nowrap text-sm text-slate-600">
-                    {format(new Date(log.sentAt), "MMM d, h:mm a")}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2 whitespace-nowrap">
-                      {getChannelIcon(log.channel)}
-                      <span className="capitalize text-sm font-medium">{log.channel}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell text-sm text-slate-600 whitespace-nowrap">
-                    {log.triggerType.replace("_", " ")}
-                  </TableCell>
-                  <TableCell className="min-w-[150px]">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium text-slate-900 truncate">{log.clinicName || "Unknown"}</span>
-                      <span className="text-xs text-slate-500 truncate">To: {log.patientName || "Unknown"}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {log.status === "sent" ? (
-                      <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
-                        Sent
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                        Failed
-                      </Badge>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+              System Logs & Telemetry
+            </h1>
+            <span className="bg-teal-100 text-teal-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+              Real-time Audit Trail
+            </span>
+          </div>
+          <p className="text-slate-500 text-sm mt-1">
+            Monitor WhatsApp notification delivery, platform audit activities, payment ledgers, and marketing QR telemetry.
+          </p>
         </div>
       </div>
+
+      {/* KPI Stat Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Dispatched</p>
+          <p className="text-3xl font-black text-slate-900 mt-2">{totalNotifications.toLocaleString()}</p>
+        </div>
+
+        <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Delivery Success Rate</p>
+          <p className="text-3xl font-black text-emerald-600 mt-2">{successRate}%</p>
+        </div>
+
+        <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Failed Alerts</p>
+            {failedCount > 0 && (
+              <span className="text-[10px] font-bold bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded">
+                Action Required
+              </span>
+            )}
+          </div>
+          <p className={`text-3xl font-black mt-2 ${failedCount > 0 ? "text-rose-600" : "text-slate-700"}`}>
+            {failedCount}
+          </p>
+        </div>
+
+        <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Primary Channel</p>
+          <p className="text-2xl font-black text-[#25D366] mt-2 flex items-center gap-1.5">
+            WhatsApp 💬
+          </p>
+        </div>
+      </div>
+
+      {/* Main Multi-Category Client Component */}
+      <LogsClient
+        notificationLogs={notificationLogs}
+        auditLogs={auditLogs}
+        paymentAuditLogs={paymentAuditLogs}
+        marketingLogs={marketingLogs}
+      />
     </div>
   );
 }

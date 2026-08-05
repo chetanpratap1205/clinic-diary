@@ -14,6 +14,7 @@ import { QueueColumn } from "@/components/queue/queue-column";
 import { CompleteAppointmentModal } from "@/components/queue/complete-appointment-modal";
 import { SmartQueueConductor } from "@/components/queue/smart-queue-conductor";
 import { FadeInUp } from "@/components/dashboard/dashboard-animations";
+import { soundEngine } from "@/lib/sound";
 
 interface QueueClientProps {
   initialAppointments: Appointment[];
@@ -77,6 +78,9 @@ export function QueueClient({ initialAppointments, clinic, today, followUpMap = 
           } else if (payload.eventType === "INSERT") {
             const newAppt = normalizeAppointment(payload.new);
             if (newAppt.appointmentDate === today) {
+              soundEngine.playBell();
+              soundEngine.vibrate([200, 100, 200]);
+              toast.info(`🔔 New Booking: ${newAppt.patientName} (Token #${newAppt.tokenNumber || "N/A"})`);
               setAppointments((prev) => prev.some((a) => a.id === newAppt.id) ? prev : [...prev, newAppt]);
             }
           } else if (payload.eventType === "DELETE") {

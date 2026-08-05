@@ -22,18 +22,27 @@ import {
   LEAD_CATEGORIES,
   getSuggestedPillar,
 } from "./message-builder";
-import { createLead, updateLead } from "./actions";
+import { createLead, updateLead, getGrowthPartners } from "./actions";
+import { useEffect } from "react";
 import { format } from "date-fns";
 
 interface AddEditLeadModalProps {
-  lead: DoctorLead | null; // null = add mode, DoctorLead = edit mode
-  onClose: () => void;
-  onSaved: () => void;
+  lead?: DoctorLead | null; // null / undefined = add mode, DoctorLead = edit mode
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
-export function AddEditLeadModal({ lead, onClose, onSaved }: AddEditLeadModalProps) {
+export function AddEditLeadModal({ lead = null, open, onOpenChange, onSuccess }: AddEditLeadModalProps) {
   const [isPending, startTransition] = useTransition();
+  const [partners, setPartners] = useState<any[]>([]);
   const isEdit = !!lead;
+
+  useEffect(() => {
+    if (open) {
+      getGrowthPartners().then(setPartners);
+    }
+  }, [open]);
 
   const [form, setForm] = useState({
     doctorName: lead?.doctorName ?? "",
@@ -43,16 +52,19 @@ export function AddEditLeadModal({ lead, onClose, onSaved }: AddEditLeadModalPro
     specialty: lead?.specialty ?? "",
     city: lead?.city ?? "",
     address: lead?.address ?? "",
-    source: lead?.source ?? "online",
+    source: lead?.source ?? "google_maps",
     status: lead?.status ?? "new",
     priority: lead?.priority ?? "normal",
     leadCategory: lead?.leadCategory ?? "A",
     domainPillar: lead?.domainPillar ?? "",
+    assignedTo: lead?.assignedTo ?? "",
     notes: lead?.notes ?? "",
     followUpDate: lead?.followUpDate
       ? format(new Date(lead.followUpDate), "yyyy-MM-dd")
       : "",
   });
+
+  if (!open) return null;
 
   const handleSpecialtyChange = (val: string) => {
     const suggestedPillar = getSuggestedPillar(val);
@@ -75,31 +87,33 @@ export function AddEditLeadModal({ lead, onClose, onSaved }: AddEditLeadModalPro
 
     startTransition(async () => {
       const payload = {
-        doctorName: form.doctorName.trim(),
-        clinicName: form.clinicName.trim() || undefined,
-        phone: form.phone.trim(),
-        email: form.email.trim() || undefined,
+        doctorName: form.doctorName,
+        clinicName: form.clinicName || undefined,
+        phone: form.phone,
+        email: form.email || undefined,
         specialty: form.specialty || undefined,
-        city: form.city.trim() || undefined,
-        address: form.address.trim() || undefined,
+        city: form.city || undefined,
+        address: form.address || undefined,
         source: form.source,
         status: form.status,
         priority: form.priority,
         leadCategory: form.leadCategory,
         domainPillar: form.domainPillar || undefined,
-        notes: form.notes.trim() || undefined,
+        assignedTo: form.assignedTo || undefined,
+        notes: form.notes || undefined,
         followUpDate: form.followUpDate || undefined,
       };
 
       const res = isEdit
-        ? await updateLead(lead.id, payload)
+        ? await updateLead(lead!.id, payload)
         : await createLead(payload);
 
       if (res.error) {
         toast.error(res.error);
       } else {
-        toast.success(isEdit ? "Lead updated!" : "Lead added!");
-        onSaved();
+        toast.success(isEdit ? "Lead updated!" : "Lead added! 🎯");
+        onOpenChange(false);
+        onSuccess?.();
       }
     });
   };
@@ -107,7 +121,7 @@ export function AddEditLeadModal({ lead, onClose, onSaved }: AddEditLeadModalPro
   return (
     <>
       {/* Overlay */}
-      <div className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm" onClick={() => onOpenChange(false)} />
 
       {/* Modal */}
       <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[94vw] sm:w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden">
@@ -122,7 +136,7 @@ export function AddEditLeadModal({ lead, onClose, onSaved }: AddEditLeadModalPro
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={() => onOpenChange(false)}
             className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
           >
             <X className="w-5 h-5" />
@@ -234,6 +248,27 @@ export function AddEditLeadModal({ lead, onClose, onSaved }: AddEditLeadModalPro
                     </SelectContent>
                   </Select>
                 </div>
+                
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Assigned Partner</Label>
+                  <Select
+                    value={form.assignedTo}
+                    onValueChange={(v) => setForm((f) => ({ ...f, assignedTo: v === "unassigned" ? "" : v }))}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Unassigned" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unassigned" className="text-slate-400 italic">Unassigned</SelectItem>
+                      {partners.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="space-y-1.5">
                   <Label className="text-sm">Source</Label>
                   <Select
@@ -331,7 +366,7 @@ export function AddEditLeadModal({ lead, onClose, onSaved }: AddEditLeadModalPro
             <Button
               type="button"
               variant="outline"
-              onClick={onClose}
+              onClick={() => onOpenChange(false)}
               className="flex-1 h-10"
               disabled={isPending}
             >

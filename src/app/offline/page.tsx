@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Activity, WifiOff, RefreshCw } from "lucide-react";
+import { WifiOff, RefreshCw } from "lucide-react";
+import { AnimatedLogo } from "@/components/animated-logo";
 
 export default function OfflinePage() {
   return (
@@ -15,14 +16,9 @@ export default function OfflinePage() {
 
       <div className="text-center max-w-sm w-full">
         {/* Logo */}
-        <Link href="/" className="inline-flex items-center gap-2 mb-10">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-600 to-teal-800 flex items-center justify-center shadow-md">
-            <Activity className="w-5 h-5 text-white" strokeWidth={3} />
-          </div>
-          <span className="font-bold text-slate-900 text-lg tracking-tight">
-            Doctor Diary
-          </span>
-        </Link>
+        <div className="flex justify-center mb-10">
+          <AnimatedLogo theme="light" size="md" />
+        </div>
 
         {/* Offline icon */}
         <div className="w-24 h-24 rounded-full bg-slate-100 border-2 border-slate-200 flex items-center justify-center mx-auto mb-6">

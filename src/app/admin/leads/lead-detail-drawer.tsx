@@ -15,6 +15,9 @@ import {
   Calendar,
   Activity,
   StickyNote,
+  Sparkles,
+  ExternalLink,
+  Copy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format, formatDistanceToNow } from "date-fns";
@@ -25,6 +28,7 @@ import {
   LEAD_PRIORITIES,
   LEAD_CATEGORIES,
   getCategoryLabel,
+  generateLeadDemoUrl,
 } from "./message-builder";
 import { getLeadActivities, deleteLead, updateLead } from "./actions";
 import {
@@ -36,13 +40,16 @@ import {
 } from "@/components/ui/select";
 
 interface LeadDetailDrawerProps {
-  lead: DoctorLead;
-  onClose: () => void;
-  onEdit: () => void;
-  onRefresh: () => void;
+  lead: DoctorLead | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onEditLead?: (lead: DoctorLead) => void;
+  onOpenWhatsAppDrawer?: (lead: DoctorLead) => void;
+  onOpenConvertModal?: (lead: DoctorLead) => void;
+  onRefresh?: () => void;
 }
 
-interface Activity {
+interface ActivityItem {
   id: string;
   type: string;
   notes: string | null;
@@ -61,23 +68,33 @@ const activityIcons: Record<string, string> = {
 
 export function LeadDetailDrawer({
   lead,
-  onClose,
-  onEdit,
+  open,
+  onOpenChange,
+  onEditLead,
+  onOpenWhatsAppDrawer,
+  onOpenConvertModal,
   onRefresh,
 }: LeadDetailDrawerProps) {
-  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(true);
-  const [notes, setNotes] = useState(lead.notes || "");
+  const [notes, setNotes] = useState(lead?.notes || "");
   const [savingNotes, setSavingNotes] = useState(false);
   const [, startTransition] = useTransition();
 
   useEffect(() => {
+    setNotes(lead?.notes || "");
+  }, [lead?.notes]);
+
+  useEffect(() => {
+    if (!open || !lead?.id) return;
+    setLoadingActivities(true);
     getLeadActivities(lead.id)
-      .then((data) => setActivities(data as Activity[]))
+      .then((data) => setActivities(data as ActivityItem[]))
       .finally(() => setLoadingActivities(false));
-  }, [lead.id]);
+  }, [lead?.id, open]);
 
   const handleSaveNotes = async () => {
+    if (!lead) return;
     setSavingNotes(true);
     const res = await updateLead(lead.id, { notes });
     setSavingNotes(false);
@@ -86,48 +103,60 @@ export function LeadDetailDrawer({
   };
 
   const handleDelete = () => {
+    if (!lead) return;
     if (!confirm(`Delete lead for ${lead.doctorName}? This cannot be undone.`)) return;
     startTransition(async () => {
       const res = await deleteLead(lead.id);
       if (res.error) toast.error(res.error);
       else {
         toast.success("Lead deleted");
-        onClose();
-        onRefresh();
+        onOpenChange(false);
+        onRefresh?.();
       }
     });
   };
 
   const handleStatusChange = (val: string) => {
+    if (!lead) return;
     startTransition(async () => {
       const res = await updateLead(lead.id, { status: val });
       if (res.error) toast.error(res.error);
       else {
         toast.success("Status updated");
-        onRefresh();
+        onRefresh?.();
       }
     });
   };
 
   const handlePriorityChange = (val: string) => {
+    if (!lead) return;
     startTransition(async () => {
       const res = await updateLead(lead.id, { priority: val });
       if (res.error) toast.error(res.error);
       else {
         toast.success("Priority updated");
-        onRefresh();
+        onRefresh?.();
       }
     });
   };
 
+  const copyDemoUrl = () => {
+    if (!lead) return;
+    const url = generateLeadDemoUrl(lead);
+    navigator.clipboard.writeText(url);
+    toast.success("Live Demo URL copied! 🔗");
+  };
+
+  if (!open || !lead) return null;
+
   const stepProgress = lead.messageSentStep || 0;
-  const statusInfo = LEAD_STATUSES.find((s) => s.value === lead.status);
-  const priorityInfo = LEAD_PRIORITIES.find((p) => p.value === lead.priority);
+  const demoUrl = generateLeadDemoUrl(lead);
+  const isConverted = lead.status === "converted";
 
   return (
     <>
       {/* Overlay */}
-      <div className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm" onClick={() => onOpenChange(false)} />
 
       {/* Drawer */}
       <div className="fixed right-0 top-0 h-full w-full sm:max-w-lg bg-white z-50 shadow-2xl flex flex-col">
@@ -140,14 +169,16 @@ export function LeadDetailDrawer({
               <p className="text-sm text-slate-500 mt-0.5 truncate">{lead.clinicName}</p>
             )}
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              onClick={onEdit}
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-teal-600 transition-colors"
-              title="Edit Lead"
-            >
-              <Pencil className="w-4 h-4" />
-            </button>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {onEditLead && (
+              <button
+                onClick={() => { onEditLead(lead); onOpenChange(false); }}
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-teal-600 transition-colors"
+                title="Edit Lead"
+              >
+                <Pencil className="w-4 h-4" />
+              </button>
+            )}
             <button
               onClick={handleDelete}
               className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors"
@@ -156,7 +187,7 @@ export function LeadDetailDrawer({
               <Trash2 className="w-4 h-4" />
             </button>
             <button
-              onClick={onClose}
+              onClick={() => onOpenChange(false)}
               className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
             >
               <X className="w-5 h-5" />
@@ -166,6 +197,46 @@ export function LeadDetailDrawer({
 
         {/* Scrollable Body */}
         <div className="flex-1 overflow-y-auto">
+          
+          {/* Quick Actions Toolbar */}
+          <div className="px-4 sm:px-6 py-3 border-b border-slate-100 flex items-center gap-2 flex-wrap bg-slate-50/60">
+            {onOpenWhatsAppDrawer && !isConverted && (
+              <button
+                onClick={() => { onOpenWhatsAppDrawer(lead); onOpenChange(false); }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#1EBE5A] text-white text-xs font-semibold transition-colors"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                WhatsApp Playbook
+              </button>
+            )}
+            {onOpenConvertModal && !isConverted && (
+              <button
+                onClick={() => { onOpenConvertModal(lead); onOpenChange(false); }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Convert to Clinic
+              </button>
+            )}
+            <button
+              onClick={copyDemoUrl}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 text-xs font-semibold transition-colors"
+              title="Copy personalised demo link"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              Copy Demo Link
+            </button>
+            <a
+              href={demoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-semibold transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              Preview Demo
+            </a>
+          </div>
+
           {/* Key Info Grid */}
           <div className="px-6 py-4 border-b border-slate-100">
             <div className="grid grid-cols-2 gap-3">
@@ -173,6 +244,22 @@ export function LeadDetailDrawer({
               {lead.email && <InfoRow icon={Tag} label="Email" value={lead.email} />}
               {lead.specialty && <InfoRow icon={Tag} label="Specialty" value={lead.specialty} />}
               {lead.city && <InfoRow icon={MapPin} label="City" value={lead.city} />}
+              <InfoRow
+                icon={Clock}
+                label="Last Contact"
+                value={
+                  lead.lastContactedAt
+                    ? formatDistanceToNow(new Date(lead.lastContactedAt), { addSuffix: true })
+                    : "Never contacted"
+                }
+              />
+              {lead.followUpDate && (
+                <InfoRow
+                  icon={Calendar}
+                  label="Follow-up Due"
+                  value={format(new Date(lead.followUpDate), "dd MMM yyyy")}
+                />
+              )}
               {lead.address && (
                 <div className="col-span-2">
                   <InfoRow icon={Building2} label="Address" value={lead.address} />
@@ -216,20 +303,12 @@ export function LeadDetailDrawer({
 
           {/* Playbook Status */}
           <div className="px-6 py-4 border-b border-slate-100">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Message Playbook</p>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Message Playbook Progress</p>
             <div className="bg-slate-50 rounded-xl p-4 space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-500">Category:</span>
                 <span className="font-semibold text-slate-800">
                   {lead.leadCategory || "A"} — {getCategoryLabel(lead.leadCategory || "A")}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-500">Last Contact:</span>
-                <span className="font-semibold text-slate-800">
-                  {lead.lastContactedAt
-                    ? formatDistanceToNow(new Date(lead.lastContactedAt), { addSuffix: true })
-                    : "Never"}
                 </span>
               </div>
               {/* Step Progress */}
@@ -253,18 +332,16 @@ export function LeadDetailDrawer({
                     </div>
                   ))}
                   {stepProgress >= 3 ? (
-                    <span className="text-xs text-emerald-600 font-medium ml-2">Complete</span>
+                    <span className="text-xs text-emerald-600 font-medium ml-2">Sequence Complete</span>
                   ) : (
-                    <span className="text-xs text-slate-400 ml-2">
-                      Step {stepProgress + 1} pending
-                    </span>
+                    <span className="text-xs text-slate-400 ml-2">Step {stepProgress + 1} pending</span>
                   )}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Timeline */}
+          {/* Activity Timeline */}
           <div className="px-6 py-4 border-b border-slate-100">
             <div className="flex items-center gap-2 mb-3">
               <Activity className="w-3.5 h-3.5 text-slate-400" />
@@ -287,14 +364,13 @@ export function LeadDetailDrawer({
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-slate-700">
-                        {a.type === "whatsapp" && `WhatsApp message sent`}
-                        {a.type === "call" && `Phone call logged`}
-                        {a.type === "visit" && `Clinic visit recorded`}
-                        {a.type === "note" && `Note added`}
+                        {a.type === "whatsapp" && "WhatsApp message sent"}
+                        {a.type === "call" && "Phone call logged"}
+                        {a.type === "visit" && "Clinic visit recorded"}
+                        {a.type === "note" && "Note added"}
                         {a.type === "status_change" && (
                           <span>
-                            Status changed:{" "}
-                            <span className="text-slate-500">{a.previousStatus}</span>
+                            Status: <span className="text-slate-500">{a.previousStatus}</span>
                             {" → "}
                             <span className="font-semibold text-slate-900">{a.newStatus}</span>
                           </span>
@@ -340,7 +416,7 @@ export function LeadDetailDrawer({
           </div>
         </div>
 
-        {/* Meta Footer */}
+        {/* Footer */}
         <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 shrink-0">
           <div className="flex justify-between text-xs text-slate-400">
             <span>Source: <span className="font-medium text-slate-600">{lead.source}</span></span>

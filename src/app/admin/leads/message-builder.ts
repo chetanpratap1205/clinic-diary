@@ -16,7 +16,6 @@ export interface LeadForMessage {
   messageSentStep: number;
 }
 
-// ─── Global Config ───────────────────────────────────────────────────────────
 export const MESSAGE_CONFIG = {
   senderName: "Govind Bansal | Sales & Marketing Head",
   shortSenderName: "Govind Bansal",
@@ -25,9 +24,98 @@ export const MESSAGE_CONFIG = {
   repName: "Govind Bansal",
 };
 
-// ─── Step label helper ────────────────────────────────────────────────────────
+// ─── Lookup Tables (referenced by all forms & filters) ────────────────────────
+export const LEAD_STATUSES = [
+  { value: "new", label: "New" },
+  { value: "contacted", label: "Contacted" },
+  { value: "demo_scheduled", label: "Demo Scheduled" },
+  { value: "converted", label: "Converted" },
+  { value: "rejected", label: "Rejected" },
+];
+
+export const LEAD_PRIORITIES = [
+  { value: "hot", label: "🔥 Hot" },
+  { value: "warm", label: "🟡 Warm" },
+  { value: "normal", label: "Normal" },
+  { value: "cold", label: "❄ Cold" },
+];
+
+export const LEAD_CATEGORIES = [
+  { value: "A", label: "Cold Outreach", desc: "Discovered via Google Maps / Instagram / LinkedIn" },
+  { value: "B", label: "Visited Clinic", desc: "Your team has physically visited the clinic" },
+  { value: "C", label: "Inbound Lead", desc: "Doctor reached out to you directly" },
+];
+
+export const LEAD_SOURCES = [
+  { value: "google_maps", label: "Google Maps 🗺️" },
+  { value: "instagram", label: "Instagram 📸" },
+  { value: "linkedin", label: "LinkedIn 💼" },
+  { value: "field_visit", label: "Field Visit 🚗" },
+  { value: "online", label: "Inbound Web 🌐" },
+  { value: "imported", label: "CSV Import 📄" },
+  { value: "growth_partner", label: "Growth Partner 🤝" },
+  { value: "referral", label: "Referral 👥" },
+];
+
+export const SPECIALTIES = [
+  "General Physician",
+  "Dermatologist",
+  "Cardiologist",
+  "Orthopedic",
+  "Pediatrician",
+  "Gynecologist",
+  "ENT Specialist",
+  "Ophthalmologist",
+  "Dentist",
+  "Neurologist",
+  "Psychiatrist",
+  "Urologist",
+  "Gastroenterologist",
+  "Pulmonologist",
+  "Endocrinologist",
+  "Rheumatologist",
+  "Oncologist",
+  "Nephrologist",
+  "Hematologist",
+  "Radiologist",
+  "Pathologist",
+  "Surgeon",
+  "Physiotherapist",
+  "Nutritionist/Dietitian",
+  "Homeopath",
+  "Ayurvedic Physician",
+];
+
+// ─── Auto-Generated Personalized Demo Preview URL ──────────────────────────────
+export function generateLeadDemoUrl(lead: {
+  doctorName: string;
+  clinicName?: string | null;
+  specialty?: string | null;
+  city?: string | null;
+}): string {
+  let docName = lead.doctorName || "Doctor";
+  // Remove "dr." prefix if it exists before sluggifying, so we can consistently add it
+  if (docName.toLowerCase().startsWith("dr. ")) {
+    docName = docName.substring(4);
+  } else if (docName.toLowerCase().startsWith("dr ")) {
+    docName = docName.substring(3);
+  }
+
+  let slug = docName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+    
+  // Ensure it starts with dr-
+  if (!slug.startsWith("dr-")) {
+    slug = `dr-${slug}`;
+  }
+
+  return `https://doctor.naturexpress.in/book/${slug}`;
+}
+
+// ─── Step / Category Helpers ──────────────────────────────────────────────────
 export function getSuggestedPillar(specialty: string | null | undefined): string {
-  // Keeping for backward compatibility with schema
   return "growth";
 }
 
@@ -38,270 +126,198 @@ export function getNextStepLabel(currentStep: number, category: string): string 
 }
 
 export function getCategoryLabel(cat: string): string {
-  if (cat === "A") return "Cold Outreach";
-  if (cat === "B") return "Visited Clinic";
-  if (cat === "C") return "Inbound Lead";
-  return "Unknown";
+  const found = LEAD_CATEGORIES.find((c) => c.value === cat.toUpperCase());
+  return found?.label ?? "Unknown";
 }
 
-// ─── Universal Core Hook ─────────────────────────────────────────────────────
-const getUniversalHook = () => `We know nothing beats the speed and comfort of writing on your favorite prescription pad. Doctor Diary is designed to work *with* that habit, not change it.
-
-While you write as usual, Doctor Diary instantly creates a digital copy of your prescription and delivers it directly to your patient's WhatsApp before they even step out of the clinic.`;
+function extractLastName(name: string): string {
+  const clean = name.replace(/^dr\.?\s+/i, "").trim();
+  return clean.split(/\s+/)[0] || clean;
+}
 
 // ─── Category A — Cold Outreach Messages ─────────────────────────────────────
 export function buildCategoryAMessage(lead: LeadForMessage, step: number): string {
   const name = extractLastName(lead.doctorName);
   const clinicName = lead.clinicName || "your clinic";
+  const specialty = lead.specialty ? `as a ${lead.specialty}` : "";
+  const demoUrl = generateLeadDemoUrl(lead);
 
   if (step === 1) {
-    return `Respected Dr. ${name},
+    return `*Stop paying 20% commission to aggregators, Dr. ${name}.*
 
-${getUniversalHook()}
+Your clinic's revenue and patient data belong exclusively to you${specialty ? ` — especially ${specialty}` : ""}.
 
-Here is how Doctor Diary is upgrading patient experience and increasing patient footfall for clinics like yours:
+We have pre-built a *100% Free Custom Booking Website + Mobile App* specifically for *${clinicName}*:
 
-🌟 5-Star Patient Experience: Patients get their Rx instantly on WhatsApp (no lost papers).
-📈 Increasing Patient Returns: Automated WhatsApp follow-up reminders bring back 15-20% of patients who would otherwise miss their return dates.
-🛋️ Calm Waiting Rooms: Live queue turn updates on the patient's phone prevent front-desk crowding.
+🌐 *Your Live Booking Website & App:*
+${demoUrl}
 
-🎥 45-Second Demo: ${MESSAGE_CONFIG.videoLink}
-📄 Complete Feature Guide: ${MESSAGE_CONFIG.pdfLink}
+⚡ *What ${clinicName} gets instantly:*
+• *0% Commission* — Keep 100% of consultation & clinic fees.
+• *Zero Typing* — Write on your paper Rx pad; patients get a digital copy on WhatsApp.
+• *Automated Patient Returns* — Smart follow-up reminders bring back 18-20% more patients monthly.
 
-Can I send you a test login to see how it looks on your phone?
+Reply *1* to activate your 14-day free trial instantly.
+Reply *2* to receive a 2-minute video demo.
 
-${MESSAGE_CONFIG.senderName} | Doctor Diary`;
+${MESSAGE_CONFIG.shortSenderName}
+Doctor Diary | 📄 ${MESSAGE_CONFIG.pdfLink}`;
   }
 
   if (step === 2) {
-    return `Dr. ${name}, following up briefly.
+    return `*A clinic 2 streets from ${clinicName} just went live on Doctor Diary, Dr. ${name}.*
 
-The single biggest feedback we hear from doctors using Doctor Diary is about the increase in returning patients.
+They now take 0% commission bookings, send automated WhatsApp follow-ups, and keep 100% of their patient fees — while still writing prescriptions on paper.
 
-Because patients receive a polite WhatsApp reminder 24 hours before their follow-up date, clinics are seeing an average 18% increase in follow-up footfall every month. 
+Your personalised clinic portal is still reserved and ready:
 
-You already have the video and prospectus from my last message.
+🌐 *${clinicName}'s Live Portal & App:*
+${demoUrl}
 
-If elevating the patient experience looks useful for ${clinicName}, reply and I will set that specific module up as a free trial. No full onboarding required.
+🔒 *Territory Notice:* We lock 1 clinic per PIN code. Once it's claimed, it's gone.
 
-${MESSAGE_CONFIG.senderName} | Doctor Diary`;
+Reply *YES* and we'll activate your clinic's portal in 15 minutes. Zero setup.
+
+${MESSAGE_CONFIG.shortSenderName}
+Doctor Diary`;
   }
 
-  // Step 3 — Clean Exit
-  return `Dr. ${name},
+  // Step 3 — Clean Exit / Takeaway
+  return `*Closing your file now, Dr. ${name}.*
 
-Last message from my end — I know your schedule leaves very little room.
+Completely understand — your schedule as a specialist leaves very little breathing room.
 
-Leaving this here for whenever it becomes relevant:
-🎥 45-Second Video Overview: ${MESSAGE_CONFIG.videoLink}
-📄 Complete Feature Prospectus: ${MESSAGE_CONFIG.pdfLink}
+Your complimentary clinic website & app link remains active here for when you have a moment:
+✨ ${demoUrl}
 
-If increasing returning patients and providing a digital 5-star experience ever becomes a priority for ${clinicName}, reply to this message anytime and we will set up your clinic within 15 minutes.
+If *${clinicName}* ever decides to go commission-free and automate patient follow-ups, simply reply to this message. We'll handle the entire migration with zero downtime in 48 hours.
 
-Wishing you a great practice ahead.
+Wishing you a thriving practice ahead.
 
-${MESSAGE_CONFIG.senderName} | Doctor Diary`;
+${MESSAGE_CONFIG.shortSenderName}
+Doctor Diary`;
 }
 
 // ─── Category B — Visited Clinic Messages ────────────────────────────────────
 export function buildCategoryBMessage(lead: LeadForMessage, step: number): string {
   const name = extractLastName(lead.doctorName);
   const clinicName = lead.clinicName || "your clinic";
+  const specialty = lead.specialty ? `${lead.specialty} ` : "";
+  const demoUrl = generateLeadDemoUrl(lead);
 
   if (step === 1) {
-    return `Respected Dr. ${name},
+    return `*As promised during our visit, Dr. ${name} — your clinic's link is live.*
 
-${MESSAGE_CONFIG.repName} from our team visited ${clinicName} earlier today.
+It was a pleasure meeting you at *${clinicName}* earlier. Our engineering team has already pre-configured your private booking website & mobile app:
 
-As promised, here is everything in one place:
-🎥 Demo Video (45 seconds): ${MESSAGE_CONFIG.videoLink}
-📄 Full Feature Prospectus: ${MESSAGE_CONFIG.pdfLink}
+🌐 *${specialty}Portal & App for ${clinicName}:*
+${demoUrl}
 
-One thing worth highlighting for ${clinicName} — you don't need to change how you write prescriptions. Keep using your pen and pad. Doctor Diary just ensures the patient gets a digital copy on WhatsApp immediately. 
+💡 *What you can open right now and see live:*
+• Your clinic name, specialty & booking page — already set up.
+• Patients book directly, you collect fees at 0% commission.
+• You keep writing Rx on paper; they get a digital copy on WhatsApp.
 
-It elevates the patient experience instantly, and patients love it because they never lose their prescriptions again.
+Reply *START* and I'll activate your 14-day free trial in 60 seconds.
 
-Tomorrow between 1–2 PM, can I show you the full workflow in a 3-minute call?
-
-${MESSAGE_CONFIG.senderName} | Doctor Diary`;
+${MESSAGE_CONFIG.shortSenderName}
+Doctor Diary`;
   }
 
   if (step === 2) {
-    return `Dr. ${name}, good afternoon.
+    return `*18% more returning patients at ${clinicName} — here's how, Dr. ${name}.*
 
-Quick question about ${clinicName} — how many patients miss their return dates simply because they forgot or lost the paper prescription?
+Since our visit, I wanted to follow up specifically on what we discussed about missed follow-ups costing revenue.
 
-Doctor Diary fixes this automatically. Our automated WhatsApp follow-up reminders bring 15-20% more patients back to your clinic precisely when they are scheduled to return. It directly increases your clinic's monthly footfall without any extra effort from your front desk.
+Doctor Diary's automated WhatsApp reminders run 24/7 in the background — silently bringing back patients who would otherwise forget their follow-up date.
 
-Your team can be set up and trained in under 15 minutes.
+🌐 *Your live clinic portal (already set up):*
+${demoUrl}
 
-Shall I configure a trial version with ${clinicName} pre-loaded?
+Enable this for just 10 patients this week — zero setup required. You'll see the difference in 7 days.
 
-${MESSAGE_CONFIG.senderName} | Doctor Diary`;
+${MESSAGE_CONFIG.shortSenderName}
+Doctor Diary`;
   }
 
-  // Step 3 — Personal Trial Handover
-  return `Dr. ${name},
+  return `*Dr. ${name}, your patients are ready — the portal just needs your go-ahead.*
 
-Following up on our team's visit to ${clinicName}.
+I'll stop following up from my end now — I know how packed a ${specialty}specialist's schedule can be.
 
-Whenever you have 3 minutes between consultations, reply "DEMO" to this message and I will personally walk you through Doctor Diary configured for your practice.
+Your clinic's custom website & app link stays active here permanently:
+✨ ${demoUrl}
 
-🎥 Watch 45-Second Demo: ${MESSAGE_CONFIG.videoLink}
-📄 Download Prospectus: ${MESSAGE_CONFIG.pdfLink}
+When you're ready to take 0% commission bookings and bring back patients on autopilot, just reply here. We'll have *${clinicName}* fully live within 48 hours.
 
-If improving the patient experience fits your current goals, we can go fully live within the same day.
-
-${MESSAGE_CONFIG.senderName} | Doctor Diary`;
+${MESSAGE_CONFIG.shortSenderName}
+Doctor Diary`;
 }
 
-// ─── Category C — Inbound Messages ───────────────────────────────────────────
+// ─── Category C — Inbound Lead Messages ──────────────────────────────────────
 export function buildCategoryCMessage(lead: LeadForMessage, step: number): string {
   const name = extractLastName(lead.doctorName);
   const clinicName = lead.clinicName || "your clinic";
+  const specialty = lead.specialty ? ` ${lead.specialty}` : "";
+  const demoUrl = generateLeadDemoUrl(lead);
 
   if (step === 1) {
-    return `Respected Dr. ${name},
+    return `*Your free clinic website & app are live, Dr. ${name}!*
 
-Thank you for reaching out — great timing on exploring Doctor Diary for ${clinicName}.
+Thank you for reaching out to Doctor Diary. We've already pre-configured *${clinicName}'s* complete digital booking infrastructure:
 
-Here is your complete preview:
-🎥 Product Walkthrough (45 sec): ${MESSAGE_CONFIG.videoLink}
-📄 Full Feature Guide: ${MESSAGE_CONFIG.pdfLink}
+🌐 *Your Live Booking Portal & App:*
+${demoUrl}
 
-Three things doctors tell us make the biggest difference from Day 1:
-1. Patient Experience: Patients get their Rx instantly on WhatsApp (you still use your normal pen and pad).
-2. Increased Footfall: Auto-reminders ensure patients don't forget their return dates.
-3. Queue Sanity: Patients stop asking the receptionist "What's my turn?" — WhatsApp updates handle it.
+⚡ *What's inside (open the link now):*
+• *0% Commission* — All appointment & direct patient payments go straight to you.
+• *Keep Pen & Pad* — Write as usual; we handle the digital WhatsApp delivery.
+• *White-Glove Setup* — All patient data migrated in 48 hours, zero downtime.
 
-What is the biggest friction point in your patient flow right now?
+Reply *DEMO* for a 5-minute guided call.
+Reply *GO* to activate your account right now!
 
-${MESSAGE_CONFIG.senderName} | Doctor Diary`;
+${MESSAGE_CONFIG.shortSenderName}
+Doctor Diary | 📄 ${MESSAGE_CONFIG.pdfLink}`;
   }
 
   if (step === 2) {
-    return `Dr. ${name}, a quick follow-up on Doctor Diary.
+    return `*24 hours left to hold your territory, Dr. ${name}.*
 
-In concrete terms, here is what changes for ${clinicName} in the first 30 days:
+You enquired about Doctor Diary and we want to make sure *${clinicName}* secures its PIN code territory before another${specialty} clinic in your area does.
 
-📌 Patient no-show rate drops significantly (WhatsApp reminders replace phone calls)
-📌 Monthly follow-up revenue recovers 15–20% from automated patient nudges
-📌 Google review count increases 3x from automated post-visit feedback requests
-📌 The clinic feels like a premium, 5-star experience for every patient
+We only activate 1 clinic per PIN code area to guarantee digital exclusivity and maximum ROI.
 
-The setup takes 15 minutes. There is no contract and no lock-in.
+🌐 *Your portal is live and waiting:*
+${demoUrl}
 
-If you watched even part of the video I shared — reply with the one feature that stood out and I will demo just that in 2 minutes over a call.
+Reply *NOW* and we will complete your clinic setup in under 15 minutes today.
 
-${MESSAGE_CONFIG.senderName} | Doctor Diary`;
+${MESSAGE_CONFIG.shortSenderName}
+Doctor Diary`;
   }
 
-  // Step 3 — Direct Close Offer
-  return `Dr. ${name},
+  return `*Closing out your inquiry for now, Dr. ${name}.*
 
-I am ${MESSAGE_CONFIG.shortSenderName}, Sales & Marketing Head at Doctor Diary. I wanted to reach out personally.
+You can access *${clinicName}'s* custom booking website & app anytime here:
+✨ ${demoUrl}
 
-I built this outreach because I see how easily a clinic can elevate its patient experience and increase returning footfall with just a few smart digital tools, without disrupting the doctor's traditional workflow.
+Whenever you're ready to go commission-free and protect your patient database from aggregators, drop a message here and we'll activate everything within 15 minutes.
 
-For ${clinicName}, I will personally handle the initial setup — your clinic header, logo, medicine preferences, and receptionist training.
-
-What I am offering:
-✅ Free 14-day full trial — full features, zero restrictions
-✅ Personal setup call with our team (20 minutes, at your convenience)
-✅ WhatsApp support directly on this number throughout the trial
-
-Just reply "YES" and I will book your setup call within the hour.
-
-${MESSAGE_CONFIG.senderName} | Doctor Diary`;
+${MESSAGE_CONFIG.shortSenderName}
+Doctor Diary`;
 }
 
-// ─── Universal Builder by Category + Step ────────────────────────────────────
-export function buildMessageForStep(
-  lead: LeadForMessage,
-  category: string,
-  step: number
-): string {
-  const cat = (category || "A") as LeadCategory;
-  if (cat === "A") return buildCategoryAMessage(lead, step);
+// ─── Unified message builder (used by WhatsApp drawer) ────────────────────────
+export function buildMessageForStep(lead: LeadForMessage, category: string, step: number): string {
+  const cat = (category || "A").toUpperCase();
   if (cat === "B") return buildCategoryBMessage(lead, step);
-  return buildCategoryCMessage(lead, step);
+  if (cat === "C") return buildCategoryCMessage(lead, step);
+  return buildCategoryAMessage(lead, step);
 }
 
-// ─── Main Builder ─────────────────────────────────────────────────────────────
-export function buildWhatsAppMessage(lead: LeadForMessage): {
-  message: string;
-  stepNumber: number;
-  isComplete: boolean;
-  waUrl: string;
-} {
-  const nextStep = lead.messageSentStep + 1;
-  const isComplete = nextStep > 3;
-
-  let message = "";
-
-  if (!isComplete) {
-    message = buildMessageForStep(lead, lead.leadCategory || "A", nextStep);
-  }
-
-  const phone = lead.phone.replace(/\D/g, "");
-  const phoneWithCountry = phone.startsWith("91") ? phone : `91${phone}`;
-  const waUrl = isComplete ? "" : `https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(message)}`;
-
-  return { message, stepNumber: nextStep, isComplete, waUrl };
+export function buildMessageForLead(lead: LeadForMessage, stepOverride?: number): { step: number; text: string } {
+  const currentStep = lead.messageSentStep || 0;
+  const nextStep = stepOverride !== undefined ? stepOverride : Math.min(currentStep + 1, 3);
+  const text = buildMessageForStep(lead, lead.leadCategory || "A", nextStep);
+  return { step: nextStep, text };
 }
-
-// ─── Utilities ────────────────────────────────────────────────────────────────
-function extractLastName(fullName: string): string {
-  const parts = fullName.trim().split(" ");
-  return parts[parts.length - 1] || fullName;
-}
-
-export const SPECIALTIES = [
-  "General Physician",
-  "Dermatology & Aesthetics",
-  "Pediatrics",
-  "Gynecology & Obstetrics",
-  "Dentistry & Orthodontics",
-  "Orthopedics & Physiotherapy",
-  "Psychiatry & Mental Health",
-  "Cardiology",
-  "Diabetology & Endocrinology",
-  "Neurology",
-  "ENT",
-  "Ophthalmology",
-  "Urology",
-  "Pulmonology",
-  "Gastroenterology",
-  "Oncology",
-  "Polyclinic / Multi-Specialty",
-  "Other",
-];
-
-export const LEAD_SOURCES = [
-  { value: "online", label: "Online / Google Maps" },
-  { value: "field_visit", label: "Field Visit" },
-  { value: "referral", label: "Referral" },
-  { value: "imported", label: "Imported (CSV)" },
-  { value: "inbound", label: "Inbound / Ad Form" },
-];
-
-export const LEAD_STATUSES = [
-  { value: "new", label: "New", color: "bg-blue-100 text-blue-700" },
-  { value: "contacted", label: "Contacted", color: "bg-yellow-100 text-yellow-700" },
-  { value: "demo_scheduled", label: "Demo Scheduled", color: "bg-purple-100 text-purple-700" },
-  { value: "converted", label: "Converted", color: "bg-green-100 text-green-700" },
-  { value: "rejected", label: "Rejected", color: "bg-red-100 text-red-700" },
-];
-
-export const LEAD_PRIORITIES = [
-  { value: "hot", label: "🔴 Hot", color: "bg-red-100 text-red-700" },
-  { value: "warm", label: "🟡 Warm", color: "bg-orange-100 text-orange-700" },
-  { value: "normal", label: "🔵 Normal", color: "bg-slate-100 text-slate-600" },
-  { value: "cold", label: "⚪ Cold", color: "bg-slate-50 text-slate-400" },
-];
-
-export const LEAD_CATEGORIES = [
-  { value: "A", label: "A — Cold Outreach", desc: "No prior contact. Found on directory/Google Maps." },
-  { value: "B", label: "B — Clinic Visited", desc: "Field rep visited the clinic in person." },
-  { value: "C", label: "C — Inbound Lead", desc: "Doctor reached out via ad, form, or WhatsApp." },
-];

@@ -8,6 +8,7 @@ import { getClinicTodayDate, CLINIC_TIMEZONE } from "@/lib/timezone";
 import { toZonedTime } from "date-fns-tz";
 import { sendNotification } from "@/lib/notifications";
 import { getClinicAccessStatus } from "@/lib/subscription";
+import { sendBookingConfirmationEmail } from "@/app/actions/patient-auth";
 
 export async function getAvailableSlots(clinicId: string, dateStr: string) {
   try {
@@ -124,6 +125,8 @@ export async function createBooking(
     // We wrap everything in a transaction to prevent race conditions during high-volume booking
     let finalAppointmentId: string | null = null;
     let finalPatientId: string | null = null;
+    let finalTokenNumber: number = 1;
+    let finalCancelToken: string = "";
 
     await db.transaction(async (tx) => {
       // 0. Find or create patient
@@ -200,6 +203,9 @@ export async function createBooking(
       const nextToken = (maxTokenData?.maxToken || 0) + 1;
       const cancelToken = crypto.randomUUID();
 
+      finalTokenNumber = nextToken;
+      finalCancelToken = cancelToken;
+
       // Insert the appointment and return the ID
       const [newAppointment] = await tx.insert(appointments).values({
         clinicId,
@@ -223,7 +229,6 @@ export async function createBooking(
     }
 
     // ─── P0: Link pending follow-up if one exists for this patient ────────────
-    // This covers patients who book online for their follow-up visit
     const todayStr = getClinicTodayDate();
     const [pendingFollowUp] = await db
       .select()
@@ -233,20 +238,18 @@ export async function createBooking(
           eq(followUps.clinicId, clinicId),
           eq(followUps.patientId, finalPatientId),
           eq(followUps.status, "pending"),
-          lte(followUps.dueDate, dateStr) // due on or before this booking date
+          lte(followUps.dueDate, dateStr)
         )
       )
-      .orderBy(desc(followUps.dueDate)) // most recent/urgent first
+      .orderBy(desc(followUps.dueDate))
       .limit(1);
 
     if (pendingFollowUp) {
-      // Link the golden thread: follow-up → return appointment
       await db
         .update(followUps)
         .set({ followUpAppointmentId: finalAppointmentId })
         .where(eq(followUps.id, pendingFollowUp.id));
 
-      // If this follow-up is free, pre-set fee and mark appointment for queue
       if (pendingFollowUp.isFree) {
         const freeFee = pendingFollowUp.feeOverride !== null && pendingFollowUp.feeOverride !== undefined
           ? pendingFollowUp.feeOverride
@@ -259,7 +262,6 @@ export async function createBooking(
           })
           .where(eq(appointments.id, finalAppointmentId));
       } else {
-        // Paid follow-up — just mark it as follow-up type for the queue badge
         await db
           .update(appointments)
           .set({ notes: "Auto-generated from Follow-up" })
@@ -275,7 +277,7 @@ export async function createBooking(
       const clinic = clinicRecord[0];
       const trackingUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://doctordiary.in"}/track/${finalAppointmentId}`;
       
-      // Fire and forget the simulated SMS notification
+      // Fire SMS notification
       sendNotification("sms", "booking_confirmation", {
         appointmentId: finalAppointmentId,
         patientPhone,
@@ -286,6 +288,21 @@ export async function createBooking(
         appointmentTime: timeStr,
         trackingUrl,
       });
+
+      // Fire Real Email Confirmation if patient entered email
+      if (patientEmail && patientEmail.trim()) {
+        sendBookingConfirmationEmail({
+          patientEmail,
+          patientName,
+          clinicName: clinic.name,
+          doctorName: clinic.doctorName,
+          appointmentDate: dateStr,
+          appointmentTime: timeStr,
+          tokenNumber: finalTokenNumber,
+          trackingUrl,
+          cancelToken: finalCancelToken,
+        });
+      }
     }
 
     return { success: true, appointmentId: finalAppointmentId };

@@ -5,8 +5,8 @@ import "./globals.css";
 import { Toaster as SonnerToaster } from "sonner";
 import { PWAProvider } from "@/components/pwa-provider";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap", fallback: ["system-ui", "sans-serif"] });
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", display: "swap", fallback: ["system-ui", "sans-serif"] });
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in";
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
 import Script from "next/script";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans', display: 'swap', fallback: ['system-ui', 'sans-serif'] });
 
 
 export default function RootLayout({ children }: { children: ReactNode }) {

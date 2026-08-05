@@ -27,54 +27,65 @@ export function BottomActionBar({ clinic, workingDays, closedDates, lexicon, lan
   const themeColor = clinic.themeColor ?? "#0ea5e9";
   const [isDesktop, setIsDesktop] = useState(false);
 
-  // Sync screen size for modal animations
+  // Sync screen size for modal animations (matches Next.js lg breakpoint 1024px)
   useEffect(() => {
-    setIsDesktop(window.innerWidth >= 640);
-    const handleResize = () => setIsDesktop(window.innerWidth >= 640);
+    setIsDesktop(window.innerWidth >= 1024);
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
     <>
-      {/* Floating Dynamic Island */}
+      {/* 10/10 Floating Dynamic Island */}
       <div className="fixed bottom-6 left-0 right-0 z-40 px-4 sm:px-0 pointer-events-none flex justify-center pb-safe">
-        <div className="pointer-events-auto w-full max-w-[380px] sm:max-w-[420px] bg-white/70 backdrop-blur-2xl rounded-full border border-white/80 p-2 flex gap-2 items-center justify-between shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25),0_0_0_1px_rgba(255,255,255,0.5)_inset]">
-          
-          {/* Track Button */}
+        <div 
+          className="pointer-events-auto w-full max-w-[390px] sm:max-w-[430px] bg-white/80 backdrop-blur-2xl rounded-full border border-white/90 p-2 flex gap-2.5 items-center justify-between shadow-[0_30px_70px_-15px_rgba(0,0,0,0.35),0_0_0_1px_rgba(255,255,255,0.9)_inset] ring-1 ring-black/5"
+        >
+          {/* Live Status Widget Button */}
           <Link href={`/status/${clinic.slug}?lang=${lang}`} passHref legacyBehavior>
             <motion.a
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.96 }}
-              className="flex-shrink-0 w-[30%] max-w-[140px] h-14 rounded-2xl flex flex-col items-center justify-center gap-0.5 border shadow-sm transition-colors"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex-shrink-0 w-[32%] max-w-[140px] h-14 rounded-full flex flex-col items-center justify-center gap-0.5 border shadow-sm transition-all relative overflow-hidden group"
               style={{ 
-                backgroundColor: `${themeColor}08`, 
-                borderColor: `${themeColor}20`,
+                backgroundColor: `${themeColor}0a`, 
+                borderColor: `${themeColor}25`,
                 color: themeColor 
               }}
               aria-label="Live Status"
             >
-              <Activity className="w-5 h-5 mb-0.5" strokeWidth={2.5} />
-              <span className="text-[9px] font-black uppercase tracking-widest">{t.statusWait || "Status"}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                <Activity className="w-4 h-4" strokeWidth={2.5} />
+              </div>
+              <span className="text-[9px] font-black uppercase tracking-widest leading-none mt-0.5">{t.statusWait || "Status"}</span>
             </motion.a>
           </Link>
 
-          {/* Book Button (Primary) */}
+          {/* Book Appointment Pulsing Button */}
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.96 }}
             onClick={() => setIsModalOpen(true)}
-            className="flex-1 h-14 rounded-[20px] text-white flex items-center justify-center gap-2 sm:gap-3 shadow-lg relative overflow-hidden group"
-            style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}dd)`, boxShadow: `0 10px 25px -5px ${themeColor}60` }}
+            className="flex-1 h-14 rounded-full text-white flex items-center justify-center gap-2.5 sm:gap-3 shadow-xl relative overflow-hidden group"
+            style={{ 
+              background: `linear-gradient(135deg, ${themeColor}, ${themeColor}dd)`, 
+              boxShadow: `0 12px 30px -6px ${themeColor}70` 
+            }}
             aria-label="Book Free Appointment"
           >
-            {/* Shine effect */}
-            <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-[-20deg]" />
+            {/* Soft Ambient Pulse Ring */}
+            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-[-20deg]" />
             
-            <CalendarCheck className="w-[22px] h-[22px]" strokeWidth={2.5} />
+            <CalendarCheck className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" strokeWidth={2.5} />
             <div className="flex flex-col items-start text-left">
               <span className="text-[14px] sm:text-[15px] font-black leading-tight tracking-tight drop-shadow-sm">{t.bookAppointment}</span>
-              <span className="text-[10px] font-bold text-white/90 leading-tight uppercase tracking-wider">{t.trustNote(0).split(" · ")[0]} • Instant Token</span>
+              <span className="text-[9.5px] font-bold text-white/90 leading-tight uppercase tracking-wider">Pay at Clinic · Free Token</span>
             </div>
           </motion.button>
         </div>
@@ -106,6 +117,12 @@ export function BottomActionBar({ clinic, workingDays, closedDates, lexicon, lan
                 {/* Modal Header */}
                 <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-100 bg-white sticky top-0 z-10 shrink-0 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
                   <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/80">
+                        {clinic.name} • Live OPD Token
+                      </span>
+                    </div>
                     <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-tight">{t.bookAppointment}</h2>
                     <p className="text-xs sm:text-sm text-slate-500 font-medium">{t.trustNote(clinic.consultationFee)}</p>
                   </div>

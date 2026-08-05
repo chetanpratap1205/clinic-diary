@@ -1,8 +1,8 @@
 // Auto-versioned cache: update BUILD_TIME on each deploy
 // In production, inject the build timestamp via CI/CD or use a build hash
-const BUILD_TIME = "2026-06-25"; // Update this on each deploy
-const CACHE_NAME = `doctor-diary-v2-${BUILD_TIME}`;
-const STATIC_CACHE = `doctor-diary-static-v2-${BUILD_TIME}`;
+const BUILD_TIME = "2026-08-05";
+const CACHE_NAME = `doctor-diary-v3-${BUILD_TIME}`;
+const STATIC_CACHE = `doctor-diary-static-v3-${BUILD_TIME}`;
 
 const STATIC_ASSETS = [
   "/",
@@ -115,24 +115,147 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-// Push notifications
+// ─── Rich Push Notification Handler ─────────────────────────────────────────
+// Handles all 3 notification types:
+//   turn_called   → "Your turn is NOW!" — urgent, red badge
+//   turn_nearby   → "2 patients before you" — amber warning
+//   reminder      → "Appointment in 30 minutes" — calm blue
 self.addEventListener("push", (event) => {
   if (!event.data) return;
-  const data = event.data.json();
-  event.waitUntil(
-    self.registration.showNotification(data.title || "Doctor Diary", {
-      body: data.body || "You have a new notification",
+
+  let data;
+  try {
+    data = event.data.json();
+  } catch (e) {
+    data = { title: "Doctor Diary", body: event.data.text() };
+  }
+
+  const type = data.type || "default";
+
+  // ── Notification Variant Config ───────────────────────────────────────────
+  const configs = {
+    turn_called: {
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      vibrate: [400, 100, 400, 100, 600],
+      tag: `turn-called-${data.appointmentId || "main"}`,
+      renotify: true,
+      requireInteraction: true,
+      silent: false,
+      actions: [
+        { action: "open_tracking", title: "🏥 Open Queue", icon: "/icon-192.png" },
+        { action: "dismiss", title: "Later" },
+      ],
+    },
+    turn_nearby: {
       icon: "/icon-192.png",
       badge: "/icon-192.png",
       vibrate: [200, 100, 200],
-      data: data.url ? { url: data.url } : undefined,
+      tag: `turn-nearby-${data.appointmentId || "main"}`,
+      renotify: true,
+      requireInteraction: false,
+      silent: false,
+      actions: [
+        { action: "open_tracking", title: "👀 Track Queue", icon: "/icon-192.png" },
+        { action: "dismiss", title: "OK" },
+      ],
+    },
+    reminder: {
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      vibrate: [150, 75, 150],
+      tag: `reminder-${data.appointmentId || "main"}`,
+      renotify: false,
+      requireInteraction: false,
+      silent: false,
+      actions: [
+        { action: "open_tracking", title: "📍 Track Live", icon: "/icon-192.png" },
+        { action: "open_directions", title: "🗺️ Directions" },
+      ],
+    },
+    checkin_confirmed: {
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      vibrate: [100, 50, 100],
+      tag: `checkin-${data.appointmentId || "main"}`,
+      renotify: false,
+      requireInteraction: false,
+      silent: false,
+      actions: [
+        { action: "open_tracking", title: "📊 View My Queue", icon: "/icon-192.png" },
+      ],
+    },
+    default: {
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      vibrate: [200],
+      tag: `notification-${Date.now()}`,
+      renotify: false,
+      requireInteraction: false,
+      silent: false,
+      actions: [
+        { action: "open_tracking", title: "Open App", icon: "/icon-192.png" },
+      ],
+    },
+  };
+
+  const config = configs[type] || configs.default;
+
+  const notificationOptions = {
+    body: data.body || "You have a new update from your clinic.",
+    icon: config.icon,
+    badge: config.badge,
+    vibrate: config.vibrate,
+    tag: config.tag,
+    renotify: config.renotify,
+    requireInteraction: config.requireInteraction,
+    silent: config.silent,
+    data: {
+      url: data.url || "/",
+      appointmentId: data.appointmentId || null,
+      directionsUrl: data.directionsUrl || null,
+      type,
+    },
+    actions: config.actions,
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || "Doctor Diary", notificationOptions)
+  );
+});
+
+// ─── Rich Notification Click Handler ─────────────────────────────────────────
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  const { action } = event;
+  const notifData = event.notification.data || {};
+  const trackUrl = notifData.url || "/";
+  const directionsUrl = notifData.directionsUrl;
+
+  let targetUrl = trackUrl;
+
+  if (action === "open_directions" && directionsUrl) {
+    targetUrl = directionsUrl;
+  } else if (action === "dismiss") {
+    return; // Just close, do nothing
+  }
+  // "open_tracking" or any other action → open tracking page
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      // If there's already an open tab at this URL, focus it
+      for (const client of clientList) {
+        if (client.url.includes(targetUrl) && "focus" in client) {
+          return client.focus();
+        }
+      }
+      // Otherwise open a new window
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
     })
   );
 });
 
-self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-  if (event.notification.data?.url) {
-    event.waitUntil(clients.openWindow(event.notification.data.url));
-  }
-});
+

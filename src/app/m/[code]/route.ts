@@ -1,40 +1,50 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { marketingCampaigns } from "@/db/schema";
+import { marketingCampaigns, marketingClickLogs } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { cookies } from "next/headers";
 
-// Edge-compatible fast redirect
 export const runtime = "nodejs";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ code: string }> }
 ) {
   const { code } = await params;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://doctor.naturexpress.in";
 
   try {
-    // 1. Look up the marketing campaign
-    const campaignResult = await db
+    // 1. Look up marketing campaign
+    const [campaign] = await db
       .select()
       .from(marketingCampaigns)
       .where(eq(marketingCampaigns.code, code.toUpperCase()))
       .limit(1);
 
-    if (campaignResult.length === 0) {
-      // If code doesn't exist, just redirect to home
+    if (!campaign || campaign.status === "archived") {
       return NextResponse.redirect(`${baseUrl}`, 302);
     }
 
-    const campaign = campaignResult[0];
+    if (campaign.status === "paused") {
+      // If campaign paused, redirect to home with notice flag
+      return NextResponse.redirect(`${baseUrl}?campaign_paused=true`, 302);
+    }
 
-    // 2. Increment clicks asynchronously to not block redirect
-    // We await it here because we are on nodejs runtime anyway, but it's fast
-    await db
-      .update(marketingCampaigns)
-      .set({ clicks: sql`${marketingCampaigns.clicks} + 1` })
-      .where(eq(marketingCampaigns.id, campaign.id));
+    // 2. Increment total clicks & log scan detail asynchronously
+    const userAgent = req.headers.get("user-agent") || undefined;
+    const referrer = req.headers.get("referer") || undefined;
+
+    await Promise.allSettled([
+      db
+        .update(marketingCampaigns)
+        .set({ clicks: sql`${marketingCampaigns.clicks} + 1`, updatedAt: new Date() })
+        .where(eq(marketingCampaigns.id, campaign.id)),
+      db.insert(marketingClickLogs).values({
+        campaignId: campaign.id,
+        userAgent,
+        referrer,
+      }),
+    ]);
 
     // 3. Set a cookie for 30 days to attribute signups
     const cookieStore = await cookies();
@@ -45,15 +55,28 @@ export async function GET(
       path: "/",
     });
 
-    // 4. Redirect to homepage (or onboarding if they passed a destination)
-    const urlObj = new URL(_req.url);
-    const dest = urlObj.searchParams.get("dest") || "";
-    
-    // Allow overriding destination via query param (e.g., ?dest=/signup)
-    // but ensure it stays on our domain by forcing relative path or same domain
-    const finalUrl = dest.startsWith("/") ? `${baseUrl}${dest}` : `${baseUrl}`;
+    // 4. Construct final redirect URL with UTM parameters
+    const reqUrlObj = new URL(req.url);
+    const queryDest = reqUrlObj.searchParams.get("dest");
 
-    return NextResponse.redirect(finalUrl, 302);
+    // Priority: queryParam dest > campaign.destinationUrl > "/"
+    let targetPath = queryDest || campaign.destinationUrl || "/";
+    if (!targetPath.startsWith("/")) {
+      targetPath = `/${targetPath}`;
+    }
+
+    const targetUrlObj = new URL(targetPath, baseUrl);
+
+    // Attach UTM Parameters if specified
+    if (campaign.utmSource) targetUrlObj.searchParams.set("utm_source", campaign.utmSource);
+    if (campaign.utmMedium) targetUrlObj.searchParams.set("utm_medium", campaign.utmMedium);
+    if (campaign.utmCampaign) targetUrlObj.searchParams.set("utm_campaign", campaign.utmCampaign);
+    if (campaign.utmContent) targetUrlObj.searchParams.set("utm_content", campaign.utmContent);
+    
+    // Always append tracking code as fallback
+    targetUrlObj.searchParams.set("m_code", campaign.code);
+
+    return NextResponse.redirect(targetUrlObj.toString(), 302);
   } catch (err) {
     console.error("[Marketing Redirect Error]", err);
     return NextResponse.redirect(`${baseUrl}`, 302);

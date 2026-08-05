@@ -2,8 +2,9 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { Activity, RefreshCw, AlertTriangle } from "lucide-react";
+import { RefreshCw, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AnimatedLogo } from "@/components/animated-logo";
 
 export default function GlobalError({
   error,
@@ -27,14 +28,9 @@ export default function GlobalError({
 
           <div className="text-center max-w-md w-full">
             {/* Logo */}
-            <Link href="/" className="inline-flex items-center gap-2 mb-10">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-600 to-teal-800 flex items-center justify-center shadow-md">
-                <Activity className="w-5 h-5 text-white" strokeWidth={3} />
-              </div>
-              <span className="font-bold text-slate-900 text-lg tracking-tight">
-                Doctor Diary
-              </span>
-            </Link>
+            <div className="flex justify-center mb-10">
+              <AnimatedLogo theme="light" size="md" />
+            </div>
 
             {/* Error icon */}
             <div className="w-24 h-24 rounded-full bg-red-50 border-2 border-red-100 flex items-center justify-center mx-auto mb-6">

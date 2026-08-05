@@ -38,8 +38,8 @@ export function PatientHeaderActions({ themeColor, clinicName }: PatientHeaderAc
         className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all hover:opacity-90 active:scale-95 shadow-sm border border-slate-200/60 bg-white text-slate-700"
       >
         <UserCircle className="w-3.5 h-3.5" style={{ color: themeColor }} />
-        <span className="hidden sm:inline">Patient Portal</span>
-        <span className="sm:hidden">Login</span>
+        <span className="hidden sm:inline">{currentLang === "hi" ? "मेरे अपॉइंटमेंट" : "My Appointments"}</span>
+        <span className="sm:hidden">{currentLang === "hi" ? "अपॉइंटमेंट" : "Appointments"}</span>
       </button>
 
       <PatientLoginModal

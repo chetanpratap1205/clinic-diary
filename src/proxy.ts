@@ -27,29 +27,27 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with cross-browser cookies, so just do it here.
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isProtectedPath = request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/onboarding')
+  const path = request.nextUrl.pathname;
+  const isProtectedPath = 
+    path.startsWith('/dashboard') || 
+    path.startsWith('/onboarding') ||
+    path.startsWith('/admin') ||
+    path.startsWith('/employee');
 
   if (isProtectedPath && !user) {
-    // Redirect unauthenticated users to login page
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // If user is authenticated and tries to access login/signup, redirect to dashboard or onboarding
-  const isAuthPath = request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup'
+  const isAuthPath = path === '/login' || path === '/signup'
   
   if (isAuthPath && user) {
-     const url = request.nextUrl.clone()
-     url.pathname = '/dashboard' // Could be refined to check if clinic exists
-     return NextResponse.redirect(url)
+     // Let login actions handle specific role redirect or default
   }
 
   return supabaseResponse
@@ -57,13 +55,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

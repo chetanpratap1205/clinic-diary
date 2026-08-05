@@ -22,10 +22,12 @@ export default async function AdminQrPage() {
         clinicName: clinics.name,
         clinicSlug: clinics.slug,
         doctorName: clinics.doctorName,
+        doctorSpecialty: clinics.specialty,
+        clinicLogo: clinics.logoUrl,
         subStatus: subscriptions.status,
         subEnd: subscriptions.currentPeriodEnd,
-        totalScans: sql<number>`(SELECT COUNT(*)::int FROM qr_scans s WHERE s.qr_code_id = qr_codes.id)`,
-        qrAppts: sql<number>`(SELECT COUNT(*)::int FROM appointments a WHERE a.clinic_id = qr_codes.clinic_id AND a.acquisition_source LIKE 'qr_%')`,
+        totalScans: sql<number>`COALESCE((SELECT COUNT(*)::int FROM qr_scans s WHERE s.qr_code_id = qr_codes.id), 0)`,
+        qrAppts: sql<number>`COALESCE((SELECT COUNT(*)::int FROM appointments a WHERE a.clinic_id = qr_codes.clinic_id AND a.acquisition_source LIKE 'qr_%'), 0)`,
       })
       .from(qrCodes)
       .leftJoin(clinics, eq(qrCodes.clinicId, clinics.id))
@@ -39,6 +41,7 @@ export default async function AdminQrPage() {
         name: clinics.name,
         slug: clinics.slug,
         doctorName: clinics.doctorName,
+        specialty: clinics.specialty,
       })
       .from(clinics)
       .orderBy(clinics.name);

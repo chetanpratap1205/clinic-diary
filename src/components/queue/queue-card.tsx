@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Clock, CheckCircle2, User, Play, Check, X, Activity, Undo2, Star } from "lucide-react";
+import { Clock, CheckCircle2, User, Play, Check, X, Activity, Undo2, Star, MessageCircle } from "lucide-react";
 import type { Appointment, Clinic } from "@/db/schema";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -155,19 +155,37 @@ export const QueueCard = ({
         )}
 
         {appt.status === "checked_in" && (
-          <button
-            onClick={async () => {
-              const success = await handleStatusChange(appt.id, "in_consultation");
-              if (success) {
-                router.push(`/dashboard/consultation/${appt.id}`);
-              }
-            }}
-            disabled={isPending}
-            className="w-full bg-sky-50 text-sky-700 hover:opacity-90 min-h-[44px] rounded-xl text-xs font-bold tracking-wide transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
-            style={{ color: clinic.themeColor || "#0ea5e9", backgroundColor: `${clinic.themeColor || "#0ea5e9"}15` }}
-          >
-            <Play className="w-4 h-4 fill-current" /> Start Consult
-          </button>
+          <div className="flex gap-2 w-full">
+            <button
+              onClick={async () => {
+                const success = await handleStatusChange(appt.id, "in_consultation");
+                if (success) {
+                  router.push(`/dashboard/consultation/${appt.id}`);
+                }
+              }}
+              disabled={isPending}
+              className="flex-1 bg-sky-50 text-sky-700 hover:opacity-90 min-h-[44px] rounded-xl text-xs font-bold tracking-wide transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
+              style={{ color: clinic.themeColor || "#0ea5e9", backgroundColor: `${clinic.themeColor || "#0ea5e9"}15` }}
+            >
+              <Play className="w-4 h-4 fill-current" /> Start Consult
+            </button>
+            <button
+              onClick={() => {
+                const trackUrl = `${window.location.origin}/track/${appt.id}`;
+                const text = `*YOUR TURN IS NEXT!* 🏥\n\nHi ${appt.patientName.split(' ')[0]},\nDr. ${clinic.doctorName} is ready for Token *#${tokenDisplay}* at ${clinic.name}.\n\nPlease step up to the consultation room.\n\n📍 *Track Live Status:* ${trackUrl}`;
+                const formattedPhone = formatWhatsAppPhone(appt.patientPhone);
+                const url = formattedPhone
+                  ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(text)}`
+                  : `https://wa.me/?text=${encodeURIComponent(text)}`;
+                window.open(url, "_blank");
+              }}
+              className="px-3.5 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white min-h-[44px] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
+              title="Send 1-Click WhatsApp Call Notification"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span className="hidden sm:inline">Call WA</span>
+            </button>
+          </div>
         )}
 
         {appt.status === "in_consultation" && (

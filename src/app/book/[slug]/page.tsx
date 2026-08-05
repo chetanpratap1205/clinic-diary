@@ -296,16 +296,20 @@ export default async function BookingPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
       />
       
-      {/* Mesh Gradient Background Aurora */}
-      <div className="absolute top-0 inset-x-0 h-[800px] overflow-hidden -z-10 pointer-events-none">
-        {/* SVG Noise Texture for Premium Frosted Matte look */}
+      {/* Premium Mesh Gradient Background Aurora */}
+      <div className="absolute top-0 inset-x-0 h-[850px] overflow-hidden -z-10 pointer-events-none bg-slate-50">
+        {/* Superior SVG Noise Texture */}
         <div 
-          className="absolute inset-0 opacity-[0.03] mix-blend-overlay z-10" 
-          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} 
+          className="absolute inset-0 opacity-[0.04] mix-blend-overlay z-10" 
+          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} 
         />
-        <div className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] rounded-full opacity-[0.15] blur-[100px] mix-blend-multiply animate-[pulse_6s_ease-in-out_infinite]" style={{ backgroundColor: themeColor }} />
-        <div className="absolute top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full opacity-[0.12] blur-[120px] mix-blend-multiply animate-[pulse_8s_ease-in-out_infinite_reverse]" style={{ backgroundColor: themeColor }} />
-        <div className="absolute top-[40%] right-[20%] w-[40%] h-[40%] rounded-full opacity-[0.08] blur-[90px] mix-blend-multiply animate-[pulse_7s_ease-in-out_infinite]" style={{ backgroundColor: themeColor }} />
+        {/* Dynamic Blobs with improved blending */}
+        <div className="absolute -top-[20%] -right-[10%] w-[70%] h-[70%] rounded-full opacity-[0.12] blur-[120px] mix-blend-multiply animate-[spin_40s_linear_infinite]" style={{ backgroundColor: themeColor }} />
+        <div className="absolute top-[10%] -left-[10%] w-[60%] h-[60%] rounded-full opacity-[0.10] blur-[130px] mix-blend-multiply animate-[spin_50s_linear_infinite_reverse]" style={{ backgroundColor: themeColor }} />
+        <div className="absolute top-[50%] left-[20%] w-[50%] h-[50%] rounded-full opacity-[0.08] blur-[100px] mix-blend-multiply animate-[pulse_10s_ease-in-out_infinite]" style={{ backgroundColor: themeColor }} />
+        
+        {/* Subtle white vignette fade at the bottom */}
+        <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-slate-50 to-transparent z-10" />
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════
@@ -323,17 +327,95 @@ export default async function BookingPage({
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8 lg:gap-12">
             
-            {/* Desktop Hero Image (Left) */}
-            {isSafeImageUrl(clinic.heroImageUrl) && (
-              <div className="hidden lg:block w-[320px] shrink-0 animate-in fade-in slide-in-from-left-8 duration-700">
+            {/* 10/10 Doctor Portrait / Avatar Card (Left Column) */}
+            <div className="w-full sm:w-[300px] lg:w-[320px] shrink-0 animate-in fade-in slide-in-from-left-8 duration-1000 ease-out">
+              {isSafeImageUrl(clinic.heroImageUrl) ? (
                 <div 
-                  className="w-full aspect-[4/5] rounded-[2rem] overflow-hidden border-8 border-white/80"
-                  style={{ boxShadow: `0 30px 60px -15px ${themeColor}40` }}
+                  className="w-full aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-white relative group transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] ring-1 ring-black/5"
+                  style={{ boxShadow: `0 30px 60px -15px ${themeColor}35` }}
                 >
-                  <img src={clinic.heroImageUrl!} alt={displayDoctorName} className="w-full h-full object-cover object-top" />
+                  {/* Glare effect */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/40 to-white/0 opacity-0 group-hover:opacity-100 group-hover:translate-x-full duration-1000 transition-all z-20 pointer-events-none -skew-x-12 -translate-x-full" />
+                  
+                  <img src={clinic.heroImageUrl!} alt={displayDoctorName} className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" />
+                  
+                  {/* Verified Badge - Floating */}
+                  <div className="absolute top-4 right-4 z-20">
+                    <div className="bg-white/90 backdrop-blur-md text-emerald-700 px-3 py-1.5 rounded-full shadow-lg ring-1 ring-white/50 flex items-center gap-1.5 font-bold text-xs">
+                      <BadgeCheck className="w-4 h-4 text-emerald-500 fill-emerald-100" />
+                      Verified
+                    </div>
+                  </div>
+
+                  {/* Live Status Pill - Floating Bottom */}
+                  <div className="absolute bottom-4 inset-x-4 z-20">
+                    <div className="w-full bg-white/95 backdrop-blur-xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-2xl p-3 flex items-center justify-between transition-transform duration-500 group-hover:-translate-y-1">
+                      <div className="flex items-center gap-2.5">
+                        <div className="relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border border-white"></span>
+                        </div>
+                        <span className="text-[11px] font-black uppercase tracking-widest text-emerald-700">Open Now</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg">Accepting Tokens</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div 
+                  className="w-full aspect-[4/4.5] rounded-[2.5rem] relative group transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] ring-1 ring-black/5 flex flex-col items-center justify-center p-6 text-center"
+                  style={{ 
+                    background: `linear-gradient(145deg, #ffffff, #f8fafc)`,
+                    boxShadow: `0 30px 60px -15px ${themeColor}25`
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/50 to-white/0 opacity-0 group-hover:opacity-100 group-hover:translate-x-full duration-1000 transition-all z-20 pointer-events-none -skew-x-12 -translate-x-full" />
+                  
+                  <div className="absolute top-0 right-0 w-40 h-40 rounded-full blur-3xl opacity-20 pointer-events-none transition-opacity duration-700 group-hover:opacity-40 group-hover:scale-150" style={{ backgroundColor: themeColor }} />
+                  
+                  {/* Verified Badge */}
+                  <div className="absolute top-4 right-4 z-20">
+                    <div className="bg-white/90 backdrop-blur-md text-emerald-700 px-3 py-1.5 rounded-full shadow-lg ring-1 ring-white/50 flex items-center gap-1.5 font-bold text-xs">
+                      <BadgeCheck className="w-4 h-4 text-emerald-500 fill-emerald-100" />
+                      Verified
+                    </div>
+                  </div>
+
+                  {/* Avatar Circle with Theme Ring */}
+                  <div 
+                    className="w-28 h-28 sm:w-32 sm:h-32 rounded-full flex items-center justify-center shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] mb-5 relative transition-transform duration-500 group-hover:scale-110"
+                    style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}dd)`, border: '4px solid white' }}
+                  >
+                    <span className="text-4xl sm:text-5xl font-black text-white tracking-widest drop-shadow-md">
+                      {stripDr(clinic.doctorName).charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1 relative z-10 transition-transform duration-500 group-hover:-translate-y-1">
+                    <span className="inline-block text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                      {specialtyConfig.heroBadge}
+                    </span>
+                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 line-clamp-1 mt-2 tracking-tight">{displayDoctorName}</h2>
+                    <p className="text-xs font-bold text-slate-500">{clinic.degree || specialtyConfig.displayName}</p>
+                  </div>
+
+                  {/* Live Status Pill */}
+                  <div className="absolute bottom-5 inset-x-5 z-20">
+                    <div className="w-full bg-white/95 backdrop-blur-xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-2xl p-2.5 flex items-center justify-between transition-transform duration-500 group-hover:-translate-y-1">
+                      <div className="flex items-center gap-2">
+                        <div className="relative flex h-2.5 w-2.5 ml-1">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border border-white"></span>
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700">Open Today</span>
+                      </div>
+                      <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-lg uppercase tracking-wider">Fast Token</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
 
             {/* Middle: Text Content */}
             <div className="flex-1 w-full text-center lg:text-left space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
@@ -353,50 +435,82 @@ export default async function BookingPage({
                 </p>
               </div>
 
-              {/* Clean Single Stats Row (No duplicate cards anywhere) */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-1">
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-2xl bg-white/80 backdrop-blur-md border border-white/80 shadow-sm hover:-translate-y-0.5 hover:bg-white/90 transition-all cursor-default group" style={{ boxShadow: `0 10px 30px -10px ${themeColor}15` }}>
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white shadow-sm border border-slate-100 group-hover:scale-110 transition-transform">
+              {/* 10/10 Bento Box Stats Row */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-3 w-full max-w-md mx-auto lg:mx-0">
+                
+                {/* Experience Box */}
+                <div 
+                  className="flex flex-col items-start p-3 sm:p-4 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 transition-all duration-300 hover:bg-white/90 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 group"
+                  style={{ boxShadow: `0 4px 20px -10px ${themeColor}20, inset 0 0 0 1px rgba(255,255,255,0.5)` }}
+                >
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white shadow-sm border border-slate-100/60 mb-2.5 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
                     <Award className="w-4 h-4" style={{ color: themeColor }} />
                   </div>
-                  <div className="text-left pr-1">
-                    <p className="text-[13px] font-black text-slate-900 leading-tight line-clamp-1">{clinic.degree || "10+ Years"}</p>
-                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{clinic.degree ? "Qualifications" : t.experience}</p>
-                  </div>
+                  <p className="text-sm sm:text-base font-black text-slate-900 leading-none mb-1 group-hover:text-[var(--theme-color)] transition-colors line-clamp-1" style={{ '--theme-color': themeColor } as React.CSSProperties}>{clinic.degree || "10+ Yrs"}</p>
+                  <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">{clinic.degree ? "Qualified" : t.experience}</p>
                 </div>
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-2xl bg-white/80 backdrop-blur-md border border-white/80 shadow-sm hover:-translate-y-0.5 hover:bg-white/90 transition-all cursor-default group" style={{ boxShadow: `0 10px 30px -10px ${themeColor}15` }}>
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white shadow-sm border border-slate-100 group-hover:scale-110 transition-transform">
-                    <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+
+                {/* Rating Box */}
+                <div 
+                  className="flex flex-col items-start p-3 sm:p-4 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 transition-all duration-300 hover:bg-white/90 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 group"
+                  style={{ boxShadow: `0 4px 20px -10px ${themeColor}20, inset 0 0 0 1px rgba(255,255,255,0.5)` }}
+                >
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white shadow-sm border border-slate-100/60 mb-2.5 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                    <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
                   </div>
-                  <div className="text-left pr-1">
-                    <p className="text-[13px] font-black text-slate-900 leading-tight">{averageRating}</p>
-                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{lexicon.patientTitle} Reviews</p>
+                  <div className="flex items-end gap-1 mb-1">
+                    <p className="text-sm sm:text-base font-black text-slate-900 leading-none">{averageRating}</p>
+                    <p className="text-[10px] font-bold text-slate-400 leading-none pb-[1px]">/ 5</p>
                   </div>
+                  <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">{totalReviews} Revs</p>
                 </div>
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-2xl bg-white/80 backdrop-blur-md border border-white/80 shadow-sm hover:-translate-y-0.5 hover:bg-white/90 transition-all cursor-default group" style={{ boxShadow: `0 10px 30px -10px ${themeColor}15` }}>
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white shadow-sm border border-slate-100 group-hover:scale-110 transition-transform">
+
+                {/* Fee Box */}
+                <div 
+                  className="flex flex-col items-start p-3 sm:p-4 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 transition-all duration-300 hover:bg-white/90 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 group"
+                  style={{ boxShadow: `0 4px 20px -10px ${themeColor}20, inset 0 0 0 1px rgba(255,255,255,0.5)` }}
+                >
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white shadow-sm border border-slate-100/60 mb-2.5 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
                     <BadgeCheck className="w-4 h-4 text-emerald-500" />
                   </div>
-                  <div className="text-left pr-1">
-                    <p className="text-[13px] font-black text-slate-900 leading-tight">{clinic.consultationFee ? `₹${clinic.consultationFee}` : "Free"}</p>
-                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{lexicon.consultationTerm} Fee</p>
-                  </div>
+                  <p className="text-sm sm:text-base font-black text-emerald-600 leading-none mb-1">{clinic.consultationFee ? `₹${clinic.consultationFee}` : "Free"}</p>
+                  <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Consult Fee</p>
                 </div>
+
               </div>
 
-              {/* Pay at clinic badge (Premium Shimmer Version) */}
-              <div className="flex items-center justify-center lg:justify-start pt-2">
-                <div className="relative overflow-hidden px-4 py-2 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 flex items-center gap-2 shadow-[0_8px_16px_-6px_rgba(16,185,129,0.2)]">
-                  <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-white/80 to-transparent skew-x-12" />
-                  <ShieldCheck className="w-4 h-4 text-emerald-600 relative z-10" />
-                  <span className="text-[10.5px] font-black text-emerald-700 uppercase tracking-widest relative z-10">Pay at Clinic · Instant OPD Token</span>
+              {/* Pay at clinic & WhatsApp Quick Inquiry Badges (Privacy-Preserving) */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 pt-3">
+                <div className="relative overflow-hidden px-4 py-2.5 rounded-2xl bg-white/80 backdrop-blur-md border border-emerald-100 flex items-center gap-2.5 shadow-[0_8px_20px_-8px_rgba(16,185,129,0.2)] group cursor-default">
+                  <div className="bg-emerald-50 p-1.5 rounded-lg">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 relative z-10" />
+                  </div>
+                  <div className="flex flex-col text-left">
+                    <span className="text-[11px] font-black text-slate-800 uppercase tracking-widest relative z-10 leading-tight">Pay at Clinic</span>
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider relative z-10 leading-tight">Instant OPD Token</span>
+                  </div>
                 </div>
+
+                {(clinic.whatsappNumber || clinic.phone) && (
+                  <a
+                    href={`https://wa.me/${String(clinic.whatsappNumber || clinic.phone).replace(/\D/g, "")}?text=${encodeURIComponent(`Hi ${clinic.name}, I would like to inquire about OPD consultation with Dr. ${stripDr(clinic.doctorName)}.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2.5 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 hover:bg-[#25D366] hover:text-white hover:border-[#25D366] transition-all font-black text-[11px] uppercase tracking-wider flex items-center gap-2 shadow-sm active:scale-95"
+                  >
+                    <MessageCircle className="w-4 h-4 text-emerald-600 group-hover:text-white" />
+                    <span>WhatsApp Inquiry</span>
+                  </a>
+                )}
               </div>
             </div>
 
-            {/* Right Column: Direct Interactive Booking Widget */}
-            <div className="w-full lg:w-[440px] shrink-0 animate-in fade-in slide-in-from-right-8 duration-700 delay-150">
-              <div className="bg-white/90 backdrop-blur-xl rounded-3xl border border-white/60 p-2 sm:p-3 relative overflow-hidden" style={{ boxShadow: `0 25px 60px -15px ${themeColor}25, 0 0 0 1px rgba(255,255,255,0.6) inset` }}>
+            {/* Right Column: Direct Interactive Booking Card (Desktop Only - Mobile uses Bottom Action Island Drawer) */}
+            <div className="hidden lg:block w-full lg:w-[460px] shrink-0 animate-in fade-in slide-in-from-right-8 duration-700 delay-150">
+              <div 
+                className="bg-white/95 backdrop-blur-xl rounded-[2.5rem] border border-white/80 p-3 sm:p-4 relative overflow-hidden" 
+                style={{ boxShadow: `0 30px 70px -15px ${themeColor}25, 0 0 0 1px rgba(255,255,255,0.8) inset` }}
+              >
                 <BookingClient clinic={clinic} workingDays={workingDays} closedDates={closedDates} lexicon={lexicon} lang={lang} />
               </div>
             </div>
@@ -410,15 +524,17 @@ export default async function BookingPage({
       ══════════════════════════════════════════════════════════════════════ */}
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 relative z-20 space-y-6">
         
-        {/* About Section (Frosted Glass) */}
+        {/* 10/10 Glass Bento About Section */}
         <ScrollReveal delay={0.1}>
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] p-6 sm:p-8 border border-white/60 flex flex-col md:flex-row gap-8 relative overflow-hidden group">
+          <div 
+            className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 border border-white/80 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05),0_0_0_1px_rgba(255,255,255,0.8)_inset] flex flex-col md:flex-row gap-8 relative overflow-hidden group transition-all hover:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.08)]"
+          >
              {/* Subtle gradient glow inside About box */}
-             <div className="absolute -bottom-[20%] -right-[10%] w-[50%] h-[50%] rounded-full opacity-5 blur-[60px] pointer-events-none transition-opacity group-hover:opacity-10" style={{ backgroundColor: themeColor }} />
+             <div className="absolute -bottom-[20%] -right-[10%] w-[50%] h-[50%] rounded-full opacity-10 blur-[70px] pointer-events-none transition-opacity duration-700 group-hover:opacity-25" style={{ backgroundColor: themeColor }} />
              
              <div className="flex-1 space-y-4 relative z-10">
-               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                 <Stethoscope className="w-3 h-3" /> {t.aboutPractice}
+               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/80 border border-slate-200/80 text-[10px] font-black text-slate-600 uppercase tracking-widest">
+                 <Stethoscope className="w-3.5 h-3.5" style={{ color: themeColor }} /> {t.aboutPractice}
                </div>
                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
                  Welcome to {clinic.name}
@@ -433,79 +549,87 @@ export default async function BookingPage({
                    </>
                  )}
                </div>
-               <blockquote className="border-l-4 pl-4 py-1 mt-4 italic text-slate-700 font-semibold text-sm" style={{ borderColor: themeColor }}>
+               <blockquote className="border-l-4 pl-4 py-2 mt-4 italic text-slate-700 font-semibold text-sm rounded-r-xl bg-slate-50/80 border-slate-300" style={{ borderColor: themeColor }}>
                  "Our philosophy is simple: Treat every patient like family, with complete transparency and the highest standard of care."
                </blockquote>
              </div>
              
              <div className="w-full md:w-60 flex flex-col gap-4 flex-shrink-0 relative z-10">
-               <div className="bg-slate-900 p-5 rounded-2xl text-white text-center flex flex-col items-center justify-center flex-1 shadow-lg">
-                 <Clock className="w-6 h-6 text-slate-400 mb-2" />
+               <div className="bg-slate-900 p-6 rounded-3xl text-white text-center flex flex-col items-center justify-center flex-1 shadow-xl relative overflow-hidden group/card">
+                 <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity" />
+                 <Clock className="w-7 h-7 text-slate-300 mb-2.5" />
                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Queue System</p>
-                 <p className="text-base font-black text-white">Live Turn Tracking</p>
-                 <p className="text-[11px] text-slate-400 mt-1.5 font-medium">Skip crowded waiting rooms</p>
+                 <p className="text-base font-black text-white leading-tight">Live Turn Tracking</p>
+                 <p className="text-[11px] text-slate-400 mt-2 font-medium">Skip crowded waiting rooms</p>
                </div>
              </div>
           </div>
         </ScrollReveal>
 
-        {/* Conditions & Expertise Grid (SEO) */}
+        {/* 10/10 Conditions & Tappable Expertise Cards */}
         {specialtyConfig.commonTreatments && specialtyConfig.commonTreatments.length > 0 && (
           <ScrollReveal delay={0.15}>
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm">
+            <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 border border-white/80 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)]">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-lg sm:text-xl font-black text-slate-900">{t.conditionsTreated}</h2>
-                  <p className="text-sm text-slate-500 font-medium mt-1">Comprehensive {specialtyConfig.displayName.toLowerCase()} care.</p>
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{t.conditionsTreated}</h2>
+                  <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">Tap any condition to jump directly to slot booking.</p>
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {specialtyConfig.commonTreatments.map((treatment, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100/50 hover:bg-slate-100 hover:scale-[1.02] transition-all cursor-default">
-                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm flex-shrink-0" style={{ color: themeColor }}>
-                      <CheckCircle2 className="w-4 h-4" />
+                  <a 
+                    key={i} 
+                    href="#booking"
+                    className="group flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 active:scale-95"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:scale-110 transition-transform" style={{ color: themeColor }}>
+                        <CheckCircle2 className="w-4 h-4" />
+                      </div>
+                      <span className="text-sm font-extrabold text-slate-800 group-hover:text-slate-900">{treatment}</span>
                     </div>
-                    <p className="text-sm font-bold text-slate-700 pt-1.5">{treatment}</p>
-                  </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-all" style={{ color: themeColor }} />
+                  </a>
                 ))}
               </div>
             </div>
           </ScrollReveal>
         )}
 
-        {/* Enterprise Why Choose Us */}
+        {/* 10/10 Enterprise Why Choose Us */}
         <ScrollReveal delay={0.2}>
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm">
+          <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 border border-white/80 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)]">
             <div className="text-center mb-8">
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900">{t.whyChooseUs}</h2>
-              <p className="text-sm text-slate-500 font-medium mt-2">World-class healthcare built around your comfort.</p>
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{t.whyChooseUs}</h2>
+              <p className="text-sm text-slate-500 font-medium mt-1.5">World-class healthcare built around your comfort.</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <div className="flex flex-col items-center text-center gap-3">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-blue-50/50 border border-blue-100/50 shadow-sm">
-                  <Microscope className="w-7 h-7 text-blue-500" />
+              <div className="flex flex-col items-center text-center gap-3 p-5 rounded-3xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-blue-50 border border-blue-100 shadow-sm">
+                  <Microscope className="w-7 h-7 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 text-sm">Advanced Technology</h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">We utilize modern, state-of-the-art equipment for precise diagnostics and highly effective treatment plans.</p>
+                  <h3 className="font-extrabold text-slate-900 text-sm">Advanced Technology</h3>
+                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">State-of-the-art diagnostic equipment for high precision treatment plans.</p>
                 </div>
               </div>
-              <div className="flex flex-col items-center text-center gap-3">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-emerald-50/50 border border-emerald-100/50 shadow-sm">
-                  <Timer className="w-7 h-7 text-emerald-500" />
+              <div className="flex flex-col items-center text-center gap-3 p-5 rounded-3xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-emerald-50 border border-emerald-100 shadow-sm">
+                  <Timer className="w-7 h-7 text-emerald-600" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 text-sm">Zero-Wait Tokens</h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">Track your exact turn from home. Walk in exactly when the doctor is ready to see you.</p>
+                  <h3 className="font-extrabold text-slate-900 text-sm">Zero-Wait Tokens</h3>
+                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">Track live queue from home. Arrive right when doctor is ready to see you.</p>
                 </div>
               </div>
-              <div className="flex flex-col items-center text-center gap-3">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-pink-50/50 border border-pink-100/50 shadow-sm">
-                  <HeartPulse className="w-7 h-7 text-pink-500" />
+              <div className="flex flex-col items-center text-center gap-3 p-5 rounded-3xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-pink-50 border border-pink-100 shadow-sm">
+                  <HeartPulse className="w-7 h-7 text-pink-600" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 text-sm">Painless & Ethical</h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">Highest standards of clinical hygiene, ethical treatment plans, and zero hidden charges.</p>
+                  <h3 className="font-extrabold text-slate-900 text-sm">Painless & Ethical</h3>
+                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">Highest standards of clinical hygiene, ethical care, and zero hidden charges.</p>
                 </div>
               </div>
             </div>
@@ -518,10 +642,10 @@ export default async function BookingPage({
           {/* Left Column */}
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both" style={{ animationDelay: '300ms' }}>
             
-            {/* Contact & Location */}
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 space-y-5">
+            {/* 10/10 Integrated Contact & Location */}
+            <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] border border-white/80 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] p-6 space-y-5">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-black text-slate-800 flex items-center gap-2">
+                <h2 className="text-sm font-black text-slate-900 flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-slate-400" /> {t.locationContact}
                 </h2>
                 <a href={`https://wa.me/?text=${encodeURIComponent(`Book an appointment with ${clinic.name}: ${BASE_URL}/book/${slug}`)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full text-[10px] font-bold hover:bg-emerald-100 transition-colors active:scale-95" aria-label="Share Clinic Link on WhatsApp">
@@ -531,14 +655,14 @@ export default async function BookingPage({
               
               {clinic.address && (
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-slate-50 rounded-xl border border-slate-100 flex-shrink-0">
+                  <div className="p-2.5 bg-slate-50 rounded-2xl border border-slate-100 flex-shrink-0">
                     <Navigation className="w-4 h-4 text-slate-500" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm text-slate-700 font-semibold leading-snug">{clinic.address}</p>
+                    <p className="text-sm text-slate-800 font-bold leading-snug">{clinic.address}</p>
                     {directionsUrl && (
                       <div className="mt-3 space-y-3">
-                        <div className="w-full h-40 rounded-xl overflow-hidden border border-slate-200 shadow-sm relative">
+                        <div className="w-full h-48 rounded-3xl overflow-hidden border border-slate-200/80 shadow-md relative group">
                           <iframe 
                             src={`https://maps.google.com/maps?q=${encodeURIComponent(clinic.address)}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
                             width="100%" 
@@ -550,9 +674,38 @@ export default async function BookingPage({
                             title={`Map showing location of ${clinic.name}`}
                           />
                         </div>
-                        <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 bg-[#4285F4] text-white px-5 py-2.5 rounded-xl text-[11px] font-bold hover:bg-[#3367D6] transition-colors shadow-md active:scale-95 w-full sm:w-auto" aria-label="Navigate via Google Maps">
-                          <MapPin className="w-3.5 h-3.5" /> Navigate via Google Maps
-                        </a>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          <a 
+                            href={directionsUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="inline-flex items-center justify-center gap-1.5 bg-[#4285F4] text-white px-3 py-2.5 rounded-2xl text-[11px] font-bold hover:bg-[#3367D6] transition-all shadow-md active:scale-95 text-center"
+                            aria-label="Navigate via Google Maps"
+                          >
+                            <MapPin className="w-3.5 h-3.5" /> Navigate
+                          </a>
+
+                          {clinic.phone && (
+                            <a 
+                              href={`tel:${clinic.phone}`} 
+                              className="inline-flex items-center justify-center gap-1.5 bg-slate-900 text-white px-3 py-2.5 rounded-2xl text-[11px] font-bold hover:bg-slate-800 transition-all shadow-md active:scale-95 text-center"
+                            >
+                              <Phone className="w-3.5 h-3.5" /> Call Clinic
+                            </a>
+                          )}
+
+                          {clinic.whatsappNumber && (
+                            <a 
+                              href={`https://wa.me/${clinic.whatsappNumber.replace(/\D/g, "")}?text=${encodeURIComponent(`Hi ${clinic.name}, I have a question about booking an appointment.`)}`} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="inline-flex items-center justify-center gap-1.5 bg-[#25D366] text-white px-3 py-2.5 rounded-2xl text-[11px] font-bold hover:bg-[#1fba5a] transition-all shadow-md active:scale-95 text-center col-span-2 sm:col-span-1"
+                            >
+                              <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+                            </a>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -561,30 +714,30 @@ export default async function BookingPage({
 
               {clinic.phone && (
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-slate-50 rounded-xl border border-slate-100 flex-shrink-0">
+                  <div className="p-2.5 bg-slate-50 rounded-2xl border border-slate-100 flex-shrink-0">
                     <Phone className="w-4 h-4 text-slate-500" />
                   </div>
-                  <div className="pt-0.5">
-                    <a href={`tel:${clinic.phone}`} className="text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors">{clinic.phone}</a>
+                  <div className="pt-1">
+                    <a href={`tel:${clinic.phone}`} className="text-sm font-extrabold text-slate-800 hover:text-slate-900 transition-colors">{clinic.phone}</a>
                   </div>
                 </div>
               )}
 
               {/* Social Icons */}
               {(clinic.whatsappNumber || clinic.instagramUrl || clinic.facebookUrl) && (
-                <div className="pt-4 border-t border-slate-50 flex gap-3">
+                <div className="pt-4 border-t border-slate-100 flex gap-3">
                   {clinic.whatsappNumber && (
-                    <a href={`https://wa.me/${String(clinic.whatsappNumber).replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" aria-label="Contact on WhatsApp" className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[#25D366] hover:bg-emerald-50 transition-colors shadow-sm">
+                    <a href={`https://wa.me/${String(clinic.whatsappNumber).replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" aria-label="Contact on WhatsApp" className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[#25D366] hover:bg-emerald-50 transition-colors shadow-sm">
                       <MessageCircle className="w-5 h-5" />
                     </a>
                   )}
                   {clinic.instagramUrl && (
-                    <a href={clinic.instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Follow on Instagram" className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-pink-500 hover:bg-pink-50 transition-colors shadow-sm">
+                    <a href={clinic.instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Follow on Instagram" className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-pink-500 hover:bg-pink-50 transition-colors shadow-sm">
                       <Instagram className="w-5 h-5" />
                     </a>
                   )}
                   {clinic.facebookUrl && (
-                    <a href={clinic.facebookUrl} target="_blank" rel="noopener noreferrer" aria-label="Follow on Facebook" className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-blue-500 hover:bg-blue-50 transition-colors shadow-sm">
+                    <a href={clinic.facebookUrl} target="_blank" rel="noopener noreferrer" aria-label="Follow on Facebook" className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-blue-500 hover:bg-blue-50 transition-colors shadow-sm">
                       <Facebook className="w-5 h-5" />
                     </a>
                   )}
@@ -593,8 +746,8 @@ export default async function BookingPage({
             </div>
 
             {/* FAQ */}
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
-              <h2 className="text-sm font-black text-slate-800 flex items-center gap-2 mb-4">
+            <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] border border-white/80 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] p-6">
+              <h2 className="text-sm font-black text-slate-900 flex items-center gap-2 mb-4">
                 <HelpCircle className="w-4 h-4 text-slate-400" /> Frequently Asked Questions
               </h2>
               <FAQAccordion faqs={faqItems} themeColor={themeColor} />
@@ -737,9 +890,9 @@ export default async function BookingPage({
             <div className="space-y-4">
               <h4 className="font-black text-slate-800 text-sm uppercase tracking-wider">{t.legalPrivacy}</h4>
               <ul className="space-y-2 text-xs font-medium text-slate-500">
-                <li><a href="#" className="hover:text-slate-900 transition-colors">{t.privacyPolicy}</a></li>
-                <li><a href="#" className="hover:text-slate-900 transition-colors">{t.termsOfService}</a></li>
-                <li><a href="#" className="hover:text-slate-900 transition-colors">{t.medicalDisclaimer}</a></li>
+                <li><Link href="/privacy" target="_blank" className="hover:text-slate-900 transition-colors">{t.privacyPolicy}</Link></li>
+                <li><Link href="/terms" target="_blank" className="hover:text-slate-900 transition-colors">{t.termsOfService}</Link></li>
+                <li><Link href="/refund" target="_blank" className="hover:text-slate-900 transition-colors">Refund & Cancellation</Link></li>
               </ul>
             </div>
             <div className="space-y-4">

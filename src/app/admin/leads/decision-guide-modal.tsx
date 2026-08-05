@@ -5,16 +5,21 @@ import { X, BookOpen, Clock, Target, Lightbulb, Zap, ArrowRight, ShieldCheck, Ch
 import { Button } from "@/components/ui/button";
 
 interface DecisionGuideModalProps {
-  onClose: () => void;
+  onClose?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function DecisionGuideModal({ onClose }: DecisionGuideModalProps) {
+export function DecisionGuideModal({ onClose, open, onOpenChange }: DecisionGuideModalProps) {
   const [activeTab, setActiveTab] = useState<"matrix" | "rules" | "hooks" | "timing">("matrix");
+  const handleClose = () => { onClose?.(); onOpenChange?.(false); };
+
+  if (open === false) return null;
 
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm" onClick={handleClose} />
 
       {/* Modal */}
       <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[94vw] sm:w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden">
@@ -30,7 +35,7 @@ export function DecisionGuideModal({ onClose }: DecisionGuideModalProps) {
               <p className="text-[10px] sm:text-xs text-slate-400 truncate">Psychology & message selection matrix</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+          <button onClick={handleClose} className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -245,7 +250,7 @@ export function DecisionGuideModal({ onClose }: DecisionGuideModalProps) {
         {/* Footer */}
         <div className="px-6 py-3 bg-slate-100 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500 shrink-0">
           <span>Doctor Diary Sales Playbook &bull; Govind Bansal, Head of Sales</span>
-          <Button size="sm" onClick={onClose} className="bg-slate-900 hover:bg-slate-800 text-white text-xs h-8">
+          <Button size="sm" onClick={handleClose} className="bg-slate-900 hover:bg-slate-800 text-white text-xs h-8">
             Close Guide
           </Button>
         </div>

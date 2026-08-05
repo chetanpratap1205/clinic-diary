@@ -19,33 +19,30 @@ export async function GET(
     return new NextResponse("Not Found", { status: 404 });
   }
 
-  const appName = `${clinic.name}`;
+  const appName = clinic.name.toLowerCase().endsWith("app") || clinic.name.toLowerCase().endsWith("clinic") 
+    ? clinic.name 
+    : `${clinic.name} Clinic`;
   const startUrl = `/book/${slug}`;
+  const iconUrl = `/api/manifest/${slug}/icon`;
 
   const manifest = {
-    id: `doctor-diary-clinic-${slug}`,
+    id: `clinic-app-${slug}`,
     name: appName,
-    short_name: appName,
-    description: `Book appointments with ${clinic.name}`,
+    short_name: clinic.name,
+    description: `Official App for ${clinic.name} — Book appointments & track live queue`,
     start_url: startUrl,
     display: "standalone",
     orientation: "portrait-primary",
     theme_color: clinic.themeColor || "#0f766e",
-    background_color: "#f8fafc",
+    background_color: "#ffffff",
     categories: ["medical", "health"],
     lang: "en-IN",
     scope: startUrl,
     icons: [
       {
-        src: "/icon-192.png",
-        sizes: "192x192",
-        type: "image/png",
-        purpose: "any maskable",
-      },
-      {
-        src: "/icon-512.png",
-        sizes: "512x512",
-        type: "image/png",
+        src: iconUrl,
+        sizes: "192x192 512x512",
+        type: "image/svg+xml",
         purpose: "any maskable",
       },
     ],
@@ -55,6 +52,8 @@ export async function GET(
   return NextResponse.json(manifest, {
     headers: {
       "Content-Type": "application/manifest+json",
+      "Cache-Control": "public, max-age=3600",
     },
   });
 }
+

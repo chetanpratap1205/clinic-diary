@@ -77,27 +77,30 @@ export async function POST(req: Request) {
   return NextResponse.json({ created: inserted.length, codes: inserted });
 }
 
-// PATCH /api/admin/qr — assign a code to a clinic
+// PATCH /api/admin/qr — assign code(s) to a clinic
 export async function PATCH(req: Request) {
   if (!(await isAdmin())) {
     return new NextResponse("Forbidden", { status: 403 });
   }
 
   const body = await req.json();
-  const { qrId, clinicId, notes, usageType } = body;
+  const { qrId, qrIds, clinicId, notes, usageType } = body;
 
-  if (!qrId) {
-    return NextResponse.json({ error: "qrId is required" }, { status: 400 });
+  const targetIds: string[] = qrIds && Array.isArray(qrIds) ? qrIds : qrId ? [qrId] : [];
+
+  if (targetIds.length === 0) {
+    return NextResponse.json({ error: "qrId or qrIds array is required" }, { status: 400 });
   }
 
   // Unassign: pass clinicId = null
   if (!clinicId) {
-    const updated = await db
-      .update(qrCodes)
-      .set({ clinicId: null, assignedAt: null, notes: notes ?? null })
-      .where(eq(qrCodes.id, qrId))
-      .returning();
-    return NextResponse.json(updated[0]);
+    for (const id of targetIds) {
+      await db
+        .update(qrCodes)
+        .set({ clinicId: null, assignedAt: null, notes: notes ?? null })
+        .where(eq(qrCodes.id, id));
+    }
+    return NextResponse.json({ success: true, count: targetIds.length });
   }
 
   // Validate clinic exists
@@ -106,32 +109,59 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Clinic not found" }, { status: 404 });
   }
 
-  const updated = await db
-    .update(qrCodes)
-    .set({
-      clinicId,
-      assignedAt: new Date(),
-      notes: notes ?? null,
-      usageType: usageType ?? "general",
-    })
-    .where(eq(qrCodes.id, qrId))
-    .returning();
+  const now = new Date();
+  for (const id of targetIds) {
+    await db
+      .update(qrCodes)
+      .set({
+        clinicId,
+        assignedAt: now,
+        notes: notes ?? null,
+        usageType: usageType ?? "general",
+      })
+      .where(eq(qrCodes.id, id));
+  }
 
-  return NextResponse.json(updated[0]);
+  return NextResponse.json({ success: true, count: targetIds.length });
 }
 
-// DELETE /api/admin/qr?id=xxx — delete a code
+// DELETE /api/admin/qr?id=xxx — delete code(s)
 export async function DELETE(req: Request) {
   if (!(await isAdmin())) {
     return new NextResponse("Forbidden", { status: 403 });
   }
 
-  const { searchParams } = new URL(req.url);
-  const id = searchParams.get("id");
-  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+  let idsToDelete: string[] = [];
 
-  await db.delete(qrCodes).where(eq(qrCodes.id, id));
-  return NextResponse.json({ success: true });
+  try {
+    const body = await req.json();
+    if (body.ids && Array.isArray(body.ids)) {
+      idsToDelete = body.ids;
+    }
+  } catch (_e) {
+    // ignore json parse error for query params
+  }
+
+  if (idsToDelete.length === 0) {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    const idsParam = searchParams.get("ids");
+    if (idsParam) {
+      idsToDelete = idsParam.split(",").map((s) => s.trim());
+    } else if (id) {
+      idsToDelete = [id];
+    }
+  }
+
+  if (idsToDelete.length === 0) {
+    return NextResponse.json({ error: "id or ids required" }, { status: 400 });
+  }
+
+  for (const id of idsToDelete) {
+    await db.delete(qrCodes).where(eq(qrCodes.id, id));
+  }
+
+  return NextResponse.json({ success: true, count: idsToDelete.length });
 }
 
 // POST /api/admin/qr/print — mark an array of QR IDs as printed

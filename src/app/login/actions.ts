@@ -2,8 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { db } from "@/db";
-import { growthPartners } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { growthPartners, employees } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 
 export async function getLoginRedirectPath(): Promise<string> {
   const supabase = await createClient();
@@ -13,13 +13,31 @@ export async function getLoginRedirectPath(): Promise<string> {
     return "/login";
   }
   
-  // Check if admin
+  // 1. Check if super admin via env override
   const adminIds = (process.env.ADMIN_USER_IDS ?? "").split(",").map(s => s.trim());
   if (adminIds.includes(user.id)) {
     return "/admin";
   }
   
-  // Check if growth partner
+  // 2. Check if internal employee / staff member
+  try {
+    const [empRecord] = await db
+      .select()
+      .from(employees)
+      .where(and(eq(employees.authUserId, user.id), eq(employees.isActive, true)))
+      .limit(1);
+
+    if (empRecord) {
+      if (empRecord.role === "super_admin" || empRecord.role === "area_manager") {
+        return "/admin";
+      }
+      return "/employee";
+    }
+  } catch (err) {
+    console.error("Database error while checking employee role:", err);
+  }
+
+  // 3. Check if external affiliate / growth partner
   try {
     const partnerRecord = await db
       .select()
@@ -32,10 +50,8 @@ export async function getLoginRedirectPath(): Promise<string> {
     }
   } catch (err) {
     console.error("Database error while checking partner role:", err);
-    // Continue down to default /dashboard fallback instead of crashing
   }
   
-  // Default to dashboard for doctors/clinics
-  // The dashboard layout will redirect to /onboarding if clinic isn't fully set up yet
+  // 4. Default to clinic dashboard for doctors
   return "/dashboard";
 }

@@ -3,10 +3,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { db } from "@/db";
 import { appointments, clinics, followUps, patients } from "@/db/schema";
-import { eq, and, lte, desc } from "drizzle-orm";
+import { eq, and, lte, desc, inArray } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { sendTurnCalledNotification, sendCheckinConfirmedNotification, sendTurnNearbyNotification } from "@/lib/push-notifications";
 
 export async function logoutDoctor() {
   const supabase = await createClient();
@@ -44,6 +45,60 @@ export async function updateAppointmentStatus(appointmentId: string, status: str
           eq(appointments.clinicId, authUser.clinicId)
         )
       );
+
+    // ─── Trigger Zero-Cost Typed Push Notifications ────────────────────────────────
+    if (status === "in_consultation") {
+      // Fetch patient name + clinic name for rich notification
+      const [appt] = await db
+        .select({ patientName: appointments.patientName, tokenNumber: appointments.tokenNumber })
+        .from(appointments)
+        .where(eq(appointments.id, appointmentId))
+        .limit(1);
+      const [clinic] = await db
+        .select({ name: clinics.name })
+        .from(clinics)
+        .where(eq(clinics.id, authUser.clinicId))
+        .limit(1);
+      sendTurnCalledNotification(
+        appointmentId,
+        appt?.patientName || "Patient",
+        clinic?.name || "the clinic"
+      ).catch(() => {});
+
+      // Auto-trigger Turn Nearby alert for next patient in queue (zero cost)
+      const [currentAppt] = await db
+        .select({ appointmentDate: appointments.appointmentDate })
+        .from(appointments)
+        .where(eq(appointments.id, appointmentId))
+        .limit(1);
+
+      if (currentAppt?.appointmentDate) {
+        const waitingAppts = await db
+          .select({ id: appointments.id })
+          .from(appointments)
+          .where(
+            and(
+              eq(appointments.clinicId, authUser.clinicId),
+              eq(appointments.appointmentDate, currentAppt.appointmentDate),
+              inArray(appointments.status, ["checked_in", "confirmed"])
+            )
+          )
+          .orderBy(appointments.tokenNumber, appointments.appointmentTime);
+
+        if (waitingAppts.length >= 2) {
+          sendTurnNearbyNotification(waitingAppts[1].id, 2).catch(() => {});
+        } else if (waitingAppts.length === 1) {
+          sendTurnNearbyNotification(waitingAppts[0].id, 1).catch(() => {});
+        }
+      }
+    } else if (status === "checked_in") {
+      const [appt] = await db
+        .select({ tokenNumber: appointments.tokenNumber })
+        .from(appointments)
+        .where(eq(appointments.id, appointmentId))
+        .limit(1);
+      sendCheckinConfirmedNotification(appointmentId, appt?.tokenNumber ?? null).catch(() => {});
+    }
 
     // ─── P0: Golden Thread sync ────────────────────────────────────────────────
     // When completing, mark ANY follow-up that GENERATED this appointment as done

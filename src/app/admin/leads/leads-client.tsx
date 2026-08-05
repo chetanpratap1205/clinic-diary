@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { format, isAfter, formatDistanceToNow } from "date-fns";
+import { format, isAfter, formatDistanceToNow, differenceInDays } from "date-fns";
 import {
   MessageCircle,
   Plus,
@@ -15,6 +15,17 @@ import {
   X,
   RefreshCw,
   BookOpen,
+  LayoutGrid,
+  List,
+  Sparkles,
+  Copy,
+  AlertTriangle,
+  TrendingUp,
+  CheckSquare,
+  Square,
+  Users,
+  Clock,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,13 +39,25 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import type { DoctorLead } from "@/db/schema";
-import { buildWhatsAppMessage, getNextStepLabel, LEAD_STATUSES, LEAD_PRIORITIES, LEAD_CATEGORIES, SPECIALTIES } from "./message-builder";
+import {
+  buildMessageForLead,
+  getNextStepLabel,
+  generateLeadDemoUrl,
+  LEAD_STATUSES,
+  LEAD_PRIORITIES,
+  LEAD_CATEGORIES,
+  LEAD_SOURCES,
+  SPECIALTIES,
+} from "./message-builder";
 import { WhatsAppMessageDrawer } from "./whatsapp-message-drawer";
 import { LeadDetailDrawer } from "./lead-detail-drawer";
 import { AddEditLeadModal } from "./add-edit-lead-modal";
 import { CsvImportModal } from "./csv-import-modal";
 import { DecisionGuideModal } from "./decision-guide-modal";
 import { updateLead } from "./actions";
+import { ExportLeadsButton } from "./export-leads-button";
+import { ConvertLeadModal } from "./convert-lead-modal";
+import { LeadsKanban } from "./leads-kanban";
 
 interface LeadsClientProps {
   leads: DoctorLead[];
@@ -60,6 +83,7 @@ interface LeadsClientProps {
     category?: string;
     specialty?: string;
     city?: string;
+    source?: string;
   };
 }
 
@@ -76,16 +100,23 @@ export function LeadsClient({
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
 
+  // View state
+  const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
+
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
   // Drawer / modal state
   const [waDrawerLead, setWaDrawerLead] = useState<DoctorLead | null>(null);
   const [detailDrawerLead, setDetailDrawerLead] = useState<DoctorLead | null>(null);
   const [editLead, setEditLead] = useState<DoctorLead | null>(null);
+  const [convertModalLead, setConvertModalLead] = useState<DoctorLead | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [searchInput, setSearchInput] = useState(currentFilters.search ?? "");
 
-  // ─── URL-driven filter helpers ─────────────────────────────────────────────
+  // ─── Filter helpers ──────────────────────────────────────────────────────────
   const setFilter = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -100,126 +131,155 @@ export function LeadsClient({
     [router, searchParams]
   );
 
-  const setPage = (page: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(page));
-    router.push(`/admin/leads?${params.toString()}`);
-  };
+  const handleSearch = () => setFilter("search", searchInput);
 
   const clearFilters = () => {
     setSearchInput("");
     router.push("/admin/leads");
   };
 
-  const handleSearch = () => setFilter("search", searchInput);
+  const setPage = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(page));
+    router.push(`/admin/leads?${params.toString()}`);
+  };
 
-  const hasActiveFilters =
-    currentFilters.search ||
-    currentFilters.status ||
-    currentFilters.priority ||
-    currentFilters.category ||
-    currentFilters.specialty ||
-    currentFilters.city;
+  // ─── Fix #5: updateLead correct two-argument signature ────────────────────
+  const handleStatusChange = async (lead: DoctorLead, newStatus: string) => {
+    const res = await updateLead(lead.id, { status: newStatus });
+    if (res.error) toast.error(res.error);
+    else {
+      toast.success(`Status → ${LEAD_STATUSES.find((s) => s.value === newStatus)?.label ?? newStatus}`);
+      startTransition(() => router.refresh());
+    }
+  };
 
-  // ─── Inline status change ──────────────────────────────────────────────────
-  const handleStatusChange = (lead: DoctorLead, newStatus: string) => {
-    startTransition(async () => {
-      const res = await updateLead(lead.id, { status: newStatus });
-      if (res.error) toast.error(res.error);
-      else {
-        toast.success("Status updated");
-        router.refresh();
-      }
+  const copyDemoUrl = (lead: DoctorLead) => {
+    const url = generateLeadDemoUrl(lead);
+    navigator.clipboard.writeText(url);
+    toast.success("Live Demo URL copied! 🔗");
+  };
+
+  // ─── Bulk selection helpers ─────────────────────────────────────────────────
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
     });
   };
 
-  // ─── Render priority badge ─────────────────────────────────────────────────
-  const PriorityBadge = ({ priority }: { priority: string }) => {
-    const map: Record<string, string> = {
-      hot: "bg-red-100 text-red-700 border-red-200",
-      warm: "bg-orange-100 text-orange-700 border-orange-200",
-      normal: "bg-slate-100 text-slate-600 border-slate-200",
-      cold: "bg-slate-50 text-slate-400 border-slate-200",
-    };
-    const labels: Record<string, string> = {
-      hot: "🔴 Hot",
-      warm: "🟡 Warm",
-      normal: "Normal",
-      cold: "Cold",
-    };
-    return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${map[priority] || map.normal}`}>
-        {labels[priority] || priority}
-      </span>
-    );
+  const toggleSelectAll = () => {
+    if (selectedIds.size === leads.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(leads.map((l) => l.id)));
+    }
   };
 
-  // ─── Render status badge ───────────────────────────────────────────────────
-  const StatusBadge = ({ status }: { status: string }) => {
-    const s = LEAD_STATUSES.find((x) => x.value === status);
-    return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${s?.color || "bg-slate-100 text-slate-600"}`}>
-        {s?.label || status}
-      </span>
-    );
+  const handleBulkStatusChange = async (newStatus: string) => {
+    if (selectedIds.size === 0) return;
+    let count = 0;
+    for (const id of selectedIds) {
+      const res = await updateLead(id, { status: newStatus });
+      if (res.success) count++;
+    }
+    toast.success(`Updated ${count} leads to "${LEAD_STATUSES.find((s) => s.value === newStatus)?.label}"`);
+    setSelectedIds(new Set());
+    startTransition(() => router.refresh());
   };
 
-  // ─── Step progress indicator ───────────────────────────────────────────────
-  const StepIndicator = ({ step }: { step: number }) => {
-    if (step === 0) return <span className="text-xs text-slate-400">Not sent</span>;
-    if (step >= 3) return <span className="text-xs text-emerald-600 font-medium">✅ All sent</span>;
-    return (
-      <span className="text-xs text-blue-600 font-medium">
-        Step {step} sent ✓
-      </span>
-    );
-  };
+  const hasActiveFilters = Object.values(currentFilters).some((v) => v && v !== "all");
 
-  // ─── Follow-up date cell ───────────────────────────────────────────────────
-  const FollowUpCell = ({ date }: { date: Date | null }) => {
-    if (!date) return <span className="text-xs text-slate-400">—</span>;
-    const d = new Date(date);
-    const overdue = isAfter(new Date(), d);
-    return (
-      <span className={`text-xs font-medium ${overdue ? "text-red-600" : "text-slate-600"}`}>
-        {overdue ? "⚠ " : ""}
-        {format(d, "dd MMM")}
-      </span>
-    );
-  };
+  // ─── Follow-up due today / overdue ─────────────────────────────────────────
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const followUpsDueToday = leads.filter((l) => {
+    if (!l.followUpDate) return false;
+    const due = new Date(l.followUpDate);
+    due.setHours(0, 0, 0, 0);
+    return due <= today && !["converted", "rejected"].includes(l.status);
+  });
 
-  // ─── Category badge ────────────────────────────────────────────────────────
-  const CategoryBadge = ({ cat }: { cat: string }) => {
-    const colors: Record<string, string> = {
-      A: "bg-slate-100 text-slate-600",
-      B: "bg-teal-100 text-teal-700",
-      C: "bg-purple-100 text-purple-700",
-    };
-    const labels: Record<string, string> = {
-      A: "A · Cold",
-      B: "B · Visited",
-      C: "C · Inbound",
-    };
-    return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${colors[cat] || colors.A}`}>
-        {labels[cat] || cat}
-      </span>
-    );
-  };
+  // ─── Conversion rate ────────────────────────────────────────────────────────
+  const conversionRate = stats.total > 0
+    ? Math.round((stats.converted / stats.total) * 100)
+    : 0;
 
   return (
-    <div className="space-y-5">
-      {/* ─── Stats Header Pills ──────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 min-[480px]:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3">
-        <StatPill label="Total Leads" value={stats.total} color="slate" />
-        <StatPill label="🔴 Hot" value={stats.hot} color="red" />
-        <StatPill label="🟡 Warm" value={stats.warm} color="orange" />
+    <div className="space-y-4">
+
+      {/* ─── Follow-Up Due Today Alert Banner ───────────────────────────────── */}
+      {followUpsDueToday.length > 0 && (
+        <div className="flex items-center gap-3 bg-amber-50 border border-amber-300 rounded-xl px-4 py-3 text-sm">
+          <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+          <span className="font-semibold text-amber-800">
+            {followUpsDueToday.length} follow-up{followUpsDueToday.length > 1 ? "s" : ""} due today:
+          </span>
+          <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
+            {followUpsDueToday.slice(0, 4).map((l) => (
+              <button
+                key={l.id}
+                onClick={() => setDetailDrawerLead(l)}
+                className="text-xs font-semibold text-amber-700 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-2 py-0.5 rounded-full transition-colors truncate"
+              >
+                Dr. {l.doctorName.split(" ").pop()}
+              </button>
+            ))}
+            {followUpsDueToday.length > 4 && (
+              <span className="text-xs text-amber-600 font-medium">+{followUpsDueToday.length - 4} more</span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ─── Header Stats — Grid on mobile, flex on desktop ─────────────────── */}
+      <div className="grid grid-cols-4 sm:flex sm:flex-wrap items-center gap-2 text-xs">
+        <StatPill label="Total" value={stats.total} color="slate" />
+        <StatPill label="🔥 Hot" value={stats.hot} color="red" />
+        <StatPill label="🟡 Warm" value={stats.warm} color="amber" />
         <StatPill label="New" value={stats.new} color="blue" />
         <StatPill label="Contacted" value={stats.contacted} color="yellow" />
         <StatPill label="Demo Set" value={stats.demo_scheduled} color="purple" />
         <StatPill label="Converted" value={stats.converted} color="green" />
         <StatPill label="⚠ Overdue" value={stats.overdue} color="red" />
+        {/* Fix #7: Conversion Rate KPI */}
+        <div className="flex items-center gap-1.5 border border-teal-200 bg-teal-50 px-2.5 py-1 rounded-lg shrink-0 font-medium text-teal-700">
+          <TrendingUp className="w-3 h-3" />
+          <span>Conv. Rate</span>
+          <span className="font-black">{conversionRate}%</span>
+        </div>
       </div>
+
+      {/* ─── Bulk Actions Bar (shows when rows selected) ─────────────────────── */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 bg-teal-50 border border-teal-200 rounded-xl px-4 py-2.5">
+          <div className="flex items-center gap-2 text-sm font-semibold text-teal-800">
+            <CheckSquare className="w-4 h-4" />
+            {selectedIds.size} selected
+          </div>
+          <div className="h-4 w-px bg-teal-200" />
+          <span className="text-xs text-teal-700 font-medium">Bulk update status:</span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {LEAD_STATUSES.filter((s) => s.value !== "converted").map((s) => (
+              <button
+                key={s.value}
+                onClick={() => handleBulkStatusChange(s.value)}
+                className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white border border-teal-300 text-teal-700 hover:bg-teal-100 transition-colors"
+              >
+                → {s.label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="ml-auto p-1 rounded text-teal-500 hover:text-teal-700"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* ─── Action Bar ─────────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
@@ -245,15 +305,31 @@ export function LeadsClient({
               <X className="w-3.5 h-3.5" /> Clear
             </Button>
           )}
-          <Button
-            onClick={() => router.refresh()}
-            size="sm"
-            variant="ghost"
-            className="h-9 text-slate-500 px-2.5"
-            title="Refresh leads"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-          </Button>
+
+          {/* View Toggle */}
+          <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+            <button
+              onClick={() => setViewMode("table")}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1 ${
+                viewMode === "table" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-500"
+              }`}
+            >
+              <List className="w-3.5 h-3.5" />
+              Table
+            </button>
+            <button
+              onClick={() => setViewMode("kanban")}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1 ${
+                viewMode === "kanban" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-500"
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              Kanban
+            </button>
+          </div>
+
+          <ExportLeadsButton leads={leads} />
+
           <Button
             onClick={() => setShowGuideModal(true)}
             size="sm"
@@ -261,7 +337,7 @@ export function LeadsClient({
             className="h-9 gap-1.5 border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100 font-semibold text-xs px-2.5 sm:px-3"
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Decision Guide</span>
+            <span>Guide</span>
           </Button>
           <Button
             onClick={() => setShowImportModal(true)}
@@ -270,8 +346,7 @@ export function LeadsClient({
             className="h-9 gap-1.5 text-xs px-2.5 sm:px-3"
           >
             <Upload className="w-3.5 h-3.5" />
-            <span className="hidden min-[400px]:inline">Import CSV</span>
-            <span className="min-[400px]:hidden">Import</span>
+            <span>Import CSV</span>
           </Button>
           <Button
             onClick={() => setShowAddModal(true)}
@@ -284,17 +359,14 @@ export function LeadsClient({
         </div>
       </div>
 
-      {/* ─── Filter Bar ─────────────────────────────────────────────────────── */}
+      {/* ─── Filter Bar — now includes Source Channel ─────────────────────────── */}
       <div className="grid grid-cols-2 min-[540px]:flex min-[540px]:flex-wrap items-center gap-2">
         <div className="col-span-2 min-[540px]:col-span-1 flex items-center gap-1.5 text-xs text-slate-500 font-medium">
           <Filter className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
           <span>Filter:</span>
         </div>
 
-        <Select
-          value={currentFilters.status || "all"}
-          onValueChange={(v) => setFilter("status", v)}
-        >
+        <Select value={currentFilters.status || "all"} onValueChange={(v) => setFilter("status", v)}>
           <SelectTrigger className="h-8 text-xs w-full min-[540px]:w-36">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -306,10 +378,7 @@ export function LeadsClient({
           </SelectContent>
         </Select>
 
-        <Select
-          value={currentFilters.priority || "all"}
-          onValueChange={(v) => setFilter("priority", v)}
-        >
+        <Select value={currentFilters.priority || "all"} onValueChange={(v) => setFilter("priority", v)}>
           <SelectTrigger className="h-8 text-xs w-full min-[540px]:w-32">
             <SelectValue placeholder="Priority" />
           </SelectTrigger>
@@ -321,10 +390,7 @@ export function LeadsClient({
           </SelectContent>
         </Select>
 
-        <Select
-          value={currentFilters.category || "all"}
-          onValueChange={(v) => setFilter("category", v)}
-        >
+        <Select value={currentFilters.category || "all"} onValueChange={(v) => setFilter("category", v)}>
           <SelectTrigger className="h-8 text-xs w-full min-[540px]:w-36">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
@@ -336,10 +402,20 @@ export function LeadsClient({
           </SelectContent>
         </Select>
 
-        <Select
-          value={currentFilters.specialty || "all"}
-          onValueChange={(v) => setFilter("specialty", v)}
-        >
+        {/* Fix #10: Source Channel Filter */}
+        <Select value={currentFilters.source || "all"} onValueChange={(v) => setFilter("source", v)}>
+          <SelectTrigger className="h-8 text-xs w-full min-[540px]:w-40">
+            <SelectValue placeholder="Source Channel" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Sources</SelectItem>
+            {LEAD_SOURCES.map((s) => (
+              <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={currentFilters.specialty || "all"} onValueChange={(v) => setFilter("specialty", v)}>
           <SelectTrigger className="h-8 text-xs w-full min-[540px]:w-44">
             <SelectValue placeholder="Specialty" />
           </SelectTrigger>
@@ -352,10 +428,7 @@ export function LeadsClient({
         </Select>
 
         {cities.length > 0 && (
-          <Select
-            value={currentFilters.city || "all"}
-            onValueChange={(v) => setFilter("city", v)}
-          >
+          <Select value={currentFilters.city || "all"} onValueChange={(v) => setFilter("city", v)}>
             <SelectTrigger className="h-8 text-xs w-full min-[540px]:w-32">
               <SelectValue placeholder="City" />
             </SelectTrigger>
@@ -369,444 +442,382 @@ export function LeadsClient({
         )}
       </div>
 
-      {/* ─── Results Count ──────────────────────────────────────────────────── */}
+      {/* Showing count */}
       <div className="flex items-center justify-between">
-        <p className="text-xs sm:text-sm text-slate-500">
-          Showing <span className="font-semibold text-slate-900">{leads.length}</span> of{" "}
-          <span className="font-semibold text-slate-900">{total}</span> leads
-        </p>
-        {totalPages > 1 && (
-          <div className="flex items-center gap-2">
+        <div className="text-xs text-slate-500 font-medium">
+          Showing <span className="font-bold text-slate-800">{leads.length}</span> of{" "}
+          <span className="font-bold text-slate-800">{total}</span> leads
+          {selectedIds.size > 0 && (
+            <span className="ml-2 text-teal-600 font-semibold">• {selectedIds.size} selected</span>
+          )}
+        </div>
+      </div>
+
+      {/* Render Kanban or Table View */}
+      {viewMode === "kanban" ? (
+        <LeadsKanban
+          leads={leads}
+          onOpenMessageDrawer={setWaDrawerLead}
+          onOpenConvertModal={setConvertModalLead}
+          onStatusChange={handleStatusChange}
+        />
+      ) : (
+        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  {/* Fix #9: Bulk select checkbox */}
+                  <th className="px-4 py-3 w-8">
+                    <button onClick={toggleSelectAll} className="text-slate-400 hover:text-teal-600">
+                      {selectedIds.size === leads.length && leads.length > 0 ? (
+                        <CheckSquare className="w-4 h-4 text-teal-600" />
+                      ) : (
+                        <Square className="w-4 h-4" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Doctor / Clinic</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap hidden sm:table-cell">Specialty</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap hidden md:table-cell">Source</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Priority</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Status</th>
+                  {/* Fix #12: Days Since Last Contact */}
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">Last Contact</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">Demo Link</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap hidden xl:table-cell">Step</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {leads.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="text-center py-16 text-slate-400">
+                      <div className="flex flex-col items-center gap-3">
+                        <Users className="w-10 h-10 text-slate-200" />
+                        <div>
+                          <p className="font-medium text-slate-500">No leads found</p>
+                          <p className="text-xs mt-1">Add a lead or import your CSV file to get started.</p>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  leads.map((lead) => {
+                    const demoUrl = generateLeadDemoUrl(lead);
+                    const isConverted = lead.status === "converted";
+                    const isSelected = selectedIds.has(lead.id);
+
+                    // Fix #12: Days since last contact
+                    const daysSinceContact = lead.lastContactedAt
+                      ? differenceInDays(new Date(), new Date(lead.lastContactedAt))
+                      : null;
+                    const contactCold = daysSinceContact !== null && daysSinceContact >= 5;
+
+                    return (
+                      <tr
+                        key={lead.id}
+                        className={`hover:bg-slate-50 transition-colors group ${isSelected ? "bg-teal-50/50" : ""}`}
+                      >
+                        {/* Checkbox */}
+                        <td className="px-4 py-3 w-8">
+                          <button onClick={() => toggleSelect(lead.id)} className="text-slate-300 hover:text-teal-600">
+                            {isSelected ? (
+                              <CheckSquare className="w-4 h-4 text-teal-600" />
+                            ) : (
+                              <Square className="w-4 h-4" />
+                            )}
+                          </button>
+                        </td>
+
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => setDetailDrawerLead(lead)}
+                            className="text-left hover:text-teal-700 transition-colors"
+                          >
+                            <p className="font-semibold text-slate-900 group-hover:text-teal-700 truncate max-w-[180px]">
+                              {lead.doctorName}
+                            </p>
+                            {lead.clinicName && (
+                              <p className="text-xs text-slate-500 truncate max-w-[180px] mt-0.5">
+                                {lead.clinicName}
+                              </p>
+                            )}
+                            {lead.city && (
+                              <p className="text-xs text-slate-400 truncate">{lead.city}</p>
+                            )}
+                          </button>
+                        </td>
+
+                        <td className="px-4 py-3 hidden sm:table-cell">
+                          {lead.specialty ? (
+                            <span className="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded truncate max-w-[130px] block">
+                              {lead.specialty}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-slate-300">—</span>
+                          )}
+                        </td>
+
+                        <td className="px-4 py-3 hidden md:table-cell">
+                          <SourceChannelBadge source={lead.source} />
+                        </td>
+
+                        <td className="px-4 py-3">
+                          <PriorityBadge priority={lead.priority} />
+                        </td>
+
+                        <td className="px-4 py-3">
+                          <Select
+                            value={lead.status}
+                            onValueChange={(v) => handleStatusChange(lead, v)}
+                          >
+                            <SelectTrigger className="h-7 text-xs border-0 bg-transparent p-0 w-auto gap-1 focus:ring-0">
+                              <StatusBadge status={lead.status} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {LEAD_STATUSES.map((s) => (
+                                <SelectItem key={s.value} value={s.value} className="text-xs">
+                                  {s.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </td>
+
+                        {/* Fix #12: Days Since Last Contact */}
+                        <td className="px-4 py-3 hidden lg:table-cell">
+                          {daysSinceContact === null ? (
+                            <span className="text-xs text-slate-400 italic">Never</span>
+                          ) : (
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${
+                              contactCold
+                                ? "bg-red-50 text-red-700 border-red-200"
+                                : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            }`}>
+                              {daysSinceContact === 0 ? "Today" : `${daysSinceContact}d ago`}
+                              {contactCold && " 🧊"}
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Demo Link */}
+                        <td className="px-4 py-3 hidden lg:table-cell">
+                          <button
+                            onClick={() => copyDemoUrl(lead)}
+                            className="inline-flex items-center gap-1 text-xs text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 px-2 py-1 rounded font-semibold transition-colors"
+                            title="Copy Live Demo Link"
+                          >
+                            <Copy className="w-3 h-3" />
+                            <span>Copy Demo URL</span>
+                          </button>
+                        </td>
+
+                        <td className="px-4 py-3 hidden xl:table-cell">
+                          <StepIndicator step={lead.messageSentStep || 0} />
+                        </td>
+
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {!isConverted && (
+                              <Button
+                                onClick={() => setConvertModalLead(lead)}
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs px-2 gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-50 font-semibold"
+                                title="Convert Lead to Active Clinic"
+                              >
+                                <Sparkles className="w-3 h-3 text-emerald-600" />
+                                Convert
+                              </Button>
+                            )}
+                            <Button
+                              onClick={() => setWaDrawerLead(lead)}
+                              size="sm"
+                              className="h-7 text-xs px-2.5 gap-1.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold"
+                            >
+                              <MessageCircle className="w-3 h-3" />
+                              <span>WhatsApp</span>
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-xs text-slate-500">
+            Page {currentPage} of {totalPages} ({total} total leads)
+          </p>
+          <div className="flex items-center gap-1.5">
             <Button
-              size="sm"
-              variant="outline"
               onClick={() => setPage(currentPage - 1)}
               disabled={currentPage <= 1}
+              size="sm"
+              variant="outline"
               className="h-8 w-8 p-0"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <span className="text-xs text-slate-600 font-medium">
-              {currentPage} / {totalPages}
-            </span>
+            <span className="text-xs font-semibold px-2">{currentPage}</span>
             <Button
-              size="sm"
-              variant="outline"
               onClick={() => setPage(currentPage + 1)}
               disabled={currentPage >= totalPages}
+              size="sm"
+              variant="outline"
               className="h-8 w-8 p-0"
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
-        )}
-      </div>
-
-      {/* ─── Mobile Card View (Visible on small screens: phones & small tablets) ──────────────── */}
-      <div className="block md:hidden space-y-3">
-        {leads.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-slate-400">
-            <Phone className="w-10 h-10 text-slate-200 mx-auto mb-2" />
-            <p className="font-medium text-slate-500">No leads found</p>
-            <p className="text-xs mt-1">Add a lead or import your CSV file to get started.</p>
-          </div>
-        ) : (
-          leads.map((lead) => {
-            const { isComplete } = buildWhatsAppMessage(lead);
-            const isOverdue =
-              lead.followUpDate &&
-              isAfter(new Date(), new Date(lead.followUpDate)) &&
-              !["converted", "rejected"].includes(lead.status);
-
-            return (
-              <div
-                key={lead.id}
-                className={`bg-white border rounded-xl p-4 space-y-3 shadow-sm transition-all ${
-                  isOverdue ? "border-red-200 bg-red-50/20" : "border-slate-200"
-                }`}
-              >
-                {/* Header: Doctor Name & Badges */}
-                <div className="flex items-start justify-between gap-2">
-                  <button
-                    onClick={() => setDetailDrawerLead(lead)}
-                    className="text-left hover:text-teal-700 transition-colors flex-1 min-w-0"
-                  >
-                    <p className="font-bold text-slate-900 text-sm truncate">
-                      {lead.doctorName}
-                    </p>
-                    {lead.clinicName && (
-                      <p className="text-xs text-slate-500 truncate mt-0.5">
-                        🏥 {lead.clinicName}
-                      </p>
-                    )}
-                    {lead.city && (
-                      <p className="text-xs text-slate-400 truncate mt-0.5">
-                        📍 {lead.city}
-                      </p>
-                    )}
-                  </button>
-                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                    <PriorityBadge priority={lead.priority} />
-                    <CategoryBadge cat={lead.leadCategory || "A"} />
-                  </div>
-                </div>
-
-                {/* Sub-info Row: Specialty + FollowUp */}
-                <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
-                  <div>
-                    {lead.specialty ? (
-                      <span className="text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
-                        {lead.specialty}
-                      </span>
-                    ) : (
-                      <span className="text-slate-300">No specialty</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <StepIndicator step={lead.messageSentStep || 0} />
-                    <FollowUpCell date={lead.followUpDate} />
-                  </div>
-                </div>
-
-                {/* Status Dropdown & Action Buttons */}
-                <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
-                  <div className="flex-1">
-                    <Select
-                      value={lead.status}
-                      onValueChange={(v) => handleStatusChange(lead, v)}
-                    >
-                      <SelectTrigger className="h-8 text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 w-full">
-                        <StatusBadge status={lead.status} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {LEAD_STATUSES.map((s) => (
-                          <SelectItem key={s.value} value={s.value} className="text-xs">
-                            {s.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    {!isComplete && lead.status !== "rejected" && (
-                      <button
-                        onClick={() => setWaDrawerLead(lead)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-all text-xs font-semibold shadow-sm"
-                      >
-                        <MessageCircle className="w-3.5 h-3.5" />
-                        <span>Step {Math.min((lead.messageSentStep || 0) + 1, 3)}</span>
-                      </button>
-                    )}
-                    {isComplete && (
-                      <span className="text-xs text-emerald-600 font-semibold px-2 py-1 bg-emerald-50 rounded-lg border border-emerald-200">
-                        ✅ Done
-                      </span>
-                    )}
-                    <button
-                      onClick={() => {
-                        setEditLead(lead);
-                        setShowAddModal(true);
-                      }}
-                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors border border-slate-200 bg-white"
-                      title="Edit Lead"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>
-
-      {/* ─── Desktop/Tablet Leads Table (Visible on medium screens and up) ───────────────────────── */}
-      <div className="hidden md:block bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Doctor / Clinic</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap hidden sm:table-cell">Specialty</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap hidden md:table-cell">Category</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Priority</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Status</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">Step</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">Follow-Up</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap hidden xl:table-cell">Last Contact</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {leads.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="text-center py-16 text-slate-400">
-                    <div className="flex flex-col items-center gap-3">
-                      <Phone className="w-10 h-10 text-slate-200" />
-                      <div>
-                        <p className="font-medium text-slate-500">No leads found</p>
-                        <p className="text-xs mt-1">Add a lead or import your CSV file to get started.</p>
-                      </div>
-                      <Button
-                        onClick={() => setShowAddModal(true)}
-                        size="sm"
-                        className="bg-teal-600 hover:bg-teal-700 mt-2 gap-2"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> Add First Lead
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                leads.map((lead) => {
-                  const { isComplete } = buildWhatsAppMessage(lead);
-                  const isOverdue =
-                    lead.followUpDate &&
-                    isAfter(new Date(), new Date(lead.followUpDate)) &&
-                    !["converted", "rejected"].includes(lead.status);
-
-                  return (
-                    <tr
-                      key={lead.id}
-                      className={`hover:bg-slate-50 transition-colors group ${isOverdue ? "bg-red-50/30" : ""}`}
-                    >
-                      {/* Doctor / Clinic */}
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() => setDetailDrawerLead(lead)}
-                          className="text-left hover:text-teal-700 transition-colors"
-                        >
-                          <p className="font-semibold text-slate-900 group-hover:text-teal-700 truncate max-w-[180px]">
-                            {lead.doctorName}
-                          </p>
-                          {lead.clinicName && (
-                            <p className="text-xs text-slate-400 truncate max-w-[180px] mt-0.5">
-                              {lead.clinicName}
-                            </p>
-                          )}
-                          {lead.city && (
-                            <p className="text-xs text-slate-400 truncate">{lead.city}</p>
-                          )}
-                        </button>
-                      </td>
-
-                      {/* Specialty */}
-                      <td className="px-4 py-3 hidden sm:table-cell">
-                        {lead.specialty ? (
-                          <span className="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded truncate max-w-[130px] block">
-                            {lead.specialty}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-slate-300">—</span>
-                        )}
-                      </td>
-
-                      {/* Category */}
-                      <td className="px-4 py-3 hidden md:table-cell">
-                        <CategoryBadge cat={lead.leadCategory || "A"} />
-                      </td>
-
-                      {/* Priority */}
-                      <td className="px-4 py-3">
-                        <PriorityBadge priority={lead.priority} />
-                      </td>
-
-                      {/* Status */}
-                      <td className="px-4 py-3">
-                        <Select
-                          value={lead.status}
-                          onValueChange={(v) => handleStatusChange(lead, v)}
-                        >
-                          <SelectTrigger className="h-7 text-xs border-0 bg-transparent p-0 w-auto gap-1 focus:ring-0">
-                            <StatusBadge status={lead.status} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {LEAD_STATUSES.map((s) => (
-                              <SelectItem key={s.value} value={s.value} className="text-xs">
-                                {s.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </td>
-
-                      {/* Step */}
-                      <td className="px-4 py-3 hidden lg:table-cell">
-                        <StepIndicator step={lead.messageSentStep || 0} />
-                      </td>
-
-                      {/* Follow-Up */}
-                      <td className="px-4 py-3 hidden lg:table-cell">
-                        <FollowUpCell date={lead.followUpDate} />
-                      </td>
-
-                      {/* Last Contact */}
-                      <td className="px-4 py-3 hidden xl:table-cell">
-                        {lead.lastContactedAt ? (
-                          <span className="text-xs text-slate-500">
-                            {formatDistanceToNow(new Date(lead.lastContactedAt), { addSuffix: true })}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-slate-300">Never</span>
-                        )}
-                      </td>
-
-                      {/* Actions */}
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {/* WhatsApp Button */}
-                          {!isComplete && lead.status !== "rejected" && (
-                            <button
-                              onClick={() => setWaDrawerLead(lead)}
-                              title={getNextStepLabel(lead.messageSentStep || 0, lead.leadCategory || "A")}
-                              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 transition-all text-xs font-medium group/wa"
-                            >
-                              <MessageCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                              <span className="hidden sm:inline whitespace-nowrap">
-                                Step {Math.min((lead.messageSentStep || 0) + 1, 3)}
-                              </span>
-                            </button>
-                          )}
-                          {isComplete && (
-                            <span className="text-xs text-emerald-600 px-2 py-1 bg-emerald-50 rounded-lg border border-emerald-200">
-                              ✅ Done
-                            </span>
-                          )}
-
-                          {/* Details button */}
-                          <button
-                            onClick={() => {
-                              setEditLead(lead);
-                              setShowAddModal(true);
-                            }}
-                            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
-                            title="Edit Lead"
-                          >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* ─── Pagination Footer ───────────────────────────────────────────────── */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-2">
-          <p className="text-xs text-slate-500">
-            Page {currentPage} of {totalPages}
-          </p>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setPage(currentPage - 1)}
-              disabled={currentPage <= 1}
-            >
-              <ChevronLeft className="w-4 h-4 mr-1" /> Previous
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setPage(currentPage + 1)}
-              disabled={currentPage >= totalPages}
-            >
-              Next <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
         </div>
       )}
 
-      {/* ─── Drawers & Modals ────────────────────────────────────────────────── */}
-      {waDrawerLead && (
-        <WhatsAppMessageDrawer
-          lead={waDrawerLead}
-          isOpen={!!waDrawerLead}
-          onClose={() => setWaDrawerLead(null)}
-          onUpdateStep={() => {
-            router.refresh();
-          }}
-        />
-      )}
+      {/* ─── Drawers and Modals ─────────────────────────────────────────────── */}
+      <WhatsAppMessageDrawer
+        lead={waDrawerLead}
+        open={!!waDrawerLead}
+        onOpenChange={(open) => !open && setWaDrawerLead(null)}
+        onStepSent={() => startTransition(() => router.refresh())}
+      />
 
-      {detailDrawerLead && (
-        <LeadDetailDrawer
-          lead={detailDrawerLead}
-          onClose={() => setDetailDrawerLead(null)}
-          onEdit={() => {
-            setEditLead(detailDrawerLead);
-            setDetailDrawerLead(null);
-            setShowAddModal(true);
-          }}
-          onRefresh={() => router.refresh()}
-        />
-      )}
+      <LeadDetailDrawer
+        lead={detailDrawerLead!}
+        open={!!detailDrawerLead}
+        onOpenChange={(open) => !open && setDetailDrawerLead(null)}
+        onEditLead={(lead) => setEditLead(lead)}
+        onOpenWhatsAppDrawer={(lead) => setWaDrawerLead(lead)}
+        onOpenConvertModal={(lead) => setConvertModalLead(lead)}
+        onRefresh={() => startTransition(() => router.refresh())}
+      />
 
-      {showAddModal && (
+      <AddEditLeadModal
+        open={showAddModal}
+        onOpenChange={setShowAddModal}
+        onSuccess={() => startTransition(() => router.refresh())}
+      />
+
+      {editLead && (
         <AddEditLeadModal
           lead={editLead}
-          onClose={() => {
-            setShowAddModal(false);
-            setEditLead(null);
-          }}
-          onSaved={() => {
-            setShowAddModal(false);
-            setEditLead(null);
-            router.refresh();
-          }}
+          open={!!editLead}
+          onOpenChange={(open) => !open && setEditLead(null)}
+          onSuccess={() => startTransition(() => router.refresh())}
         />
       )}
 
-      {showImportModal && (
-        <CsvImportModal
-          onClose={() => setShowImportModal(false)}
-          onImported={() => {
-            setShowImportModal(false);
-            router.refresh();
-          }}
-        />
-      )}
+      <CsvImportModal
+        open={showImportModal}
+        onOpenChange={setShowImportModal}
+        onSuccess={() => startTransition(() => router.refresh())}
+      />
 
-      {showGuideModal && (
-        <DecisionGuideModal onClose={() => setShowGuideModal(false)} />
+      <DecisionGuideModal
+        open={showGuideModal}
+        onOpenChange={setShowGuideModal}
+      />
+
+      {convertModalLead && (
+        <ConvertLeadModal
+          lead={convertModalLead}
+          open={!!convertModalLead}
+          onOpenChange={(open) => !open && setConvertModalLead(null)}
+        />
       )}
     </div>
   );
 }
 
-// ─── Stat Pill Sub-component ─────────────────────────────────────────────────
-function StatPill({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: number;
-  color: string;
-}) {
+// ─── Stat Pill Helper ─────────────────────────────────────────────────────────
+function StatPill({ label, value, color }: { label: string; value: number; color: string }) {
   const colorMap: Record<string, string> = {
-    slate: "bg-white border-slate-200 text-slate-700",
-    red: "bg-red-50 border-red-200 text-red-700",
-    orange: "bg-orange-50 border-orange-200 text-orange-700",
-    blue: "bg-blue-50 border-blue-200 text-blue-700",
-    yellow: "bg-yellow-50 border-yellow-200 text-yellow-700",
-    purple: "bg-purple-50 border-purple-200 text-purple-700",
-    green: "bg-green-50 border-green-200 text-green-700",
+    slate: "bg-slate-100 text-slate-700 border-slate-200",
+    red: "bg-red-50 text-red-700 border-red-200",
+    amber: "bg-amber-50 text-amber-700 border-amber-200",
+    blue: "bg-blue-50 text-blue-700 border-blue-200",
+    yellow: "bg-yellow-50 text-yellow-700 border-yellow-200",
+    purple: "bg-purple-50 text-purple-700 border-purple-200",
+    green: "bg-green-50 text-green-700 border-green-200",
   };
+
   return (
-    <div className={`rounded-xl border px-2.5 sm:px-3 py-2 sm:py-2.5 min-w-0 ${colorMap[color] || colorMap.slate}`}>
-      <p className="text-lg sm:text-xl font-bold leading-none">{value.toLocaleString()}</p>
-      <p className="text-[10px] sm:text-[11px] mt-1 font-medium opacity-75 truncate">{label}</p>
+    <div className={`flex items-center gap-1.5 border px-2.5 py-1 rounded-lg shrink-0 font-medium ${colorMap[color] || colorMap.slate}`}>
+      <span>{label}</span>
+      <span className="font-bold">{value}</span>
     </div>
+  );
+}
+
+function SourceChannelBadge({ source }: { source?: string | null }) {
+  const map: Record<string, { label: string; bg: string }> = {
+    google_maps: { label: "Google Maps 🗺️", bg: "bg-emerald-50 text-emerald-800 border-emerald-200" },
+    instagram: { label: "Instagram 📸", bg: "bg-pink-50 text-pink-700 border-pink-200" },
+    linkedin: { label: "LinkedIn 💼", bg: "bg-sky-50 text-sky-700 border-sky-200" },
+    field_visit: { label: "Field Visit 🚗", bg: "bg-amber-50 text-amber-800 border-amber-200" },
+    imported: { label: "CSV Import 📄", bg: "bg-indigo-50 text-indigo-700 border-indigo-200" },
+    online: { label: "Inbound 🌐", bg: "bg-teal-50 text-teal-700 border-teal-200" },
+    growth_partner: { label: "Growth Partner 🤝", bg: "bg-violet-50 text-violet-700 border-violet-200" },
+    referral: { label: "Referral 👥", bg: "bg-rose-50 text-rose-700 border-rose-200" },
+  };
+
+  const item = map[source || "online"] || { label: source || "Outreach", bg: "bg-slate-50 text-slate-600 border-slate-200" };
+
+  return (
+    <Badge variant="outline" className={`text-[10px] font-bold ${item.bg}`}>
+      {item.label}
+    </Badge>
+  );
+}
+
+function PriorityBadge({ priority }: { priority?: string | null }) {
+  const map: Record<string, { label: string; bg: string }> = {
+    hot: { label: "HOT 🔥", bg: "bg-red-100 text-red-800 font-black border-red-200" },
+    warm: { label: "WARM 🟡", bg: "bg-amber-100 text-amber-800 font-bold border-amber-200" },
+    normal: { label: "Normal", bg: "bg-slate-100 text-slate-600 border-slate-200" },
+    cold: { label: "Cold ❄", bg: "bg-sky-100 text-sky-700 border-sky-200" },
+  };
+  const item = map[priority || "normal"] || map.normal;
+  return (
+    <Badge variant="outline" className={`text-[10px] ${item.bg}`}>
+      {item.label}
+    </Badge>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; bg: string }> = {
+    new: { label: "New", bg: "bg-blue-100 text-blue-800 border-blue-200" },
+    contacted: { label: "Contacted", bg: "bg-yellow-100 text-yellow-800 border-yellow-200" },
+    demo_scheduled: { label: "Demo Set", bg: "bg-purple-100 text-purple-800 border-purple-200" },
+    converted: { label: "Converted ✓", bg: "bg-emerald-100 text-emerald-800 border-emerald-200" },
+    rejected: { label: "Rejected", bg: "bg-slate-100 text-slate-500 border-slate-200" },
+  };
+  const item = map[status] || { label: status, bg: "bg-slate-100 text-slate-600 border-slate-200" };
+  return (
+    <Badge variant="outline" className={`text-[10px] font-semibold ${item.bg}`}>
+      {item.label}
+    </Badge>
+  );
+}
+
+function StepIndicator({ step }: { step: number }) {
+  if (step === 0) return <span className="text-xs text-slate-400">Not started</span>;
+  if (step >= 3) return (
+    <span className="text-xs text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
+      ✓ All 3 sent
+    </span>
+  );
+  return (
+    <span className="text-xs text-teal-700 font-bold bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded">
+      Step {step}/3 sent
+    </span>
   );
 }

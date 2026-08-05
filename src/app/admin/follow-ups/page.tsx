@@ -1,9 +1,8 @@
 import { db } from "@/db";
 import { followUps, clinics, patients } from "@/db/schema";
-import { eq, count, sql, asc } from "drizzle-orm";
-import { format } from "date-fns";
-import { CalendarClock, CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { eq, count, sql, and, or, ilike, lte, desc } from "drizzle-orm";
+import { CalendarClock, CheckCircle2, XCircle, Clock, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -13,45 +12,77 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { FollowUpsTable, type FollowUpRow } from "../_components/followups-table";
+import { ExportFollowUpsButton } from "../_components/export-followups-button";
+import { NotifyDoctorButton } from "../_components/notify-doctor-button";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Follow-Ups | Doctor Diary Admin" };
+export const metadata = { title: "Follow-Ups & Patient Retention | Admin Console" };
 
-export default async function FollowUpsPage() {
+export default async function FollowUpsPage(props: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const searchParams = await props.searchParams;
+  
+  const page = Number(searchParams?.page) || 1;
+  const search = typeof searchParams?.search === "string" ? searchParams.search : "";
+  const tab = typeof searchParams?.tab === "string" ? searchParams.tab : "overdue";
+
+  const PAGE_SIZE = 25;
+  const offset = (page - 1) * PAGE_SIZE;
+
+  // Dynamic filter condition
+  let condition = undefined;
+
+  if (search) {
+    condition = or(
+      ilike(patients.name, `%${search}%`),
+      ilike(patients.phone, `%${search}%`),
+      ilike(clinics.name, `%${search}%`),
+      ilike(followUps.notes, `%${search}%`)
+    );
+  }
+
+  if (tab === "overdue") {
+    condition = condition
+      ? and(condition, eq(followUps.status, "pending"), sql`f.due_date < CURRENT_DATE`)
+      : and(eq(followUps.status, "pending"), sql`f.due_date < CURRENT_DATE`);
+  } else if (tab === "pending") {
+    condition = condition ? and(condition, eq(followUps.status, "pending")) : eq(followUps.status, "pending");
+  } else if (tab === "completed") {
+    condition = condition ? and(condition, eq(followUps.status, "completed")) : eq(followUps.status, "completed");
+  } else if (tab === "missed") {
+    condition = condition ? and(condition, eq(followUps.status, "missed")) : eq(followUps.status, "missed");
+  }
+
+  // 1. Aggregated Stats & Tab Counts
   const [
     [pendingResult],
     [completedResult],
     [missedResult],
-    overdueResult,
+    countsResult,
     perClinicResult,
   ] = await Promise.all([
     db.select({ value: count() }).from(followUps).where(eq(followUps.status, "pending")),
     db.select({ value: count() }).from(followUps).where(eq(followUps.status, "completed")),
     db.select({ value: count() }).from(followUps).where(eq(followUps.status, "missed")),
 
-    // Overdue: pending AND due date < today
     db.execute(sql`
       SELECT
-        f.id,
-        f.due_date    AS "dueDate",
-        f.notes,
-        f.status,
-        p.name        AS "patientName",
-        p.phone       AS "patientPhone",
-        c.name        AS "clinicName"
-      FROM follow_ups f
-      LEFT JOIN patients p ON p.id = f.patient_id
-      LEFT JOIN clinics  c ON c.id = f.clinic_id
-      WHERE f.status = 'pending'
-        AND f.due_date < CURRENT_DATE
-      ORDER BY f.due_date ASC
-      LIMIT 50
+        COUNT(*)::int as all,
+        SUM(CASE WHEN status = 'pending' AND due_date < CURRENT_DATE THEN 1 ELSE 0 END)::int as overdue,
+        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END)::int as pending,
+        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END)::int as completed,
+        SUM(CASE WHEN status = 'missed' THEN 1 ELSE 0 END)::int as missed
+      FROM follow_ups
     `),
 
-    // Count by clinic
+    // Count by clinic with doctor phone
     db.execute(sql`
       SELECT
         c.name AS "clinicName",
+        c.doctor_name AS "doctorName",
+        c.phone AS "doctorPhone",
         COUNT(*) FILTER (WHERE f.status = 'pending')::int   AS pending,
         COUNT(*) FILTER (WHERE f.status = 'completed')::int AS completed,
         COUNT(*) FILTER (WHERE f.status = 'missed')::int    AS missed,
@@ -60,25 +91,25 @@ export default async function FollowUpsPage() {
         )::int AS overdue
       FROM clinics c
       LEFT JOIN follow_ups f ON f.clinic_id = c.id
-      GROUP BY c.id, c.name
+      GROUP BY c.id, c.name, c.doctor_name, c.phone
       HAVING COUNT(f.id) > 0
-      ORDER BY pending DESC
+      ORDER BY overdue DESC, pending DESC
       LIMIT 20
     `),
   ]);
 
-  const overdue = overdueResult.rows as Array<{
-    id: string;
-    dueDate: string;
-    notes: string | null;
-    status: string;
-    patientName: string | null;
-    patientPhone: string | null;
-    clinicName: string | null;
-  }>;
+  const counts = countsResult.rows[0] as {
+    all: number;
+    overdue: number;
+    pending: number;
+    completed: number;
+    missed: number;
+  };
 
   const perClinic = perClinicResult.rows as Array<{
     clinicName: string;
+    doctorName: string;
+    doctorPhone: string | null;
     pending: number;
     completed: number;
     missed: number;
@@ -91,24 +122,77 @@ export default async function FollowUpsPage() {
       ? (((completedResult.value ?? 0) / total) * 100).toFixed(1)
       : "0.0";
 
+  // 2. Query paginated follow-ups
+  const rawFollowUps = await db.execute(sql`
+    SELECT
+      f.id,
+      f.due_date    AS "dueDate",
+      f.notes,
+      f.status,
+      p.name        AS "patientName",
+      p.phone       AS "patientPhone",
+      c.name        AS "clinicName"
+    FROM follow_ups f
+    LEFT JOIN patients p ON p.id = f.patient_id
+    LEFT JOIN clinics  c ON c.id = f.clinic_id
+    ${condition ? sql`WHERE ${condition}` : sql``}
+    ORDER BY f.due_date ASC
+    LIMIT ${PAGE_SIZE}
+    OFFSET ${offset}
+  `);
+
+  const followUpRows = (rawFollowUps.rows as unknown as FollowUpRow[]) || [];
+
+  // 3. Count for pagination
+  const totalCountResult = await db.execute(sql`
+    SELECT COUNT(*)::int as count
+    FROM follow_ups f
+    LEFT JOIN patients p ON p.id = f.patient_id
+    LEFT JOIN clinics  c ON c.id = f.clinic_id
+    ${condition ? sql`WHERE ${condition}` : sql``}
+  `);
+
+  const filteredTotalCount = Number(totalCountResult.rows[0]?.count || 0);
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">Follow-Ups</h2>
-        <p className="text-slate-500 mt-1 text-sm">
-          Platform-wide follow-up status and overdue tracker.
-        </p>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Header & CSV Exporter */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/60">
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">Follow-Ups & Patient Retention</h2>
+            <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+              <CalendarClock className="w-3.5 h-3.5 text-amber-600" />
+              Retention Radar
+            </span>
+          </div>
+          <p className="text-slate-500 mt-1 text-sm">
+            Monitor patient retention, overdue follow-up SLAs, and clinic engagement across the platform.
+          </p>
+        </div>
+
+        <div>
+          <ExportFollowUpsButton followUps={followUpRows} />
+        </div>
       </div>
 
-      {/* Stats strip */}
+      {/* Primary KPI Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           {
-            label: "Pending",
+            label: "Overdue Follow-Ups",
+            value: counts.overdue || 0,
+            icon: AlertTriangle,
+            color: "text-rose-700",
+            bg: "bg-rose-50 border-rose-200",
+            iconColor: "text-rose-600",
+          },
+          {
+            label: "Pending Follow-Ups",
             value: pendingResult.value ?? 0,
             icon: Clock,
             color: "text-amber-700",
-            bg: "bg-amber-50",
+            bg: "bg-amber-50 border-amber-200",
             iconColor: "text-amber-600",
           },
           {
@@ -116,173 +200,116 @@ export default async function FollowUpsPage() {
             value: completedResult.value ?? 0,
             icon: CheckCircle2,
             color: "text-emerald-700",
-            bg: "bg-emerald-50",
+            bg: "bg-emerald-50 border-emerald-200",
             iconColor: "text-emerald-600",
-          },
-          {
-            label: "Missed",
-            value: missedResult.value ?? 0,
-            icon: XCircle,
-            color: "text-red-600",
-            bg: "bg-red-50",
-            iconColor: "text-red-500",
           },
           {
             label: "Completion Rate",
             value: `${completionRate}%`,
             icon: CalendarClock,
             color: "text-teal-700",
-            bg: "bg-teal-50",
+            bg: "bg-teal-50 border-teal-200",
             iconColor: "text-teal-600",
           },
         ].map((s) => (
-          <Card key={s.label} className="shadow-sm">
+          <Card key={s.label} className={`shadow-xs border ${s.bg}`}>
             <CardContent className="pt-4 pb-3">
-              <div className={`w-8 h-8 rounded-lg ${s.bg} flex items-center justify-center mb-3`}>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">{s.label}</p>
                 <s.icon className={`w-4 h-4 ${s.iconColor}`} />
               </div>
-              <p className={`text-2xl font-bold ${s.color} leading-none`}>{s.value}</p>
-              <p className="text-xs text-slate-500 font-medium mt-1">{s.label}</p>
+              <p className={`text-2xl font-black ${s.color} leading-none`}>{s.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Overdue Follow-Ups */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-500" />
-            Overdue Follow-Ups ({overdue.length})
-          </CardTitle>
+      {/* Searchable, Actionable Follow-Ups Table */}
+      <FollowUpsTable
+        followUps={followUpRows}
+        totalCount={filteredTotalCount}
+        currentPage={page}
+        currentSearch={search}
+        currentTab={tab}
+        counts={{
+          all: counts.all || 0,
+          overdue: counts.overdue || 0,
+          pending: counts.pending || 0,
+          completed: counts.completed || 0,
+          missed: counts.missed || 0,
+        }}
+      />
+
+      {/* Per-Clinic Follow-Up Performance Breakdown with Doctor Notifications */}
+      <Card className="shadow-xs border-slate-200/80">
+        <CardHeader className="pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-base font-bold text-slate-900">
+              Follow-Up Compliance by Practice
+            </CardTitle>
+            <CardDescription className="text-xs text-slate-500 mt-0.5">
+              Overdue follow-up SLA breakdown per clinic with 1-click WhatsApp alerts
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent className="p-0 overflow-x-auto min-w-full">
           <div className="min-w-[600px]">
-          <Table>
-            <TableHeader className="bg-slate-50">
-              <TableRow>
-                <TableHead className="whitespace-nowrap">Patient</TableHead>
-                <TableHead className="hidden sm:table-cell whitespace-nowrap">Clinic</TableHead>
-                <TableHead className="whitespace-nowrap">Due Date</TableHead>
-                <TableHead className="whitespace-nowrap">Days Overdue</TableHead>
-                <TableHead className="hidden md:table-cell whitespace-nowrap">Notes</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {overdue.length === 0 ? (
+            <Table>
+              <TableHeader className="bg-slate-50/80">
                 <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="h-24 text-center text-slate-400 text-sm"
-                  >
-                    <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-emerald-300" />
-                    No overdue follow-ups. Great work!
-                  </TableCell>
+                  <TableHead className="font-semibold text-xs whitespace-nowrap">Clinic & Doctor</TableHead>
+                  <TableHead className="font-semibold text-xs text-right whitespace-nowrap">Pending</TableHead>
+                  <TableHead className="font-semibold text-xs text-right whitespace-nowrap hidden sm:table-cell">Completed</TableHead>
+                  <TableHead className="font-semibold text-xs text-right whitespace-nowrap hidden sm:table-cell">Missed</TableHead>
+                  <TableHead className="font-semibold text-xs text-right whitespace-nowrap">Overdue SLA</TableHead>
+                  <TableHead className="font-semibold text-xs text-right whitespace-nowrap">Admin Alert Action</TableHead>
                 </TableRow>
-              ) : (
-                overdue.map((fu) => {
-                  const daysOverdue = Math.floor(
-                    (Date.now() - new Date(fu.dueDate).getTime()) /
-                      (1000 * 60 * 60 * 24)
-                  );
-                  return (
-                    <TableRow key={fu.id} className="hover:bg-amber-50/30">
-                      <TableCell className="min-w-[150px]">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-900 truncate">
-                            {fu.patientName ?? "Unknown"}
-                          </p>
-                          {fu.patientPhone && (
-                            <p className="text-xs text-slate-400 truncate">{fu.patientPhone}</p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell text-sm text-slate-600 truncate max-w-[150px]">
-                        {fu.clinicName ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-sm whitespace-nowrap text-slate-600">
-                        {format(new Date(fu.dueDate), "MMM d, yyyy")}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap">
-                        <Badge
-                          variant="outline"
-                          className={
-                            daysOverdue > 7
-                              ? "bg-red-50 text-red-700 border-red-200"
-                              : "bg-amber-50 text-amber-700 border-amber-200"
-                          }
-                        >
-                          {daysOverdue}d overdue
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell text-xs text-slate-500 max-w-[200px] truncate">
-                        {fu.notes ?? <span className="italic">—</span>}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Per-Clinic Breakdown */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold text-slate-700">
-            Follow-Ups by Clinic
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0 overflow-x-auto min-w-full">
-          <div className="min-w-[500px]">
-          <Table>
-            <TableHeader className="bg-slate-50">
-              <TableRow>
-                <TableHead className="whitespace-nowrap">Clinic</TableHead>
-                <TableHead className="text-right whitespace-nowrap">Pending</TableHead>
-                <TableHead className="text-right whitespace-nowrap hidden sm:table-cell">Completed</TableHead>
-                <TableHead className="text-right whitespace-nowrap hidden sm:table-cell">Missed</TableHead>
-                <TableHead className="text-right whitespace-nowrap">Overdue</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {perClinic.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-16 text-center text-slate-400 text-sm">
-                    No data available.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                perClinic.map((row) => (
-                  <TableRow key={row.clinicName} className="hover:bg-slate-50/50">
-                    <TableCell className="font-medium text-sm text-slate-900 min-w-[150px] truncate">
-                      {row.clinicName}
-                    </TableCell>
-                    <TableCell className="text-right text-sm text-amber-700 font-semibold whitespace-nowrap">
-                      {row.pending}
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell text-right text-sm text-emerald-700 whitespace-nowrap">
-                      {row.completed}
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell text-right text-sm text-red-600 whitespace-nowrap">
-                      {row.missed}
-                    </TableCell>
-                    <TableCell className="text-right whitespace-nowrap">
-                      {row.overdue > 0 ? (
-                        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                          {row.overdue}
-                        </Badge>
-                      ) : (
-                        <span className="text-sm text-slate-400">0</span>
-                      )}
+              </TableHeader>
+              <TableBody>
+                {perClinic.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-16 text-center text-slate-400 text-xs">
+                      No clinic follow-up records found.
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  perClinic.map((row) => (
+                    <TableRow key={row.clinicName} className="hover:bg-slate-50/60 transition-colors">
+                      <TableCell className="min-w-[180px]">
+                        <p className="font-semibold text-xs text-slate-900 truncate">{row.clinicName}</p>
+                        <p className="text-[10px] text-slate-500 truncate">Dr. {row.doctorName}</p>
+                      </TableCell>
+
+                      <TableCell className="text-right text-xs text-amber-700 font-bold whitespace-nowrap">
+                        {row.pending}
+                      </TableCell>
+
+                      <TableCell className="hidden sm:table-cell text-right text-xs text-emerald-700 font-semibold whitespace-nowrap">
+                        {row.completed}
+                      </TableCell>
+
+                      <TableCell className="hidden sm:table-cell text-right text-xs text-rose-600 font-medium whitespace-nowrap">
+                        {row.missed}
+                      </TableCell>
+
+                      <TableCell className="text-right whitespace-nowrap">
+                        {row.overdue > 0 ? (
+                          <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-200">
+                            {row.overdue} Overdue
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-emerald-600 font-semibold">0 (Clean)</span>
+                        )}
+                      </TableCell>
+
+                      <TableCell className="text-right whitespace-nowrap">
+                        <NotifyDoctorButton clinicName={row.clinicName} overdueCount={row.overdue} />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>

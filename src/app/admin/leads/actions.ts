@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { doctorLeads, leadActivities } from "@/db/schema";
+import { doctorLeads, leadActivities, growthPartners } from "@/db/schema";
 import {
   eq,
   desc,
@@ -25,6 +25,7 @@ export interface LeadFilters {
   category?: string;
   specialty?: string;
   city?: string;
+  source?: string;
   page?: number;
   pageSize?: number;
 }
@@ -38,6 +39,7 @@ export async function getLeads(filters: LeadFilters = {}) {
     category,
     specialty,
     city,
+    source,
     page = 1,
     pageSize = 50,
   } = filters;
@@ -59,6 +61,7 @@ export async function getLeads(filters: LeadFilters = {}) {
   if (category && category !== "all") conditions.push(eq(doctorLeads.leadCategory, category));
   if (specialty && specialty !== "all") conditions.push(ilike(doctorLeads.specialty, `%${specialty}%`));
   if (city && city !== "all") conditions.push(ilike(doctorLeads.city, `%${city}%`));
+  if (source && source !== "all") conditions.push(eq(doctorLeads.source, source));
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
   const offset = (page - 1) * pageSize;
@@ -145,6 +148,8 @@ export async function getLeadActivities(leadId: string) {
     .orderBy(desc(leadActivities.createdAt));
 }
 
+import { autoAssignLeadRoundRobin } from "@/lib/auth/rbac";
+
 // ─── Create Lead ───────────────────────────────────────────────────────────────
 export async function createLead(data: {
   doctorName: string;
@@ -164,6 +169,8 @@ export async function createLead(data: {
 }) {
   try {
     const pillar = data.domainPillar || getSuggestedPillar(data.specialty);
+    const { assignedEmployeeId, assignedManagerId } = await autoAssignLeadRoundRobin(data.city);
+
     await db.insert(doctorLeads).values({
       doctorName: data.doctorName,
       clinicName: data.clinicName || null,
@@ -179,6 +186,8 @@ export async function createLead(data: {
       domainPillar: pillar,
       notes: data.notes || null,
       followUpDate: data.followUpDate ? new Date(data.followUpDate) : null,
+      assignedEmployeeId,
+      assignedManagerId,
       messageSentStep: 0,
       updatedAt: new Date(),
     });
@@ -206,6 +215,7 @@ export async function updateLead(
     priority: string;
     leadCategory: string;
     domainPillar: string | null;
+    assignedTo: string | null;
     notes: string | null;
     followUpDate: string | null;
     demoScheduledAt: string | null;
@@ -234,6 +244,7 @@ export async function updateLead(
     if (data.priority !== undefined) updateData.priority = data.priority;
     if (data.leadCategory !== undefined) updateData.leadCategory = data.leadCategory;
     if (data.notes !== undefined) updateData.notes = data.notes;
+    if (data.assignedTo !== undefined) updateData.assignedTo = data.assignedTo;
     if (data.followUpDate !== undefined) {
       updateData.followUpDate = data.followUpDate ? new Date(data.followUpDate) : null;
     }
@@ -393,3 +404,85 @@ export async function getLeadCities() {
     .orderBy(doctorLeads.city);
   return rows.map((r) => r.city).filter(Boolean) as string[];
 }
+
+// ─── Convert Lead to Active Clinic ────────────────────────────────────────────
+export async function convertLeadToClinicAction(leadId: string) {
+  try {
+    const { clinics, subscriptions } = await import("@/db/schema");
+    const [lead] = await db
+      .select()
+      .from(doctorLeads)
+      .where(eq(doctorLeads.id, leadId))
+      .limit(1);
+
+    if (!lead) return { error: "Lead not found" };
+
+    const baseName = lead.clinicName || lead.doctorName || "Practice Clinic";
+    const slugBase = baseName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    const slug = `${slugBase}-${Math.random().toString(36).substring(2, 6)}`;
+
+    const now = new Date();
+    const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+
+    // 1. Create Clinic
+    const [newClinic] = await db
+      .insert(clinics)
+      .values({
+        slug,
+        name: lead.clinicName || `${lead.doctorName}'s Practice`,
+        doctorName: lead.doctorName,
+        specialty: lead.specialty || "General Physician",
+        phone: lead.phone,
+        address: lead.address || lead.city || null,
+        state: lead.city || null,
+        createdAt: now,
+      })
+      .returning();
+
+    // 2. Create Subscription Trial
+    await db.insert(subscriptions).values({
+      clinicId: newClinic.id,
+      planId: "quarterly",
+      status: "active",
+      currentPeriodStart: now,
+      currentPeriodEnd: trialEnd,
+    });
+
+    // 3. Update Lead Status to Converted
+    await db
+      .update(doctorLeads)
+      .set({
+        status: "converted",
+        convertedAt: now,
+        updatedAt: now,
+      })
+      .where(eq(doctorLeads.id, leadId));
+
+    revalidatePath("/admin/leads");
+    revalidatePath("/admin/clinics");
+    revalidatePath("/admin/finance");
+
+    return { success: true, clinicId: newClinic.id, clinicName: newClinic.name };
+  } catch (error) {
+    console.error("Error converting lead to clinic:", error);
+    return { error: "Failed to convert lead into active clinic." };
+  }
+}
+
+// ─── Get Growth Partners ───────────────────────────────────────────────────────
+export async function getGrowthPartners() {
+  return db
+    .select({
+      id: growthPartners.id,
+      name: growthPartners.name,
+      product: growthPartners.product,
+      isActive: growthPartners.isActive,
+    })
+    .from(growthPartners)
+    .where(eq(growthPartners.isActive, true))
+    .orderBy(growthPartners.name);
+}
+

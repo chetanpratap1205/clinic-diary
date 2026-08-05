@@ -40,11 +40,11 @@ export default async function BookingLayout({
 
           <div className="flex items-center gap-2 flex-shrink-0">
             <PatientHeaderActions themeColor={themeColor} clinicName={clinic.name} />
-            <PatientInstallButton clinicName={clinic.name} className="hidden sm:flex" />
+            <PatientInstallButton clinicName={clinic.name} logoUrl={clinic.logoUrl} themeColor={themeColor} className="flex" />
             {clinic.phone && (
               <a
                 href={`tel:${clinic.phone}`}
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-white px-3.5 py-1.5 rounded-full transition-all hover:opacity-90 active:scale-95 shadow-sm"
+                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-white px-3.5 py-1.5 rounded-full transition-all hover:opacity-90 active:scale-95 shadow-sm"
                 style={{ backgroundColor: themeColor }}
               >
                 <Phone className="w-3 h-3" />
@@ -67,10 +67,11 @@ export default async function BookingLayout({
           <div className="flex items-center gap-4">
             <Link href="/privacy" className="text-slate-400 text-xs hover:text-slate-600 transition-colors">Privacy</Link>
             <Link href="/terms" className="text-slate-400 text-xs hover:text-slate-600 transition-colors">Terms</Link>
-            <p className="text-slate-400 text-xs">
+            <p className="text-slate-400 text-xs flex items-center gap-1">
               Powered by{" "}
-              <Link href="/" className="font-semibold text-slate-500 hover:text-slate-700 transition-colors">
-                Doctor Diary by NatureXpress
+              <Link href="/" className="font-bold text-slate-600 hover:text-slate-900 transition-colors inline-flex items-center gap-1">
+                <span>Doctor Diary</span>
+                <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-slate-200/70 text-slate-700">PRO</span>
               </Link>
             </p>
           </div>

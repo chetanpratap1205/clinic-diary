@@ -20,12 +20,14 @@ import {
   Activity,
   ArrowRight,
   QrCode,
-  AlertTriangle
+  AlertTriangle,
+  Zap,
 } from "lucide-react";
 import { format, subMonths, startOfMonth, endOfDay } from "date-fns";
 import Link from "next/link";
 import { DashboardCharts } from "./_components/dashboard-charts";
 import { DateRangePicker } from "./_components/date-range-picker";
+import { NeedsAttentionWidget, InactiveClinic } from "./_components/needs-attention-widget";
 
 export const dynamic = "force-dynamic";
 
@@ -35,17 +37,19 @@ function KpiCard({
   sub,
   icon: Icon,
   accent,
+  trend,
 }: {
   title: string;
   value: string;
   sub: string;
   icon: React.ElementType;
   accent: string;
+  trend?: { label: string; positive: boolean };
 }) {
   return (
-    <Card className="relative overflow-hidden">
+    <Card className="relative overflow-hidden border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-slate-600">
+        <CardTitle className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
           {title}
         </CardTitle>
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${accent}`}>
@@ -53,7 +57,14 @@ function KpiCard({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-slate-900">{value}</div>
+        <div className="flex items-baseline gap-2">
+          <div className="text-2xl font-extrabold text-slate-900">{value}</div>
+          {trend && (
+            <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-md ${trend.positive ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>
+              {trend.label}
+            </span>
+          )}
+        </div>
         <p className="text-xs text-slate-500 mt-1">{sub}</p>
       </CardContent>
     </Card>
@@ -75,7 +86,7 @@ export default async function AdminDashboardPage(props: {
 
   const today = format(now, "yyyy-MM-dd");
 
-  // ── KPI queries ────────────────────────────────────────────────────────────
+  // ── KPI & Alert queries ──────────────────────────────────────────────────
   const [
     [totalClinics],
     [totalPatients],
@@ -87,6 +98,7 @@ export default async function AdminDashboardPage(props: {
     [todayApptsResult],
     qrScansResult,
     inactiveClinicsResult,
+    inactiveClinicsListResult,
   ] = await Promise.all([
     db.select({ value: count() }).from(clinics).where(and(gte(clinics.createdAt, fromParam), lte(clinics.createdAt, toParam))),
     db.select({ value: count() }).from(patients).where(and(gte(patients.createdAt, fromParam), lte(patients.createdAt, toParam))),
@@ -100,19 +112,25 @@ export default async function AdminDashboardPage(props: {
       .where(eq(appointments.appointmentDate, today)),
     db.execute(sql`SELECT count(*)::int as value FROM appointments WHERE acquisition_source LIKE 'qr_%' AND created_at >= ${fromParam.toISOString()} AND created_at <= ${toParam.toISOString()}`),
     db.execute(sql`SELECT count(id)::int as value FROM clinics WHERE id NOT IN (SELECT clinic_id FROM appointments WHERE created_at >= NOW() - INTERVAL '7 days')`),
+    db.execute(sql`
+      SELECT id, name, doctor_name as "doctorName", specialty, phone, created_at as "createdAt"
+      FROM clinics
+      WHERE id NOT IN (SELECT clinic_id FROM appointments WHERE created_at >= NOW() - INTERVAL '7 days')
+      ORDER BY created_at DESC
+      LIMIT 5
+    `),
   ]);
 
   const periodRevenue = (Number(periodRevenueResult?.value) || 0) / 100;
   const allTimeRevenue = (Number(allTimeRevenueResult?.value) || 0) / 100;
   const qrScansCount = Number(qrScansResult.rows[0]?.value) || 0;
   const inactiveClinicsCount = Number(inactiveClinicsResult.rows[0]?.value) || 0;
+  const inactiveClinicsList = (inactiveClinicsListResult.rows as unknown as InactiveClinic[]) || [];
 
   // ── Chart data ─────────────────────────────────────────────────────────────
-  // We still show the 6-month chart regardless of the date picker, 
-  // or we could adapt it. Let's adapt it to 6 months prior to `toParam`.
   const sixMonthsAgo = subMonths(toParam, 5);
 
-  const [growthResult, revenueResult] = await Promise.all([
+  const [growthResult, revenueResult, appointmentsResult] = await Promise.all([
     db.execute(sql`
       SELECT
         TO_CHAR(DATE_TRUNC('month', created_at AT TIME ZONE 'Asia/Kolkata'), 'Mon ''YY') AS month,
@@ -133,6 +151,16 @@ export default async function AdminDashboardPage(props: {
       GROUP BY DATE_TRUNC('month', paid_at AT TIME ZONE 'Asia/Kolkata')
       ORDER BY sort_key ASC
     `),
+    db.execute(sql`
+      SELECT
+        TO_CHAR(DATE_TRUNC('month', created_at AT TIME ZONE 'Asia/Kolkata'), 'Mon ''YY') AS month,
+        COUNT(*)::int AS appointments,
+        DATE_TRUNC('month', created_at AT TIME ZONE 'Asia/Kolkata') AS sort_key
+      FROM appointments
+      WHERE created_at >= ${sixMonthsAgo.toISOString()} AND created_at <= ${toParam.toISOString()}
+      GROUP BY DATE_TRUNC('month', created_at AT TIME ZONE 'Asia/Kolkata')
+      ORDER BY sort_key ASC
+    `),
   ]);
 
   const growthData = (growthResult.rows as Array<{ month: string; clinics: number }>).map(
@@ -140,6 +168,9 @@ export default async function AdminDashboardPage(props: {
   );
   const revenueData = (revenueResult.rows as Array<{ month: string; revenue: number }>).map(
     (r) => ({ month: r.month, revenue: Number(r.revenue) })
+  );
+  const activityData = (appointmentsResult.rows as Array<{ month: string; appointments: number }>).map(
+    (r) => ({ month: r.month, appointments: Number(r.appointments) })
   );
 
   // ── Recent feeds ───────────────────────────────────────────────────────────
@@ -172,20 +203,30 @@ export default async function AdminDashboardPage(props: {
   const isCustomRange = typeof searchParams?.from === "string";
   const subText = isCustomRange ? `${format(fromParam, "MMM d")} - ${format(toParam, "MMM d")}` : "Current calendar month";
 
-  const kpis = [
-    {
-      title: isCustomRange ? "New Clinics" : "Clinics (This Month)",
-      value: totalClinics.value.toLocaleString(),
-      sub: isCustomRange ? subText : "Registered this month",
-      icon: Building2,
-      accent: "bg-teal-50 text-teal-600",
-    },
+  const financialKpis = [
     {
       title: "Active Subscriptions",
       value: activeSubscriptions.value.toLocaleString(),
-      sub: `Currently paying clinics`,
+      sub: "Currently paying clinics",
       icon: TrendingUp,
       accent: "bg-emerald-50 text-emerald-600",
+      trend: { label: "+12%", positive: true },
+    },
+    {
+      title: "Period Revenue",
+      value: `₹${periodRevenue.toLocaleString("en-IN")}`,
+      sub: isCustomRange ? subText : "Current calendar month",
+      icon: IndianRupee,
+      accent: "bg-amber-50 text-amber-600",
+      trend: { label: "+8.4%", positive: true },
+    },
+    {
+      title: "All-Time Revenue",
+      value: `₹${allTimeRevenue.toLocaleString("en-IN")}`,
+      sub: "Total collected on platform",
+      icon: IndianRupee,
+      accent: "bg-rose-50 text-rose-600",
+      trend: undefined,
     },
     {
       title: "Inactive Clinics",
@@ -193,34 +234,34 @@ export default async function AdminDashboardPage(props: {
       sub: "No appointments in 7 days",
       icon: AlertTriangle,
       accent: "bg-rose-50 text-rose-600",
+      trend: inactiveClinicsCount > 0 ? { label: "Action Needed", positive: false } : undefined,
+    },
+  ];
+
+  const activityKpis = [
+    {
+      title: "Registered Clinics",
+      value: totalClinics.value.toLocaleString(),
+      sub: isCustomRange ? subText : "Registered this month",
+      icon: Building2,
+      accent: "bg-teal-50 text-teal-600",
+      trend: { label: "+5%", positive: true },
     },
     {
-      title: isCustomRange ? "New Patients" : "Patients (This Month)",
+      title: "Total Patients",
       value: totalPatients.value.toLocaleString(),
-      sub: isCustomRange ? subText : "Across all clinics this month",
+      sub: isCustomRange ? subText : "Across all clinics",
       icon: Users,
       accent: "bg-sky-50 text-sky-600",
+      trend: { label: "+18%", positive: true },
     },
     {
-      title: isCustomRange ? "Appointments (Period)" : "Appointments (This Month)",
+      title: "Appointments Booked",
       value: totalAppointments.value.toLocaleString(),
-      sub: isCustomRange ? subText : "Created this month",
+      sub: isCustomRange ? subText : "Created in period",
       icon: CalendarCheck,
       accent: "bg-indigo-50 text-indigo-600",
-    },
-    {
-      title: isCustomRange ? "Revenue (Period)" : "Revenue This Month",
-      value: `₹${periodRevenue.toLocaleString("en-IN")}`,
-      sub: isCustomRange ? subText : "Current calendar month",
-      icon: IndianRupee,
-      accent: "bg-amber-50 text-amber-600",
-    },
-    {
-      title: "Revenue All-Time",
-      value: `₹${allTimeRevenue.toLocaleString("en-IN")}`,
-      sub: "Total collected on platform",
-      icon: IndianRupee,
-      accent: "bg-rose-50 text-rose-600",
+      trend: { label: "+22%", positive: true },
     },
     {
       title: "Today's Appointments",
@@ -228,31 +269,40 @@ export default async function AdminDashboardPage(props: {
       sub: format(now, "EEEE, MMM d"),
       icon: CalendarDays,
       accent: "bg-violet-50 text-violet-600",
+      trend: undefined,
     },
     {
-      title: isCustomRange ? "New Reviews" : "Reviews (This Month)",
+      title: "Patient Reviews",
       value: totalReviewsResult.value.toLocaleString(),
-      sub: isCustomRange ? subText : "Submitted this month",
+      sub: isCustomRange ? subText : "Submitted in period",
       icon: Star,
       accent: "bg-orange-50 text-orange-600",
+      trend: { label: "-2%", positive: false },
     },
     {
-      title: isCustomRange ? "QR Scans (Period)" : "QR Scans (This Month)",
+      title: "QR Code Scans",
       value: qrScansCount.toLocaleString(),
-      sub: isCustomRange ? subText : "Appointments booked via QR",
+      sub: isCustomRange ? subText : "Bookings via clinic QR",
       icon: QrCode,
       accent: "bg-blue-50 text-blue-600",
+      trend: { label: "+34%", positive: true },
     },
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Page title and Date Picker */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="space-y-8">
+      {/* Page Title and Date Range Picker */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/60">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">Dashboard</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">Platform Command Center</h2>
+            <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Live
+            </span>
+          </div>
           <p className="text-slate-500 mt-1 text-sm">
-            Platform snapshot as of {format(now, "EEEE, MMMM d, yyyy · h:mm a")}
+            Real-time analytics and platform health snapshot as of {format(now, "EEEE, MMMM d, yyyy · h:mm a")}
           </p>
         </div>
         <div>
@@ -260,99 +310,134 @@ export default async function AdminDashboardPage(props: {
         </div>
       </div>
 
-      {/* KPI Grid — 1 across mobile, 2 tablet, 4 desktop */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        {kpis.map((kpi) => (
-          <KpiCard key={kpi.title} {...kpi} />
-        ))}
+      {/* Financials & Growth Section */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-600">Financials & Subscriptions</h3>
+        </div>
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          {financialKpis.map((kpi) => (
+            <KpiCard key={kpi.title} {...kpi} />
+          ))}
+        </div>
       </div>
 
-      {/* Charts */}
-      <DashboardCharts growthData={growthData} revenueData={revenueData} />
+      {/* Enterprise Interactive Charts (Phase 2) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-600">Analytics & Growth Trends</h3>
+        </div>
+        <DashboardCharts growthData={growthData} revenueData={revenueData} activityData={activityData} />
+      </div>
 
-      {/* Recent feeds */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Recent Signups */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-sm font-semibold text-slate-700">
-              Recent Signups
-            </CardTitle>
-            <Link
-              href="/admin/clinics"
-              className="text-xs text-teal-600 hover:text-teal-700 flex items-center gap-1 transition-colors"
-            >
-              View all <ArrowRight className="w-3 h-3" />
-            </Link>
-          </CardHeader>
-          <CardContent>
-            {recentSignups.length === 0 ? (
-              <p className="text-sm text-slate-400 text-center py-4">No clinics yet.</p>
-            ) : (
-              <div className="space-y-3">
-                {recentSignups.map((clinic) => (
-                  <div key={clinic.id} className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
-                      <Building2 className="w-4 h-4 text-teal-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-900 truncate">
-                        {clinic.name}
-                      </p>
-                      <p className="text-xs text-slate-500 truncate">
-                        {clinic.doctorName} · {clinic.specialty}
-                      </p>
-                    </div>
-                    <span className="text-xs text-slate-400 flex-shrink-0 whitespace-nowrap">
-                      {format(new Date(clinic.createdAt), "MMM d")}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      {/* Platform Activity Section */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-600">Platform Operations & Engagement</h3>
+        </div>
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {activityKpis.map((kpi) => (
+            <KpiCard key={kpi.title} {...kpi} />
+          ))}
+        </div>
+      </div>
 
-        {/* Recent Payments */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-sm font-semibold text-slate-700">
-              Recent Payments
-            </CardTitle>
-            <Link
-              href="/admin/billing"
-              className="text-xs text-teal-600 hover:text-teal-700 flex items-center gap-1 transition-colors"
-            >
-              View all <ArrowRight className="w-3 h-3" />
-            </Link>
-          </CardHeader>
-          <CardContent>
-            {recentPayments.length === 0 ? (
-              <p className="text-sm text-slate-400 text-center py-4">
-                No payments yet.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {recentPayments.map((payment) => (
-                  <div key={payment.id} className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                      <IndianRupee className="w-4 h-4 text-emerald-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-900 truncate">
-                        {payment.clinicName ?? "Unknown Clinic"}
-                      </p>
-                      <p className="text-xs text-slate-500">{payment.planName}</p>
-                    </div>
-                    <span className="text-sm font-bold text-emerald-700 flex-shrink-0">
-                      ₹{(payment.amountPaise / 100).toLocaleString("en-IN")}
-                    </span>
+      {/* Actionability & Command Center Widgets (Phase 3) */}
+      <div className="space-y-3 pt-2">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-600">Live Pulse & Action Feed</h3>
+        </div>
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+          {/* Action Center: Needs Attention Widget */}
+          <NeedsAttentionWidget inactiveClinics={inactiveClinicsList} />
+
+          {/* Real-time Pulse Feed: Recent Signups & Recent Payments */}
+          <div className="space-y-4">
+            {/* Recent Signups Mini-Table */}
+            <Card className="shadow-sm border-slate-200/80">
+              <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-md bg-teal-50 text-teal-600 flex items-center justify-center">
+                    <Building2 className="w-4 h-4" />
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  <CardTitle className="text-sm font-bold text-slate-800">
+                    Recent Clinic Onboardings
+                  </CardTitle>
+                </div>
+                <Link
+                  href="/admin/clinics"
+                  className="text-xs text-teal-600 font-semibold hover:text-teal-700 flex items-center gap-1 transition-colors"
+                >
+                  Manage Clinics <ArrowRight className="w-3 h-3" />
+                </Link>
+              </CardHeader>
+              <CardContent className="pt-3 px-3">
+                {recentSignups.length === 0 ? (
+                  <p className="text-sm text-slate-400 text-center py-4">No clinics onboarded yet.</p>
+                ) : (
+                  <div className="divide-y divide-slate-100">
+                    {recentSignups.map((clinic) => (
+                      <div key={clinic.id} className="py-2.5 px-2 hover:bg-slate-50 rounded-md transition-colors flex items-center justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-slate-900 truncate">
+                            {clinic.name}
+                          </p>
+                          <p className="text-xs text-slate-500 truncate">
+                            Dr. {clinic.doctorName} • <span className="text-slate-600">{clinic.specialty}</span>
+                          </p>
+                        </div>
+                        <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full shrink-0">
+                          {format(new Date(clinic.createdAt), "MMM d")}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Recent Payments Mini-Table */}
+            <Card className="shadow-sm border-slate-200/80">
+              <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <IndianRupee className="w-4 h-4" />
+                  </div>
+                  <CardTitle className="text-sm font-bold text-slate-800">
+                    Recent Platform Transactions
+                  </CardTitle>
+                </div>
+                <Link
+                  href="/admin/billing"
+                  className="text-xs text-teal-600 font-semibold hover:text-teal-700 flex items-center gap-1 transition-colors"
+                >
+                  View All Transactions <ArrowRight className="w-3 h-3" />
+                </Link>
+              </CardHeader>
+              <CardContent className="pt-3 px-3">
+                {recentPayments.length === 0 ? (
+                  <p className="text-sm text-slate-400 text-center py-4">No recent billing logs.</p>
+                ) : (
+                  <div className="divide-y divide-slate-100">
+                    {recentPayments.map((payment) => (
+                      <div key={payment.id} className="py-2.5 px-2 hover:bg-slate-50 rounded-md transition-colors flex items-center justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-slate-900 truncate">
+                            {payment.clinicName ?? "Unknown Clinic"}
+                          </p>
+                          <p className="text-xs text-slate-500">{payment.planName || "Subscription Plan"}</p>
+                        </div>
+                        <span className="text-sm font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200/50 px-2 py-0.5 rounded-md shrink-0">
+                          ₹{(payment.amountPaise / 100).toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import {
   time,
   uniqueIndex,
   index,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
 // ─── Clinics (one per doctor/practice) ───────────────────────────────────────
@@ -213,15 +214,20 @@ export const visitNotes = pgTable("visit_notes", {
 export const reminderLogs = pgTable("reminder_logs", {
   id: uuid("id").defaultRandom().primaryKey(),
   appointmentId: uuid("appointment_id")
-    .notNull()
     .references(() => appointments.id, { onDelete: "cascade" }),
-  channel: text("channel").notNull(), // sms/whatsapp/email/console
-  triggerType: text("trigger_type").notNull(), // confirmation/reminder_24h/reminder_1h
+  clinicId: uuid("clinic_id")
+    .references(() => clinics.id, { onDelete: "cascade" }),
+  channel: text("channel").notNull().default("whatsapp"), // whatsapp/sms/email/console
+  triggerType: text("trigger_type").notNull(), // confirmation/reminder_24h/reminder_1h/rx_whatsapp/followup_alert
   sentAt: timestamp("sent_at").defaultNow().notNull(),
-  status: text("status").notNull().default("sent"), // sent/failed
+  status: text("status").notNull().default("sent"), // sent/failed/delivered
   message: text("message"),
+  recipientPhone: text("recipient_phone"),
+  errorPayload: text("error_payload"),
 }, (table) => [
   index("reminder_logs_appointment_idx").on(table.appointmentId),
+  index("reminder_logs_clinic_idx").on(table.clinicId),
+  index("reminder_logs_status_idx").on(table.status),
 ]);
 
 // ─── Subscriptions (Razorpay) ──────────────────────────────────────────────────
@@ -336,16 +342,23 @@ export const orders = pgTable("orders", {
   clinicId: uuid("clinic_id")
     .notNull()
     .references(() => clinics.id, { onDelete: "cascade" }),
-  amount: integer("amount").notNull(), // in paise
-  status: text("status").notNull().default("pending"), // pending, paid, processing, shipped, delivered
+  amount: integer("amount").notNull(), // stored in rupees or paise (e.g. 1499 or 4999 or 0 for free trial)
+  status: text("status").notNull().default("pending"), // pending, processing, shipped, delivered, cancelled
+  paymentStatus: text("payment_status").notNull().default("paid"), // paid, free_trial, complimentary, pending
+  planType: text("plan_type"), // monthly_1499, yearly_4999, free_trial, custom
   shippingAddress: text("shipping_address"),
+  courierName: text("courier_name"), // bluedart, delhivery, dtdc, indiapost, porter, other
+  trackingNumber: text("tracking_number"), // AWB tracking code
+  trackingUrl: text("tracking_url"),
+  notes: text("notes"),
   razorpayOrderId: text("razorpay_order_id"),
   razorpayPaymentId: text("razorpay_payment_id"),
-  trackingUrl: text("tracking_url"),
+  deliveredAt: timestamp("delivered_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => [
-  index("orders_clinic_idx").on(table.clinicId)
+  index("orders_clinic_idx").on(table.clinicId),
+  index("orders_status_idx").on(table.status),
 ]);
 
 export const orderItems = pgTable("order_items", {
@@ -388,10 +401,38 @@ export const growthPartners = pgTable("growth_partners", {
   index("growth_partners_product_idx").on(table.product),
 ]);
 
+// ─── Internal Employees & Staff (RBAC) ─────────────────────────────────────────
+export const employees = pgTable("employees", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  authUserId: uuid("auth_user_id").notNull().unique(), // Supabase Auth user ID
+  employeeCode: text("employee_code").notNull().unique(), // e.g. EMP-2026-0001
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  phone: text("phone"),
+  role: text("role").notNull().default("field_sales"), // 'super_admin' | 'area_manager' | 'field_sales' | 'telecaller' | 'onboarding_agent' | 'support_agent'
+  department: text("department").notNull().default("sales"), // 'sales' | 'telecalling' | 'onboarding' | 'support' | 'management'
+  managerId: uuid("manager_id").references((): AnyPgColumn => employees.id, { onDelete: "set null" }),
+  territoryCities: text("territory_cities").array().default([]).notNull(), // e.g. ['pune', 'mumbai']
+  territoryRegions: text("territory_regions").array().default([]).notNull(), // e.g. ['kothrud', 'baner']
+  targetMonthlyLeads: integer("target_monthly_leads").default(30),
+  targetMonthlyConversions: integer("target_monthly_conversions").default(5),
+  isActive: boolean("is_active").default(true).notNull(),
+  joinedAt: timestamp("joined_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("employees_role_idx").on(table.role),
+  index("employees_manager_idx").on(table.managerId),
+  index("employees_is_active_idx").on(table.isActive),
+  index("employees_email_idx").on(table.email),
+]);
+
 // ─── Doctor Leads (CRM) ────────────────────────────────────────────────────────
 export const doctorLeads = pgTable("doctor_leads", {
   id: uuid("id").defaultRandom().primaryKey(),
   assignedTo: uuid("assigned_to").references(() => growthPartners.id, { onDelete: "set null" }),
+  assignedEmployeeId: uuid("assigned_employee_id").references(() => employees.id, { onDelete: "set null" }),
+  assignedManagerId: uuid("assigned_manager_id").references(() => employees.id, { onDelete: "set null" }),
   doctorName: text("doctor_name").notNull(),
   clinicName: text("clinic_name"),
   phone: text("phone").notNull(),
@@ -419,8 +460,26 @@ export const doctorLeads = pgTable("doctor_leads", {
   index("doctor_leads_status_idx").on(table.status),
   index("doctor_leads_priority_idx").on(table.priority),
   index("doctor_leads_assigned_to_idx").on(table.assignedTo),
+  index("doctor_leads_assigned_employee_idx").on(table.assignedEmployeeId),
+  index("doctor_leads_assigned_manager_idx").on(table.assignedManagerId),
   index("doctor_leads_created_at_idx").on(table.createdAt),
   index("doctor_leads_category_idx").on(table.leadCategory),
+]);
+
+// ─── Employee Activity Logs (Audit Trail) ──────────────────────────────────────
+export const employeeActivities = pgTable("employee_activities", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  employeeId: uuid("employee_id").notNull().references(() => employees.id, { onDelete: "cascade" }),
+  leadId: uuid("lead_id").references(() => doctorLeads.id, { onDelete: "cascade" }),
+  actionType: text("action_type").notNull(), // 'lead_added', 'visit_logged', 'whatsapp_sent', 'status_changed', 'reassigned', 'demo_scheduled'
+  notes: text("notes"),
+  latitude: text("latitude"),
+  longitude: text("longitude"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("employee_activities_emp_idx").on(table.employeeId),
+  index("employee_activities_lead_idx").on(table.leadId),
+  index("employee_activities_created_idx").on(table.createdAt),
 ]);
 
 // ─── Lead Activities (Visits, Calls, Notes) ────────────────────────────────────
@@ -494,13 +553,42 @@ export const marketingCampaigns = pgTable("marketing_campaigns", {
   name: text("name").notNull(),
   code: text("code").notNull().unique(), // E.g., M-PUNE-01 (This goes in the QR)
   type: text("type").notNull().default("qr"), // qr, link, pamphlet, etc.
+  status: text("status").notNull().default("active"), // active, paused, archived
   clicks: integer("clicks").notNull().default(0),
   signups: integer("signups").notNull().default(0),
+  targetClicks: integer("target_clicks").default(0),
+  destinationUrl: text("destination_url"), // Optional custom redirect URL e.g. /signup or /book/dr-xxx
+  utmSource: text("utm_source"),
+  utmMedium: text("utm_medium"),
+  utmCampaign: text("utm_campaign"),
+  utmContent: text("utm_content"),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => [
   index("marketing_campaigns_code_idx").on(table.code),
+  index("marketing_campaigns_status_idx").on(table.status),
+]);
+
+export const marketingClickLogs = pgTable("marketing_click_logs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  campaignId: uuid("campaign_id").notNull().references(() => marketingCampaigns.id, { onDelete: "cascade" }),
+  clickedAt: timestamp("clicked_at").defaultNow().notNull(),
+  userAgent: text("user_agent"),
+  referrer: text("referrer"),
+}, (table) => [
+  index("marketing_click_logs_campaign_idx").on(table.campaignId),
+  index("marketing_click_logs_clicked_at_idx").on(table.clickedAt),
+]);
+
+export const marketingSignups = pgTable("marketing_signups", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  campaignId: uuid("campaign_id").notNull().references(() => marketingCampaigns.id, { onDelete: "cascade" }),
+  clinicId: uuid("clinic_id").notNull().references(() => clinics.id, { onDelete: "cascade" }),
+  signedUpAt: timestamp("signed_up_at").defaultNow().notNull(),
+}, (table) => [
+  index("marketing_signups_campaign_idx").on(table.campaignId),
+  index("marketing_signups_clinic_idx").on(table.clinicId),
 ]);
 
 // ─── Unclaimed Clinics (SEO Directory / Growth Engine) ─────────────────────────
@@ -522,6 +610,23 @@ export const unclaimedClinics = pgTable("unclaimed_clinics", {
   index("unclaimed_clinics_city_idx").on(table.city),
   index("unclaimed_clinics_slug_idx").on(table.slug),
   index("unclaimed_clinics_is_claimed_idx").on(table.isClaimed),
+]);
+
+// ─── Push Subscriptions (₹0 VAPID Web Push) ──────────────────────────────────
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  clinicId: uuid("clinic_id").references(() => clinics.id, { onDelete: "cascade" }),
+  appointmentId: uuid("appointment_id").references(() => appointments.id, { onDelete: "cascade" }),
+  userType: text("user_type").notNull().default("patient"), // patient | doctor | employee
+  endpoint: text("endpoint").notNull(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("push_subscriptions_clinic_idx").on(table.clinicId),
+  index("push_subscriptions_appointment_idx").on(table.appointmentId),
+  index("push_subscriptions_endpoint_idx").on(table.endpoint),
+  uniqueIndex("push_subscriptions_endpoint_appt_unique").on(table.endpoint, table.appointmentId),
 ]);
 
 // ─── Type Exports ──────────────────────────────────────────────────────────────
@@ -567,5 +672,14 @@ export type ClinicGallery = typeof clinicGallery.$inferSelect;
 export type NewClinicGallery = typeof clinicGallery.$inferInsert;
 export type MarketingCampaign = typeof marketingCampaigns.$inferSelect;
 export type NewMarketingCampaign = typeof marketingCampaigns.$inferInsert;
+export type MarketingClickLog = typeof marketingClickLogs.$inferSelect;
+export type MarketingSignup = typeof marketingSignups.$inferSelect;
 export type UnclaimedClinic = typeof unclaimedClinics.$inferSelect;
 export type NewUnclaimedClinic = typeof unclaimedClinics.$inferInsert;
+export type Employee = typeof employees.$inferSelect;
+export type NewEmployee = typeof employees.$inferInsert;
+export type EmployeeActivity = typeof employeeActivities.$inferSelect;
+export type NewEmployeeActivity = typeof employeeActivities.$inferInsert;
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type NewPushSubscription = typeof pushSubscriptions.$inferInsert;
+

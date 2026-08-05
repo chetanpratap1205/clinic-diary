@@ -7,8 +7,12 @@ import { toast } from "sonner";
 import { importLeads } from "./actions";
 
 interface CsvImportModalProps {
-  onClose: () => void;
-  onImported: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
+  // Legacy compat
+  onClose?: () => void;
+  onImported?: () => void;
 }
 
 interface ParsedRow {
@@ -99,7 +103,10 @@ function parseCSV(text: string): ParsedRow[] {
   return rows;
 }
 
-export function CsvImportModal({ onClose, onImported }: CsvImportModalProps) {
+export function CsvImportModal({ open, onOpenChange, onSuccess, onClose, onImported }: CsvImportModalProps) {
+  const handleClose = () => { onClose?.(); onOpenChange?.(false); };
+  const handleSuccess = () => { onSuccess?.(); onImported?.(); onOpenChange?.(false); };
+  if (open === false) return null;
   const [isPending, startTransition] = useTransition();
   const [dragOver, setDragOver] = useState(false);
   const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
@@ -140,14 +147,15 @@ export function CsvImportModal({ onClose, onImported }: CsvImportModalProps) {
     startTransition(async () => {
       const res = await importLeads(parsedRows);
       setResult(res);
-      toast.success(`Import complete: ${res.added} added, ${res.skipped} skipped`);
+      toast.success(`✅ Import complete: ${res.added} added, ${res.skipped} skipped`);
+      handleSuccess();
     });
   };
 
   return (
     <>
       {/* Overlay */}
-      <div className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm" onClick={handleClose} />
 
       {/* Modal */}
       <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[94vw] sm:w-full max-w-xl max-h-[90vh] bg-white rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden">
@@ -157,7 +165,7 @@ export function CsvImportModal({ onClose, onImported }: CsvImportModalProps) {
             <h2 className="text-lg font-bold text-slate-900">Import Leads from CSV</h2>
             <p className="text-xs text-slate-500 mt-0.5">Upload your Excel-exported CSV file</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400">
+          <button onClick={handleClose} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -302,12 +310,12 @@ export function CsvImportModal({ onClose, onImported }: CsvImportModalProps) {
         {/* Footer */}
         <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex gap-3 shrink-0">
           {result ? (
-            <Button onClick={onImported} className="flex-1 bg-teal-600 hover:bg-teal-700 h-10">
+            <Button onClick={handleSuccess} className="flex-1 bg-teal-600 hover:bg-teal-700 h-10">
               View All Leads
             </Button>
           ) : (
             <>
-              <Button variant="outline" onClick={onClose} className="flex-1 h-10" disabled={isPending}>
+              <Button variant="outline" onClick={handleClose} className="flex-1 h-10" disabled={isPending}>
                 Cancel
               </Button>
               <Button

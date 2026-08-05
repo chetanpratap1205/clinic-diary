@@ -57,7 +57,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               {user.email?.substring(0, 2) || "AD"}
             </div>
             <div className="overflow-hidden">
-              <p className="text-sm font-semibold text-slate-900 truncate">
+              <p className="text-sm font-semibold text-slate-900 truncate" title={user.email}>
                 {user.email}
               </p>
               <p className="text-xs text-slate-500">Platform Admin</p>

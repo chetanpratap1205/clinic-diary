@@ -21,7 +21,8 @@ import {
   Star,
   Gamepad2,
   Leaf,
-  CalendarPlus
+  CalendarPlus,
+  Share2
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Appointment, Clinic } from "@/db/schema";
@@ -32,6 +33,9 @@ import { normalizeAppointment } from "@/lib/appointment-utils";
 import { TicTacToe } from "./tic-tac-toe";
 import { WellnessFeed } from "./wellness-feed";
 import { DICTIONARY, Language } from "@/lib/i18n";
+import { PatientInstallButton } from "@/components/pwa-provider";
+import { soundEngine } from "@/lib/sound";
+import { PushOptIn } from "@/components/push-opt-in";
 
 interface TrackingClientProps {
   appointment: Appointment;
@@ -149,6 +153,17 @@ export function TrackingClient({
         (payload) => {
           if (payload.eventType === "UPDATE") {
              const updated = normalizeAppointment(payload.new);
+             if (updated.id === initialAppointment.id) {
+               if (updated.status === "in_consultation") {
+                 // 🔴 URGENT: Your Turn NOW — 3-pulse alert + heavy vibration
+                 soundEngine.playUrgentAlert();
+                 soundEngine.vibrate([500, 100, 500, 100, 700]);
+               } else if (updated.status === "checked_in") {
+                 // ✅ Checked in — calm chime + gentle vibration
+                 soundEngine.playChime();
+                 soundEngine.vibrate([300, 100, 300]);
+               }
+             }
              setAllAppts((prev) => {
                if (updated.appointmentDate !== appointment.appointmentDate) {
                  return prev.filter((a) => a.id !== updated.id);
@@ -576,21 +591,59 @@ export function TrackingClient({
           )}
         </AnimatePresence>
 
-        {/* ──── Action Buttons ──── */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="grid grid-cols-2 gap-4">
-          <a href={clinic.phone ? `tel:${clinic.phone}` : undefined} aria-label={`Call ${clinic.name}`} className={`flex flex-col items-center justify-center gap-2 bg-white border border-slate-100 rounded-3xl py-5 px-4 shadow-sm transition-all duration-200 ${clinic.phone ? "hover:bg-teal-50 hover:border-teal-200 hover:shadow-md active:scale-95 cursor-pointer" : "opacity-40 pointer-events-none"}`}>
-            <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center shadow-sm">
-              <Phone className="w-5 h-5 text-teal-600" />
+        {/* ──── Notification + App Install Banner ──── */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="mb-4 space-y-3">
+          {/* 1. Turn Alerts Card (High-converting opt-in) */}
+          <PushOptIn appointmentId={appointment.id} clinicId={clinic.id} variant="card" />
+
+          {/* 2. Official Clinic App Banner */}
+          <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-4 sm:p-5 text-white shadow-xl flex items-center justify-between gap-3 border border-slate-700/50">
+            <div className="space-y-0.5 pr-2">
+              <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400">Official Clinic App</span>
+              <p className="text-xs sm:text-sm font-black tracking-tight">{clinic.name}</p>
+              <p className="text-[10.5px] text-slate-300 font-medium">Add to Home Screen for 1-tap booking & records.</p>
             </div>
-            <span className="text-sm font-black text-slate-700 mt-1">{t.callClinic}</span>
-            {clinic.phone && <span className="text-[11px] font-semibold text-slate-400 -mt-1">{clinic.phone}</span>}
+            <PatientInstallButton
+              clinicName={clinic.name}
+              logoUrl={clinic.logoUrl}
+              themeColor={clinic.themeColor || "#0ea5e9"}
+              className="border-0 shadow-lg shrink-0"
+            />
+          </div>
+        </motion.div>
+
+        {/* ──── Action Buttons (Call, Directions & Zero-Cost WhatsApp Ticket Share) ──── */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="grid grid-cols-3 gap-3">
+          <a href={clinic.phone ? `tel:${clinic.phone}` : undefined} aria-label={`Call ${clinic.name}`} className={`flex flex-col items-center justify-center gap-1.5 bg-white border border-slate-100 rounded-3xl py-4 px-2 shadow-sm transition-all duration-200 ${clinic.phone ? "hover:bg-teal-50 hover:border-teal-200 hover:shadow-md active:scale-95 cursor-pointer" : "opacity-40 pointer-events-none"}`}>
+            <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center shadow-sm">
+              <Phone className="w-4 h-4 text-teal-600" />
+            </div>
+            <span className="text-xs font-black text-slate-700 mt-1">{t.callClinic}</span>
+            {clinic.phone && <span className="text-[10px] font-semibold text-slate-400 -mt-0.5 truncate max-w-full">{clinic.phone}</span>}
           </a>
-          <a href={directionsUrl} target="_blank" rel="noopener noreferrer" aria-label={`Get directions to ${clinic.name}`} className="flex flex-col items-center justify-center gap-2 bg-white border border-slate-100 rounded-3xl py-5 px-4 shadow-sm transition-all duration-200 hover:bg-blue-50 hover:border-blue-200 hover:shadow-md active:scale-95 cursor-pointer">
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center shadow-sm">
-              <Navigation2 className="w-5 h-5 text-blue-600" />
+
+          <a href={directionsUrl} target="_blank" rel="noopener noreferrer" aria-label={`Get directions to ${clinic.name}`} className="flex flex-col items-center justify-center gap-1.5 bg-white border border-slate-100 rounded-3xl py-4 px-2 shadow-sm transition-all duration-200 hover:bg-blue-50 hover:border-blue-200 hover:shadow-md active:scale-95 cursor-pointer">
+            <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center shadow-sm">
+              <Navigation2 className="w-4 h-4 text-blue-600" />
             </div>
-            <span className="text-sm font-black text-slate-700 mt-1">{t.directions}</span>
-            {clinic.address ? <span className="text-[11px] font-semibold text-slate-400 -mt-1 text-center leading-tight line-clamp-2 px-1">{clinic.address}</span> : <span className="text-[11px] text-slate-400 font-semibold -mt-1">{t.openInMaps}</span>}
+            <span className="text-xs font-black text-slate-700 mt-1">{t.directions}</span>
+            <span className="text-[10px] font-semibold text-slate-400 -mt-0.5 truncate max-w-full">{t.openInMaps}</span>
+          </a>
+
+          <a
+            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+              `🏥 Live Queue Ticket — Token #${appointment.tokenNumber || "—"} with Dr. ${clinic.doctorName} at ${clinic.name}.\nTrack live status here: ${typeof window !== "undefined" ? window.location.href : ""}`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Share ticket on WhatsApp"
+            className="flex flex-col items-center justify-center gap-1.5 bg-white border border-slate-100 rounded-3xl py-4 px-2 shadow-sm transition-all duration-200 hover:bg-emerald-50 hover:border-emerald-200 hover:shadow-md active:scale-95 cursor-pointer"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shadow-sm">
+              <Share2 className="w-4 h-4 text-emerald-600" />
+            </div>
+            <span className="text-xs font-black text-slate-700 mt-1">WhatsApp</span>
+            <span className="text-[10px] font-semibold text-emerald-600 -mt-0.5">Share Ticket</span>
           </a>
         </motion.div>
 

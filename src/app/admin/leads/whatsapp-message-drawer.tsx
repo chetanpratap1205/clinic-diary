@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Copy, Check, Sparkles, ShieldCheck, Zap } from "lucide-react";
 import type { DoctorLead } from "@/db/schema";
 import { getCategoryLabel, LEAD_CATEGORIES, buildMessageForStep } from "./message-builder";
 import { markMessageSent } from "./actions";
@@ -50,6 +51,7 @@ function MessageCard({ lead, category, step, activeSentStep, onStepSent }: Messa
   const isLocked = step > activeSentStep + 1;
   
   const stepMeta = STEP_META[step];
+  // buildMessageForStep now includes personalized demo URL in all messages
   const originalMessage = buildMessageForStep(lead, category, step);
   const displayMessage = isEditing ? editedMsg : originalMessage;
 
@@ -132,7 +134,7 @@ function MessageCard({ lead, category, step, activeSentStep, onStepSent }: Messa
           </span>
         </div>
 
-        {/* Message Content (Only show if not locked or if it's the currently active step) */}
+        {/* Message Content (Only show if not locked) */}
         {!isLocked && (
           <div className="p-4 space-y-4">
             <div className="flex items-center justify-between">
@@ -185,6 +187,19 @@ function MessageCard({ lead, category, step, activeSentStep, onStepSent }: Messa
                   Mark Sent
                 </Button>
               )}
+              <Button
+                onClick={() => {
+                  const finalMsg = isEditing ? editedMsg : originalMessage;
+                  navigator.clipboard.writeText(finalMsg);
+                  toast.success("Message copied to clipboard!");
+                }}
+                variant="outline"
+                className="h-12 px-3 text-xs font-medium text-slate-600 gap-1.5 flex-shrink-0 rounded-xl hover:bg-slate-50"
+                title="Copy message to clipboard"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                Copy
+              </Button>
             </div>
           </div>
         )}
@@ -196,15 +211,17 @@ function MessageCard({ lead, category, step, activeSentStep, onStepSent }: Messa
 // ─── Main Drawer ──────────────────────────────────────────────────────────────
 interface WhatsAppMessageDrawerProps {
   lead: DoctorLead | null;
-  isOpen: boolean;
-  onClose: () => void;
-  onUpdateStep: (leadId: string, newStep: number) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onStepSent?: () => void;
 }
 
-export function WhatsAppMessageDrawer({ lead, isOpen, onClose, onUpdateStep }: WhatsAppMessageDrawerProps) {
+export function WhatsAppMessageDrawer({ lead, open, onOpenChange, onStepSent }: WhatsAppMessageDrawerProps) {
   const [guideOpen, setGuideOpen] = useState(false);
+  // Track step progress locally for instant UI feedback while action revalidates server
+  const [localStep, setLocalStep] = useState<number>(lead?.messageSentStep ?? 0);
 
-  if (!isOpen || !lead) return null;
+  if (!open || !lead) return null;
 
   const category = lead.leadCategory || "A";
   const catInfo = LEAD_CATEGORIES.find((c) => c.value === category);
@@ -217,7 +234,7 @@ export function WhatsAppMessageDrawer({ lead, isOpen, onClose, onUpdateStep }: W
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity" 
-        onClick={onClose}
+        onClick={() => onOpenChange(false)}
       />
 
       {/* Drawer */}
@@ -255,7 +272,7 @@ export function WhatsAppMessageDrawer({ lead, isOpen, onClose, onUpdateStep }: W
               Strategy Guide
             </Button>
             <button
-              onClick={onClose}
+              onClick={() => onOpenChange(false)}
               className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
             >
               <X className="w-5 h-5" />
@@ -277,7 +294,7 @@ export function WhatsAppMessageDrawer({ lead, isOpen, onClose, onUpdateStep }: W
                 </p>
                 <p className="text-xs text-slate-600 mt-1 leading-relaxed">
                   This lead is marked as Category {category}. Send these 3 messages in sequence. 
-                  The copy is optimized for improving patient experience and increasing footfall.
+                  Each message includes a personalised live demo link for {lead.clinicName || "this clinic"}.
                 </p>
               </div>
             </div>
@@ -290,15 +307,46 @@ export function WhatsAppMessageDrawer({ lead, isOpen, onClose, onUpdateStep }: W
                   lead={lead}
                   category={category}
                   step={step}
-                  activeSentStep={lead.messageSentStep}
+                  activeSentStep={localStep}
                   onStepSent={(newStep) => {
-                    onUpdateStep(lead.id, newStep);
+                    setLocalStep(newStep);
+                    onStepSent?.();
                   }}
                 />
               ))}
             </div>
+
+            {/* Founder Sales Cheat Sheet (Objection Handling Card) */}
+            <div className="mt-6 p-4 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-[#0B132B] text-white shadow-xl border border-slate-700">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="w-4 h-4 text-emerald-400" />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                  Founder Closing Playbook — Quick Objection Handles
+                </h4>
+              </div>
+              <div className="space-y-2.5 text-xs">
+                <div className="p-2.5 rounded-lg bg-white/5 border border-white/10">
+                  <span className="font-semibold text-amber-300">Doctor asks: "What's the catch / pricing?"</span>
+                  <p className="text-slate-300 mt-1">
+                    ⚡ Reply: *"No catch! 0% commission forever. Your custom booking site & mobile app are 100% free with a 14-day full trial."*
+                  </p>
+                </div>
+                <div className="p-2.5 rounded-lg bg-white/5 border border-white/10">
+                  <span className="font-semibold text-amber-300">Doctor asks: "I don't have time to type."</span>
+                  <p className="text-slate-300 mt-1">
+                    ⚡ Reply: *"You write as usual on your paper Rx pad. Doctor Diary delivers the digital WhatsApp copy automatically."*
+                  </p>
+                </div>
+                <div className="p-2.5 rounded-lg bg-white/5 border border-white/10">
+                  <span className="font-semibold text-amber-300">Doctor asks: "My staff can't handle complex software."</span>
+                  <p className="text-slate-300 mt-1">
+                    ⚡ Reply: *"Zero staff training needed. It takes 2 minutes to onboard, and our concierge team handles all patient data setup."*
+                  </p>
+                </div>
+              </div>
+            </div>
             
-            {lead.messageSentStep >= 3 && (
+            {localStep >= 3 && (
               <div className="mt-8 text-center p-6 bg-emerald-50 rounded-2xl border border-emerald-100">
                 <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
                   <CheckCircle2 className="w-6 h-6" />

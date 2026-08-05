@@ -27,6 +27,7 @@ const navSections = [
   {
     label: "Management",
     items: [
+      { href: "/admin/employees", label: "Staff & RBAC", icon: UserSearch },
       { href: "/admin/clinics", label: "Clinics", icon: Building2 },
       { href: "/admin/billing", label: "Billing", icon: CreditCard },
       { href: "/admin/reviews", label: "Reviews", icon: Star },

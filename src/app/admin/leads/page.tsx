@@ -17,6 +17,7 @@ export default async function LeadsPage({
     category: params.category,
     specialty: params.specialty,
     city: params.city,
+    source: params.source,
     page: params.page ? parseInt(params.page) : 1,
     pageSize: 50,
   };
