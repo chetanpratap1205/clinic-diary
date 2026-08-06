@@ -175,7 +175,7 @@ export async function GET(request: NextRequest) {
                       fontWeight: 600,
                       color: "#92400e",
                     }}>
-                      ₹{fee} fee
+                      ₹{isNaN(Number(fee)) ? fee : Number(fee).toLocaleString("en-IN")} fee
                     </div>
                   )}
                 </div>

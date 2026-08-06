@@ -29,11 +29,11 @@ import { DICTIONARY, Language } from "@/lib/i18n";
 function getContrastColor(hexcolor: string): string {
   if (!hexcolor) return "#ffffff";
   const hex = hexcolor.replace("#", "");
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
+  const r = parseInt(hex.substring(0, 2) || "0", 16);
+  const g = parseInt(hex.substring(2, 4) || "0", 16);
+  const b = parseInt(hex.substring(4, 6) || "0", 16);
   const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq >= 128 ? "#0f172a" : "#ffffff";
+  return yiq >= 200 ? "#0f172a" : "#ffffff";
 }
 
 
@@ -109,11 +109,11 @@ export function BookingClient({
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [logoError, setLogoError] = useState(false);
   const today = startOfToday();
-  const next14 = Array.from({ length: 14 }, (_, i) => addDays(today, i));
+  const next30 = Array.from({ length: 30 }, (_, i) => addDays(today, i));
 
   const [selectedDate, setSelectedDate] = useState<Date>(
     () =>
-      next14.find(
+      next30.find(
         (d) =>
           workingDays.includes(d.getDay()) &&
           !closedDates.includes(format(d, "yyyy-MM-dd"))
@@ -134,6 +134,7 @@ export function BookingClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const acqSource = searchParams.get("source") || undefined;
+  const preselectedService = searchParams.get("service") || searchParams.get("treatment") || undefined;
 
   const themeColor = clinic.themeColor ?? "#0ea5e9";
   const textColor = getContrastColor(themeColor);
@@ -535,7 +536,7 @@ export function BookingClient({
           ref={scrollRef}
           className="flex overflow-x-auto snap-x gap-2.5 pb-4 pt-1.5 -mx-5 px-5 sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full"
         >
-          {next14.map((date) => {
+          {next30.map((date) => {
             const isSelected = isSameDay(date, selectedDate);
             const isToday = isSameDay(date, today);
             const dateStr = format(date, "yyyy-MM-dd");
@@ -553,27 +554,24 @@ export function BookingClient({
                 }}
                 disabled={!isWorking}
                 aria-label={`Select date ${format(date, "EEEE, MMMM d, yyyy")}`}
-                className={`flex-shrink-0 w-[68px] flex flex-col items-center justify-center h-[90px] rounded-2xl border-2 transition-all duration-300 snap-center relative overflow-hidden ${
+                className={`flex-shrink-0 w-[68px] flex flex-col items-center justify-center h-[88px] rounded-2xl border transition-all duration-300 snap-center relative overflow-hidden ${
                   isSelected
-                    ? "border-transparent shadow-xl scale-[1.04]"
+                    ? "border-transparent text-white shadow-xl scale-[1.04]"
                     : !isWorking
-                    ? "border-slate-100 bg-slate-50/50 opacity-30 cursor-not-allowed"
-                    : "border-slate-200/80 bg-white text-slate-700 hover:border-slate-300 hover:shadow-md"
+                    ? "border-slate-100 bg-slate-50/50 opacity-30 cursor-not-allowed text-slate-400"
+                    : "border-slate-200/80 bg-white text-slate-900 hover:border-slate-300 hover:shadow-md"
                 }`}
-                style={isSelected ? { backgroundColor: themeColor, boxShadow: `0 12px 25px -5px ${themeColor}60` } : {}}
+                style={isSelected ? { backgroundColor: themeColor, boxShadow: `0 12px 25px -5px ${themeColor}60`, color: "#ffffff" } : {}}
               >
-                <span className={`text-[9px] font-black uppercase tracking-widest ${isSelected ? "opacity-80" : "text-slate-400"}`} style={isSelected ? { color: textColor } : {}}>
+                <span className={`text-[10px] font-black uppercase tracking-wider ${isSelected ? "text-white/90" : "text-slate-400"}`}>
                   {format(date, "EEE")}
                 </span>
-                <span className={`text-[23px] font-black mt-0.5 leading-none tracking-tight`} style={{ color: isSelected ? textColor : undefined }}>
+                <span className={`text-[22px] font-black mt-0.5 leading-none tracking-tight ${isSelected ? "text-white" : "text-slate-900"}`}>
                   {format(date, "d")}
                 </span>
-                <span className={`text-[9px] uppercase font-bold mt-0.5 ${isSelected ? "opacity-80" : "text-slate-400"}`} style={isSelected ? { color: textColor } : {}}>
+                <span className={`text-[9.5px] uppercase font-extrabold mt-0.5 ${isSelected ? "text-white/90" : "text-slate-400"}`}>
                   {format(date, "MMM")}
                 </span>
-                {isToday && (
-                  <span className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${isSelected ? "bg-white" : "bg-emerald-500 animate-pulse"}`} />
-                )}
               </motion.button>
             );
           })}
@@ -612,7 +610,7 @@ export function BookingClient({
     ].filter((g) => g.items.length > 0);
 
     const handleJumpToNextAvailable = () => {
-      const nextOpen = next14.find(
+      const nextOpen = next30.find(
         (d) =>
           !isSameDay(d, selectedDate) &&
           workingDays.includes(d.getDay()) &&
@@ -774,55 +772,50 @@ export function BookingClient({
         {/* Name */}
         <div className="space-y-1">
           <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <User className="w-5 h-5 text-slate-400 group-focus-within:text-[var(--theme-color)] transition-colors" style={{ '--theme-color': themeColor } as React.CSSProperties} />
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <User className="w-4 h-4" />
             </div>
             <Input
               id="p-name"
-              placeholder={`${lexicon?.patientTitle || 'Patient'} Name (e.g. Rahul Sharma)`}
+              placeholder={`${lexicon?.patientTitle || 'Patient'} Full Name`}
               {...register("patientName")}
-              className={`h-14 pl-12 py-4 rounded-2xl bg-slate-50/60 border-slate-200/80 focus:bg-white text-base font-medium transition-all focus:ring-4 focus:border-transparent ${errors.patientName ? "border-red-400 focus:ring-red-400/20" : ""}`}
-              style={{ '--tw-ring-color': `${themeColor}30` } as React.CSSProperties}
+              className={`h-12 pl-10 pr-4 rounded-xl bg-slate-50/60 border-slate-200/80 focus:bg-white text-sm font-semibold text-slate-900 transition-all ${errors.patientName ? "border-red-400" : ""}`}
             />
           </div>
-          {errors.patientName && <p className="text-xs text-red-500 font-semibold px-2">{errors.patientName.message}</p>}
+          {errors.patientName && <p className="text-xs text-red-500 font-semibold px-1">{errors.patientName.message}</p>}
         </div>
 
-        {/* Phone */}
+        {/* Phone Input with Dedicated Country Code Prefix Group */}
         <div className="space-y-1">
-          <div className="relative group flex">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-              <Phone className="w-5 h-5 text-slate-400 group-focus-within:text-[var(--theme-color)] transition-colors" style={{ '--theme-color': themeColor } as React.CSSProperties} />
-            </div>
-            <div className="absolute inset-y-0 left-12 flex items-center pointer-events-none z-10">
-              <span className="font-bold text-slate-400 text-base select-none">+91</span>
+          <div className="flex rounded-xl overflow-hidden border border-slate-200/80 focus-within:border-slate-400 focus-within:ring-2 focus-within:ring-sky-500/20 transition-all bg-slate-50/60">
+            <div className="px-3 bg-slate-100/90 border-r border-slate-200/80 flex items-center gap-1.5 text-slate-700 font-bold text-xs shrink-0 select-none">
+              <Phone className="w-3.5 h-3.5 text-slate-400" />
+              <span>+91</span>
             </div>
             <Input
               id="p-phone"
               type="tel"
               inputMode="numeric"
-              placeholder="98765 43210"
+              placeholder="10-digit mobile number"
               {...register("patientPhone")}
-              className={`h-14 pl-24 py-4 rounded-2xl bg-slate-50/60 border-slate-200/80 focus:bg-white text-base font-medium transition-all focus:ring-4 focus:border-transparent ${errors.patientPhone ? "border-red-400 focus:ring-red-400/20" : ""}`}
-              style={{ '--tw-ring-color': `${themeColor}30` } as React.CSSProperties}
+              className="h-12 border-0 bg-transparent rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm font-semibold text-slate-900 px-3"
             />
           </div>
-          {errors.patientPhone && <p className="text-xs text-red-500 font-semibold px-2">{errors.patientPhone.message}</p>}
+          {errors.patientPhone && <p className="text-xs text-red-500 font-semibold px-1">{errors.patientPhone.message}</p>}
         </div>
 
         {/* Email */}
         <div className="space-y-1">
           <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Mail className="w-5 h-5 text-slate-400 group-focus-within:text-[var(--theme-color)] transition-colors" style={{ '--theme-color': themeColor } as React.CSSProperties} />
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <Mail className="w-4 h-4" />
             </div>
             <Input
               id="p-email"
               type="email"
-              placeholder={`${t.emailLabel} ${t.optional}`}
+              placeholder={`Email address ${t.optional}`}
               {...register("patientEmail")}
-              className="h-14 pl-12 py-4 rounded-2xl bg-slate-50/60 border-slate-200/80 focus:bg-white text-base font-medium transition-all focus:ring-4 focus:border-transparent"
-              style={{ '--tw-ring-color': `${themeColor}30` } as React.CSSProperties}
+              className="h-12 pl-10 pr-4 rounded-xl bg-slate-50/60 border-slate-200/80 focus:bg-white text-sm font-semibold text-slate-900 transition-all"
             />
           </div>
         </div>
@@ -877,9 +870,14 @@ export function BookingClient({
           <div className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-50 border border-emerald-100">
             <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
             <p className="text-[11px] text-emerald-700 font-bold text-center leading-tight">
-              {t.trustNote(clinic.consultationFee)}
+              {t.trustNote(clinic.consultationFee ? Number(clinic.consultationFee).toLocaleString("en-IN") : undefined)}
             </p>
           </div>
+
+          {/* Explicit cancellation / no-show policy notice (Point 28) */}
+          <p className="text-[10.5px] text-slate-400 text-center font-medium leading-tight">
+            Free cancellation & slot release. Please notify clinic if unable to attend.
+          </p>
         </div>
       </form>
     </motion.div>
@@ -889,46 +887,34 @@ export function BookingClient({
   return (
     <div className="w-full" id="booking">
 
-      <div className="relative bg-white rounded-3xl overflow-hidden">
-        {/* Top color bar */}
-        <div className="h-2 w-full" style={{ background: `linear-gradient(90deg, ${themeColor}, ${themeColor}88)` }} />
-
-        {/* Progress bar */}
-        <div className="h-0.5 w-full bg-slate-100 relative overflow-hidden">
+      <div className="relative bg-white rounded-3xl overflow-hidden shadow-xs">
+        {/* Sleek Progress Bar */}
+        <div className="h-1 w-full bg-slate-100 relative overflow-hidden">
           <motion.div
-            className="absolute inset-y-0 left-0"
+            className="absolute inset-y-0 left-0 rounded-r-full"
             style={{ backgroundColor: themeColor }}
             initial={{ width: "33%" }}
             animate={{ width: `${(step / 3) * 100}%` }}
-            transition={{ duration: 0.5, ease: "anticipate" }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
           />
         </div>
 
-        {/* Back + step dots row */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-0 min-h-[36px]">
+        {/* Back Button & Step Counter */}
+        <div className="flex items-center justify-between px-5 pt-3 pb-0 min-h-[32px]">
           {step > 1 ? (
             <button
+              type="button"
               onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)}
-              className="flex items-center gap-1 text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors"
+              className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" /> {t.back}
             </button>
           ) : (
             <div />
           )}
-          <div className="flex items-center gap-1.5">
-            {[1, 2, 3].map((s) => (
-              <div
-                key={s}
-                className="rounded-full transition-all duration-400"
-                style={{
-                  width: s === step ? "20px" : "5px",
-                  height: "5px",
-                  backgroundColor: s <= step ? themeColor : "#e2e8f0",
-                }}
-              />
-            ))}
-          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            Step {step} of 3
+          </span>
         </div>
 
         {/* Step content */}

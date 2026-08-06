@@ -29,13 +29,13 @@ export default async function BookingLayout({
       <div className="h-[3px] w-full flex-shrink-0" style={{ backgroundColor: themeColor }} />
 
       {/* Single Sticky Header — logo + name + PWA Install + call CTA */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 flex-shrink-0 shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg shadow-sm overflow-hidden flex-shrink-0 bg-white ring-1 ring-slate-900/5">
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 flex-shrink-0 shadow-xs">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0 flex-1 pr-1">
+            <div className="w-8 h-8 rounded-lg shadow-2xs overflow-hidden flex-shrink-0 bg-white ring-1 ring-slate-900/5">
               <ClinicLogo logoUrl={clinic.logoUrl} clinicName={clinic.name} themeColor={themeColor} variant="widget" />
             </div>
-            <p className="text-sm font-bold text-slate-800 tracking-tight line-clamp-1">{clinic.name}</p>
+            <p className="text-xs sm:text-sm font-black text-slate-900 tracking-tight line-clamp-1 truncate">{clinic.name}</p>
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
@@ -43,8 +43,8 @@ export default async function BookingLayout({
             <PatientInstallButton clinicName={clinic.name} logoUrl={clinic.logoUrl} themeColor={themeColor} className="flex" />
             {clinic.phone && (
               <a
-                href={`tel:${clinic.phone}`}
-                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-white px-3.5 py-1.5 rounded-full transition-all hover:opacity-90 active:scale-95 shadow-sm"
+                href={`tel:+91${clinic.phone.replace(/\D/g, "").slice(-10)}`}
+                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-white px-3.5 py-1.5 rounded-full transition-all hover:opacity-90 active:scale-95 shadow-xs"
                 style={{ backgroundColor: themeColor }}
               >
                 <Phone className="w-3 h-3" />
@@ -55,28 +55,9 @@ export default async function BookingLayout({
         </div>
       </nav>
 
-      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 overflow-hidden">
+      <main className="flex-1 w-full">
         {children}
       </main>
-
-      <footer className="border-t border-slate-100 py-6 pb-safe flex-shrink-0 bg-slate-50/50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-slate-400 text-xs">
-            © {new Date().getFullYear()} {clinic.name}. All rights reserved.
-          </p>
-          <div className="flex items-center gap-4">
-            <Link href="/privacy" className="text-slate-400 text-xs hover:text-slate-600 transition-colors">Privacy</Link>
-            <Link href="/terms" className="text-slate-400 text-xs hover:text-slate-600 transition-colors">Terms</Link>
-            <p className="text-slate-400 text-xs flex items-center gap-1">
-              Powered by{" "}
-              <Link href="/" className="font-bold text-slate-600 hover:text-slate-900 transition-colors inline-flex items-center gap-1">
-                <span>Doctor Diary</span>
-                <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-slate-200/70 text-slate-700">PRO</span>
-              </Link>
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

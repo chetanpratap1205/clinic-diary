@@ -25,7 +25,7 @@ export const DICTIONARY = {
     phoneLabel: "WhatsApp Number",
     emailLabel: "Email",
     ctaConfirm: "Get My Free Token",
-    trustNote: (fee: number | null) =>
+    trustNote: (fee?: number | string | null) =>
       fee
         ? `₹0 booking fee · Pay ₹${fee} at clinic · Instant confirmation`
         : `100% Free Booking · Pay at clinic · Instant confirmation`,
@@ -165,7 +165,7 @@ export const DICTIONARY = {
     phoneLabel: "मोबाइल नंबर",
     emailLabel: "ईमेल",
     ctaConfirm: "मेरा फ्री टोकन लें",
-    trustNote: (fee: number | null) =>
+    trustNote: (fee?: number | string | null) =>
       fee
         ? `₹0 बुकिंग शुल्क · ₹${fee} क्लिनिक में दें · तुरंत पुष्टि`
         : `100% मुफ्त बुकिंग · क्लिनिक में भुगतान करें · तुरंत पुष्टि`,

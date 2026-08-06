@@ -26,20 +26,23 @@ export function PatientHeaderActions({ themeColor, clinicName }: PatientHeaderAc
   return (
     <>
       <button
+        type="button"
         onClick={toggleLanguage}
-        className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all hover:opacity-90 active:scale-95 shadow-sm border border-slate-200/60 bg-white text-slate-700"
+        aria-label="Toggle language"
+        className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-1.5 rounded-full transition-all hover:bg-slate-100 active:scale-95 border border-slate-200/80 bg-white text-slate-700 shadow-2xs"
       >
         <Languages className="w-3.5 h-3.5 text-slate-500" />
-        <span className="uppercase tracking-wider">{currentLang === "en" ? "EN" : "HI"}</span>
+        <span className="uppercase">{currentLang === "en" ? "EN" : "HI"}</span>
       </button>
 
       <button
+        type="button"
         onClick={() => setIsLoginModalOpen(true)}
-        className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all hover:opacity-90 active:scale-95 shadow-sm border border-slate-200/60 bg-white text-slate-700"
+        aria-label="My Appointments & Records"
+        className="inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-1.5 rounded-full transition-all hover:bg-slate-100 active:scale-95 border border-slate-200/80 bg-white text-slate-800 shadow-2xs"
       >
         <UserCircle className="w-3.5 h-3.5" style={{ color: themeColor }} />
-        <span className="hidden sm:inline">{currentLang === "hi" ? "मेरे अपॉइंटमेंट" : "My Appointments"}</span>
-        <span className="sm:hidden">{currentLang === "hi" ? "अपॉइंटमेंट" : "Appointments"}</span>
+        <span className="hidden sm:inline">{currentLang === "hi" ? "मेरे अपॉइंटमेंट" : "Records"}</span>
       </button>
 
       <PatientLoginModal

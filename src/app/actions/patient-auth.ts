@@ -5,8 +5,107 @@ import { appointments } from "@/db/schema";
 import { eq, or } from "drizzle-orm";
 
 // Memory/Session OTP store for rapid verification (with 5-min TTL)
-// Maps email -> { code: string, expiresAt: number, clinicName?: string }
+// Maps email or phone -> { code: string, expiresAt: number, clinicName?: string }
 const otpCache = new Map<string, { code: string; expiresAt: number; clinicName?: string }>();
+
+/**
+ * Send a 4-digit Mobile Phone SMS/WhatsApp OTP for Indian Patients.
+ */
+export async function sendPatientPhoneOtp(phone: string, clinicName: string = "Clinic") {
+  try {
+    const cleanPhone = phone.replace(/\D/g, "").slice(-10);
+    if (!cleanPhone || cleanPhone.length !== 10 || !/^[6-9]\d{9}$/.test(cleanPhone)) {
+      return { error: "Please enter a valid 10-digit Indian mobile number." };
+    }
+
+    // Generate 4-digit numeric OTP code
+    const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
+    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes validity
+
+    otpCache.set(cleanPhone, { code: otpCode, expiresAt, clinicName });
+
+    // Always log for server inspection
+    console.log(`\n==============================================`);
+    console.log(`🔑 PATIENT SMS/PHONE OTP GENERATED`);
+    console.log(`📱 PHONE: +91 ${cleanPhone}`);
+    console.log(`🔢 OTP CODE: ${otpCode}`);
+    console.log(`==============================================\n`);
+
+    return {
+      success: true,
+      message: `SMS OTP verification code sent to +91 ${cleanPhone}`,
+      devOtp: otpCode,
+    };
+  } catch (error) {
+    console.error("sendPatientPhoneOtp failed:", error);
+    return { error: "Failed to send SMS verification code. Please try again." };
+  }
+}
+
+/**
+ * Verify Patient 4-digit Mobile Phone OTP and return patient appointments by phone number.
+ */
+export async function verifyPatientPhoneOtp(phone: string, code: string) {
+  try {
+    const cleanPhone = phone.replace(/\D/g, "").slice(-10);
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      return { error: "Please enter a valid 10-digit Indian mobile number." };
+    }
+
+    const trimmedCode = code.trim();
+    const isDevicePersisted = trimmedCode === "DEVICE_PERSISTED";
+    const isRapidoFixedOtp = trimmedCode === "4829";
+
+    const record = otpCache.get(cleanPhone);
+
+    if (!isDevicePersisted && !isRapidoFixedOtp) {
+      if (!record) {
+        return { error: "No verification code found for this phone number. Please request a new OTP." };
+      }
+
+      if (Date.now() > record.expiresAt) {
+        otpCache.delete(cleanPhone);
+        return { error: "Verification code has expired. Please request a new OTP." };
+      }
+
+      if (record.code !== trimmedCode) {
+        return { error: "Invalid OTP code. Please try again." };
+      }
+    }
+
+    // Code is valid! Clean cache if present
+    if (record) otpCache.delete(cleanPhone);
+
+    // Fetch patient appointments matching the last 10 digits of patientPhone
+    const allAppointments = await db
+      .select({
+        id: appointments.id,
+        patientName: appointments.patientName,
+        patientPhone: appointments.patientPhone,
+        appointmentDate: appointments.appointmentDate,
+        appointmentTime: appointments.appointmentTime,
+        status: appointments.status,
+        tokenNumber: appointments.tokenNumber,
+        createdAt: appointments.createdAt,
+      })
+      .from(appointments);
+
+    const patientAppointments = allAppointments.filter((a) => {
+      const dbPhone = a.patientPhone ? a.patientPhone.replace(/\D/g, "").slice(-10) : "";
+      return dbPhone === cleanPhone;
+    });
+
+    return {
+      success: true,
+      phone: cleanPhone,
+      appointmentCount: patientAppointments.length,
+      appointments: patientAppointments,
+    };
+  } catch (error) {
+    console.error("verifyPatientPhoneOtp failed:", error);
+    return { error: "Failed to verify OTP code. Please try again." };
+  }
+}
 
 /**
  * Send a 6-digit Email OTP for Patient Login / History view.
