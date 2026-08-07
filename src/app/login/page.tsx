@@ -27,55 +27,46 @@ function mapAuthError(message: string): string {
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [pin, setPin] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resetLoading, setResetLoading] = useState(false);
   const supabase = createClient();
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) { toast.error(mapAuthError(error.message)); return; }
+      const cleanPhone = phone.replace(/\D/g, "").slice(-10);
+      if (cleanPhone.length !== 10) {
+        toast.error("Please enter a valid 10-digit mobile number.");
+        setLoading(false);
+        return;
+      }
+
+      const dummyEmail = `doc_${cleanPhone}@naturexpress.in`;
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: dummyEmail,
+        password: pin,
+      });
+
+      if (signInError) {
+        toast.error(mapAuthError(signInError.message));
+        return;
+      }
       
-      toast.success("Welcome back!");
+      toast.success("Welcome to Clinic Diary!");
       
-      // Fallback to /dashboard if server action fails
       let redirectPath = "/dashboard";
       try {
         redirectPath = await getLoginRedirectPath();
-      } catch (err) {
-        console.error("Failed to get redirect path:", err);
-      }
+      } catch (err) {}
       
-      // Use hard navigation to bypass Next.js App Router cache issues with auth state
       window.location.href = redirectPath;
     } catch {
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleForgotPassword() {
-    if (!email) { toast.error("Please enter your email address first."); return; }
-    setResetLoading(true);
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
-      });
-      if (error) {
-        toast.error("Could not send reset email. Please try again.");
-      } else {
-        toast.success("Password reset email sent! Check your inbox.");
-      }
-    } catch {
-      toast.error("An unexpected error occurred.");
-    } finally {
-      setResetLoading(false);
     }
   }
 
@@ -159,63 +150,42 @@ export default function LoginPage() {
               <p className="text-slate-400 font-medium">Please enter your details to sign in.</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-sm font-bold text-slate-300 ml-1">Email Address</Label>
+                <Label htmlFor="phone" className="text-sm font-bold text-slate-300 ml-1">Mobile Number</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="doctor@clinic.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="phone"
+                  type="tel"
+                  placeholder="Enter 10-digit mobile number"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   required
-                  autoComplete="email"
-                  inputMode="email"
                   className="h-14 text-base rounded-2xl bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:bg-white/10 focus:border-emerald-500/50 focus:ring-emerald-500/20 transition-all px-5"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between px-1">
-                  <Label htmlFor="password" className="text-sm font-bold text-slate-300">Password</Label>
-                  <button
-                    type="button"
-                    onClick={handleForgotPassword}
-                    disabled={resetLoading}
-                    className="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors disabled:opacity-50"
-                  >
-                    {resetLoading ? "Sending…" : "Forgot Password?"}
-                  </button>
+                  <Label htmlFor="pin" className="text-sm font-bold text-slate-300">Access PIN / Password</Label>
                 </div>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    autoComplete="current-password"
-                    className="h-14 pr-12 text-base rounded-2xl bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:bg-white/10 focus:border-emerald-500/50 focus:ring-emerald-500/20 transition-all px-5 tracking-widest"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors p-1"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
+                <Input
+                  id="pin"
+                  type="password"
+                  placeholder="Enter your PIN"
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value)}
+                  required
+                  className="h-14 text-center tracking-[0.5em] text-2xl font-black rounded-2xl bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:bg-white/10 focus:border-emerald-500/50 focus:ring-emerald-500/20 transition-all px-5"
+                />
               </div>
 
               <div className="pt-4">
                 <Button
                   type="submit"
-                  className="w-full h-14 bg-white hover:bg-slate-200 text-black font-black text-lg rounded-2xl shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)] transition-all active:scale-[0.98]"
-                  disabled={loading}
+                  className="w-full h-14 bg-emerald-500 hover:bg-emerald-400 text-white font-black text-lg rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all active:scale-[0.98]"
+                  disabled={loading || phone.length < 10 || pin.length < 6}
                 >
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign In"}
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Secure Login"}
                 </Button>
               </div>
             </form>

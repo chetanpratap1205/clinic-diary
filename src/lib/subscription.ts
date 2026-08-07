@@ -42,7 +42,6 @@ export async function getClinicAccessStatus(clinicId: string): Promise<ClinicAcc
     };
   }
 
-  // 2. Fetch clinic creation timestamp to evaluate 14-day trial
   const clinicRecords = await db
     .select({ createdAt: clinics.createdAt })
     .from(clinics)
@@ -54,6 +53,24 @@ export async function getClinicAccessStatus(clinicId: string): Promise<ClinicAcc
       hasAccess: false,
       status: "trial_expired",
       daysRemaining: 0,
+      trialEndDate: null,
+    };
+  }
+
+  // Check if clinic is a Shadow Profile (unclaimed)
+  const { clinicAdmins } = await import("@/db/schema");
+  const adminRecords = await db
+    .select()
+    .from(clinicAdmins)
+    .where(eq(clinicAdmins.clinicId, clinicId))
+    .limit(1);
+
+  if (adminRecords.length === 0) {
+    // Shadow profiles get unrestricted access until claimed
+    return {
+      hasAccess: true,
+      status: "active",
+      daysRemaining: null,
       trialEndDate: null,
     };
   }

@@ -53,5 +53,39 @@ export async function getLoginRedirectPath(): Promise<string> {
   }
   
   // 4. Default to clinic dashboard for doctors
+  // CONCIERGE SETUP: On first login, start their 14-day free trial!
+  try {
+    const { clinicAdmins, subscriptions } = await import("@/db/schema");
+    const [adminRecord] = await db
+      .select()
+      .from(clinicAdmins)
+      .where(eq(clinicAdmins.authUserId, user.id))
+      .limit(1);
+
+    if (adminRecord) {
+      const [existingSub] = await db
+        .select()
+        .from(subscriptions)
+        .where(eq(subscriptions.clinicId, adminRecord.clinicId))
+        .limit(1);
+
+      if (!existingSub) {
+        // Start the 14-day free trial now!
+        const now = new Date();
+        const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+        await db.insert(subscriptions).values({
+          clinicId: adminRecord.clinicId,
+          planId: "quarterly",
+          status: "active",
+          currentPeriodStart: now,
+          currentPeriodEnd: trialEnd,
+        });
+        console.log(`[TRIAL ACTIVATED] Started 14-day trial for clinic ${adminRecord.clinicId}`);
+      }
+    }
+  } catch (err) {
+    console.error("Database error while checking/activating trial:", err);
+  }
+
   return "/dashboard";
 }

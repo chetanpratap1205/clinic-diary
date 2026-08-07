@@ -35,12 +35,12 @@ export function SmartInsightBanner({ insight }: SmartInsightBannerProps) {
         };
       case "purple":
         return {
-          wrapper: "bg-purple-950 border-purple-900",
-          glow: "bg-purple-500/20 group-hover:bg-purple-500/30",
-          iconBg: "bg-purple-500/20 border-purple-500/30",
-          iconColor: "text-purple-400",
-          titleColor: "text-purple-400",
-          textColor: "text-purple-100",
+          wrapper: "bg-indigo-950/80 border-indigo-900/50",
+          glow: "bg-indigo-500/20 group-hover:bg-indigo-500/30",
+          iconBg: "bg-indigo-500/20 border-indigo-500/30",
+          iconColor: "text-indigo-400",
+          titleColor: "text-indigo-400",
+          textColor: "text-indigo-100",
           icon: TrendingUp,
         };
       case "default":
@@ -55,13 +55,14 @@ export function SmartInsightBanner({ insight }: SmartInsightBannerProps) {
         };
       case "info":
       default:
+        // Premium Indigo/Emerald Concierge Style
         return {
-          wrapper: "bg-blue-950 border-blue-900",
-          glow: "bg-blue-500/20 group-hover:bg-blue-500/30",
-          iconBg: "bg-blue-500/20 border-blue-500/30",
-          iconColor: "text-blue-400",
-          titleColor: "text-blue-400",
-          textColor: "text-blue-100",
+          wrapper: "bg-[#0B132B] border-indigo-900/40",
+          glow: "bg-[#00B7A8]/10 group-hover:bg-[#00B7A8]/20",
+          iconBg: "bg-[#00B7A8]/10 border-[#00B7A8]/20 shadow-[0_0_15px_rgba(0,183,168,0.15)]",
+          iconColor: "text-[#00B7A8]",
+          titleColor: "text-[#00B7A8]",
+          textColor: "text-slate-200",
           icon: Info,
         };
     }

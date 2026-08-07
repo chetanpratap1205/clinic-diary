@@ -139,172 +139,181 @@ function extractLastName(name: string): string {
 export function buildCategoryAMessage(lead: LeadForMessage, step: number): string {
   const name = extractLastName(lead.doctorName);
   const clinicName = lead.clinicName || "your clinic";
-  const specialty = lead.specialty ? `as a ${lead.specialty}` : "";
+  const city = lead.city || "your area";
   const demoUrl = generateLeadDemoUrl(lead);
 
   if (step === 1) {
-    return `*Stop paying 20% commission to aggregators, Dr. ${name}.*
+    return `Good morning Dr. ${name},
 
-Your clinic's revenue and patient data belong exclusively to you${specialty ? ` — especially ${specialty}` : ""}.
+While reviewing healthcare listings in ${city}, we noticed that ${clinicName} doesn't yet have a dedicated online booking page that patients can access directly.
 
-We have pre-built a *100% Free Custom Booking Website + Mobile App* specifically for *${clinicName}*:
+So we prepared one specifically for your clinic.
 
-🌐 *Your Live Booking Website & App:*
-${demoUrl}
+🔗 ${demoUrl}
 
-⚡ *What ${clinicName} gets instantly:*
-• *0% Commission* — Keep 100% of consultation & clinic fees.
-• *Zero Typing* — Write on your paper Rx pad; patients get a digital copy on WhatsApp.
-• *Automated Patient Returns* — Smart follow-up reminders bring back 18-20% more patients monthly.
+It already includes your clinic details and is not public yet.
 
-Reply *1* to activate your 14-day free trial instantly.
-Reply *2* to receive a 2-minute video demo.
+We'd genuinely appreciate your opinion before we activate it. If you get just 60 seconds today, have a look.
 
-${MESSAGE_CONFIG.shortSenderName}
-Doctor Diary | 📄 ${MESSAGE_CONFIG.pdfLink}`;
+— Doctor Diary Onboarding Team`;
   }
 
   if (step === 2) {
-    return `*A clinic 2 streets from ${clinicName} just went live on Doctor Diary, Dr. ${name}.*
+    return `Dr. ${name},
 
-They now take 0% commission bookings, send automated WhatsApp follow-ups, and keep 100% of their patient fees — while still writing prescriptions on paper.
+Thank you if you've already seen the page.
 
-Your personalised clinic portal is still reserved and ready:
+One thing we noticed after speaking with independent clinics is this:
+Doctors rarely lose patients because of treatment. They lose patients because follow-ups become inconvenient.
 
-🌐 *${clinicName}'s Live Portal & App:*
-${demoUrl}
+That's exactly what Doctor Diary solves for ${clinicName}:
+• Patients book without calling repeatedly.
+• 1-click WhatsApp preset messages reduce missed follow-ups.
+• Reception spends less time answering routine calls.
+• You continue practicing exactly the way you do today (no change to how you write prescriptions).
 
-🔒 *Territory Notice:* We lock 1 clinic per PIN code. Once it's claimed, it's gone.
+No commissions. No marketplace. All at a pricing that costs less than a cup of tea per day.
 
-Reply *YES* and we'll activate your clinic's portal in 15 minutes. Zero setup.
+If you'd like to activate your clinic page, simply reply:
+*Activate*
 
-${MESSAGE_CONFIG.shortSenderName}
-Doctor Diary`;
+We'll take care of everything else.`;
   }
 
   // Step 3 — Clean Exit / Takeaway
-  return `*Closing your file now, Dr. ${name}.*
+  return `Dr. ${name},
 
-Completely understand — your schedule as a specialist leaves very little breathing room.
+This will be my final message.
 
-Your complimentary clinic website & app link remains active here for when you have a moment:
-✨ ${demoUrl}
+I understand adopting something new isn't a priority when patient care comes first.
 
-If *${clinicName}* ever decides to go commission-free and automate patient follow-ups, simply reply to this message. We'll handle the entire migration with zero downtime in 48 hours.
+Your clinic page will remain reserved here:
+🔗 ${demoUrl}
 
-Wishing you a thriving practice ahead.
+If at any point you decide you'd like patients to book online, reduce follow-up no-shows with 1-click WhatsApp reminders, or simplify reception work, just reply to this chat.
 
-${MESSAGE_CONFIG.shortSenderName}
-Doctor Diary`;
+We'll handle the setup. Wishing you and your team continued success.
+
+— Doctor Diary Onboarding Team`;
 }
 
 // ─── Category B — Visited Clinic Messages ────────────────────────────────────
 export function buildCategoryBMessage(lead: LeadForMessage, step: number): string {
   const name = extractLastName(lead.doctorName);
   const clinicName = lead.clinicName || "your clinic";
-  const specialty = lead.specialty ? `${lead.specialty} ` : "";
   const demoUrl = generateLeadDemoUrl(lead);
 
   if (step === 1) {
-    return `*As promised during our visit, Dr. ${name} — your clinic's link is live.*
+    return `Good morning Dr. ${name},
 
-It was a pleasure meeting you at *${clinicName}* earlier. Our engineering team has already pre-configured your private booking website & mobile app:
+Following up on our team's recent visit to ${clinicName}, we wanted to share something we prepared specifically for you.
 
-🌐 *${specialty}Portal & App for ${clinicName}:*
-${demoUrl}
+We noticed many clinics lose out because they lack a dedicated online booking page. So we reserved this digital identity exclusively for your clinic:
 
-💡 *What you can open right now and see live:*
-• Your clinic name, specialty & booking page — already set up.
-• Patients book directly, you collect fees at 0% commission.
-• You keep writing Rx on paper; they get a digital copy on WhatsApp.
+🔗 ${demoUrl}
 
-Reply *START* and I'll activate your 14-day free trial in 60 seconds.
+It already includes your clinic details and is not public yet.
 
-${MESSAGE_CONFIG.shortSenderName}
-Doctor Diary`;
+We'd genuinely appreciate your opinion before we activate it. If you get just 60 seconds today, have a look.
+
+— Doctor Diary Onboarding Team`;
   }
 
   if (step === 2) {
-    return `*18% more returning patients at ${clinicName} — here's how, Dr. ${name}.*
+    return `Dr. ${name},
 
-Since our visit, I wanted to follow up specifically on what we discussed about missed follow-ups costing revenue.
+Thank you if you've already seen the page we discussed during our visit.
 
-Doctor Diary's automated WhatsApp reminders run 24/7 in the background — silently bringing back patients who would otherwise forget their follow-up date.
+One thing we noticed after speaking with independent clinics is this:
+Doctors rarely lose patients because of treatment. They lose patients because follow-ups become inconvenient.
 
-🌐 *Your live clinic portal (already set up):*
-${demoUrl}
+That's exactly what Doctor Diary solves for ${clinicName}:
+• Patients book without calling repeatedly.
+• 1-click WhatsApp preset messages reduce missed follow-ups.
+• Reception spends less time answering routine calls.
+• You continue practicing exactly the way you do today.
 
-Enable this for just 10 patients this week — zero setup required. You'll see the difference in 7 days.
+No commissions. No marketplace. All at a pricing that costs less than a cup of tea per day.
 
-${MESSAGE_CONFIG.shortSenderName}
-Doctor Diary`;
+If you'd like to activate your clinic page, simply reply:
+*Activate*
+
+We'll take care of everything else.`;
   }
 
-  return `*Dr. ${name}, your patients are ready — the portal just needs your go-ahead.*
+  return `Dr. ${name},
 
-I'll stop following up from my end now — I know how packed a ${specialty}specialist's schedule can be.
+This will be my final message.
 
-Your clinic's custom website & app link stays active here permanently:
-✨ ${demoUrl}
+I understand adopting something new isn't a priority when patient care comes first.
 
-When you're ready to take 0% commission bookings and bring back patients on autopilot, just reply here. We'll have *${clinicName}* fully live within 48 hours.
+Your clinic page will remain reserved here:
+🔗 ${demoUrl}
 
-${MESSAGE_CONFIG.shortSenderName}
-Doctor Diary`;
+If at any point you decide you'd like patients to book online, reduce follow-up no-shows with 1-click WhatsApp messages, or simplify reception work, just reply to this chat.
+
+We'll handle the setup. Wishing you and your team continued success.
+
+— Doctor Diary Onboarding Team`;
 }
 
 // ─── Category C — Inbound Lead Messages ──────────────────────────────────────
 export function buildCategoryCMessage(lead: LeadForMessage, step: number): string {
   const name = extractLastName(lead.doctorName);
   const clinicName = lead.clinicName || "your clinic";
-  const specialty = lead.specialty ? ` ${lead.specialty}` : "";
   const demoUrl = generateLeadDemoUrl(lead);
 
   if (step === 1) {
-    return `*Your free clinic website & app are live, Dr. ${name}!*
+    return `Good morning Dr. ${name},
 
-Thank you for reaching out to Doctor Diary. We've already pre-configured *${clinicName}'s* complete digital booking infrastructure:
+Thank you for reaching out regarding Doctor Diary for ${clinicName}. 
 
-🌐 *Your Live Booking Portal & App:*
-${demoUrl}
+We wanted to make sure your digital identity was reserved right away, so we prepared your dedicated online booking page.
 
-⚡ *What's inside (open the link now):*
-• *0% Commission* — All appointment & direct patient payments go straight to you.
-• *Keep Pen & Pad* — Write as usual; we handle the digital WhatsApp delivery.
-• *White-Glove Setup* — All patient data migrated in 48 hours, zero downtime.
+🔗 ${demoUrl}
 
-Reply *DEMO* for a 5-minute guided call.
-Reply *GO* to activate your account right now!
+It already includes your clinic details and is not public yet.
 
-${MESSAGE_CONFIG.shortSenderName}
-Doctor Diary | 📄 ${MESSAGE_CONFIG.pdfLink}`;
+We'd genuinely appreciate your opinion on the design before we activate it. Have a look when you get 60 seconds today.
+
+— Doctor Diary Onboarding Team`;
   }
 
   if (step === 2) {
-    return `*24 hours left to hold your territory, Dr. ${name}.*
+    return `Dr. ${name},
 
-You enquired about Doctor Diary and we want to make sure *${clinicName}* secures its PIN code territory before another${specialty} clinic in your area does.
+Thank you if you've already seen the page.
 
-We only activate 1 clinic per PIN code area to guarantee digital exclusivity and maximum ROI.
+Based on your inquiry, we know you're looking for solutions for ${clinicName}. The biggest issue we see for independent clinics is that they lose patients because follow-ups become inconvenient.
 
-🌐 *Your portal is live and waiting:*
-${demoUrl}
+That's exactly what Doctor Diary solves:
+• Patients book without calling repeatedly.
+• 1-click WhatsApp preset messages reduce missed follow-ups.
+• Reception spends less time answering routine calls.
+• You continue practicing exactly the way you do today.
 
-Reply *NOW* and we will complete your clinic setup in under 15 minutes today.
+No commissions. No marketplace. All at a pricing that costs less than a cup of tea per day.
 
-${MESSAGE_CONFIG.shortSenderName}
-Doctor Diary`;
+If you'd like to officially activate your clinic page, simply reply:
+*Activate*
+
+We'll take care of everything else.`;
   }
 
-  return `*Closing out your inquiry for now, Dr. ${name}.*
+  return `Dr. ${name},
 
-You can access *${clinicName}'s* custom booking website & app anytime here:
-✨ ${demoUrl}
+This will be my final message regarding your inquiry.
 
-Whenever you're ready to go commission-free and protect your patient database from aggregators, drop a message here and we'll activate everything within 15 minutes.
+I understand adopting something new isn't always an immediate priority when patient care comes first.
 
-${MESSAGE_CONFIG.shortSenderName}
-Doctor Diary`;
+Your clinic page will remain reserved here:
+🔗 ${demoUrl}
+
+If at any point you decide you'd like patients to book online, reduce follow-up no-shows with 1-click WhatsApp messages, or simplify reception work, just reply to this chat.
+
+We'll handle the setup. Wishing you and your team continued success.
+
+— Doctor Diary Onboarding Team`;
 }
 
 // ─── Unified message builder (used by WhatsApp drawer) ────────────────────────

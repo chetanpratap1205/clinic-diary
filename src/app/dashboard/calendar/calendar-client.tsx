@@ -56,12 +56,7 @@ interface CalendarClientProps {
   events: CalendarEvent[];
 }
 
-const MOCK_STAFF = [
-  { id: "all", name: "All Staff", role: "Overview" },
-  { id: "vishal", name: "Vishal Yadav", role: "Doctor" },
-  { id: "rakesh", name: "Rakesh Kumar", role: "Doctor" },
-  { id: "deepak", name: "Deepak", role: "Nurse/Staff" },
-];
+
 
 function getStatusStyling(status: string) {
   switch (status) {
@@ -295,36 +290,7 @@ export function CalendarClient({ events }: CalendarClientProps) {
 
   return (
     <div className="space-y-6">
-      
-      {/* ══════════════════════════════════════════════════════════════════════
-          1. STAFF TOGGLES BAR (Inspired by Reference Image 4)
-      ══════════════════════════════════════════════════════════════════════ */}
-      <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-2 overflow-x-auto hide-scrollbar">
-        <div className="flex items-center gap-1.5 text-xs font-black text-slate-400 uppercase tracking-widest px-2 flex-shrink-0">
-          <Users className="w-4 h-4 text-sky-500" /> Staff:
-        </div>
-        {MOCK_STAFF.map((staff) => {
-          const isActive = selectedStaff === staff.id;
-          return (
-            <button
-              key={staff.id}
-              onClick={() => setSelectedStaff(staff.id)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 flex-shrink-0 ${
-                isActive
-                  ? "bg-sky-500 text-white shadow-md shadow-sky-500/20 scale-[1.02]"
-                  : "bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/60"
-              }`}
-            >
-              <span>{staff.name}</span>
-              <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-semibold uppercase ${
-                isActive ? "bg-white/20 text-white" : "bg-slate-200/60 text-slate-500"
-              }`}>
-                {staff.role}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+
 
       {/* ══════════════════════════════════════════════════════════════════════
           2. "AT-A-GLANCE" DAILY OPERATIONAL METRICS (Inspired by Reference Image 4)

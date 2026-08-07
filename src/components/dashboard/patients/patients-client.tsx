@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PremiumIcon } from "@/components/ui/premium-icon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface PatientWithStats {
   id: string;
@@ -81,6 +82,32 @@ export function PatientsClient({
       if (search.trim()) params.set("search", search.trim());
       params.set("page", newPage.toString());
       router.push(`/dashboard/patients?${params.toString()}`);
+    });
+  };
+
+  const handleQuickAdd = async (patient: PatientWithStats) => {
+    startTransition(async () => {
+      try {
+        const formData = new FormData();
+        formData.append("patientId", patient.id);
+        formData.append("patientName", patient.name);
+        formData.append("patientPhone", patient.phone);
+        
+        const res = await fetch("/api/appointments/quick-add", {
+          method: "POST",
+          body: formData,
+        });
+        
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.message || data.error || "Failed to add to queue");
+        }
+        
+        toast.success(`${patient.name} added to the queue!`);
+        router.push("/dashboard/queue");
+      } catch (err: any) {
+        toast.error(err.message);
+      }
     });
   };
 
@@ -212,14 +239,18 @@ export function PatientsClient({
                      <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />
                      <span>WhatsApp</span>
                    </a>
-                   <Link 
-                     href={`/dashboard/queue?add=${patient.id}`}
+                   <button 
+                     onClick={(e) => {
+                       e.preventDefault();
+                       e.stopPropagation();
+                       handleQuickAdd(patient);
+                     }}
+                     disabled={isPending}
                      className="flex-1 flex items-center justify-center gap-1 p-1.5 rounded-xl text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors font-bold text-[11px]"
-                     onClick={(e) => e.stopPropagation()}
                    >
                      <Plus className="w-3.5 h-3.5 text-indigo-500" />
                      <span>Queue</span>
-                   </Link>
+                   </button>
                 </div>
               </Card>
             ))}

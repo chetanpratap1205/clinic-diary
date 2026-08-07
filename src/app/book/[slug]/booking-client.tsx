@@ -20,7 +20,6 @@ import {
   FileText
 } from "lucide-react";
 import { formatTimeDisplay } from "@/lib/format";
-import { PatientLoginModal } from "@/components/patient-login-modal";
 import { PatientInstallButton } from "@/components/pwa-provider";
 import { PushOptIn } from "@/components/push-opt-in";
 import confetti from "canvas-confetti";
@@ -129,7 +128,6 @@ export function BookingClient({
     time: string;
   } | null>(null);
 
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -446,20 +444,6 @@ export function BookingClient({
                 />
               </motion.div>
 
-              {/* Patient Portal Card */}
-              <div 
-                onClick={() => setIsLoginModalOpen(true)}
-                className="w-full relative overflow-hidden rounded-2xl cursor-pointer group hover:shadow-md transition-all border border-slate-200/80 bg-slate-50/50 hover:bg-white p-3.5 flex items-center gap-3.5"
-              >
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white shadow-sm border border-slate-100 flex-shrink-0">
-                  <FileText className="w-5 h-5" style={{ color: themeColor }} />
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="text-xs font-black text-slate-900 group-hover:text-blue-600 transition-colors">My Appointments & Records</p>
-                  <p className="text-[10.5px] text-slate-500 font-medium">View prescriptions, medical records & tokens.</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
-              </div>
 
               {/* Dedicated 10/10 Clinic App Install Card */}
               <div className="pt-1">
@@ -474,12 +458,7 @@ export function BookingClient({
             </motion.div>
           </div>
 
-          <PatientLoginModal 
-            isOpen={isLoginModalOpen} 
-            onClose={() => setIsLoginModalOpen(false)} 
-            themeColor={themeColor} 
-            clinicName={clinic.name} 
-          />
+
 
           {/* Attribution */}
           <div className="border-t border-slate-50 px-5 py-3 flex items-center justify-center gap-2 bg-slate-50/40">

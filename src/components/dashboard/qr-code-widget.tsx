@@ -167,7 +167,7 @@ export function QrCodeWidget({ clinicId, clinicName, slug, themeColor }: QrCodeW
           else qrUrl += "?src=general";
 
           return (
-            <div key={qr.id} className="flex flex-col sm:flex-row gap-5 sm:gap-8 items-center sm:items-start pt-6 border-t border-slate-100 first:border-0 first:pt-0">
+            <div key={qr.id} className="flex flex-col gap-5 items-center pt-6 border-t border-slate-100 first:border-0 first:pt-0">
               {/* QR Code Image */}
               <div className="flex-shrink-0 flex flex-col items-center gap-2">
                 <div className="bg-white p-4 rounded-2xl shadow-lg border border-slate-100">

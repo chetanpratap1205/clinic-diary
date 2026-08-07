@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { Metadata } from "next";
 import { db } from "@/db";
 import { clinics } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -9,6 +10,17 @@ import { ClinicLogo } from "./clinic-logo";
 import { PatientInstallButton } from "@/components/pwa-provider";
 
 import { PatientHeaderActions } from "@/components/patient-header-actions";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  return {
+    manifest: `/api/manifest/${slug}`,
+  };
+}
 
 export default async function BookingLayout({
   children,

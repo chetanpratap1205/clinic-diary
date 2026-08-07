@@ -46,6 +46,7 @@ import {
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PresetsManager } from "./components/presets-manager";
+import { ImageUploader } from "@/components/ui/image-uploader";
 import { motion } from "framer-motion";
 import { SPECIALTY_LIST } from "@/lib/specialty-taxonomy";
 
@@ -317,56 +318,45 @@ Make it sound extremely premium, trustworthy, and empathetic. Emphasize that we 
                   </div>
                 </div>
 
-                {/* Logo URL */}
-                <div className="space-y-2 pt-2 border-t border-slate-100">
-                  <label htmlFor="logo-url" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                    <ImageIcon className="w-3.5 h-3.5 text-slate-400" /> Clinic Logo URL
-                  </label>
-                  <div className="flex gap-3 items-start">
-                    {/* Logo Preview */}
-                    <div
-                      className="w-14 h-14 rounded-2xl flex-shrink-0 border-2 border-slate-200 flex items-center justify-center text-white font-black text-xl overflow-hidden shadow-sm"
-                      style={{ backgroundColor: watchedFields.themeColor || "#0ea5e9" }}
-                    >
-                      {watchedFields.logoUrl && !logoError ? (
-                        <img
-                          src={watchedFields.logoUrl}
-                          alt={watchedFields.name || "logo"}
-                          className="w-full h-full object-cover"
-                          onError={() => setLogoError(true)}
-                          onLoad={() => setLogoError(false)}
-                        />
-                      ) : (
-                        <span>{watchedFields.name?.[0]?.toUpperCase() || "C"}</span>
-                      )}
+                {/* Brand Imagery */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 pt-4 border-t border-slate-100">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center border border-sky-100 flex-shrink-0">
+                        <ImageIcon className="w-4 h-4 text-sky-500" />
+                      </div>
+                      <div>
+                        <label className="text-sm font-bold text-slate-800">Clinic Logo</label>
+                        <p className="text-xs font-medium text-slate-500">Square image for booking page & PWA icon</p>
+                      </div>
                     </div>
-                    <div className="flex-1 space-y-2">
-                      <Input
-                        id="logo-url"
-                        {...register("logoUrl", {
-                          onChange: () => setLogoError(false),
-                        })}
-                        placeholder="https://example.com/logo.png"
-                        className="h-11 rounded-xl text-sm shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
-                      />
-                      {errors.logoUrl && <p className="text-xs text-red-500">{errors.logoUrl.message}</p>}
-                    </div>
+                    <ImageUploader 
+                      value={watchedFields.logoUrl || ""}
+                      onChange={(url) => setValue("logoUrl", url, { shouldValidate: true, shouldDirty: true })}
+                      folder={`clinic-${slug}/logos`}
+                      label="Upload Clinic Logo"
+                      description="Square PNG/JPG (max 2MB)"
+                    />
                   </div>
-                </div>
 
-                {/* Hero Image URL */}
-                <div className="space-y-2 pt-2 border-t border-slate-100">
-                  <label htmlFor="hero-image-url" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                    <ImageIcon className="w-3.5 h-3.5 text-slate-400" /> Doctor Hero Image URL
-                  </label>
-                  <p className="text-xs text-slate-500 pb-1">This image appears beautifully cropped on your public booking page.</p>
-                  <Input
-                    id="hero-image-url"
-                    {...register("heroImageUrl")}
-                    placeholder="https://example.com/doctor.jpg"
-                    className="h-11 rounded-xl text-sm shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
-                  />
-                  {errors.heroImageUrl && <p className="text-xs text-red-500">{errors.heroImageUrl.message}</p>}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center border border-indigo-100 flex-shrink-0">
+                        <ImageIcon className="w-4 h-4 text-indigo-500" />
+                      </div>
+                      <div>
+                        <label className="text-sm font-bold text-slate-800">Hero Image</label>
+                        <p className="text-xs font-medium text-slate-500">Wide banner for the top of your booking page</p>
+                      </div>
+                    </div>
+                    <ImageUploader 
+                      value={watchedFields.heroImageUrl || ""}
+                      onChange={(url) => setValue("heroImageUrl", url, { shouldValidate: true, shouldDirty: true })}
+                      folder={`clinic-${slug}/hero`}
+                      label="Upload Hero Image"
+                      description="Landscape PNG/JPG (max 5MB)"
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
@@ -499,55 +489,6 @@ Make it sound extremely premium, trustworthy, and empathetic. Emphasize that we 
                 <p className="text-xs text-slate-500 mt-0.5">Customize how your website looks</p>
               </CardHeader>
               <CardContent className="p-4 sm:p-6 space-y-5">
-                {/* Logo URL */}
-                <div className="space-y-2">
-                  <label htmlFor="logo-url" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                    <ImageIcon className="w-3.5 h-3.5 text-slate-400" /> Clinic Logo URL
-                  </label>
-                  <div className="flex gap-3 items-start">
-                    {/* Logo Preview */}
-                    <div
-                      className="w-14 h-14 rounded-2xl flex-shrink-0 border-2 border-slate-200 flex items-center justify-center text-white font-black text-xl overflow-hidden shadow-sm"
-                      style={{ backgroundColor: themeColor }}
-                    >
-                      {watchedFields.logoUrl && !logoError ? (
-                        <img
-                          src={watchedFields.logoUrl}
-                          alt={watchedFields.name || "logo"}
-                          className="w-full h-full object-cover"
-                          onError={() => setLogoError(true)}
-                          onLoad={() => setLogoError(false)}
-                        />
-                      ) : (
-                        <span>{watchedFields.name?.[0]?.toUpperCase() || "C"}</span>
-                      )}
-                    </div>
-                    <div className="flex-1 space-y-2">
-                      <Input
-                        id="logo-url"
-                        {...register("logoUrl", {
-                          onChange: () => setLogoError(false),
-                        })}
-                        placeholder="https://example.com/logo.png"
-                        className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
-                      />
-                      {errors.logoUrl && <p className="text-xs text-red-500">{errors.logoUrl.message}</p>}
-                      {logoError && watchedFields.logoUrl && (
-                        <p className="text-xs text-amber-600 font-medium flex items-center gap-1">
-                          <Info className="w-3 h-3" /> Image couldn't load. Make sure it's a direct image link (ends in .png, .jpg etc.)
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                    <p className="text-xs text-slate-500 font-medium">
-                      <strong className="text-slate-700">Tip:</strong> Upload your logo to{" "}
-                      <strong>Google Photos</strong> → Share → Copy link. Or use{" "}
-                      <strong>imgbb.com</strong> to get a direct image URL for free.
-                    </p>
-                  </div>
-                </div>
-
                 {/* Theme Color */}
                 <div className="space-y-3 pt-2 border-t border-slate-100">
                   <div>

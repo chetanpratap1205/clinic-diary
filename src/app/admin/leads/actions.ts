@@ -346,9 +346,15 @@ export async function importLeads(
     address?: string;
     source?: string;
     leadCategory?: string;
-  }>
+    state?: string;
+    degree?: string;
+    consultationFee?: number;
+    googleMapsUrl?: string;
+  }>,
+  generateShadowProfiles: boolean = false
 ) {
   const results = { added: 0, skipped: 0, errors: 0 };
+  const { clinics, availability } = await import("@/db/schema");
 
   for (const row of rows) {
     if (!row.doctorName || !row.phone) {
@@ -369,6 +375,96 @@ export async function importLeads(
       }
 
       const pillar = getSuggestedPillar(row.specialty);
+      
+      let clinicSlug = null;
+      let accessPin = null;
+
+      if (generateShadowProfiles) {
+        // Generate robust slug
+        const baseName = (row.clinicName || row.doctorName)
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "");
+        clinicSlug = `${baseName}-${Math.random().toString(36).substring(2, 6)}`;
+
+        // We use the last 6 digits of the phone as the secure PIN
+        // (Supabase requires at least 6 characters for a password)
+        accessPin = phone.slice(-6);
+        if (accessPin.length < 6) accessPin = "123456"; // fallback
+
+        // Create the shadow clinic
+        const [newClinic] = await db.insert(clinics).values({
+          slug: clinicSlug,
+          name: row.clinicName || `${row.doctorName}'s Clinic`,
+          doctorName: row.doctorName,
+          degree: row.degree || null,
+          specialty: row.specialty || "General Physician",
+          phone: phone,
+          whatsappNumber: phone,
+          address: row.address || null,
+          state: row.state || row.city || null,
+          googleMapsUrl: row.googleMapsUrl || null,
+          consultationFee: row.consultationFee || 0,
+          createdAt: new Date(),
+        }).returning();
+
+        // Create default availability (Mon-Sat, 09:00 - 17:00, 30 min slots)
+        const availabilityValues = [];
+        for (let day = 1; day <= 6; day++) { // 1=Monday, 6=Saturday
+          availabilityValues.push({
+            clinicId: newClinic.id,
+            dayOfWeek: day,
+            startTime: "09:00:00",
+            endTime: "17:00:00",
+            slotDurationMinutes: 30,
+            maxPatientsPerSlot: 1,
+            isWalkInOnly: false,
+          });
+        }
+        await db.insert(availability).values(availabilityValues);
+
+        // --- CONCIERGE ONBOARDING AUTOMATION ---
+        // Create the Supabase User instantly using the Admin API
+        const { createClient: createAdminClient } = await import("@supabase/supabase-js");
+        const supabaseAdmin = createAdminClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+
+        const dummyEmail = `doc_${phone}@naturexpress.in`;
+        
+        // Try to create the user
+        let authUserId = null;
+        const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+          email: dummyEmail,
+          password: accessPin,
+          email_confirm: true,
+          user_metadata: { has_changed_pin: false }
+        });
+
+        if (createError && createError.message.includes("already registered")) {
+          // If they exist, update their password to the new PIN
+          const { data: listData } = await supabaseAdmin.auth.admin.listUsers();
+          const existingUser = listData.users.find((u: any) => u.email === dummyEmail);
+          if (existingUser) {
+            authUserId = existingUser.id;
+            await supabaseAdmin.auth.admin.updateUserById(authUserId, { password: accessPin });
+          }
+        } else if (createData.user) {
+          authUserId = createData.user.id;
+        }
+
+        if (authUserId) {
+          // Link user to the clinic
+          const { clinicAdmins } = await import("@/db/schema");
+          
+          await db.insert(clinicAdmins).values({
+            clinicId: newClinic.id,
+            authUserId: authUserId,
+          });
+        }
+      }
+
       await db.insert(doctorLeads).values({
         doctorName: row.doctorName,
         clinicName: row.clinicName || null,
@@ -383,10 +479,14 @@ export async function importLeads(
         leadCategory: row.leadCategory || "A",
         domainPillar: pillar,
         messageSentStep: 0,
+        clinicSlug,
+        accessPin,
         updatedAt: new Date(),
       });
+
       results.added++;
-    } catch {
+    } catch (err) {
+      console.error("Row import error:", err);
       results.errors++;
     }
   }

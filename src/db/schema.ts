@@ -454,6 +454,8 @@ export const doctorLeads = pgTable("doctor_leads", {
   convertedAt: timestamp("converted_at"),
   conversionAmount: integer("conversion_amount"), // subscription amount in paise at time of conversion
   commissionPaid: boolean("commission_paid").default(false),
+  clinicSlug: text("clinic_slug"), // For quick access to booking link
+  accessPin: text("access_pin"), // 6-digit concierge pin
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => [

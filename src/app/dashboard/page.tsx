@@ -5,12 +5,10 @@ import { eq, and, gte, lte, count, lt } from "drizzle-orm";
 import { getClinicTodayDate, getClinicWeekStart, getClinicWeekEnd } from "@/lib/timezone";
 import { redirect } from "next/navigation";
 import { CopyLinkButton } from "@/components/dashboard/copy-link-button";
-import {
-  StaggerContainer,
-  FadeInUp,
-} from "@/components/dashboard/dashboard-animations";
+import { StaggerContainer, FadeInUp } from "@/components/dashboard/dashboard-animations";
 import { Greeting } from "@/components/dashboard/greeting";
 import { NowServingBanner } from "@/components/dashboard/now-serving-banner";
+import { QuickActions } from "@/components/dashboard/quick-actions";
 import { getDashboardInsight } from "@/lib/dashboard-engine";
 import { SmartInsightBanner } from "@/components/dashboard/smart-insight-banner";
 import { StatsGrid } from "@/components/dashboard/stats-grid";
@@ -184,12 +182,8 @@ export default async function DashboardPage() {
       <FadeInUp>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <Greeting displayName={displayName} />
-          <div className="flex items-center bg-white/50 border border-slate-200/60 p-1.5 rounded-xl shadow-sm backdrop-blur-sm max-w-full overflow-hidden">
-            <span className="text-xs font-semibold text-slate-500 px-3 truncate shrink" title={bookingUrl}>
-              Booking Link
-            </span>
-            <CopyLinkButton url={bookingUrl} className="h-8 text-xs bg-white hover:bg-slate-50 border-slate-200 shadow-sm shrink-0" />
-          </div>
+          
+          <QuickActions bookingUrl={bookingUrl} />
         </div>
       </FadeInUp>
 

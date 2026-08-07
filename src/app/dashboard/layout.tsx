@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getAuthUser } from "@/lib/auth";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { QuoteFooter } from "@/components/dashboard/quote-footer";
+import { ForcePasswordChangeModal } from "@/components/dashboard/force-password-change-modal";
 import type { ReactNode } from "react";
 
 export default async function DashboardLayout({
@@ -21,6 +22,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <ForcePasswordChangeModal isOpen={!authUser.hasChangedPin} />
       <Sidebar
         clinicName={authUser.clinicName}
         clinicSlug={authUser.clinicSlug}

@@ -55,8 +55,8 @@ export function getDashboardInsight(state: ClinicState): InsightBanner {
     return {
       id: "onboarding",
       variant: "info",
-      title: `Welcome to your digital clinic, ${doctorName}!`,
-      message: "Let's get your first patient booked. Share your booking link with your patients on WhatsApp.",
+      title: "Concierge Setup Complete",
+      message: "Your digital clinic is live. Share your booking link below to start taking 0% commission appointments.",
       actionText: "Share on WhatsApp",
       actionType: "whatsapp",
       actionUrl: `https://wa.me/?text=${whatsappText}`,

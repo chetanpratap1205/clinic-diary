@@ -4,11 +4,10 @@ import { useState, useTransition, useEffect, useRef } from "react";
 import { Search, Plus, UserPlus, Loader2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export function QueueQuickAdd() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -21,24 +20,7 @@ export function QueueQuickAdd() {
   const [newPhone, setNewPhone] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Auto-fill from URL parameter ?add=
-  useEffect(() => {
-    const addId = searchParams.get("add");
-    if (addId && !selectedPatient && !isCreatingNew) {
-      const fetchPatient = async () => {
-        try {
-          const res = await fetch(`/api/patients/${addId}`);
-          const data = await res.json();
-          if (data.patient) {
-            setSelectedPatient(data.patient);
-          }
-        } catch (err) {
-          console.error("Failed to auto-fetch patient:", err);
-        }
-      };
-      fetchPatient();
-    }
-  }, [searchParams, selectedPatient, isCreatingNew]);
+
 
   // Debounced Search (Instant 1+ char matching)
   useEffect(() => {
