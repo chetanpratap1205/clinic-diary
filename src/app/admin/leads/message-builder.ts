@@ -17,11 +17,11 @@ export interface LeadForMessage {
 }
 
 export const MESSAGE_CONFIG = {
-  senderName: "Govind Bansal | Sales & Marketing Head",
-  shortSenderName: "Govind Bansal",
+  senderName: "Doctor Diary Onboarding Team",
+  shortSenderName: "Doctor Diary",
   videoLink: "https://doctor.naturexpress.in/demo",
   pdfLink: "https://doctor.naturexpress.in/prospectus.pdf",
-  repName: "Govind Bansal",
+  repName: "Onboarding Team",
 };
 
 // ─── Lookup Tables (referenced by all forms & filters) ────────────────────────

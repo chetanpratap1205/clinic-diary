@@ -249,7 +249,7 @@ export function DecisionGuideModal({ onClose, open, onOpenChange }: DecisionGuid
 
         {/* Footer */}
         <div className="px-6 py-3 bg-slate-100 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500 shrink-0">
-          <span>Doctor Diary Sales Playbook &bull; Govind Bansal, Head of Sales</span>
+          <span>Doctor Diary Sales Playbook &bull; Onboarding Team</span>
           <Button size="sm" onClick={handleClose} className="bg-slate-900 hover:bg-slate-800 text-white text-xs h-8">
             Close Guide
           </Button>
