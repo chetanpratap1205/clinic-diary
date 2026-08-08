@@ -9,59 +9,66 @@ export async function GET(request: Request) {
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/'
 
-  if (code) {
-    const supabase = await createClient()
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-
-    if (!error && data?.user) {
-      let redirectPath = next
-
-      if (next === '/update-password' || next === '/reset-password') {
-        redirectPath = next
-      } else {
-        try {
-          // Check internal employees first
-          const [empRecord] = await db
-            .select({ id: employees.id, role: employees.role, isActive: employees.isActive })
-            .from(employees)
-            .where(and(eq(employees.authUserId, data.user.id), eq(employees.isActive, true)))
-            .limit(1)
-
-          if (empRecord) {
-            redirectPath = (empRecord.role === "super_admin" || empRecord.role === "area_manager") ? "/admin" : "/employee"
-          } else {
-            // Check growth partners
-            const [partnerRecord] = await db
-              .select({ id: growthPartners.id, isActive: growthPartners.isActive })
-              .from(growthPartners)
-              .where(eq(growthPartners.authUserId, data.user.id))
-              .limit(1)
-
-            if (partnerRecord && partnerRecord.isActive) {
-              redirectPath = '/field-portal'
-            }
-          }
-        } catch (err) {
-          console.error("Auth callback role lookup error:", err)
-        }
-      }
-
-      const forwardedHost = request.headers.get('x-forwarded-host')
-      const isLocalEnv = process.env.NODE_ENV === 'development'
-
-      if (isLocalEnv) {
-        return NextResponse.redirect(`${origin}${redirectPath}`)
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${redirectPath}`)
-      } else {
-        return NextResponse.redirect(`${origin}${redirectPath}`)
-      }
-    }
+  // Helper: resolve final redirect URL accounting for reverse-proxied hosts
+  function buildRedirect(path: string) {
+    const forwardedHost = request.headers.get('x-forwarded-host')
+    const isLocal = process.env.NODE_ENV === 'development'
+    if (isLocal) return `${origin}${path}`
+    if (forwardedHost) return `https://${forwardedHost}${path}`
+    return `${origin}${path}`
   }
 
-  const isPartnerFlow = next?.startsWith('/field-portal') || next?.startsWith('/partner')
-  const errorRedirect = isPartnerFlow
-    ? `${origin}/field-portal/login?error=Could not verify email`
-    : `${origin}/login?error=Could not verify email`
-  return NextResponse.redirect(errorRedirect)
+  if (!code) {
+    // No code — invalid or expired link
+    return NextResponse.redirect(buildRedirect('/login?error=link_invalid'))
+  }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
+  if (error || !data?.user) {
+    console.error('[auth/callback] exchangeCodeForSession error:', error?.message)
+    return NextResponse.redirect(buildRedirect('/login?error=link_expired'))
+  }
+
+  // ── Password reset flow ───────────────────────────────────────────────────
+  // When a doctor clicks the "Reset Password" email link, Supabase sends
+  // type=recovery. We must forward them to /update-password so they can set
+  // a new password within the active session.
+  if (next === '/update-password' || next === '/reset-password') {
+    return NextResponse.redirect(buildRedirect('/update-password'))
+  }
+
+  // ── Role-based redirect for email confirmation ────────────────────────────
+  try {
+    // Check if this is an internal employee
+    const [empRecord] = await db
+      .select({ id: employees.id, role: employees.role, isActive: employees.isActive })
+      .from(employees)
+      .where(and(eq(employees.authUserId, data.user.id), eq(employees.isActive, true)))
+      .limit(1)
+
+    if (empRecord) {
+      const empPath = (empRecord.role === 'super_admin' || empRecord.role === 'area_manager')
+        ? '/admin'
+        : '/employee'
+      return NextResponse.redirect(buildRedirect(empPath))
+    }
+
+    // Check growth partners
+    const [partnerRecord] = await db
+      .select({ id: growthPartners.id, isActive: growthPartners.isActive })
+      .from(growthPartners)
+      .where(eq(growthPartners.authUserId, data.user.id))
+      .limit(1)
+
+    if (partnerRecord?.isActive) {
+      return NextResponse.redirect(buildRedirect('/field-portal'))
+    }
+  } catch (err) {
+    console.error('[auth/callback] role lookup error:', err)
+  }
+
+  // ── Default: follow the `next` param (e.g. /onboarding for new signups) ──
+  return NextResponse.redirect(buildRedirect(next))
 }

@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 
 export default async function EmployeeLeadsPage() {
   const emp = await getAuthenticatedEmployee();
-  if (!emp) redirect("/login");
+  if (!emp) redirect("/staff-login");
 
   const leads = await getEmployeeLeads();
 

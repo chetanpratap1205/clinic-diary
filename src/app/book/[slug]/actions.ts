@@ -8,7 +8,7 @@ import { getClinicTodayDate, CLINIC_TIMEZONE } from "@/lib/timezone";
 import { toZonedTime } from "date-fns-tz";
 import { sendNotification } from "@/lib/notifications";
 import { getClinicAccessStatus } from "@/lib/subscription";
-import { sendBookingConfirmationEmail } from "@/app/actions/patient-auth";
+
 
 export async function getAvailableSlots(clinicId: string, dateStr: string) {
   try {
@@ -289,20 +289,6 @@ export async function createBooking(
         trackingUrl,
       });
 
-      // Fire Real Email Confirmation if patient entered email
-      if (patientEmail && patientEmail.trim()) {
-        sendBookingConfirmationEmail({
-          patientEmail,
-          patientName,
-          clinicName: clinic.name,
-          doctorName: clinic.doctorName,
-          appointmentDate: dateStr,
-          appointmentTime: timeStr,
-          tokenNumber: finalTokenNumber,
-          trackingUrl,
-          cancelToken: finalCancelToken,
-        });
-      }
     }
 
     return { success: true, appointmentId: finalAppointmentId };

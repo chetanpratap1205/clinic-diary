@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { DoctorLead } from "@/db/schema";
 import { AuthenticatedEmployee } from "@/lib/auth/rbac";
-import { addEmployeeLead, logEmployeeFieldVisit, updateLeadMessageStep } from "../actions";
+import { addEmployeeLead, editEmployeeLead, logEmployeeFieldVisit, updateLeadMessageStep } from "../actions";
 import {
   Search,
   PlusCircle,
@@ -14,6 +14,8 @@ import {
   Send,
   Loader2,
   FileText,
+  Copy,
+  Edit3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { generateLeadDemoUrl } from "@/app/admin/leads/message-builder";
 
 interface Props {
   leads: DoctorLead[];
@@ -32,6 +35,7 @@ export function EmployeeLeadsClient({ leads, emp }: Props) {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editModalLead, setEditModalLead] = useState<DoctorLead | null>(null);
   const [visitModalLead, setVisitModalLead] = useState<DoctorLead | null>(null);
   const [waDrawerLead, setWaDrawerLead] = useState<DoctorLead | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,6 +70,22 @@ export function EmployeeLeadsClient({ leads, emp }: Props) {
     }
   };
 
+  const handleEditSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData(e.currentTarget);
+      formData.append("id", editModalLead!.id);
+      await editEmployeeLead(formData);
+      setEditModalLead(null);
+      toast.success("Lead details updated!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update lead");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleVisitSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -88,6 +108,12 @@ export function EmployeeLeadsClient({ leads, emp }: Props) {
     } catch (err: any) {
       toast.error(err.message || "Failed to update step");
     }
+  };
+
+  const copyDemoUrl = (lead: DoctorLead) => {
+    const url = generateLeadDemoUrl(lead);
+    navigator.clipboard.writeText(url);
+    toast.success("Live Demo URL copied! 🔗");
   };
 
   return (
@@ -152,96 +178,115 @@ export function EmployeeLeadsClient({ leads, emp }: Props) {
         </div>
       </div>
 
-      {/* Leads List Grid / Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-200 flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Showing {filteredLeads.length} Doctor Leads
-          </span>
+      {/* Mobile-First Card Grid View */}
+      {filteredLeads.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-xl shadow-xs p-16 text-center text-slate-400 flex flex-col items-center gap-3">
+          <Search className="w-10 h-10 text-slate-200" />
+          <div>
+            <p className="font-medium text-slate-500">No leads found</p>
+            <p className="text-xs mt-1">Adjust your search or filters to see leads.</p>
+          </div>
         </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredLeads.map((lead) => {
+            const demoUrl = generateLeadDemoUrl(lead);
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-600">
-            <thead className="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
-              <tr>
-                <th className="p-3">Doctor & Clinic</th>
-                <th className="p-3">Contact</th>
-                <th className="p-3">Category & Step</th>
-                <th className="p-3">Status</th>
-                <th className="p-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredLeads.map((lead) => (
-                <tr key={lead.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="p-3">
-                    <p className="font-bold text-slate-900">Dr. {lead.doctorName}</p>
-                    <p className="text-[11px] font-medium text-slate-500">
+            return (
+              <div
+                key={lead.id}
+                className="flex flex-col bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden transition-all hover:shadow-md"
+              >
+                {/* Card Header */}
+                <div className="p-4 border-b border-slate-100 flex items-start justify-between gap-2 bg-slate-50/50">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-slate-900 truncate" title={lead.doctorName}>
+                      Dr. {lead.doctorName}
+                    </h3>
+                    <p className="text-xs font-medium text-slate-500 truncate mt-0.5" title={lead.clinicName || "Private Clinic"}>
                       {lead.clinicName || "Private Clinic"} · {lead.specialty || "GP"}
                     </p>
-                    <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
-                      <MapPin className="w-3 h-3 text-slate-400" /> {lead.city || "Pune"}
-                    </p>
-                  </td>
-
-                  <td className="p-3">
-                    <p className="font-mono font-bold text-slate-800 flex items-center gap-1">
-                      <Phone className="w-3 h-3 text-teal-600" /> {lead.phone}
-                    </p>
-                    {lead.email && <p className="text-[10px] text-slate-400 truncate">{lead.email}</p>}
-                  </td>
-
-                  <td className="p-3">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800">
-                      Cat {lead.leadCategory}
-                    </span>
-                    <p className="text-[10px] text-slate-500 mt-1">
-                      Outreach Step: <span className="font-bold text-teal-700">Step {lead.messageSentStep}</span>
-                    </p>
-                  </td>
-
-                  <td className="p-3">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                  </div>
+                  <div className="flex-shrink-0">
+                    <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase ${
                       lead.status === "converted" ? "bg-emerald-100 text-emerald-800" :
                       lead.status === "demo_scheduled" ? "bg-amber-100 text-amber-800" :
                       lead.status === "contacted" ? "bg-sky-100 text-sky-800" : "bg-slate-100 text-slate-700"
                     }`}>
                       {lead.status.replace("_", " ")}
                     </span>
-                  </td>
+                  </div>
+                </div>
 
-                  <td className="p-3 text-right space-x-2">
-                    <Button
-                      onClick={() => setVisitModalLead(lead)}
-                      size="sm"
-                      variant="outline"
-                      className="text-[11px] h-7 px-2 border-slate-200 hover:bg-slate-100"
-                    >
-                      <FileText className="w-3.5 h-3.5 mr-1" /> Log Visit
-                    </Button>
+                {/* Card Body */}
+                <div className="p-4 flex-1 flex flex-col gap-3">
+                  <div className="flex items-center gap-2 text-xs text-slate-600 font-mono font-bold bg-slate-50 p-2 rounded-lg">
+                    <Phone className="w-3.5 h-3.5 text-teal-600" /> {lead.phone}
+                  </div>
+                  
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {lead.city && (
+                      <span className="text-[10px] text-slate-500 flex items-center gap-0.5 bg-slate-100 px-2 py-0.5 rounded">
+                        <MapPin className="w-3 h-3" /> {lead.city}
+                      </span>
+                    )}
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800">
+                      Cat {lead.leadCategory}
+                    </span>
+                    <span className="text-[10px] text-slate-500">
+                      Step: <span className="font-bold text-teal-700">{lead.messageSentStep}</span>
+                    </span>
+                  </div>
+                </div>
 
-                    <Button
-                      onClick={() => setWaDrawerLead(lead)}
-                      size="sm"
-                      className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-[11px] h-7 px-2.5"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5 mr-1" /> WhatsApp
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+                {/* Card Actions */}
+                <div className="p-2 border-t border-slate-100 bg-slate-50 grid grid-cols-4 gap-1.5">
+                  <Button
+                    onClick={() => setEditModalLead(lead)}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 col-span-1 text-slate-600 border-slate-200 hover:bg-slate-200 p-0"
+                    title="Edit Name/Phone"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </Button>
+                  
+                  <Button
+                    onClick={() => copyDemoUrl(lead)}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 col-span-1 text-teal-700 border-teal-200 bg-teal-50 hover:bg-teal-100 p-0"
+                    title="Copy Demo Link"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </Button>
 
-              {filteredLeads.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="p-8 text-center text-slate-400">
-                    No doctor leads found matching search criteria.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                  <Button
+                    onClick={() => setWaDrawerLead(lead)}
+                    size="sm"
+                    className="h-8 col-span-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs gap-1.5 p-0"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    WhatsApp
+                  </Button>
+                </div>
+                
+                {/* Secondary Action */}
+                <div className="px-2 pb-2 bg-slate-50">
+                  <Button
+                    onClick={() => setVisitModalLead(lead)}
+                    size="sm"
+                    variant="outline"
+                    className="w-full text-[11px] h-7 border-slate-200 hover:bg-slate-200"
+                  >
+                    <FileText className="w-3.5 h-3.5 mr-1" /> Log Field Visit & Update Status
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </div>
+      )}
 
       {/* Modal: Add Doctor Lead */}
       {isAddModalOpen && (
@@ -317,6 +362,51 @@ export function EmployeeLeadsClient({ leads, emp }: Props) {
                 </Button>
                 <Button type="submit" disabled={isSubmitting} className="h-9 text-xs bg-teal-600 hover:bg-teal-500 text-white font-bold">
                   {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Lead"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Edit Doctor Lead */}
+      {editModalLead && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="font-bold text-slate-900 text-base">Edit Lead Details</h3>
+              <button onClick={() => setEditModalLead(null)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="space-y-3">
+              <div>
+                <Label className="text-xs font-bold text-slate-700">Doctor Name *</Label>
+                <Input name="doctorName" defaultValue={editModalLead.doctorName} required placeholder="e.g. Rajesh Sharma" className="h-9 text-xs mt-1" />
+              </div>
+
+              <div>
+                <Label className="text-xs font-bold text-slate-700">Clinic Name</Label>
+                <Input name="clinicName" defaultValue={editModalLead.clinicName || ""} placeholder="e.g. Sharma Heart Care Clinic" className="h-9 text-xs mt-1" />
+              </div>
+
+              <div>
+                <Label className="text-xs font-bold text-slate-700">Phone Number *</Label>
+                <Input name="phone" defaultValue={editModalLead.phone} required placeholder="9876543210" className="h-9 text-xs mt-1" />
+              </div>
+
+              <div>
+                <Label className="text-xs font-bold text-slate-700">City</Label>
+                <Input name="city" defaultValue={editModalLead.city || ""} className="h-9 text-xs mt-1" />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="outline" onClick={() => setEditModalLead(null)} className="h-9 text-xs">
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting} className="h-9 text-xs bg-teal-600 hover:bg-teal-500 text-white font-bold">
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
                 </Button>
               </div>
             </form>

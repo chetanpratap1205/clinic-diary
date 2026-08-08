@@ -12,7 +12,7 @@ export default async function EmployeeLayout({
   const emp = await getAuthenticatedEmployee();
 
   if (!emp) {
-    redirect("/login");
+    redirect("/staff-login");
   }
 
   const roleLabelMap: Record<string, string> = {

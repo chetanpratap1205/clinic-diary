@@ -26,6 +26,9 @@ import {
   Users,
   Clock,
   Globe,
+  Trash2,
+  Edit3,
+  MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,10 +57,9 @@ import { LeadDetailDrawer } from "./lead-detail-drawer";
 import { AddEditLeadModal } from "./add-edit-lead-modal";
 import { CsvImportModal } from "./csv-import-modal";
 import { DecisionGuideModal } from "./decision-guide-modal";
-import { updateLead } from "./actions";
+import { updateLead, deleteLead } from "./actions";
 import { ExportLeadsButton } from "./export-leads-button";
 import { ConvertLeadModal } from "./convert-lead-modal";
-import { LeadsKanban } from "./leads-kanban";
 
 interface LeadsClientProps {
   leads: DoctorLead[];
@@ -85,6 +87,7 @@ interface LeadsClientProps {
     city?: string;
     source?: string;
   };
+  isAdmin?: boolean;
 }
 
 export function LeadsClient({
@@ -95,13 +98,11 @@ export function LeadsClient({
   totalPages,
   currentPage,
   currentFilters,
+  isAdmin = false,
 }: LeadsClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
-
-  // View state
-  const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
 
   // Bulk selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -158,6 +159,21 @@ export function LeadsClient({
     const url = generateLeadDemoUrl(lead);
     navigator.clipboard.writeText(url);
     toast.success("Live Demo URL copied! 🔗");
+  };
+
+  const handleDeleteLead = async (leadId: string) => {
+    if (!confirm("Are you sure you want to permanently delete this lead?")) return;
+    const res = await deleteLead(leadId);
+    if (res.error) toast.error(res.error);
+    else {
+      toast.success("Lead deleted successfully.");
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(leadId);
+        return next;
+      });
+      startTransition(() => router.refresh());
+    }
   };
 
   // ─── Bulk selection helpers ─────────────────────────────────────────────────
@@ -306,28 +322,6 @@ export function LeadsClient({
             </Button>
           )}
 
-          {/* View Toggle */}
-          <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-            <button
-              onClick={() => setViewMode("table")}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1 ${
-                viewMode === "table" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-500"
-              }`}
-            >
-              <List className="w-3.5 h-3.5" />
-              Table
-            </button>
-            <button
-              onClick={() => setViewMode("kanban")}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1 ${
-                viewMode === "kanban" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-500"
-              }`}
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-              Kanban
-            </button>
-          </div>
-
           <ExportLeadsButton leads={leads} />
 
           <Button
@@ -453,201 +447,171 @@ export function LeadsClient({
         </div>
       </div>
 
-      {/* Render Kanban or Table View */}
-      {viewMode === "kanban" ? (
-        <LeadsKanban
-          leads={leads}
-          onOpenMessageDrawer={setWaDrawerLead}
-          onOpenConvertModal={setConvertModalLead}
-          onStatusChange={handleStatusChange}
-        />
+      {/* Mobile-First Card Grid View */}
+      {leads.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-xl shadow-xs p-16 text-center text-slate-400 flex flex-col items-center gap-3">
+          <Users className="w-10 h-10 text-slate-200" />
+          <div>
+            <p className="font-medium text-slate-500">No leads found</p>
+            <p className="text-xs mt-1">Add a lead or import your CSV file to get started.</p>
+          </div>
+        </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 border-b border-slate-200">
-                <tr>
-                  {/* Fix #9: Bulk select checkbox */}
-                  <th className="px-4 py-3 w-8">
-                    <button onClick={toggleSelectAll} className="text-slate-400 hover:text-teal-600">
-                      {selectedIds.size === leads.length && leads.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {leads.map((lead) => {
+            const demoUrl = generateLeadDemoUrl(lead);
+            const isConverted = lead.status === "converted";
+            const isSelected = selectedIds.has(lead.id);
+
+            const daysSinceContact = lead.lastContactedAt
+              ? differenceInDays(new Date(), new Date(lead.lastContactedAt))
+              : null;
+            const contactCold = daysSinceContact !== null && daysSinceContact >= 5;
+
+            return (
+              <div
+                key={lead.id}
+                className={`flex flex-col bg-white border rounded-xl shadow-sm overflow-hidden transition-all hover:shadow-md ${
+                  isSelected ? "border-teal-400 ring-1 ring-teal-400" : "border-slate-200"
+                }`}
+              >
+                {/* Card Header */}
+                <div className="p-3 border-b border-slate-100 flex items-start justify-between gap-2 bg-slate-50/50">
+                  <div className="flex items-start gap-2 overflow-hidden">
+                    <button onClick={() => toggleSelect(lead.id)} className="mt-0.5 text-slate-300 hover:text-teal-600 flex-shrink-0">
+                      {isSelected ? (
                         <CheckSquare className="w-4 h-4 text-teal-600" />
                       ) : (
                         <Square className="w-4 h-4" />
                       )}
                     </button>
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Doctor / Clinic</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap hidden sm:table-cell">Specialty</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap hidden md:table-cell">Source</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Priority</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Status</th>
-                  {/* Fix #12: Days Since Last Contact */}
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">Last Contact</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">Demo Link</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap hidden xl:table-cell">Step</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {leads.length === 0 ? (
-                  <tr>
-                    <td colSpan={10} className="text-center py-16 text-slate-400">
-                      <div className="flex flex-col items-center gap-3">
-                        <Users className="w-10 h-10 text-slate-200" />
-                        <div>
-                          <p className="font-medium text-slate-500">No leads found</p>
-                          <p className="text-xs mt-1">Add a lead or import your CSV file to get started.</p>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  leads.map((lead) => {
-                    const demoUrl = generateLeadDemoUrl(lead);
-                    const isConverted = lead.status === "converted";
-                    const isSelected = selectedIds.has(lead.id);
-
-                    // Fix #12: Days since last contact
-                    const daysSinceContact = lead.lastContactedAt
-                      ? differenceInDays(new Date(), new Date(lead.lastContactedAt))
-                      : null;
-                    const contactCold = daysSinceContact !== null && daysSinceContact >= 5;
-
-                    return (
-                      <tr
-                        key={lead.id}
-                        className={`hover:bg-slate-50 transition-colors group ${isSelected ? "bg-teal-50/50" : ""}`}
+                    <div className="min-w-0">
+                      <button
+                        onClick={() => setDetailDrawerLead(lead)}
+                        className="text-left hover:text-teal-700 transition-colors truncate block w-full"
                       >
-                        {/* Checkbox */}
-                        <td className="px-4 py-3 w-8">
-                          <button onClick={() => toggleSelect(lead.id)} className="text-slate-300 hover:text-teal-600">
-                            {isSelected ? (
-                              <CheckSquare className="w-4 h-4 text-teal-600" />
-                            ) : (
-                              <Square className="w-4 h-4" />
-                            )}
-                          </button>
-                        </td>
+                        <h3 className="font-bold text-slate-900 truncate" title={lead.doctorName}>
+                          {lead.doctorName}
+                        </h3>
+                        {lead.clinicName && (
+                          <p className="text-xs font-medium text-slate-500 truncate" title={lead.clinicName}>
+                            {lead.clinicName}
+                          </p>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <PriorityBadge priority={lead.priority} />
+                  </div>
+                </div>
 
-                        <td className="px-4 py-3">
-                          <button
-                            onClick={() => setDetailDrawerLead(lead)}
-                            className="text-left hover:text-teal-700 transition-colors"
-                          >
-                            <p className="font-semibold text-slate-900 group-hover:text-teal-700 truncate max-w-[180px]">
-                              {lead.doctorName}
-                            </p>
-                            {lead.clinicName && (
-                              <p className="text-xs text-slate-500 truncate max-w-[180px] mt-0.5">
-                                {lead.clinicName}
-                              </p>
-                            )}
-                            {lead.city && (
-                              <p className="text-xs text-slate-400 truncate">{lead.city}</p>
-                            )}
-                          </button>
-                        </td>
+                {/* Card Body */}
+                <div className="p-3 flex-1 flex flex-col gap-2.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {lead.specialty && (
+                      <span className="text-[10px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+                        {lead.specialty}
+                      </span>
+                    )}
+                    {lead.city && (
+                      <span className="text-[10px] text-slate-500 flex items-center gap-0.5">
+                        <MapPin className="w-3 h-3" /> {lead.city}
+                      </span>
+                    )}
+                    <SourceChannelBadge source={lead.source} />
+                  </div>
 
-                        <td className="px-4 py-3 hidden sm:table-cell">
-                          {lead.specialty ? (
-                            <span className="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded truncate max-w-[130px] block">
-                              {lead.specialty}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-slate-300">—</span>
-                          )}
-                        </td>
+                  <div className="flex items-center justify-between mt-auto pt-1">
+                    <Select
+                      value={lead.status}
+                      onValueChange={(v) => handleStatusChange(lead, v)}
+                    >
+                      <SelectTrigger className="h-7 text-xs border-slate-200 bg-slate-50 w-auto gap-1">
+                        <StatusBadge status={lead.status} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LEAD_STATUSES.map((s) => (
+                          <SelectItem key={s.value} value={s.value} className="text-xs">
+                            {s.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
-                        <td className="px-4 py-3 hidden md:table-cell">
-                          <SourceChannelBadge source={lead.source} />
-                        </td>
+                    {daysSinceContact !== null && (
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                        contactCold
+                          ? "bg-red-50 text-red-700 border-red-200"
+                          : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      }`}>
+                        {daysSinceContact === 0 ? "Today" : `${daysSinceContact}d`}
+                      </span>
+                    )}
+                  </div>
+                </div>
 
-                        <td className="px-4 py-3">
-                          <PriorityBadge priority={lead.priority} />
-                        </td>
+                {/* Card Actions */}
+                <div className="p-2 border-t border-slate-100 bg-slate-50 grid grid-cols-4 gap-1.5">
+                  <Button
+                    onClick={() => setEditLead(lead)}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 col-span-1 text-slate-600 border-slate-200 hover:bg-slate-200 p-0"
+                    title="Edit Lead"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </Button>
+                  
+                  <Button
+                    onClick={() => copyDemoUrl(lead)}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 col-span-1 text-teal-700 border-teal-200 bg-teal-50 hover:bg-teal-100 p-0"
+                    title="Copy Demo Link"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </Button>
 
-                        <td className="px-4 py-3">
-                          <Select
-                            value={lead.status}
-                            onValueChange={(v) => handleStatusChange(lead, v)}
-                          >
-                            <SelectTrigger className="h-7 text-xs border-0 bg-transparent p-0 w-auto gap-1 focus:ring-0">
-                              <StatusBadge status={lead.status} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {LEAD_STATUSES.map((s) => (
-                                <SelectItem key={s.value} value={s.value} className="text-xs">
-                                  {s.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </td>
+                  <Button
+                    onClick={() => setWaDrawerLead(lead)}
+                    size="sm"
+                    className="h-8 col-span-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs gap-1.5"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    WhatsApp
+                  </Button>
+                </div>
 
-                        {/* Fix #12: Days Since Last Contact */}
-                        <td className="px-4 py-3 hidden lg:table-cell">
-                          {daysSinceContact === null ? (
-                            <span className="text-xs text-slate-400 italic">Never</span>
-                          ) : (
-                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${
-                              contactCold
-                                ? "bg-red-50 text-red-700 border-red-200"
-                                : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                            }`}>
-                              {daysSinceContact === 0 ? "Today" : `${daysSinceContact}d ago`}
-                              {contactCold && " 🧊"}
-                            </span>
-                          )}
-                        </td>
-
-                        {/* Demo Link */}
-                        <td className="px-4 py-3 hidden lg:table-cell">
-                          <button
-                            onClick={() => copyDemoUrl(lead)}
-                            className="inline-flex items-center gap-1 text-xs text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 px-2 py-1 rounded font-semibold transition-colors"
-                            title="Copy Live Demo Link"
-                          >
-                            <Copy className="w-3 h-3" />
-                            <span>Copy Demo URL</span>
-                          </button>
-                        </td>
-
-                        <td className="px-4 py-3 hidden xl:table-cell">
-                          <StepIndicator step={lead.messageSentStep || 0} />
-                        </td>
-
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            {!isConverted && (
-                              <Button
-                                onClick={() => setConvertModalLead(lead)}
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-xs px-2 gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-50 font-semibold"
-                                title="Convert Lead to Active Clinic"
-                              >
-                                <Sparkles className="w-3 h-3 text-emerald-600" />
-                                Convert
-                              </Button>
-                            )}
-                            <Button
-                              onClick={() => setWaDrawerLead(lead)}
-                              size="sm"
-                              className="h-7 text-xs px-2.5 gap-1.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold"
-                            >
-                              <MessageCircle className="w-3 h-3" />
-                              <span>WhatsApp</span>
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
+                {/* Admin Extra Actions (Convert / Delete) */}
+                {isAdmin && (
+                  <div className="px-2 pb-2 bg-slate-50 flex items-center justify-between gap-1.5">
+                    {!isConverted ? (
+                      <Button
+                        onClick={() => setConvertModalLead(lead)}
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-[10px] flex-1 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                      >
+                        <Sparkles className="w-3 h-3 mr-1" /> Convert
+                      </Button>
+                    ) : (
+                      <div className="h-7 flex-1" />
+                    )}
+                    <Button
+                      onClick={() => handleDeleteLead(lead.id)}
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
+                      title="Delete Lead"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
                 )}
-              </tbody>
-            </table>
-          </div>
+              </div>
+            );
+          })}
         </div>
       )}
 

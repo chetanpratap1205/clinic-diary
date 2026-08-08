@@ -9,7 +9,7 @@ import { eq, desc, and, inArray } from "drizzle-orm";
 
 export default async function EmployeeDirectoryPage() {
   const emp = await getAuthenticatedEmployee();
-  if (!emp) redirect("/login");
+  if (!emp) redirect("/staff-login");
 
   const conditions = [eq(unclaimedClinics.isClaimed, false)];
 

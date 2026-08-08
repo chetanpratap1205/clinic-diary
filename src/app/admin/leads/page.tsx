@@ -47,6 +47,7 @@ export default async function LeadsPage({
         totalPages={totalPages}
         currentPage={filters.page}
         currentFilters={filters}
+        isAdmin={true}
       />
     </div>
   );

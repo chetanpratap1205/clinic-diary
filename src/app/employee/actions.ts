@@ -164,6 +164,58 @@ export async function addEmployeeLead(formData: FormData) {
   return { success: true, lead: newLead };
 }
 
+export async function editEmployeeLead(formData: FormData) {
+  const emp = await getAuthenticatedEmployee();
+  if (!emp) throw new Error("Unauthorized");
+
+  const id = formData.get("id") as string;
+  const doctorName = formData.get("doctorName") as string;
+  const clinicName = formData.get("clinicName") as string;
+  const phone = formData.get("phone") as string;
+  const city = (formData.get("city") as string) || null;
+
+  if (!id || !doctorName || !phone) {
+    throw new Error("ID, Doctor Name, and Phone are required");
+  }
+
+  const isGlobalView = emp.role === "super_admin" || emp.role === "area_manager";
+
+  // Verify lead ownership
+  const [existingLead] = await db
+    .select({ id: doctorLeads.id, assignedEmployeeId: doctorLeads.assignedEmployeeId })
+    .from(doctorLeads)
+    .where(eq(doctorLeads.id, id))
+    .limit(1);
+
+  if (!existingLead) throw new Error("Lead not found");
+  if (!isGlobalView && existingLead.assignedEmployeeId !== emp.employeeId) {
+    throw new Error("Unauthorized: You can only edit your own assigned leads.");
+  }
+
+  await db
+    .update(doctorLeads)
+    .set({
+      doctorName,
+      clinicName,
+      phone,
+      city,
+      updatedAt: new Date(),
+    })
+    .where(eq(doctorLeads.id, id));
+
+  // Log employee activity
+  await db.insert(employeeActivities).values({
+    employeeId: emp.employeeId,
+    leadId: id,
+    actionType: "lead_updated",
+    notes: `Updated lead details for: ${doctorName}`,
+  });
+
+  revalidatePath("/employee/leads");
+  revalidatePath("/admin/leads");
+  return { success: true };
+}
+
 export async function logEmployeeFieldVisit(formData: FormData) {
   const emp = await getAuthenticatedEmployee();
   if (!emp) throw new Error("Unauthorized");

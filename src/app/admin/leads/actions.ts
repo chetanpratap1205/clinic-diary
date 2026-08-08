@@ -423,46 +423,9 @@ export async function importLeads(
         }
         await db.insert(availability).values(availabilityValues);
 
-        // --- CONCIERGE ONBOARDING AUTOMATION ---
-        // Create the Supabase User instantly using the Admin API
-        const { createClient: createAdminClient } = await import("@supabase/supabase-js");
-        const supabaseAdmin = createAdminClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
-
-        const dummyEmail = `doc_${phone}@naturexpress.in`;
-        
-        // Try to create the user
-        let authUserId = null;
-        const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
-          email: dummyEmail,
-          password: accessPin,
-          email_confirm: true,
-          user_metadata: { has_changed_pin: false }
-        });
-
-        if (createError && createError.message.includes("already registered")) {
-          // If they exist, update their password to the new PIN
-          const { data: listData } = await supabaseAdmin.auth.admin.listUsers();
-          const existingUser = listData.users.find((u: any) => u.email === dummyEmail);
-          if (existingUser) {
-            authUserId = existingUser.id;
-            await supabaseAdmin.auth.admin.updateUserById(authUserId, { password: accessPin });
-          }
-        } else if (createData.user) {
-          authUserId = createData.user.id;
-        }
-
-        if (authUserId) {
-          // Link user to the clinic
-          const { clinicAdmins } = await import("@/db/schema");
-          
-          await db.insert(clinicAdmins).values({
-            clinicId: newClinic.id,
-            authUserId: authUserId,
-          });
-        }
+        // Note: We no longer auto-create Supabase users with dummy emails during CSV import.
+        // Doctors or employees will create the actual account using standard email/password 
+        // via the /signup page, and then link to this clinic.
       }
 
       await db.insert(doctorLeads).values({

@@ -7,7 +7,7 @@ import { Target, Award, TrendingUp, CheckCircle, Clock } from "lucide-react";
 
 export default async function EmployeePerformancePage() {
   const stats = await getEmployeeDashboardStats();
-  if (!stats?.emp) redirect("/login");
+  if (!stats?.emp) redirect("/staff-login");
 
   const emp = stats.emp;
   const leadTargetPct = Math.min(Math.round((stats.totalAssigned / stats.targetMonthlyLeads) * 100), 100);

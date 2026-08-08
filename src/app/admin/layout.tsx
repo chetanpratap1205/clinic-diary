@@ -14,7 +14,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  if (!user) redirect("/staff-login");
 
   const adminIds = (process.env.ADMIN_USER_IDS ?? "")
     .split(",")

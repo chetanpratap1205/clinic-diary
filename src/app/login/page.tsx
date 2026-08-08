@@ -15,20 +15,24 @@ import { motion } from "framer-motion";
 
 const AUTH_ERROR_MAP: Record<string, string> = {
   "Invalid login credentials": "Incorrect email or password. Please try again.",
-  "Email not confirmed":
-    "Please verify your email address before signing in. Check your inbox.",
-  "User not found": "No account found with this email. Please sign up.",
+  "Email not confirmed": "Please check your email and click the verification link first.",
+  "User not found": "No account found with this email. Please sign up first.",
   "Too many requests": "Too many attempts. Please wait a few minutes and try again.",
+  "Invalid email or password": "Incorrect email or password. Please try again.",
 };
 
 function mapAuthError(message: string): string {
-  return AUTH_ERROR_MAP[message] ?? "Sign in failed. Please try again.";
+  for (const [key, val] of Object.entries(AUTH_ERROR_MAP)) {
+    if (message.includes(key)) return val;
+  }
+  return "Sign in failed. Please try again.";
 }
 
 export default function LoginPage() {
   const router = useRouter();
-  const [phone, setPhone] = useState("");
-  const [pin, setPin] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
 
@@ -36,32 +40,38 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const cleanPhone = phone.replace(/\D/g, "").slice(-10);
-      if (cleanPhone.length !== 10) {
-        toast.error("Please enter a valid 10-digit mobile number.");
+      if (!email || !password) {
+        toast.error("Please enter both email and password.");
         setLoading(false);
         return;
       }
 
-      const dummyEmail = `doc_${cleanPhone}@naturexpress.in`;
-
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: dummyEmail,
-        password: pin,
+        email: email.trim(),
+        password,
       });
 
       if (signInError) {
         toast.error(mapAuthError(signInError.message));
         return;
       }
-      
-      toast.success("Welcome to Clinic Diary!");
-      
+
+      // Check where this user belongs
       let redirectPath = "/dashboard";
       try {
         redirectPath = await getLoginRedirectPath();
       } catch (err) {}
-      
+
+      // STRICT SEPARATION: If this user is internal staff or admin,
+      // sign them out immediately and redirect them to the Staff Console.
+      if (redirectPath === "/admin" || redirectPath === "/employee") {
+        await supabase.auth.signOut();
+        toast.error("Staff & Admin must use the Staff Console to sign in.");
+        setTimeout(() => { window.location.href = "/staff-login"; }, 1500);
+        return;
+      }
+
+      toast.success("Welcome to Clinic Diary!");
       window.location.href = redirectPath;
     } catch {
       toast.error("An unexpected error occurred. Please try again.");
@@ -152,40 +162,59 @@ export default function LoginPage() {
 
             <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-1.5">
-                <Label htmlFor="phone" className="text-sm font-bold text-slate-300 ml-1">Mobile Number</Label>
+                <Label htmlFor="email" className="text-sm font-bold text-slate-300 ml-1">Email Address</Label>
                 <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="Enter 10-digit mobile number"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="doctor@clinic.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
+                  autoComplete="email"
+                  inputMode="email"
                   className="h-14 text-base rounded-2xl bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:bg-white/10 focus:border-emerald-500/50 focus:ring-emerald-500/20 transition-all px-5"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between px-1">
-                  <Label htmlFor="pin" className="text-sm font-bold text-slate-300">Access PIN / Password</Label>
+                  <Label htmlFor="password" className="text-sm font-bold text-slate-300">Password</Label>
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
+                  >
+                    Forgot password?
+                  </Link>
                 </div>
-                <Input
-                  id="pin"
-                  type="password"
-                  placeholder="Enter your PIN"
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value)}
-                  required
-                  className="h-14 text-center tracking-[0.5em] text-2xl font-black rounded-2xl bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:bg-white/10 focus:border-emerald-500/50 focus:ring-emerald-500/20 transition-all px-5"
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                    className="h-14 pr-12 text-base rounded-2xl bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:bg-white/10 focus:border-emerald-500/50 focus:ring-emerald-500/20 transition-all px-5"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors p-1"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
 
               <div className="pt-4">
                 <Button
                   type="submit"
                   className="w-full h-14 bg-emerald-500 hover:bg-emerald-400 text-white font-black text-lg rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all active:scale-[0.98]"
-                  disabled={loading || phone.length < 10 || pin.length < 6}
+                  disabled={loading || !email.includes("@") || password.length < 6}
                 >
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Secure Login"}
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign In"}
                 </Button>
               </div>
             </form>
