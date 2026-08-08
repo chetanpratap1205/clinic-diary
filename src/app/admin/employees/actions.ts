@@ -5,6 +5,7 @@ import { employees } from "@/db/schema";
 import { getAuthenticatedEmployee } from "@/lib/auth/rbac";
 import { eq, desc, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function getAllEmployees() {
   const admin = await getAuthenticatedEmployee();
@@ -28,17 +29,31 @@ export async function addEmployee(formData: FormData) {
 
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
   const phone = formData.get("phone") as string;
-  const authUserId = formData.get("authUserId") as string; // Supabase auth UUID
   const role = formData.get("role") as string;
   const department = formData.get("department") as string;
   const territoryCitiesRaw = (formData.get("territoryCities") as string) || "";
   const targetMonthlyLeads = parseInt((formData.get("targetMonthlyLeads") as string) || "30", 10);
   const targetMonthlyConversions = parseInt((formData.get("targetMonthlyConversions") as string) || "5", 10);
 
-  if (!name || !email || !authUserId) {
-    throw new Error("Name, Email, and Auth User ID are required");
+  if (!name || !email || !password) {
+    throw new Error("Name, Email, and Initial Password are required");
   }
+
+  // 1. Create the user in Supabase Auth using the Admin API
+  const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+  });
+
+  if (authError || !authData.user) {
+    console.error("Supabase Admin Auth Error:", authError);
+    throw new Error(authError?.message || "Failed to create user in Auth system.");
+  }
+
+  const authUserId = authData.user.id;
 
   const territoryCities = territoryCitiesRaw
     .split(",")

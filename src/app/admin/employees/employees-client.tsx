@@ -173,9 +173,9 @@ export function EmployeesClient({ staff }: Props) {
               </div>
 
               <div>
-                <Label className="text-xs font-bold text-slate-700">Supabase Auth User UUID *</Label>
-                <Input name="authUserId" required placeholder="Paste user UUID from Supabase Auth" className="h-9 text-xs mt-1 font-mono" />
-                <p className="text-[10px] text-slate-400 mt-0.5">Created when user signs up in Supabase Auth via email.</p>
+                <Label className="text-xs font-bold text-slate-700">Initial Password *</Label>
+                <Input name="password" required type="text" placeholder="e.g. Staff@123" className="h-9 text-xs mt-1" />
+                <p className="text-[10px] text-slate-400 mt-0.5">The employee will use this to log in for the first time.</p>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
