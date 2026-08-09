@@ -7,6 +7,7 @@ import {
   appointments,
   clinicServices,
   clinicGallery,
+  doctorLeads,
 } from "@/db/schema";
 import { eq, desc, avg, count } from "drizzle-orm";
 import { notFound } from "next/navigation";
@@ -18,6 +19,7 @@ import { BottomActionBar } from "./bottom-action-bar";
 import { ClinicLogo } from "./clinic-logo";
 import { FAQAccordion } from "./faq-accordion";
 import Link from "next/link";
+import { trackLeadView } from "@/app/admin/leads/actions";
 import {
   MapPin,
   Phone,
@@ -56,6 +58,21 @@ const Instagram = ({ className }: { className?: string }) => (
 const Facebook = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+  </svg>
+);
+
+const YouTube = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z" />
+    <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" />
+  </svg>
+);
+
+const GlobeIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <circle cx="12" cy="12" r="10" />
+    <line x1="2" x2="22" y1="12" y2="12" />
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
   </svg>
 );
 
@@ -135,8 +152,67 @@ export default async function BookingPage({
   const lang: Language = sp?.lang === "hi" ? "hi" : "en";
   const t = DICTIONARY[lang];
 
-  const [clinic] = await db.select().from(clinics).where(eq(clinics.slug, slug)).limit(1);
-  if (!clinic) notFound();
+  let [clinic] = await db.select().from(clinics).where(eq(clinics.slug, slug)).limit(1);
+  let isLead = false;
+
+  if (!clinic) {
+    const [lead] = await db.select().from(doctorLeads).where(eq(doctorLeads.clinicSlug, slug)).limit(1);
+    if (!lead) {
+      notFound();
+    }
+    
+    // Create a robust mock clinic perfectly matching the UI expectations
+    clinic = {
+      id: lead.id, // Re-using lead ID so components expecting an ID won't crash
+      slug: lead.clinicSlug || slug,
+      name: lead.clinicName || `${lead.doctorName}'s Clinic`,
+      doctorName: lead.doctorName,
+      degree: lead.degree || null,
+      specialty: lead.specialty || "General Physician",
+      phone: lead.phone,
+      logoUrl: lead.logoUrl || null,
+      consultationFee: lead.consultationFee || 0,
+      freeFollowupDays: 0,
+      averageConsultationMinutes: 15,
+      themeColor: "#0ea5e9",
+      address: lead.address || null,
+      billingAddress: null,
+      state: lead.city || null,
+      gstin: null,
+      googleMapsUrl: null,
+      about: lead.about || null,
+      heroImageUrl: null,
+      instagramUrl: null,
+      whatsappNumber: lead.phone,
+      facebookUrl: null,
+      referredBy: null,
+      youtubeUrl: null,
+      websiteUrl: null,
+      vitalsPresets: [],
+      complaintPresets: [],
+      diagnosisPresets: [],
+      treatmentPresets: [],
+      createdAt: lead.createdAt,
+    };
+    isLead = true;
+  }
+
+  // Capture lead timings text (e.g. "Mon-Sat 10:00 AM – 8:00 PM")
+  // This is separate from availability table records which don't exist for leads.
+  let leadTimings: string | null = null;
+  if (isLead) {
+    // We need to re-fetch to get timings since mock clinic object doesn't carry it cleanly
+    const [leadForTimings] = await db
+      .select({ timings: doctorLeads.timings })
+      .from(doctorLeads)
+      .where(eq(doctorLeads.clinicSlug, slug))
+      .limit(1);
+    leadTimings = leadForTimings?.timings ?? null;
+  }
+
+  // Fire-and-forget view tracking — never blocks the render
+  if (isLead) void trackLeadView(slug);
+
 
   const themeColor = clinic.themeColor ?? "#0ea5e9";
   const specialtyConfig = getSpecialtyConfig(clinic.specialty);
@@ -174,11 +250,25 @@ export default async function BookingPage({
   ]);
 
   const stats = statsResult[0];
-  const averageRating = stats?.averageRating ? Number(stats.averageRating).toFixed(1) : "4.9";
-  const totalReviews = stats?.totalReviews || 124;
+  const averageRating = stats?.averageRating ? Number(stats.averageRating).toFixed(1) : null;
+  const totalReviews = stats?.totalReviews || 0;
 
   const workingDays = [...new Set(availRecords.map((a) => a.dayOfWeek))];
   const closedDates = [...new Set(overrideRecords.filter((o) => o.isClosed).map((o) => o.date as string))];
+
+  const daysMap = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const schedule = availRecords.reduce((acc, curr) => {
+    const day = daysMap[curr.dayOfWeek];
+    if (!acc[day]) acc[day] = [];
+    const [startH, startM] = curr.startTime.split(":");
+    const [endH, endM] = curr.endTime.split(":");
+    const startObj = new Date(); startObj.setHours(Number(startH), Number(startM));
+    const endObj = new Date(); endObj.setHours(Number(endH), Number(endM));
+    const formatTime = (d: Date) => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    acc[day].push(`${formatTime(startObj)} - ${formatTime(endObj)}`);
+    return acc;
+  }, {} as Record<string, string[]>);
+  const hasSchedule = Object.keys(schedule).length > 0;
 
   // Point 1, 14, 19, 29: Unified Google Maps intent and embed URL for robust native app handoff
   const searchQuery = encodeURIComponent(`${clinic.name}, ${clinic.address || ""}`.trim());
@@ -384,12 +474,16 @@ export default async function BookingPage({
                   </div>
 
                   <div 
-                    className="w-32 h-32 rounded-full flex items-center justify-center shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] mb-5 relative"
+                    className="w-32 h-32 rounded-full flex items-center justify-center shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] mb-5 relative overflow-hidden"
                     style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}dd)`, border: '4px solid white' }}
                   >
-                    <span className="text-5xl font-black text-white tracking-widest drop-shadow-md">
-                      {stripDr(clinic.doctorName).charAt(0).toUpperCase()}
-                    </span>
+                    {isSafeImageUrl(clinic.logoUrl) ? (
+                      <img src={clinic.logoUrl!} alt={displayDoctorName} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-5xl font-black text-white tracking-widest drop-shadow-md">
+                        {stripDr(clinic.doctorName).charAt(0).toUpperCase()}
+                      </span>
+                    )}
                   </div>
 
                   <div className="space-y-1 relative z-10">
@@ -410,12 +504,16 @@ export default async function BookingPage({
               <div className="lg:hidden flex flex-col items-center text-center space-y-4">
                 {/* Doctor Avatar */}
                 <div 
-                  className="w-24 h-24 rounded-full flex items-center justify-center shadow-[0_10px_30px_-5px_rgba(0,0,0,0.2)] relative"
+                  className="w-24 h-24 rounded-full flex items-center justify-center shadow-[0_10px_30px_-5px_rgba(0,0,0,0.2)] relative overflow-hidden"
                   style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}dd)`, border: '4px solid white' }}
                 >
-                  <span className="text-4xl font-black text-white tracking-widest">
-                    {stripDr(clinic.doctorName).charAt(0).toUpperCase()}
-                  </span>
+                  {isSafeImageUrl(clinic.logoUrl) ? (
+                    <img src={clinic.logoUrl!} alt={displayDoctorName} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-4xl font-black text-white tracking-widest">
+                      {stripDr(clinic.doctorName).charAt(0).toUpperCase()}
+                    </span>
+                  )}
                   <div className="absolute -bottom-1 -right-1 bg-white p-1 rounded-full shadow-md">
                     <BadgeCheck className="w-5 h-5 text-emerald-500 fill-emerald-100" />
                   </div>
@@ -521,7 +619,15 @@ export default async function BookingPage({
                 className="bg-white/95 backdrop-blur-xl rounded-[2.5rem] border border-white/80 p-3 sm:p-4 relative overflow-hidden" 
                 style={{ boxShadow: `0 30px 70px -15px ${themeColor}25, 0 0 0 1px rgba(255,255,255,0.8) inset` }}
               >
-                <BookingClient clinic={clinic} workingDays={workingDays} closedDates={closedDates} lexicon={lexicon} lang={lang} />
+                <BookingClient
+                  clinic={clinic}
+                  workingDays={workingDays}
+                  closedDates={closedDates}
+                  lexicon={lexicon}
+                  lang={lang}
+                  isLead={isLead}
+                  leadTimings={leadTimings ?? undefined}
+                />
               </div>
             </div>
             
@@ -566,35 +672,34 @@ export default async function BookingPage({
              </div>
              
              {/* Point 26: Operating Hours Card */}
-             <div className="w-full md:w-64 flex flex-col gap-4 flex-shrink-0 relative z-10">
-               <div className="bg-slate-900 p-5 rounded-3xl text-white flex flex-col justify-between flex-1 shadow-xl relative overflow-hidden group/card border border-slate-800">
-                 <div className="flex items-center gap-2 mb-3">
-                   <Clock className="w-5 h-5 text-emerald-400" />
-                   <span className="text-xs font-black uppercase tracking-wider text-slate-200">Operating Schedule</span>
-                 </div>
-                 <div className="space-y-1.5 text-xs text-slate-300 font-medium">
-                   <p className="flex justify-between font-semibold"><span className="text-slate-400">Mon - Sat:</span> <span>09:00 AM - 08:00 PM</span></p>
-                   <p className="flex justify-between font-semibold"><span className="text-slate-400">Sunday:</span> <span className="text-amber-400">On Appointment</span></p>
-                 </div>
-                 <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-emerald-400 font-bold">
-                   <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Live Queue Active</span>
-                   <span>Fast OPD</span>
+             {hasSchedule && (
+               <div className="w-full md:w-64 flex flex-col gap-4 flex-shrink-0 relative z-10">
+                 <div className="bg-slate-900 p-5 rounded-3xl text-white flex flex-col justify-between flex-1 shadow-xl relative overflow-hidden group/card border border-slate-800">
+                   <div className="flex items-center gap-2 mb-3">
+                     <Clock className="w-5 h-5 text-emerald-400" />
+                     <span className="text-xs font-black uppercase tracking-wider text-slate-200">Operating Schedule</span>
+                   </div>
+                   <div className="space-y-1.5 text-xs text-slate-300 font-medium max-h-[140px] overflow-y-auto pr-2 custom-scrollbar">
+                     {daysMap.map(day => (
+                       schedule[day] ? (
+                         <div key={day} className="flex justify-between font-semibold border-b border-slate-800 pb-1 mb-1 last:border-0 last:pb-0 last:mb-0">
+                           <span className="text-slate-400">{day.substring(0, 3)}:</span> 
+                           <span className="text-right text-[10px] sm:text-xs">
+                             {schedule[day].map((t, i) => <div key={i}>{t}</div>)}
+                           </span>
+                         </div>
+                       ) : null
+                     ))}
+                   </div>
+                   <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-emerald-400 font-bold">
+                     <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Live Queue Active</span>
+                     <span>Fast Booking</span>
+                   </div>
                  </div>
                </div>
-             </div>
+             )}
           </div>
         </ScrollReveal>
-
-        {/* Point 27: Prominent Emergency Disclaimer Banner */}
-        <div className="bg-amber-500/10 border border-amber-500/20 text-amber-900 rounded-3xl p-4 flex items-center gap-3.5 text-xs font-bold shadow-sm">
-          <div className="p-2 rounded-2xl bg-amber-500/20 text-amber-700 shrink-0">
-            <Activity className="w-5 h-5" />
-          </div>
-          <div>
-            <span className="uppercase tracking-wider font-black block text-[10px] text-amber-700">Medical Emergency Disclaimer</span>
-            <span>Do not book online tokens for urgent emergencies. For life-threatening symptoms, please dial 112 or visit the nearest hospital emergency room immediately.</span>
-          </div>
-        </div>
 
         {/* 10/10 Conditions & Tappable Expertise Cards (Point 18) */}
         {specialtyConfig.commonTreatments && specialtyConfig.commonTreatments.length > 0 && (
@@ -602,25 +707,21 @@ export default async function BookingPage({
             <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 border border-white/80 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)]">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{t.conditionsTreated}</h2>
-                  <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">Tap any condition to select treatment and view available slots.</p>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {specialtyConfig.commonTreatments.map((treatment, i) => (
-                  <a 
+                  <div 
                     key={i} 
-                    href={`#booking?service=${encodeURIComponent(treatment)}`}
-                    className="group flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 active:scale-95"
+                    className="group flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm transition-all duration-300"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:scale-110 transition-transform" style={{ color: themeColor }}>
+                      <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100" style={{ color: themeColor }}>
                         <CheckCircle2 className="w-4 h-4" />
                       </div>
-                      <span className="text-sm font-extrabold text-slate-800 group-hover:text-slate-900">{treatment}</span>
+                      <span className="text-sm font-extrabold text-slate-800">{treatment}</span>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-all" style={{ color: themeColor }} />
-                  </a>
+                  </div>
                 ))}
               </div>
             </div>
@@ -637,29 +738,29 @@ export default async function BookingPage({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div className="flex flex-col items-center text-center gap-3 p-5 rounded-3xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-blue-50 border border-blue-100 shadow-sm">
-                  <Microscope className="w-7 h-7 text-blue-600" />
+                  <Timer className="w-7 h-7 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-slate-900 text-sm">Advanced Technology</h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">State-of-the-art diagnostic equipment for high precision treatment plans.</p>
+                  <h3 className="font-extrabold text-slate-900 text-sm">Book in 20 Seconds</h3>
+                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">Select date, time, and enter your name & number. Instant confirmation.</p>
                 </div>
               </div>
               <div className="flex flex-col items-center text-center gap-3 p-5 rounded-3xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-emerald-50 border border-emerald-100 shadow-sm">
-                  <Timer className="w-7 h-7 text-emerald-600" />
+                  <Activity className="w-7 h-7 text-emerald-600" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-slate-900 text-sm">Zero-Wait Tokens</h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">Track live queue from home. Arrive right when doctor is ready to see you.</p>
+                  <h3 className="font-extrabold text-slate-900 text-sm">See Your Queue Live</h3>
+                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">Track your real-time turn from home. Arrive when the doctor is ready.</p>
                 </div>
               </div>
               <div className="flex flex-col items-center text-center gap-3 p-5 rounded-3xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-pink-50 border border-pink-100 shadow-sm">
-                  <HeartPulse className="w-7 h-7 text-pink-600" />
+                  <ShieldCheck className="w-7 h-7 text-pink-600" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-slate-900 text-sm">Painless & Ethical</h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">Highest standards of clinical hygiene, ethical care, and zero hidden charges.</p>
+                  <h3 className="font-extrabold text-slate-900 text-sm">Zero Booking Fee</h3>
+                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">100% free to book. Pay the consultation fee directly at the clinic.</p>
                 </div>
               </div>
             </div>
@@ -754,7 +855,7 @@ export default async function BookingPage({
               )}
 
               {/* Social Icons */}
-              {(clinic.whatsappNumber || clinic.instagramUrl || clinic.facebookUrl) && (
+              {(clinic.whatsappNumber || clinic.instagramUrl || (clinic as any).youtubeUrl || (clinic as any).websiteUrl) && (
                 <div className="pt-4 border-t border-slate-100 flex gap-3">
                   {clinic.whatsappNumber && (
                     <a href={`https://wa.me/${String(clinic.whatsappNumber).replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" aria-label="Contact on WhatsApp" className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[#25D366] hover:bg-emerald-50 transition-colors shadow-sm">
@@ -766,9 +867,14 @@ export default async function BookingPage({
                       <Instagram className="w-5 h-5" />
                     </a>
                   )}
-                  {clinic.facebookUrl && (
-                    <a href={clinic.facebookUrl} target="_blank" rel="noopener noreferrer" aria-label="Follow on Facebook" className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-blue-500 hover:bg-blue-50 transition-colors shadow-sm">
-                      <Facebook className="w-5 h-5" />
+                  {(clinic as any).youtubeUrl && (
+                    <a href={(clinic as any).youtubeUrl} target="_blank" rel="noopener noreferrer" aria-label="Subscribe on YouTube" className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors shadow-sm">
+                      <YouTube className="w-5 h-5" />
+                    </a>
+                  )}
+                  {(clinic as any).websiteUrl && (
+                    <a href={(clinic as any).websiteUrl} target="_blank" rel="noopener noreferrer" aria-label="Visit Website" className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-emerald-500 hover:bg-emerald-50 transition-colors shadow-sm">
+                      <GlobeIcon className="w-5 h-5" />
                     </a>
                   )}
                 </div>
@@ -789,12 +895,12 @@ export default async function BookingPage({
           <div className="space-y-6">
             
             {/* Services */}
-            <ScrollReveal delay={0.2}>
-              <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
-                <h2 className="text-sm font-black text-slate-800 flex items-center gap-2 mb-4">
-                  <Sparkles className="w-4 h-4 text-slate-400" /> Treatments & Services
-                </h2>
-                {services.length > 0 ? (
+            {services.length > 0 && (
+              <ScrollReveal delay={0.2}>
+                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+                  <h2 className="text-sm font-black text-slate-800 flex items-center gap-2 mb-4">
+                    <Sparkles className="w-4 h-4 text-slate-400" /> Treatments & Services
+                  </h2>
                   <div className="space-y-3">
                     {services.map((service) => (
                       <div key={service.id} className="flex justify-between items-center p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:-translate-y-0.5 hover:shadow-sm transition-all">
@@ -807,91 +913,55 @@ export default async function BookingPage({
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 border-dashed text-center">
-                    <p className="text-sm font-medium text-slate-500">
-                      Comprehensive {specialtyConfig.displayName.toLowerCase()} treatments available. Please consult the doctor for a tailored plan.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </ScrollReveal>
+                </div>
+              </ScrollReveal>
+            )}
 
             {/* Patient Reviews */}
-            <ScrollReveal delay={0.3}>
-              <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 relative overflow-hidden">
-                <h2 className="text-sm font-black text-slate-800 flex items-center gap-2 mb-4">
-                  <Star className="w-4 h-4 text-slate-400" /> {t.reviewsLabel}
-                </h2>
-                {totalReviews > 0 ? (
-                  <>
-                    <div className="flex items-center gap-4 mb-5 p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                      <div className="text-4xl font-black text-slate-900 tracking-tighter">{averageRating}</div>
-                      <div>
-                        <div className="flex gap-1 mb-1">
-                          {[1, 2, 3, 4, 5].map((i) => (
-                            <Star key={i} className={`w-4 h-4 ${i <= Math.round(Number(averageRating)) ? "fill-amber-400 text-amber-400" : "text-slate-200"}`} />
-                          ))}
-                        </div>
-                        <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">{totalReviews} {t.verifiedReviews}</p>
+            {totalReviews > 0 && (
+              <ScrollReveal delay={0.3}>
+                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 relative overflow-hidden">
+                  <h2 className="text-sm font-black text-slate-800 flex items-center gap-2 mb-4">
+                    <Star className="w-4 h-4 text-slate-400" /> {t.reviewsLabel}
+                  </h2>
+                  <div className="flex items-center gap-4 mb-5 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                    <div className="text-4xl font-black text-slate-900 tracking-tighter">{averageRating}</div>
+                    <div>
+                      <div className="flex gap-1 mb-1">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                          <Star key={i} className={`w-4 h-4 ${i <= Math.round(Number(averageRating)) ? "fill-amber-400 text-amber-400" : "text-slate-200"}`} />
+                        ))}
+                      </div>
+                      <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">{totalReviews} {t.verifiedReviews}</p>
+                    </div>
+                  </div>
+                  
+                  {clinicReviews.length > 0 && (
+                    <div className="relative">
+                      <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+                      <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+                      <div className="flex overflow-x-auto snap-x gap-4 pb-4 -mx-6 px-6 hide-scrollbar">
+                        {clinicReviews.map((review) => (
+                          <div key={review.id} className="snap-center shrink-0 w-[260px] bg-white border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-transform rounded-2xl p-5 flex flex-col justify-between cursor-default">
+                            {review.comment ? (
+                              <p className="text-[13px] text-slate-600 font-medium leading-relaxed mb-4 line-clamp-4">"{review.comment}"</p>
+                            ) : (
+                              <p className="text-[13px] text-slate-400 font-medium italic mb-4">{t.leftPositiveRating}</p>
+                            )}
+                            <div className="flex items-center gap-2 mt-auto pt-4 border-t border-slate-50">
+                              <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-black shadow-sm" style={{ backgroundColor: review.source === "google" ? "#4285F4" : themeColor }}>
+                                {review.patientName?.charAt(0).toUpperCase() || "G"}
+                              </div>
+                              <span className="text-xs font-bold text-slate-800">{review.patientName?.split(" ")[0] || "Google User"}</span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    
-                    {clinicReviews.length > 0 && (
-                      <div className="relative">
-                        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
-                        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
-                        <div className="flex overflow-x-auto snap-x gap-4 pb-4 -mx-6 px-6 hide-scrollbar">
-                          {clinicReviews.map((review) => (
-                            <div key={review.id} className="snap-center shrink-0 w-[260px] bg-white border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-transform rounded-2xl p-5 flex flex-col justify-between cursor-default">
-                              {review.comment ? (
-                                <p className="text-[13px] text-slate-600 font-medium leading-relaxed mb-4 line-clamp-4">"{review.comment}"</p>
-                              ) : (
-                                <p className="text-[13px] text-slate-400 font-medium italic mb-4">{t.leftPositiveRating}</p>
-                              )}
-                              <div className="flex items-center gap-2 mt-auto pt-4 border-t border-slate-50">
-                                <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-black shadow-sm" style={{ backgroundColor: review.source === "google" ? "#4285F4" : themeColor }}>
-                                  {review.patientName?.charAt(0).toUpperCase() || "G"}
-                                </div>
-                                <span className="text-xs font-bold text-slate-800">{review.patientName?.split(" ")[0] || "Google User"}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 border-dashed text-center">
-                    <p className="text-sm font-medium text-slate-500 mb-2">No reviews yet.</p>
-                    <p className="text-xs text-slate-400">Be the first to review your experience after your visit.</p>
-                  </div>
-                )}
-              </div>
-            </ScrollReveal>
-
-            {/* Clinic Gallery */}
-            <ScrollReveal delay={0.4}>
-              <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
-                <h2 className="text-sm font-black text-slate-800 flex items-center gap-2 mb-4">
-                  <ImageIcon className="w-4 h-4 text-slate-400" /> {t.clinicGallery || "Clinic Gallery"}
-                </h2>
-                {gallery.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-3">
-                    {gallery.map((img) => (
-                      <div key={img.id} className="aspect-square rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
-                        <img src={img.url} alt="Clinic Gallery" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 border-dashed text-center">
-                    <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-slate-500">Visit our clinic to see our modern facilities in person.</p>
-                  </div>
-                )}
-              </div>
-            </ScrollReveal>
+                  )}
+                </div>
+              </ScrollReveal>
+            )}
 
           </div>
 
@@ -934,9 +1004,6 @@ export default async function BookingPage({
             </div>
           </div>
           <div className="text-center space-y-2 border-t border-slate-100 pt-6">
-            <p className="text-[10px] font-semibold text-slate-400 leading-relaxed max-w-3xl mx-auto">
-              {t.disclaimerText(clinic.name)}
-            </p>
             <p className="text-[10px] font-bold text-slate-400">
               © {new Date().getFullYear()} {clinic.name}. {t.allRightsReserved}
             </p>

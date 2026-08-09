@@ -92,7 +92,12 @@ export function generateLeadDemoUrl(lead: {
   clinicName?: string | null;
   specialty?: string | null;
   city?: string | null;
+  clinicSlug?: string | null;
 }): string {
+  if (lead.clinicSlug) {
+    return `https://doctor.naturexpress.in/book/${lead.clinicSlug}`;
+  }
+
   let docName = lead.doctorName || "Doctor";
   // Remove "dr." prefix if it exists before sluggifying, so we can consistently add it
   if (docName.toLowerCase().startsWith("dr. ")) {

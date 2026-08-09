@@ -42,10 +42,10 @@ export function HeroRedesign() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="text-[34px] sm:text-[44px] lg:text-[48px] xl:text-[54px] font-black text-[#0B132B] leading-[1.08] tracking-tight mb-3 sm:mb-4"
+              className="text-[26px] min-[375px]:text-[30px] sm:text-[44px] lg:text-[48px] xl:text-[54px] font-black text-[#0B132B] leading-[1.1] tracking-tight mb-3 sm:mb-4"
             >
-              Stop Sharing Patients.<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00B7A8] via-emerald-600 to-[#00897B]">
+              <span className="block">Stop Sharing Patients.</span>
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#00B7A8] via-emerald-600 to-[#00897B]">
                 Build a Premium Clinic.
               </span>
             </motion.h1>
@@ -57,7 +57,7 @@ export function HeroRedesign() {
               transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
               className="text-sm sm:text-base text-slate-600 mb-5 max-w-lg leading-relaxed font-medium"
             >
-              Deliver a 5-star digital experience that keeps your practice independent. Get your branded patient app, zero-chaos queue management, and automated WhatsApp follow-ups.
+              Marketplaces rent you patients. We help you own them. Launch your clinic's personal app, eliminate waiting room chaos, and keep your practice 100% independent.
             </motion.p>
 
             {/* CTAs */}
@@ -128,10 +128,10 @@ export function HeroRedesign() {
               className="flex flex-col sm:flex-row items-center gap-3 pt-3 border-t border-slate-200/80 w-full justify-center lg:justify-start"
             >
               <div className="flex -space-x-2.5">
-                <Image src="https://i.pravatar.cc/100?img=11" alt="Doctor" width={32} height={32} unoptimized className="rounded-full border-2 border-white shadow-sm z-30" />
-                <Image src="https://i.pravatar.cc/100?img=32" alt="Doctor" width={32} height={32} unoptimized className="rounded-full border-2 border-white shadow-sm z-20" />
-                <Image src="https://i.pravatar.cc/100?img=12" alt="Doctor" width={32} height={32} unoptimized className="rounded-full border-2 border-white shadow-sm z-10" />
-                <Image src="https://i.pravatar.cc/100?img=47" alt="Doctor" width={32} height={32} unoptimized className="rounded-full border-2 border-white shadow-sm z-0" />
+                <Image src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=100&auto=format&fit=crop" alt="Doctor" width={32} height={32} unoptimized className="rounded-full border-2 border-white shadow-sm z-30 object-cover" />
+                <Image src="https://images.unsplash.com/photo-1594824436998-058b23c93e48?q=80&w=100&auto=format&fit=crop" alt="Doctor" width={32} height={32} unoptimized className="rounded-full border-2 border-white shadow-sm z-20 object-cover" />
+                <Image src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=100&auto=format&fit=crop" alt="Doctor" width={32} height={32} unoptimized className="rounded-full border-2 border-white shadow-sm z-10 object-cover" />
+                <Image src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=100&auto=format&fit=crop" alt="Doctor" width={32} height={32} unoptimized className="rounded-full border-2 border-white shadow-sm z-0 object-cover" />
               </div>
               <div className="text-left">
                 <div className="flex items-center gap-1">
@@ -179,10 +179,10 @@ export function HeroRedesign() {
             >
               <div className="flex items-center gap-1.5 mb-0.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-extrabold text-[#0B132B] uppercase tracking-wider">Live App Sync</span>
+                <span className="text-[10px] font-extrabold text-[#0B132B] uppercase tracking-wider">Zero Chaos</span>
               </div>
-              <div className="text-[11px] font-bold text-slate-800">Queue: 3 Waiting</div>
-              <div className="text-[9px] text-slate-500 font-medium">Auto WhatsApp confirmation</div>
+              <div className="text-[11px] font-bold text-slate-800">Queue: 3 Patients</div>
+              <div className="text-[9px] text-slate-500 font-medium">Live updates on their phone</div>
             </motion.div>
 
             {/* Widget 2: Bottom Left */}
@@ -212,10 +212,10 @@ export function HeroRedesign() {
             >
               <div className="flex items-center gap-1 text-emerald-600 font-extrabold text-[10px] uppercase tracking-wider mb-0.5">
                 <Shield className="w-3 h-3" />
-                <span>Direct Payments</span>
+                <span>Zero Interference</span>
               </div>
-              <div className="text-[11px] font-bold text-slate-900">100% Direct Revenue</div>
-              <div className="text-[9px] text-slate-500 font-medium">Instant bank settlement</div>
+              <div className="text-[11px] font-bold text-slate-900">Keep 100% Revenue</div>
+              <div className="text-[9px] text-slate-500 font-medium">Patients pay as they do now</div>
             </motion.div>
 
             {/* Widget 4: Bottom Right */}
@@ -225,13 +225,12 @@ export function HeroRedesign() {
               transition={{ duration: 0.5, delay: 1.1 }}
               className="absolute -right-[2%] lg:right-[0%] bottom-[8%] lg:bottom-[10%] bg-white/95 backdrop-blur-xl border border-amber-500/20 p-2.5 rounded-2xl shadow-[0_10px_25px_rgba(245,158,11,0.1)] z-30 max-w-[170px] sm:max-w-[190px]"
             >
-              <div className="flex items-center gap-1 mb-0.5">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3 h-3 text-amber-400 fill-amber-400" />
-                ))}
+              <div className="flex items-center gap-1 text-amber-600 font-extrabold text-[10px] uppercase tracking-wider mb-0.5">
+                <Check className="w-3 h-3" strokeWidth={3} />
+                <span>Keep Your Rx Pad</span>
               </div>
-              <div className="text-[10px] font-bold text-slate-900">"Highly recommended!"</div>
-              <div className="text-[9px] text-slate-500 font-medium">Google Verified Review</div>
+              <div className="text-[11px] font-bold text-slate-900">Write As You Do Now</div>
+              <div className="text-[9px] text-slate-500 font-medium">We don't change your practice</div>
             </motion.div>
 
           </div>

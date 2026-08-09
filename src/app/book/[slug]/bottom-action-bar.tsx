@@ -124,7 +124,7 @@ export function BottomActionBar({ clinic, workingDays, closedDates, lexicon, lan
                     </div>
                     <div>
                       <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-tight">{t.bookAppointment}</h2>
-                      <p className="text-[11px] text-slate-500 font-bold line-clamp-1">{clinic.name} · OPD Token</p>
+                      <p className="text-[11px] text-slate-500 font-bold line-clamp-1">{clinic.name} · Consultation Token</p>
                     </div>
                   </div>
                   <button

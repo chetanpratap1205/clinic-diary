@@ -16,7 +16,7 @@ import { z } from "zod";
 import {
   Clock, Calendar as CalendarIcon, CheckCircle2, User,
   Loader2, ArrowRight, Sparkles, CalendarCheck, Calendar, Phone,
-  Mail, ChevronLeft, ChevronRight, Sun, Sunset, Moon, ShieldCheck, Share2,
+  ChevronLeft, ChevronRight, Sun, Sunset, Moon, ShieldCheck, Share2,
   FileText
 } from "lucide-react";
 import { formatTimeDisplay } from "@/lib/format";
@@ -54,12 +54,6 @@ const bookingSchema = z.object({
   patientPhone: z
     .string()
     .regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian mobile number"),
-  patientEmail: z
-    .string()
-    .email("Please enter a valid email address")
-    .optional()
-    .or(z.literal("")),
-  isFirstTime: z.boolean(),
 });
 type BookingData = z.infer<typeof bookingSchema>;
 
@@ -87,6 +81,8 @@ export function BookingClient({
   closedDates,
   lexicon,
   lang,
+  isLead,
+  leadTimings,
 }: {
   clinic: ClinicData;
   workingDays: number[];
@@ -98,6 +94,8 @@ export function BookingClient({
     clinicType: string;
   };
   lang: Language;
+  isLead?: boolean;
+  leadTimings?: string;
 }) {
   const t = DICTIONARY[lang];
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -110,11 +108,13 @@ export function BookingClient({
   const today = startOfToday();
   const next30 = Array.from({ length: 30 }, (_, i) => addDays(today, i));
 
+  const fallbackWorkingDays = isLead ? [1, 2, 3, 4, 5, 6] : workingDays;
+
   const [selectedDate, setSelectedDate] = useState<Date>(
     () =>
       next30.find(
         (d) =>
-          workingDays.includes(d.getDay()) &&
+          fallbackWorkingDays.includes(d.getDay()) &&
           !closedDates.includes(format(d, "yyyy-MM-dd"))
       ) || today
   );
@@ -126,6 +126,7 @@ export function BookingClient({
     appointmentId: string;
     date: string;
     time: string;
+    tokenNumber?: number;
   } | null>(null);
 
 
@@ -146,7 +147,6 @@ export function BookingClient({
   } = useForm<BookingData>({ 
     resolver: zodResolver(bookingSchema), 
     shouldUnregister: false,
-    defaultValues: { isFirstTime: true }
   });
 
   // Pillar 2: Zero-Friction Patient UX (Auto-fill Memory)
@@ -189,12 +189,24 @@ export function BookingClient({
 
   useEffect(() => {
     if (step <= 2) {
-      setLoadingSlots(true);
-      getAvailableSlots(clinic.id, format(selectedDate, "yyyy-MM-dd"))
-        .then((r) => { if (r.slots) setSlots(r.slots); })
-        .finally(() => setLoadingSlots(false));
+      if (isLead) {
+        // SIMULATION MODE: Generate standard fake slots for the demo
+        setLoadingSlots(true);
+        setTimeout(() => {
+          setSlots([
+            "10:00", "10:30", "11:00", "11:30", 
+            "17:00", "17:30", "18:00", "18:30"
+          ]);
+          setLoadingSlots(false);
+        }, 500);
+      } else {
+        setLoadingSlots(true);
+        getAvailableSlots(clinic.id, format(selectedDate, "yyyy-MM-dd"))
+          .then((r) => { if (r.slots) setSlots(r.slots); })
+          .finally(() => setLoadingSlots(false));
+      }
     }
-  }, [selectedDate, clinic.id, step]);
+  }, [selectedDate, clinic.id, step, isLead]);
 
   const onSubmit = (data: BookingData) => {
     if (!selectedTime) return;
@@ -212,15 +224,24 @@ export function BookingClient({
     } catch (e) {}
 
     startTransition(async () => {
-      const res = await createBooking(
-        clinic.id,
-        format(selectedDate, "yyyy-MM-dd"),
-        selectedTime,
-        data.patientName,
-        cleanPhone,
-        data.patientEmail,
-        acqSource
-      );
+      let res: any;
+
+      if (isLead) {
+        // SIMULATION MODE FOR MARKETING LEADS
+        res = { appointmentId: `demo-${Date.now()}`, tokenNumber: 1 };
+        await new Promise((resolve) => setTimeout(resolve, 800));
+      } else {
+        res = await createBooking(
+          clinic.id,
+          format(selectedDate, "yyyy-MM-dd"),
+          selectedTime,
+          data.patientName,
+          cleanPhone,
+          undefined,
+          acqSource
+        );
+      }
+
       if (res.error) {
         toast.error(res.error);
         if (res.error.includes("taken")) {
@@ -232,7 +253,10 @@ export function BookingClient({
             setLoadingSlots(false);
           });
         }
-      } else if ("appointmentId" in res && (res as any).appointmentId) {
+      } else if (res.appointmentId) {
+        // Scroll to top so the full success card + confetti is visible
+        try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch {}
+        
         // Fire Confetti
         confetti({
           particleCount: 100,
@@ -242,9 +266,10 @@ export function BookingClient({
         });
         
         setSuccessData({
-          appointmentId: (res as any).appointmentId,
+          appointmentId: res.appointmentId,
           date: format(selectedDate, "EEE, MMM d, yyyy"),
           time: formatTimeDisplay(selectedTime),
+          tokenNumber: res.tokenNumber,
         });
       }
     });
@@ -371,11 +396,19 @@ export function BookingClient({
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-dashed border-slate-200 px-2 flex items-center justify-between text-xs font-bold text-slate-600">
-                <span className="flex items-center gap-1 text-[11px]">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Pay ₹{clinic.consultationFee || 0} at Clinic
-                </span>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Zero Booking Fee</span>
+              <div className="pt-3 border-t border-dashed border-slate-200 px-2 space-y-2">
+                {successData?.tokenNumber && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Token No.</span>
+                    <span className="text-xl font-black text-slate-900">#{successData.tokenNumber}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between text-xs font-bold text-slate-600">
+                  <span className="flex items-center gap-1 text-[11px]">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Pay ₹{clinic.consultationFee || 0} at Clinic
+                  </span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Zero Booking Fee</span>
+                </div>
               </div>
             </motion.div>
 
@@ -489,8 +522,14 @@ export function BookingClient({
         <div>
           <h2 className="text-lg font-black text-slate-900 tracking-tight">{t.pickDate}</h2>
           <p className="text-slate-500 text-xs sm:text-sm mt-0.5 font-medium">{t.pickDateSub}</p>
+          {isLead && leadTimings && (
+            <p className="mt-1.5 text-[11px] font-bold text-slate-600 bg-slate-50 px-2 py-1 rounded-md inline-block border border-slate-100">
+              <Clock className="w-3 h-3 inline-block mr-1 -mt-0.5" />
+              {leadTimings}
+            </p>
+          )}
         </div>
-        {!isSameDay(selectedDate, today) && workingDays.includes(today.getDay()) && !closedDates.includes(format(today, "yyyy-MM-dd")) && (
+        {!isSameDay(selectedDate, today) && fallbackWorkingDays.includes(today.getDay()) && !closedDates.includes(format(today, "yyyy-MM-dd")) && (
           <button 
             onClick={() => { 
               setSelectedDate(today);
@@ -519,7 +558,7 @@ export function BookingClient({
             const isSelected = isSameDay(date, selectedDate);
             const isToday = isSameDay(date, today);
             const dateStr = format(date, "yyyy-MM-dd");
-            const isWorking = workingDays.includes(date.getDay()) && !closedDates.includes(dateStr);
+            const isWorking = fallbackWorkingDays.includes(date.getDay()) && !closedDates.includes(dateStr);
             return (
               <motion.button
                 key={date.toISOString()}
@@ -568,7 +607,7 @@ export function BookingClient({
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => setStep(2)}
-        disabled={!workingDays.includes(selectedDate.getDay()) || closedDates.includes(format(selectedDate, "yyyy-MM-dd"))}
+        disabled={!fallbackWorkingDays.includes(selectedDate.getDay()) || closedDates.includes(format(selectedDate, "yyyy-MM-dd"))}
         className="w-full h-14 rounded-2xl font-black text-sm shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed group relative overflow-hidden"
         style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}dd)`, color: textColor, boxShadow: `0 10px 25px -5px ${themeColor}50` }}
       >
@@ -592,7 +631,7 @@ export function BookingClient({
       const nextOpen = next30.find(
         (d) =>
           !isSameDay(d, selectedDate) &&
-          workingDays.includes(d.getDay()) &&
+          fallbackWorkingDays.includes(d.getDay()) &&
           !closedDates.includes(format(d, "yyyy-MM-dd"))
       );
       if (nextOpen) {
@@ -783,49 +822,7 @@ export function BookingClient({
           {errors.patientPhone && <p className="text-xs text-red-500 font-semibold px-1">{errors.patientPhone.message}</p>}
         </div>
 
-        {/* Email */}
-        <div className="space-y-1">
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <Mail className="w-4 h-4" />
-            </div>
-            <Input
-              id="p-email"
-              type="email"
-              placeholder={`Email address ${t.optional}`}
-              {...register("patientEmail")}
-              className="h-12 pl-10 pr-4 rounded-xl bg-slate-50/60 border-slate-200/80 focus:bg-white text-sm font-semibold text-slate-900 transition-all"
-            />
-          </div>
-        </div>
 
-        {/* First Time Visitor Premium iOS Switch Toggle */}
-        <div className="pt-2">
-          <label className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/60 cursor-pointer hover:bg-slate-100/50 transition-colors">
-            <div className="flex flex-col text-left pr-4">
-              <span className="text-xs sm:text-sm font-black text-slate-800 select-none">
-                First time visiting this clinic?
-              </span>
-              <span className="text-[10.5px] text-slate-400 font-medium select-none">
-                We'll reserve extra time for your consultation.
-              </span>
-            </div>
-            
-            {/* iOS Switch */}
-            <div className="relative flex-shrink-0">
-              <input 
-                type="checkbox" 
-                {...register("isFirstTime")} 
-                className="peer sr-only"
-              />
-              <div 
-                className="w-11 h-6 rounded-full bg-slate-200 peer-checked:bg-[var(--theme-color)] transition-colors duration-300" 
-                style={{ '--theme-color': themeColor } as React.CSSProperties} 
-              />
-              <div className="w-5 h-5 rounded-full bg-white shadow-md absolute top-0.5 left-0.5 peer-checked:translate-x-5 transition-transform duration-300" />
-            </div>
-          </label>
-        </div>
 
         {/* CTA + Trust note */}
         <div className="space-y-3 pt-2">
@@ -865,6 +862,23 @@ export function BookingClient({
   // ── WIDGET SHELL ─────────────────────────────────────────────────────────
   return (
     <div className="w-full" id="booking">
+
+      {/* Lead Preview Banner — only shown for marketing demo links */}
+      {isLead && (
+        <div className="mb-3 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200/70 px-4 py-3 flex items-start gap-3 shadow-sm">
+          <div className="mt-0.5 w-7 h-7 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center flex-shrink-0">
+            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+          </div>
+          <div>
+            <p className="text-xs font-black text-amber-900 leading-tight">
+              This page was prepared especially for <span className="text-amber-700">{clinic.name}</span>
+            </p>
+            <p className="text-[11px] text-amber-700/80 font-medium mt-0.5 leading-snug">
+              To activate your own dedicated booking page, contact Doctor Diary.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="relative bg-white rounded-3xl overflow-hidden shadow-xs">
         {/* Sleek Progress Bar */}

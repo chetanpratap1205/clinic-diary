@@ -77,6 +77,8 @@ const settingsSchema = z.object({
   whatsappNumber: z.string().nullable().optional(),
   instagramUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
   facebookUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
+  youtubeUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
+  websiteUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
 });
 
 type SettingsData = z.infer<typeof settingsSchema>;
@@ -102,6 +104,8 @@ interface SettingsClientProps {
     whatsappNumber?: string | null;
     instagramUrl?: string | null;
     facebookUrl?: string | null;
+    youtubeUrl?: string | null;
+    websiteUrl?: string | null;
     vitalsPresets: string[];
     complaintPresets: string[];
     diagnosisPresets: string[];
@@ -181,6 +185,8 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
       whatsappNumber: initialData.whatsappNumber || "",
       instagramUrl: initialData.instagramUrl || "",
       facebookUrl: initialData.facebookUrl || "",
+      youtubeUrl: initialData.youtubeUrl || "",
+      websiteUrl: initialData.websiteUrl || "",
       vitalsPresets: initialData.vitalsPresets || [],
       complaintPresets: initialData.complaintPresets || [],
       diagnosisPresets: initialData.diagnosisPresets || [],
@@ -259,12 +265,15 @@ Make it sound extremely premium, trustworthy, and empathetic. Emphasize that we 
         <div className="xl:col-span-3 space-y-5 sm:space-y-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="w-full h-auto p-1.5 bg-slate-100 rounded-2xl grid grid-cols-3 gap-1 mb-6">
-                <TabsTrigger value="profile" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm">Profile & Brand</TabsTrigger>
-                <TabsTrigger value="location" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm">Location & Billing</TabsTrigger>
-                <TabsTrigger value="presets" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-                  Presets
+              <TabsList className="w-full h-auto p-1.5 bg-slate-100 sm:rounded-2xl rounded-xl flex flex-col sm:grid sm:grid-cols-3 gap-1.5 mb-6">
+                <TabsTrigger value="profile" className="w-full rounded-lg sm:rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center justify-center gap-2 transition-all">
+                  <User className="w-4 h-4" /> Profile & Brand
+                </TabsTrigger>
+                <TabsTrigger value="location" className="w-full rounded-lg sm:rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center justify-center gap-2 transition-all">
+                  <MapPin className="w-4 h-4" /> Location
+                </TabsTrigger>
+                <TabsTrigger value="presets" className="w-full rounded-lg sm:rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center justify-center gap-2 transition-all">
+                  <Zap className="w-4 h-4" /> Presets
                 </TabsTrigger>
               </TabsList>
 
@@ -319,42 +328,23 @@ Make it sound extremely premium, trustworthy, and empathetic. Emphasize that we 
                 </div>
 
                 {/* Brand Imagery */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 pt-4 border-t border-slate-100">
-                  <div className="space-y-3">
+                <div className="pt-4 border-t border-slate-100">
+                  <div className="space-y-3 max-w-sm">
                     <div className="flex items-center gap-2 mb-1">
                       <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center border border-sky-100 flex-shrink-0">
-                        <ImageIcon className="w-4 h-4 text-sky-500" />
+                        <User className="w-4 h-4 text-sky-500" />
                       </div>
                       <div>
-                        <label className="text-sm font-bold text-slate-800">Clinic Logo</label>
-                        <p className="text-xs font-medium text-slate-500">Square image for booking page & PWA icon</p>
+                        <label className="text-sm font-bold text-slate-800">Doctor Profile Picture</label>
+                        <p className="text-xs font-medium text-slate-500">Professional portrait for your booking page</p>
                       </div>
                     </div>
                     <ImageUploader 
                       value={watchedFields.logoUrl || ""}
                       onChange={(url) => setValue("logoUrl", url, { shouldValidate: true, shouldDirty: true })}
                       folder={`clinic-${slug}/logos`}
-                      label="Upload Clinic Logo"
+                      label="Upload Doctor Photo"
                       description="Square PNG/JPG (max 2MB)"
-                    />
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center border border-indigo-100 flex-shrink-0">
-                        <ImageIcon className="w-4 h-4 text-indigo-500" />
-                      </div>
-                      <div>
-                        <label className="text-sm font-bold text-slate-800">Hero Image</label>
-                        <p className="text-xs font-medium text-slate-500">Wide banner for the top of your booking page</p>
-                      </div>
-                    </div>
-                    <ImageUploader 
-                      value={watchedFields.heroImageUrl || ""}
-                      onChange={(url) => setValue("heroImageUrl", url, { shouldValidate: true, shouldDirty: true })}
-                      folder={`clinic-${slug}/hero`}
-                      label="Upload Hero Image"
-                      description="Landscape PNG/JPG (max 5MB)"
                     />
                   </div>
                 </div>
@@ -709,20 +699,36 @@ Make it sound extremely premium, trustworthy, and empathetic. Emphasize that we 
                   {errors.instagramUrl && <p className="text-xs text-red-500">{errors.instagramUrl.message}</p>}
                 </div>
 
-                {/* Facebook */}
+                {/* YouTube */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <label htmlFor="facebookUrl" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                      <Link className="w-4 h-4 text-blue-500" /> Facebook Link
+                    <label htmlFor="youtubeUrl" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                      <Link className="w-4 h-4 text-red-500" /> YouTube Link
                     </label>
                   </div>
                   <Input
-                    id="facebookUrl"
-                    {...register("facebookUrl")}
-                    placeholder="https://facebook.com/yourclinic"
+                    id="youtubeUrl"
+                    {...register("youtubeUrl")}
+                    placeholder="https://youtube.com/@yourchannel"
                     className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
                   />
-                  {errors.facebookUrl && <p className="text-xs text-red-500">{errors.facebookUrl.message}</p>}
+                  {errors.youtubeUrl && <p className="text-xs text-red-500">{errors.youtubeUrl.message}</p>}
+                </div>
+
+                {/* Website */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="websiteUrl" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-emerald-500" /> Clinic Website
+                    </label>
+                  </div>
+                  <Input
+                    id="websiteUrl"
+                    {...register("websiteUrl")}
+                    placeholder="https://yourclinic.com"
+                    className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                  />
+                  {errors.websiteUrl && <p className="text-xs text-red-500">{errors.websiteUrl.message}</p>}
                 </div>
 
               </CardContent>

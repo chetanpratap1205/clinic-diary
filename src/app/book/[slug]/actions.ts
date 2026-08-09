@@ -291,7 +291,7 @@ export async function createBooking(
 
     }
 
-    return { success: true, appointmentId: finalAppointmentId };
+    return { success: true, appointmentId: finalAppointmentId, tokenNumber: finalTokenNumber };
   } catch (error: any) {
     // Check for Postgres unique constraint violation
     if (error?.code === "23505" || error?.message?.includes("unique")) {

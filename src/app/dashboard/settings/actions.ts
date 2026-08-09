@@ -26,6 +26,8 @@ interface SettingsData {
   whatsappNumber?: string | null;
   instagramUrl?: string | null;
   facebookUrl?: string | null;
+  youtubeUrl?: string | null;
+  websiteUrl?: string | null;
   vitalsPresets: string[];
   complaintPresets: string[];
   diagnosisPresets: string[];
@@ -61,6 +63,8 @@ export async function updateClinicSettings(data: SettingsData) {
         whatsappNumber: data.whatsappNumber,
         instagramUrl: data.instagramUrl,
         facebookUrl: data.facebookUrl,
+        youtubeUrl: data.youtubeUrl,
+        websiteUrl: data.websiteUrl,
         vitalsPresets: data.vitalsPresets,
         complaintPresets: data.complaintPresets,
         diagnosisPresets: data.diagnosisPresets,

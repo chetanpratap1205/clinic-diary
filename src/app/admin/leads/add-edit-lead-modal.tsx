@@ -62,6 +62,12 @@ export function AddEditLeadModal({ lead = null, open, onOpenChange, onSuccess }:
     followUpDate: lead?.followUpDate
       ? format(new Date(lead.followUpDate), "yyyy-MM-dd")
       : "",
+    degree: lead?.degree ?? "",
+    consultationFee: lead?.consultationFee?.toString() ?? "",
+    experienceYears: lead?.experienceYears?.toString() ?? "",
+    timings: lead?.timings ?? "",
+    about: lead?.about ?? "",
+    logoUrl: lead?.logoUrl ?? "",
   });
 
   if (!open) return null;
@@ -102,6 +108,12 @@ export function AddEditLeadModal({ lead = null, open, onOpenChange, onSuccess }:
         assignedTo: form.assignedTo || undefined,
         notes: form.notes || undefined,
         followUpDate: form.followUpDate || undefined,
+        degree: form.degree || undefined,
+        consultationFee: form.consultationFee ? parseInt(form.consultationFee) : undefined,
+        experienceYears: form.experienceYears ? parseInt(form.experienceYears) : undefined,
+        timings: form.timings || undefined,
+        about: form.about || undefined,
+        logoUrl: form.logoUrl || undefined,
       };
 
       const res = isEdit
@@ -218,6 +230,70 @@ export function AddEditLeadModal({ lead = null, open, onOpenChange, onSuccess }:
                     value={form.address}
                     onChange={set("address")}
                     className="h-9"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Public Profile Details */}
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Public Profile Details (For Demo Page)</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Degree</Label>
+                  <Input
+                    placeholder="MBBS, MD"
+                    value={form.degree}
+                    onChange={set("degree")}
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Consultation Fee (₹)</Label>
+                  <Input
+                    type="number"
+                    placeholder="500"
+                    value={form.consultationFee}
+                    onChange={set("consultationFee")}
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Experience (Years)</Label>
+                  <Input
+                    type="number"
+                    placeholder="10"
+                    value={form.experienceYears}
+                    onChange={set("experienceYears")}
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Timings</Label>
+                  <Input
+                    placeholder="Mon-Sat 10:00 AM - 8:00 PM"
+                    value={form.timings}
+                    onChange={set("timings")}
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-1.5 sm:col-span-2">
+                  <Label className="text-sm">Logo URL</Label>
+                  <Input
+                    placeholder="https://example.com/logo.png"
+                    value={form.logoUrl}
+                    onChange={set("logoUrl")}
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-1.5 sm:col-span-2">
+                  <Label className="text-sm">About</Label>
+                  <textarea
+                    placeholder="Short bio about the doctor..."
+                    value={form.about}
+                    onChange={set("about")}
+                    rows={2}
+                    className="w-full text-sm p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
                   />
                 </div>
               </div>

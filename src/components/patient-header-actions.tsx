@@ -1,6 +1,5 @@
 "use client";
 
-import { Languages } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 interface PatientHeaderActionsProps {
@@ -26,10 +25,9 @@ export function PatientHeaderActions({ themeColor, clinicName }: PatientHeaderAc
         type="button"
         onClick={toggleLanguage}
         aria-label="Toggle language"
-        className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-1.5 rounded-full transition-all hover:bg-slate-100 active:scale-95 border border-slate-200/80 bg-white text-slate-700 shadow-2xs"
+        className="inline-flex items-center gap-1 text-[11px] font-extrabold px-3 py-1.5 rounded-full transition-all hover:bg-slate-100 active:scale-95 border border-slate-200/80 bg-white text-slate-700 shadow-2xs"
       >
-        <Languages className="w-3.5 h-3.5 text-slate-500" />
-        <span className="uppercase">{currentLang === "en" ? "EN" : "HI"}</span>
+        {currentLang === "en" ? "हिंदी" : "English"}
       </button>
     </>
   );

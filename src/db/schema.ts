@@ -36,6 +36,8 @@ export const clinics = pgTable("clinics", {
   instagramUrl: text("instagram_url"),
   whatsappNumber: text("whatsapp_number"),
   facebookUrl: text("facebook_url"),
+  youtubeUrl: text("youtube_url"),
+  websiteUrl: text("website_url"),
   referredBy: uuid("referred_by").references(() => growthPartners.id, { onDelete: "set null" }),
   vitalsPresets: text("vitals_presets").array().default([]).notNull(),
   complaintPresets: text("complaint_presets").array().default([]).notNull(),
@@ -456,6 +458,14 @@ export const doctorLeads = pgTable("doctor_leads", {
   commissionPaid: boolean("commission_paid").default(false),
   clinicSlug: text("clinic_slug"), // For quick access to booking link
   accessPin: text("access_pin"), // 6-digit concierge pin
+  degree: text("degree"),
+  consultationFee: integer("consultation_fee"),
+  experienceYears: integer("experience_years"),
+  timings: text("timings"),
+  about: text("about"),
+  logoUrl: text("logo_url"),
+  pageViewCount: integer("page_view_count").notNull().default(0), // how many times doctor opened their demo link
+  lastViewedAt: timestamp("last_viewed_at"),                     // when the link was last opened
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => [
@@ -466,6 +476,7 @@ export const doctorLeads = pgTable("doctor_leads", {
   index("doctor_leads_assigned_manager_idx").on(table.assignedManagerId),
   index("doctor_leads_created_at_idx").on(table.createdAt),
   index("doctor_leads_category_idx").on(table.leadCategory),
+  uniqueIndex("doctor_leads_clinic_slug_unique_idx").on(table.clinicSlug),
 ]);
 
 // ─── Employee Activity Logs (Audit Trail) ──────────────────────────────────────

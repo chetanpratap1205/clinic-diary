@@ -17,6 +17,46 @@ import {
 import { revalidatePath } from "next/cache";
 import { getSuggestedPillar } from "./message-builder";
 
+// ─── Collision-Resistant Slug Generator ───────────────────────────────────────
+// Generates a lead marketing slug (e.g. dr-singh-indore).
+// If the slug already exists, appends a short counter suffix (-2, -3…)
+// ensuring the real premium slug (dr-singh) always stays free for real signups.
+async function generateUniqueLeadSlug(doctorName: string, city?: string | null, specialty?: string | null): Promise<string> {
+  let docName = doctorName.replace(/^dr\.?\s+/i, "").trim();
+  let baseSlug = docName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+  if (city) {
+    baseSlug += `-${city.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+  } else if (specialty) {
+    // Take only first word of specialty to keep slug short
+    const specWord = specialty.split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    baseSlug += `-${specWord}`;
+  } else {
+    baseSlug += "-demo";
+  }
+
+  const candidateBase = `dr-${baseSlug.replace(/-+/g, "-").replace(/-$/g, "")}`;
+
+  // Check uniqueness — try base, then base-2, base-3 … base-9, base-{random}
+  let candidate = candidateBase;
+  let suffix = 2;
+  while (true) {
+    const [existing] = await db
+      .select({ id: doctorLeads.id })
+      .from(doctorLeads)
+      .where(eq(doctorLeads.clinicSlug, candidate))
+      .limit(1);
+    if (!existing) return candidate;
+    // Collision — try next suffix
+    if (suffix <= 9) {
+      candidate = `${candidateBase}-${suffix++}`;
+    } else {
+      // Fallback: append a random 4-char suffix to guarantee uniqueness
+      candidate = `${candidateBase}-${Math.random().toString(36).substring(2, 6)}`;
+    }
+  }
+}
+
 // ─── Types ─────────────────────────────────────────────────────────────────────
 export interface LeadFilters {
   search?: string;
@@ -166,10 +206,18 @@ export async function createLead(data: {
   domainPillar?: string;
   notes?: string;
   followUpDate?: string;
+  degree?: string;
+  consultationFee?: number;
+  experienceYears?: number;
+  timings?: string;
+  about?: string;
+  logoUrl?: string;
 }) {
   try {
     const pillar = data.domainPillar || getSuggestedPillar(data.specialty);
     const { assignedEmployeeId, assignedManagerId } = await autoAssignLeadRoundRobin(data.city);
+
+    const clinicSlug = await generateUniqueLeadSlug(data.doctorName, data.city, data.specialty);
 
     await db.insert(doctorLeads).values({
       doctorName: data.doctorName,
@@ -186,6 +234,13 @@ export async function createLead(data: {
       domainPillar: pillar,
       notes: data.notes || null,
       followUpDate: data.followUpDate ? new Date(data.followUpDate) : null,
+      degree: data.degree || null,
+      consultationFee: data.consultationFee || null,
+      experienceYears: data.experienceYears || null,
+      timings: data.timings || null,
+      about: data.about || null,
+      logoUrl: data.logoUrl || null,
+      clinicSlug,
       assignedEmployeeId,
       assignedManagerId,
       messageSentStep: 0,
@@ -220,6 +275,12 @@ export async function updateLead(
     followUpDate: string | null;
     demoScheduledAt: string | null;
     convertedAt: string | null;
+    degree: string | null;
+    consultationFee: number | null;
+    experienceYears: number | null;
+    timings: string | null;
+    about: string | null;
+    logoUrl: string | null;
   }>
 ) {
   try {
@@ -251,6 +312,12 @@ export async function updateLead(
     if (data.demoScheduledAt !== undefined) {
       updateData.demoScheduledAt = data.demoScheduledAt ? new Date(data.demoScheduledAt) : null;
     }
+    if (data.degree !== undefined) updateData.degree = data.degree;
+    if (data.consultationFee !== undefined) updateData.consultationFee = data.consultationFee;
+    if (data.experienceYears !== undefined) updateData.experienceYears = data.experienceYears;
+    if (data.timings !== undefined) updateData.timings = data.timings;
+    if (data.about !== undefined) updateData.about = data.about;
+    if (data.logoUrl !== undefined) updateData.logoUrl = data.logoUrl;
 
      
     await db.update(doctorLeads).set(updateData as unknown as typeof doctorLeads.$inferInsert).where(eq(doctorLeads.id, id));
@@ -350,8 +417,7 @@ export async function importLeads(
     degree?: string;
     consultationFee?: number;
     googleMapsUrl?: string;
-  }>,
-  generateShadowProfiles: boolean = false
+  }>
 ) {
   const results = { added: 0, skipped: 0, errors: 0 };
   const { clinics, availability } = await import("@/db/schema");
@@ -376,57 +442,9 @@ export async function importLeads(
 
       const pillar = getSuggestedPillar(row.specialty);
       
-      let clinicSlug = null;
-      let accessPin = null;
-
-      if (generateShadowProfiles) {
-        // Generate robust slug
-        const baseName = (row.clinicName || row.doctorName)
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-|-$/g, "");
-        clinicSlug = `${baseName}-${Math.random().toString(36).substring(2, 6)}`;
-
-        // We use the last 6 digits of the phone as the secure PIN
-        // (Supabase requires at least 6 characters for a password)
-        accessPin = phone.slice(-6);
-        if (accessPin.length < 6) accessPin = "123456"; // fallback
-
-        // Create the shadow clinic
-        const [newClinic] = await db.insert(clinics).values({
-          slug: clinicSlug,
-          name: row.clinicName || `${row.doctorName}'s Clinic`,
-          doctorName: row.doctorName,
-          degree: row.degree || null,
-          specialty: row.specialty || "General Physician",
-          phone: phone,
-          whatsappNumber: phone,
-          address: row.address || null,
-          state: row.state || row.city || null,
-          googleMapsUrl: row.googleMapsUrl || null,
-          consultationFee: row.consultationFee || 0,
-          createdAt: new Date(),
-        }).returning();
-
-        // Create default availability (Mon-Sat, 09:00 - 17:00, 30 min slots)
-        const availabilityValues = [];
-        for (let day = 1; day <= 6; day++) { // 1=Monday, 6=Saturday
-          availabilityValues.push({
-            clinicId: newClinic.id,
-            dayOfWeek: day,
-            startTime: "09:00:00",
-            endTime: "17:00:00",
-            slotDurationMinutes: 30,
-            maxPatientsPerSlot: 1,
-            isWalkInOnly: false,
-          });
-        }
-        await db.insert(availability).values(availabilityValues);
-
-        // Note: We no longer auto-create Supabase users with dummy emails during CSV import.
-        // Doctors or employees will create the actual account using standard email/password 
-        // via the /signup page, and then link to this clinic.
-      }
+      const clinicSlug = await generateUniqueLeadSlug(row.doctorName, row.city, row.specialty);
+      
+      const accessPin = phone.slice(-6).padEnd(6, "0");
 
       await db.insert(doctorLeads).values({
         doctorName: row.doctorName,
@@ -442,6 +460,12 @@ export async function importLeads(
         leadCategory: row.leadCategory || "A",
         domainPillar: pillar,
         messageSentStep: 0,
+        degree: row.degree || null,
+        consultationFee: row.consultationFee || null,
+        experienceYears: null,
+        timings: null,
+        about: null,
+        logoUrl: null,
         clinicSlug,
         accessPin,
         updatedAt: new Date(),
@@ -549,3 +573,22 @@ export async function getGrowthPartners() {
     .orderBy(growthPartners.name);
 }
 
+// ─── Track Lead Demo Page View ─────────────────────────────────────────────────
+// Called from the public booking page whenever it renders in isLead mode.
+// Increments the view counter and records last-seen timestamp so your sales team
+// can see exactly when a doctor is actively looking at their demo link.
+export async function trackLeadView(clinicSlug: string) {
+  try {
+    await db
+      .update(doctorLeads)
+      .set({
+        pageViewCount: sql`${doctorLeads.pageViewCount} + 1`,
+        lastViewedAt: new Date(),
+      })
+      .where(eq(doctorLeads.clinicSlug, clinicSlug));
+    // No revalidatePath — this is a background fire-and-forget write
+  } catch (err) {
+    // Swallow errors silently — tracking must never break the patient-facing page
+    console.warn("trackLeadView failed silently:", err);
+  }
+}

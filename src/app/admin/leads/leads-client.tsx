@@ -251,7 +251,7 @@ export function LeadsClient({
       )}
 
       {/* ─── Header Stats — Grid on mobile, flex on desktop ─────────────────── */}
-      <div className="grid grid-cols-4 sm:flex sm:flex-wrap items-center gap-2 text-xs">
+      <div className="grid grid-cols-2 min-[480px]:grid-cols-4 md:flex md:flex-wrap items-center gap-2 text-xs">
         <StatPill label="Total" value={stats.total} color="slate" />
         <StatPill label="🔥 Hot" value={stats.hot} color="red" />
         <StatPill label="🟡 Warm" value={stats.warm} color="amber" />

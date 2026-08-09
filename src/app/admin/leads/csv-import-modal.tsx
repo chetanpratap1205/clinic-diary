@@ -130,7 +130,6 @@ export function CsvImportModal({ open, onOpenChange, onSuccess, onClose, onImpor
   const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
   const [fileName, setFileName] = useState("");
   const [result, setResult] = useState<ImportResult | null>(null);
-  const [generateShadowProfiles, setGenerateShadowProfiles] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (file: File) => {
@@ -164,7 +163,7 @@ export function CsvImportModal({ open, onOpenChange, onSuccess, onClose, onImpor
       return;
     }
     startTransition(async () => {
-      const res = await importLeads(parsedRows, generateShadowProfiles);
+      const res = await importLeads(parsedRows);
       setResult(res);
       toast.success(`✅ Import complete: ${res.added} added, ${res.skipped} skipped`);
       handleSuccess();
@@ -211,21 +210,6 @@ export function CsvImportModal({ open, onOpenChange, onSuccess, onClose, onImpor
               <a href="/leads_template.csv" download className="text-xs font-bold bg-white text-blue-600 border border-blue-200 px-3 py-1.5 rounded-lg hover:bg-blue-100 flex items-center gap-1 shrink-0 ml-2">
                 <FileText className="w-3.5 h-3.5" /> Template
               </a>
-            </div>
-            
-            {/* Shadow Profile Toggle */}
-            <div className="mt-4 pt-3 border-t border-blue-200 flex items-start gap-3">
-              <input 
-                type="checkbox" 
-                id="generateShadow" 
-                className="mt-1 w-4 h-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500" 
-                checked={generateShadowProfiles}
-                onChange={(e) => setGenerateShadowProfiles(e.target.checked)}
-              />
-              <div>
-                <label htmlFor="generateShadow" className="text-sm font-bold text-blue-800 cursor-pointer">Generate Public Booking Pages (Shadow Profiles)</label>
-                <p className="text-xs text-blue-600 mt-0.5">If checked, this will immediately create live, premium booking pages for these doctors so patients can book appointments. Doctors can claim these later.</p>
-              </div>
             </div>
           </div>
 
