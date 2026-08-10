@@ -165,7 +165,8 @@ export const DICTIONARY = {
     smartQueueActive: "Smart Queue Active",
     liveTracking: "Live Token Tracking",
     payFeeAtClinic: "Pay Fee at Clinic",
-    whatsappInquiry: "WhatsApp Inquiry"
+    whatsappInquiry: "WhatsApp Inquiry",
+    avgConsultTime: "Avg Consult Time"
   },
   hi: {
     // Shared
@@ -330,6 +331,7 @@ export const DICTIONARY = {
     smartQueueActive: "स्मार्ट कतार चालू",
     liveTracking: "लाइव टोकन ट्रैकिंग",
     payFeeAtClinic: "क्लिनिक में भुगतान करें",
-    whatsappInquiry: "WhatsApp पूछताछ"
+    whatsappInquiry: "WhatsApp पूछताछ",
+    avgConsultTime: "औसत समय"
   },
 };

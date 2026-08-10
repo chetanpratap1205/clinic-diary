@@ -82,7 +82,7 @@ export function BottomActionBar({ clinic, workingDays, closedDates, lexicon, lan
             <CalendarCheck className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" strokeWidth={2.5} />
             <div className="flex flex-col items-start text-left">
               <span className="text-[14px] sm:text-[15px] font-black leading-tight tracking-tight drop-shadow-sm">{t.bookAppointment}</span>
-              <span className="text-[9.5px] font-bold text-white/90 leading-tight uppercase tracking-wider">Pay at Clinic · Free Token</span>
+              <span className="text-[9.5px] font-bold text-white/90 leading-tight uppercase tracking-wider">{lang === "hi" ? "क्लिनिक में भुगतान · मुफ्त टोकन" : "Pay at Clinic · Free Token"}</span>
             </div>
           </motion.button>
         </div>
@@ -124,7 +124,7 @@ export function BottomActionBar({ clinic, workingDays, closedDates, lexicon, lan
                     </div>
                     <div>
                       <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-tight">{t.bookAppointment}</h2>
-                      <p className="text-[11px] text-slate-500 font-bold line-clamp-1">{clinic.name} · Consultation Token</p>
+                      <p className="text-[11px] text-slate-500 font-bold line-clamp-1">{clinic.name} · {lang === "hi" ? "परामर्श टोकन" : "Consultation Token"}</p>
                     </div>
                   </div>
                   <button

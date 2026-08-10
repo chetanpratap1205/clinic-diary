@@ -20,7 +20,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   const emp = await getAuthenticatedEmployee();
 
-  if (!emp || (emp.role !== "super_admin" && emp.role !== "area_manager")) {
+  if (!emp || emp.role !== "admin") {
     redirect("/dashboard");
   }
 

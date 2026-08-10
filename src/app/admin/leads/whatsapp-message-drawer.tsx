@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Copy, Check, Sparkles, ShieldCheck, Zap } from "lucide-react";
 import type { DoctorLead } from "@/db/schema";
-import { getCategoryLabel, LEAD_CATEGORIES, buildMessageForStep } from "./message-builder";
+import { buildMessageForStep } from "./message-builder";
 import { markMessageSent } from "./actions";
 import { DecisionGuideModal } from "./decision-guide-modal";
 import { format } from "date-fns";
@@ -27,22 +27,17 @@ const STEP_META: Record<number, { label: string; subtitle: string; timing: strin
   3: { label: "Clean Exit", subtitle: "Final — No pressure, demo video + prospectus link", timing: "Day 8", timingColor: "text-red-600 bg-red-50 border-red-200" },
 };
 
-const CATEGORY_META: Record<string, { bg: string; border: string; tag: string }> = {
-  A: { bg: "bg-slate-50", border: "border-slate-300", tag: "bg-slate-100 text-slate-700" },
-  B: { bg: "bg-teal-50", border: "border-teal-300", tag: "bg-teal-100 text-teal-700" },
-  C: { bg: "bg-purple-50", border: "border-purple-300", tag: "bg-purple-100 text-purple-700" },
-};
+
 
 // ─── Individual Step Timeline Card ─────────────────────────────────────────────
 interface MessageCardProps {
   lead: DoctorLead;
-  category: string;
   step: number;
   activeSentStep: number;
   onStepSent: (step: number) => void;
 }
 
-function MessageCard({ lead, category, step, activeSentStep, onStepSent }: MessageCardProps) {
+function MessageCard({ lead, step, activeSentStep, onStepSent }: MessageCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedMsg, setEditedMsg] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -52,8 +47,7 @@ function MessageCard({ lead, category, step, activeSentStep, onStepSent }: Messa
   const isLocked = step > activeSentStep + 1;
   
   const stepMeta = STEP_META[step];
-  // buildMessageForStep now includes personalized demo URL in all messages
-  const originalMessage = buildMessageForStep(lead, category, step);
+  const originalMessage = buildMessageForStep(lead, step);
   const displayMessage = isEditing ? editedMsg : originalMessage;
 
   const phone = lead.phone.replace(/\D/g, "");
@@ -233,10 +227,6 @@ export function WhatsAppMessageDrawer({ lead, open, onOpenChange, onStepSent }: 
 
   if (!open || !lead) return null;
 
-  const category = lead.leadCategory || "A";
-  const catInfo = LEAD_CATEGORIES.find((c) => c.value === category);
-  const catMeta = CATEGORY_META[category] || CATEGORY_META.A;
-
   return (
     <>
 
@@ -264,8 +254,8 @@ export function WhatsAppMessageDrawer({ lead, open, onOpenChange, onStepSent }: 
                   {lead.phone}
                 </span>
                 <span className="text-slate-300 hidden sm:inline">•</span>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${catMeta.tag} truncate`}>
-                  Category {category}: {catInfo?.label}
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 truncate`}>
+                  Universal Playbook
                 </span>
               </div>
             </div>
@@ -293,17 +283,16 @@ export function WhatsAppMessageDrawer({ lead, open, onOpenChange, onStepSent }: 
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
           <div className="max-w-xl mx-auto">
             {/* Context Notice */}
-            <div className={`mb-8 p-4 rounded-xl border flex gap-3 items-start ${catMeta.bg} ${catMeta.border}`}>
+            <div className={`mb-8 p-4 rounded-xl border flex gap-3 items-start bg-blue-50 border-blue-200`}>
               <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm mt-0.5">
-                <span className="text-xs font-bold">ℹ</span>
+                <span className="text-xs font-bold text-blue-700">ℹ</span>
               </div>
               <div>
                 <p className="text-sm font-semibold text-slate-800">
-                  Executing {getCategoryLabel(category)} Playbook
+                  Universal Outreach Playbook
                 </p>
                 <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                  This lead is marked as Category {category}. Send these 3 messages in sequence. 
-                  Each message includes a personalised live demo link for {lead.clinicName || "this clinic"}.
+                  Send these 3 messages in sequence. Each message includes a personalized live demo link for {lead.clinicName || "this clinic"}.
                 </p>
               </div>
             </div>
@@ -314,7 +303,6 @@ export function WhatsAppMessageDrawer({ lead, open, onOpenChange, onStepSent }: 
                 <MessageCard
                   key={step}
                   lead={lead}
-                  category={category}
                   step={step}
                   activeSentStep={localStep}
                   onStepSent={(newStep) => {

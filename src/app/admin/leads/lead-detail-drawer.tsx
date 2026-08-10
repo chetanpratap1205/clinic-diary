@@ -25,9 +25,6 @@ import { toast } from "sonner";
 import type { DoctorLead } from "@/db/schema";
 import {
   LEAD_STATUSES,
-  LEAD_PRIORITIES,
-  LEAD_CATEGORIES,
-  getCategoryLabel,
   generateLeadDemoUrl,
 } from "./message-builder";
 import { getLeadActivities, deleteLead, updateLead } from "./actions";
@@ -128,17 +125,6 @@ export function LeadDetailDrawer({
     });
   };
 
-  const handlePriorityChange = (val: string) => {
-    if (!lead) return;
-    startTransition(async () => {
-      const res = await updateLead(lead.id, { priority: val });
-      if (res.error) toast.error(res.error);
-      else {
-        toast.success("Priority updated");
-        onRefresh?.();
-      }
-    });
-  };
 
   const copyDemoUrl = () => {
     if (!lead) return;
@@ -285,19 +271,6 @@ export function LeadDetailDrawer({
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <p className="text-xs text-slate-500 mb-1.5">Priority</p>
-                <Select value={lead.priority} onValueChange={handlePriorityChange}>
-                  <SelectTrigger className="h-9 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LEAD_PRIORITIES.map((p) => (
-                      <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
           </div>
 
@@ -306,10 +279,7 @@ export function LeadDetailDrawer({
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Message Playbook Progress</p>
             <div className="bg-slate-50 rounded-xl p-4 space-y-3">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-500">Category:</span>
-                <span className="font-semibold text-slate-800">
-                  {lead.leadCategory || "A"} — {getCategoryLabel(lead.leadCategory || "A")}
-                </span>
+                <span className="text-slate-500">Universal Playbook</span>
               </div>
               {/* Step Progress */}
               <div>

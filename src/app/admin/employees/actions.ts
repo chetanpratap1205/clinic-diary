@@ -9,7 +9,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function getAllEmployees() {
   const admin = await getAuthenticatedEmployee();
-  if (!admin || (admin.role !== "super_admin" && admin.role !== "area_manager")) {
+  if (!admin || admin.role !== "admin") {
     throw new Error("Unauthorized");
   }
 
@@ -24,7 +24,7 @@ export async function getAllEmployees() {
 export async function addEmployee(formData: FormData) {
   try {
     const admin = await getAuthenticatedEmployee();
-    if (!admin || admin.role !== "super_admin") {
+    if (!admin || admin.role !== "admin") {
       return { success: false, error: "Unauthorized. Only Super Admin can add employees." };
     }
 
@@ -97,7 +97,7 @@ export async function addEmployee(formData: FormData) {
 export async function toggleEmployeeStatus(employeeId: string, currentActiveStatus: boolean) {
   try {
     const admin = await getAuthenticatedEmployee();
-    if (!admin || admin.role !== "super_admin") {
+    if (!admin || admin.role !== "admin") {
       return { success: false, error: "Unauthorized" };
     }
 

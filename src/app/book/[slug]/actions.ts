@@ -182,25 +182,60 @@ export async function createBooking(
       }
       // ----------------------------------------
 
-      // Lock the clinic row to serialize token generation for this clinic
-      await tx
-        .select()
-        .from(clinics)
-        .where(eq(clinics.id, clinicId))
-        .for("update");
+      // ─── CHRONOLOGICAL TOKEN ASSIGNMENT ────────────────────────────────────
+      // Tokens are assigned based on the slot's chronological position in the
+      // day's schedule, NOT insertion order. This guarantees:
+      //   Morning 10:00 AM = Token 1, Afternoon 2:00 PM = Token 5, etc.
+      // regardless of which order patients book.
 
-      const { max } = await import("drizzle-orm");
-      const [maxTokenData] = await tx
-        .select({ maxToken: max(appointments.tokenNumber) })
-        .from(appointments)
-        .where(
-          and(
-            eq(appointments.clinicId, clinicId),
-            eq(appointments.appointmentDate, dateStr)
-          )
-        );
-        
-      const nextToken = (maxTokenData?.maxToken || 0) + 1;
+      // Get the clinic's schedule for this day to build ordered slot list
+      const dateObjTx = parseISO(dateStr);
+      const dayOfWeekTx = getDay(dateObjTx);
+
+      const sessions = await tx
+        .select()
+        .from(availability)
+        .where(and(eq(availability.clinicId, clinicId), eq(availability.dayOfWeek, dayOfWeekTx)));
+
+      let chronologicalSlots: string[] = [];
+
+      if (sessions.length > 0) {
+        const slotDurationMinutes = sessions[0].slotDurationMinutes || 15;
+        const allSlotsSet = new Set<string>();
+
+        for (const session of sessions) {
+          const [startH, startM] = session.startTime.split(":").map(Number);
+          const [endH, endM] = session.endTime.split(":").map(Number);
+          let current = new Date(dateObjTx);
+          current.setHours(startH, startM, 0, 0);
+          const end = new Date(dateObjTx);
+          end.setHours(endH, endM, 0, 0);
+          while (current < end) {
+            allSlotsSet.add(format(current, "HH:mm"));
+            current = addMinutes(current, slotDurationMinutes);
+          }
+        }
+        chronologicalSlots = Array.from(allSlotsSet).sort();
+      }
+
+      // Find chronological index of the requested time slot
+      const slotIndex = chronologicalSlots.indexOf(timeStr);
+
+      let nextToken: number;
+
+      if (slotIndex !== -1) {
+        // Standard slot: token = 1-based chronological position
+        nextToken = slotIndex + 1;
+      } else {
+        // Non-standard time (manual override, walk-in outside schedule):
+        // Append after the highest existing token.
+        const { max } = await import("drizzle-orm");
+        const [maxTokenData] = await tx
+          .select({ maxToken: max(appointments.tokenNumber) })
+          .from(appointments)
+          .where(and(eq(appointments.clinicId, clinicId), eq(appointments.appointmentDate, dateStr)));
+        nextToken = (maxTokenData?.maxToken || 0) + 1;
+      }
       const cancelToken = crypto.randomUUID();
 
       finalTokenNumber = nextToken;

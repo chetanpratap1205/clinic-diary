@@ -20,6 +20,7 @@ import { ClinicLogo } from "./clinic-logo";
 import { FAQAccordion } from "./faq-accordion";
 import { InstallAppSection } from "@/components/install-app-section";
 import Link from "next/link";
+import Image from "next/image";
 import { trackLeadView } from "@/app/admin/leads/actions";
 import {
   MapPin,
@@ -30,21 +31,15 @@ import {
   BadgeCheck,
   ShieldCheck,
   Stethoscope,
-  Users,
   MessageCircle,
   HelpCircle,
-  ChevronRight,
-  Image as ImageIcon,
   Sparkles,
-  Award,
   CalendarCheck,
   Activity,
   Share2,
   CheckCircle2,
-  HeartPulse,
-  Microscope,
   Zap,
-  Timer
+  Timer,
 } from "lucide-react";
 import type { Metadata } from "next";
 import { formatDoctorName } from "@/lib/utils";
@@ -154,7 +149,7 @@ export async function generateMetadata({
     location: cityOrLocality,
   });
   const canonicalUrl = `${BASE_URL}/book/${slug}`;
-  const titleText = `Book Appointment - ${displayDoctorName} | ${specialtyConfig.displayName}${locationTag} | ${clinic.name}`;
+  const titleText = `${displayDoctorName} | ${specialtyConfig.displayName}${locationTag} | ${clinic.name}`;
   const descText = `Book a free appointment with ${displayDoctorName} (${specialtyConfig.displayName}) at ${clinic.name}${locationTag}. Instant OPD token & live queue position tracking on mobile.`;
 
   return {
@@ -319,7 +314,22 @@ export default async function BookingPage({
   const safeLogoUrl = isSafeImageUrl(clinic.logoUrl) ? clinic.logoUrl : null;
   const formattedFee = clinic.consultationFee ? `₹${Number(clinic.consultationFee).toLocaleString("en-IN")}` : "Free";
 
-  const faqItems = [
+  const faqItems = lang === "hi" ? [
+    {
+      question: `${displayDoctorName} के साथ अपॉइंटमेंट कैसे बुक करें?`,
+      answer: `बुकिंग बॉक्स में अपनी पसंदीदा तारीख और समय चुनें, नाम और मोबाइल नंबर डालें — आपका लाइव OPD टोकन तुरंत मिल जाएगा। ऑनलाइन बुकिंग का कोई शुल्क नहीं।`,
+    },
+    {
+      question: `क्या ऑनलाइन बुकिंग मुफ्त है? परामर्श शुल्क क्या है?`,
+      answer: clinic.consultationFee
+        ? `Doctor Diary पर ऑनलाइन बुकिंग पूरी तरह मुफ्त है। परामर्श शुल्क ${formattedFee} सीधे ${clinic.name} पर अपनी विजिट के दौरान देना होगा।`
+        : `Doctor Diary पर ऑनलाइन बुकिंग पूरी तरह मुफ्त है। परामर्श शुल्क के लिए कृपया ${clinic.name} से संपर्क करें।`,
+    },
+    {
+      question: `अपनी कतार में अपना नंबर कैसे ट्रैक करें?`,
+      answer: `बुकिंग के बाद आपको एक ट्रैकिंग लिंक मिलेगा। "लाइव स्थिति" पर क्लिक करें और घर से अपनी बारी देखें।`,
+    },
+  ] : [
     {
       question: `How do I book an appointment with ${displayDoctorName}?`,
       answer: `Select your preferred date and time slot in the booking box, enter your name and mobile number, and your live OPD token is generated instantly — zero online booking fee.`,
@@ -434,220 +444,244 @@ export default async function BookingPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
       />
       
-      {/* Premium Mesh Gradient Background Aurora */}
-      <div className="absolute top-0 inset-x-0 h-[850px] overflow-hidden -z-10 pointer-events-none bg-slate-50">
-        {/* Superior SVG Noise Texture */}
-        <div 
-          className="absolute inset-0 opacity-[0.04] mix-blend-overlay z-10" 
-          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} 
-        />
-        {/* Dynamic Blobs with improved blending */}
-        <div className="absolute -top-[20%] -right-[10%] w-[70%] h-[70%] rounded-full opacity-[0.12] blur-[120px] mix-blend-multiply animate-[spin_40s_linear_infinite]" style={{ backgroundColor: themeColor }} />
-        <div className="absolute top-[10%] -left-[10%] w-[60%] h-[60%] rounded-full opacity-[0.10] blur-[130px] mix-blend-multiply animate-[spin_50s_linear_infinite_reverse]" style={{ backgroundColor: themeColor }} />
-        <div className="absolute top-[50%] left-[20%] w-[50%] h-[50%] rounded-full opacity-[0.08] blur-[100px] mix-blend-multiply animate-[pulse_10s_ease-in-out_infinite]" style={{ backgroundColor: themeColor }} />
-        
-        {/* Subtle white vignette fade at the bottom */}
-        <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-slate-50 to-transparent z-10" />
-      </div>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          BILINGUAL HERO SECTION (2-Column Desktop, Background Image Mobile)
+          PREMIUM HERO SECTION — WOW First Impression
+          Desktop: 3-col (Doctor Portrait | Info+Stats | Booking Widget)
+          Mobile:  Avatar → Name → Specialty → Stats → [Book CTA via bottom bar]
       ══════════════════════════════════════════════════════════════════════ */}
-      <section className="relative pt-8 pb-12 sm:pt-14 sm:pb-16 px-4 sm:px-6 lg:px-8">
-        {/* Mobile Background Hero Image */}
-        {isSafeImageUrl(clinic.heroImageUrl) && (
-          <div className="absolute inset-0 lg:hidden overflow-hidden -z-10 pointer-events-none">
-             <img src={clinic.heroImageUrl!} alt="" className="w-full h-full object-cover object-top opacity-60 mix-blend-multiply" />
-             <div className="absolute inset-0 bg-gradient-to-t from-slate-50 via-slate-50/90 to-slate-50/20" />
-          </div>
-        )}
+      <section aria-labelledby="hero-doctor-name" className="relative pt-8 pb-14 sm:pt-14 sm:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
 
-        <div className="max-w-6xl mx-auto relative z-10">
-          <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8 lg:gap-12">
-            
-            {/* Left Column: Doctor Portrait Card (Desktop Only - Mobile combines into unified hero) */}
-            <div className="hidden lg:block w-[320px] shrink-0 animate-in fade-in slide-in-from-left-8 duration-1000 ease-out">
-              {isSafeImageUrl(clinic.heroImageUrl) ? (
-                <div 
-                  className="w-full aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-white relative group transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] ring-1 ring-black/5"
-                  style={{ boxShadow: `0 30px 60px -15px ${themeColor}35` }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/40 to-white/0 opacity-0 group-hover:opacity-100 group-hover:translate-x-full duration-1000 transition-all z-20 pointer-events-none -skew-x-12 -translate-x-full" />
-                  <img src={clinic.heroImageUrl!} alt={displayDoctorName} className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" />
-                  <div className="absolute top-4 right-4 z-20">
-                    <div className="bg-white/90 backdrop-blur-md text-slate-800 px-3 py-1.5 rounded-full shadow-lg ring-1 ring-white/50 flex items-center gap-1.5 font-bold text-xs">
-                      <BadgeCheck className="w-4 h-4 text-white fill-[#1d9bf0]" />
-                      {t.verifiedOfficial}
-                    </div>
-                  </div>
-                  <div className="absolute bottom-4 inset-x-4 z-20">
-                    <div className="w-full bg-white/95 backdrop-blur-xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-2xl p-3 flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <div className="relative flex h-3 w-3">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border border-white"></span>
-                        </div>
-                        <span className="text-[11px] font-black uppercase tracking-widest text-emerald-700">{t.openNow}</span>
-                      </div>
-                      <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg">{t.acceptingTokens}</span>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div 
-                  className="w-full aspect-[4/4.5] rounded-[2.5rem] relative group transition-all duration-500 hover:-translate-y-2 flex flex-col items-center justify-center p-6 text-center"
-                  style={{ 
-                    background: `linear-gradient(145deg, #ffffff, #f8fafc)`,
-                    boxShadow: `0 30px 60px -15px ${themeColor}25`
-                  }}
-                >
-                  <div className="absolute top-4 right-4 z-20">
-                    <div className="bg-white/90 backdrop-blur-md text-slate-800 px-3 py-1.5 rounded-full shadow-lg ring-1 ring-white/50 flex items-center gap-1.5 font-bold text-xs">
-                      <BadgeCheck className="w-4 h-4 text-white fill-[#1d9bf0]" />
-                      {t.verifiedOfficial}
-                    </div>
-                  </div>
+        {/* ─── Aurora Background Layer ─────────────────────────────────── */}
+        <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden">
+          {/* Deep mesh gradient base */}
+          <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse 80% 50% at 50% -20%, ${themeColor}18 0%, transparent 70%), radial-gradient(ellipse 40% 30% at 80% 60%, ${themeColor}10 0%, transparent 60%), #f8fafc` }} />
+          {/* Animated orbs */}
+          <div className="absolute -top-[25%] -right-[15%] w-[65%] h-[65%] rounded-full blur-[130px] opacity-[0.14] animate-[spin_50s_linear_infinite]" style={{ backgroundColor: themeColor }} />
+          <div className="absolute top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full blur-[110px] opacity-[0.10] animate-[spin_60s_linear_infinite_reverse]" style={{ backgroundColor: themeColor }} />
+          {/* Subtle noise texture overlay */}
+          <div className="absolute inset-0 opacity-[0.035]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }} />
+          {/* Bottom fade */}
+          <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-slate-50 to-transparent" />
+        </div>
 
-                  <div 
-                    className="w-32 h-32 rounded-full flex items-center justify-center shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] mb-5 relative overflow-hidden"
-                    style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}dd)`, border: '4px solid white' }}
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-center lg:items-start gap-10 lg:gap-12">
+
+            {/* ─── LEFT: Doctor Portrait Card (Desktop Only) ───────────── */}
+            <div className="hidden lg:flex flex-col gap-4 w-[300px] xl:w-[320px] shrink-0">
+              {/* Portrait */}
+              <div
+                className="w-full aspect-[3/4] rounded-[2rem] overflow-hidden relative group shadow-2xl ring-1 ring-black/8 transition-all duration-500 hover:-translate-y-2"
+                style={{ boxShadow: `0 40px 80px -20px ${themeColor}40` }}
+              >
+                {isSafeImageUrl(clinic.heroImageUrl) ? (
+                  <Image
+                    src={clinic.heroImageUrl!}
+                    alt={`${displayDoctorName} - ${specialtyConfig.displayName}`}
+                    fill
+                    sizes="320px"
+                    className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                    priority
+                  />
+                ) : (
+                  <div
+                    className="w-full h-full flex items-center justify-center text-white text-8xl font-black"
+                    style={{ background: `linear-gradient(145deg, ${themeColor}ee, ${themeColor}99)` }}
                   >
-                    {isSafeImageUrl(clinic.logoUrl) ? (
-                      <img src={clinic.logoUrl!} alt={displayDoctorName} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-5xl font-black text-white tracking-widest drop-shadow-md">
-                        {stripDr(clinic.doctorName).charAt(0).toUpperCase()}
-                      </span>
-                    )}
+                    {stripDr(clinic.doctorName).charAt(0).toUpperCase()}
                   </div>
-
-                  <div className="space-y-1 relative z-10">
-                    <span className="inline-block text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
-                      {specialtyConfig.heroBadge}
+                )}
+                {/* Shimmer effect on hover */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
+                {/* Verified badge */}
+                <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                  <BadgeCheck className="w-4 h-4 text-white fill-[#1d9bf0]" />
+                  <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">{t.verifiedOfficial}</span>
+                </div>
+                {/* Live status strip at bottom */}
+                <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/70 via-black/30 to-transparent">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                     </span>
-                    <h2 className="text-2xl font-black text-slate-900 line-clamp-1 mt-2 tracking-tight">{displayDoctorName}</h2>
-                    <p className="text-xs font-bold text-slate-500">{clinic.degree || specialtyConfig.displayName}</p>
+                    <span className="text-[11px] font-black text-white uppercase tracking-widest">{t.openNow}</span>
+                    <span className="ml-auto text-[10px] font-bold text-white/70 bg-white/10 px-2 py-0.5 rounded-full">{t.acceptingTokens}</span>
                   </div>
-                </div>
-              )}
-            </div>
-
-            {/* Main Unified Hero Content (Mobile + Desktop Center) */}
-            <div className="flex-1 w-full text-center lg:text-left space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
-              
-              {/* Mobile Profile Card Header (Mobile Only) */}
-              <div className="lg:hidden flex flex-col items-center text-center space-y-4">
-                {/* Doctor Avatar */}
-                <div className="relative">
-                  <div 
-                    className="w-24 h-24 rounded-full flex items-center justify-center shadow-[0_10px_30px_-5px_rgba(0,0,0,0.2)] overflow-hidden"
-                    style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}dd)`, border: '4px solid white' }}
-                  >
-                    {isSafeImageUrl(clinic.logoUrl) ? (
-                      <img src={clinic.logoUrl!} alt={displayDoctorName} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-4xl font-black text-white tracking-widest">
-                        {stripDr(clinic.doctorName).charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                  <div className="absolute bottom-0 right-0 bg-white p-0.5 rounded-full shadow-md">
-                    <BadgeCheck className="w-7 h-7 text-white fill-[#1d9bf0]" />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <div 
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-slate-200 text-[10px] font-black tracking-widest uppercase"
-                    style={{ color: themeColor }}
-                  >
-                    <Stethoscope className="w-3 h-3" /> {specialtyConfig.heroBadge}
-                  </div>
-                  <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                    {displayDoctorName}
-                  </h1>
-                  <p className="text-xs text-slate-500 font-bold">
-                    {clinic.degree ? `${clinic.degree} · ${specialtyConfig.displayName}` : specialtyConfig.displayName}
-                  </p>
                 </div>
               </div>
 
-              {/* Desktop Title & Subtitle */}
-              <div className="hidden lg:block space-y-3">
-                <div 
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-white/60 text-[11px] font-black tracking-widest uppercase" 
-                  style={{ color: themeColor, boxShadow: `0 8px 20px -8px ${themeColor}40` }}
+              {/* Clinic name badge below portrait */}
+              <div className="bg-white/90 backdrop-blur-xl rounded-2xl p-4 shadow-sm ring-1 ring-slate-200/60 flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center text-white font-black text-sm"
+                  style={{ backgroundColor: themeColor }}
                 >
-                  <Stethoscope className="w-3.5 h-3.5" /> {specialtyConfig.heroBadge}
+                  {isSafeImageUrl(clinic.logoUrl) ? (
+                    <Image src={clinic.logoUrl!} alt={clinic.name} width={40} height={40} className="object-cover" />
+                  ) : (
+                    clinic.name.charAt(0).toUpperCase()
+                  )}
                 </div>
-                <h1 className="text-3xl sm:text-4xl md:text-[3.25rem] font-black text-slate-900 tracking-tighter leading-[1.05]">
+                <div className="min-w-0">
+                  <p className="text-xs font-black text-slate-900 truncate">{clinic.name}</p>
+                  {clinic.address && <p className="text-[10px] text-slate-500 font-medium truncate mt-0.5">{clinic.address.split(",")[0]}</p>}
+                </div>
+              </div>
+            </div>
+
+            {/* ─── CENTER: Hero Content ────────────────────────────────── */}
+            <div className="flex-1 w-full text-center lg:text-left space-y-6">
+
+              {/* Mobile: Avatar + Name row */}
+              <div className="lg:hidden flex flex-col items-center space-y-4">
+                {/* Clinic hero image (mobile full-width, if available) */}
+                {isSafeImageUrl(clinic.heroImageUrl) && (
+                  <div className="relative w-full h-52 rounded-[2rem] overflow-hidden shadow-xl ring-1 ring-black/8">
+                    <Image
+                      src={clinic.heroImageUrl!}
+                      alt={`${displayDoctorName} - ${specialtyConfig.displayName}`}
+                      fill
+                      sizes="100vw"
+                      className="object-cover object-top"
+                      priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-slate-900/20 to-transparent" />
+                    <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
+                      <div>
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-1" style={{ backgroundColor: themeColor + "dd" }}>
+                          <Stethoscope className="w-3 h-3 text-white" />
+                          <span className="text-[10px] font-black text-white uppercase tracking-widest">{specialtyConfig.heroBadge}</span>
+                        </div>
+                        <h1 id="hero-doctor-name" className="text-xl font-black text-white drop-shadow-lg leading-tight">{displayDoctorName}</h1>
+                        {clinic.degree && <p className="text-[11px] text-white/80 font-semibold mt-0.5">{clinic.degree}</p>}
+                      </div>
+                      <div className="bg-white/90 backdrop-blur-md px-2.5 py-1.5 rounded-full shadow flex items-center gap-1.5">
+                        <BadgeCheck className="w-3.5 h-3.5 text-white fill-[#1d9bf0]" />
+                        <span className="text-[9px] font-black text-slate-800">{t.verifiedOfficial}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* No hero image fallback (mobile) */}
+                {!isSafeImageUrl(clinic.heroImageUrl) && (
+                  <>
+                    {/* Avatar circle */}
+                    <div className="relative">
+                      <div
+                        className="w-24 h-24 rounded-full overflow-hidden shadow-[0_15px_40px_-10px_rgba(0,0,0,0.25)] ring-4 ring-white flex items-center justify-center text-white text-4xl font-black"
+                        style={{ backgroundColor: themeColor }}
+                      >
+                        {isSafeImageUrl(clinic.logoUrl) ? (
+                          <Image src={clinic.logoUrl!} alt={displayDoctorName} width={96} height={96} className="object-cover" />
+                        ) : (
+                          stripDr(clinic.doctorName).charAt(0).toUpperCase()
+                        )}
+                      </div>
+                      <div className="absolute -bottom-1 -right-1 bg-white p-0.5 rounded-full shadow-md">
+                        <BadgeCheck className="w-7 h-7 text-white fill-[#1d9bf0]" />
+                      </div>
+                    </div>
+                    {/* Name + specialty (shown only when no hero image) */}
+                    <div className="space-y-1">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-slate-200" style={{ color: themeColor }}>
+                        <Stethoscope className="w-3 h-3" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">{specialtyConfig.heroBadge}</span>
+                      </div>
+                      <h1 id="hero-doctor-name" className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{displayDoctorName}</h1>
+                      <p className="text-xs text-slate-500 font-bold">
+                        {clinic.degree ? `${clinic.degree} · ${specialtyConfig.displayName}` : specialtyConfig.displayName}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Desktop: Specialty badge + Name + Description */}
+              <div className="hidden lg:block space-y-4">
+                <div
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-widest border"
+                  style={{ color: themeColor, backgroundColor: `${themeColor}12`, borderColor: `${themeColor}30` }}
+                >
+                  <Stethoscope className="w-3.5 h-3.5" />
+                  {specialtyConfig.heroBadge}
+                </div>
+                <h1 id="hero-doctor-name" className="text-4xl xl:text-[3.5rem] font-black text-slate-900 tracking-tighter leading-[1.04]">
                   {displayDoctorName}
                 </h1>
-                <p className="text-sm sm:text-[15px] text-slate-600 font-medium max-w-md leading-relaxed">
-                  Book your token online and skip the waiting room. Experience world-class {specialtyConfig.displayName.toLowerCase()} care.
+                {clinic.degree && (
+                  <p className="text-sm text-slate-500 font-semibold">{clinic.degree} · {specialtyConfig.displayName}</p>
+                )}
+                <p className="text-base text-slate-600 font-medium max-w-md leading-relaxed">
+                  {lang === "hi"
+                    ? `${clinic.name} में ${specialtyConfig.displayName.toLowerCase()} के लिए विशेषज्ञ देखभाल। ऑनलाइन टोकन बुक करें और लाइव कतार ट्रैक करें।`
+                    : `Expert ${specialtyConfig.displayName.toLowerCase()} care at ${clinic.name}. Book your token online and track the live queue from home.`
+                  }
                 </p>
               </div>
 
-              {/* 10/10 Bento Box Stats Row (Updated) */}
-              <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-2 w-full max-w-md mx-auto lg:mx-0">
-                
-                {/* Credentials Box (Full Width for long degrees) */}
-                <div className="col-span-2 flex items-center p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all hover:bg-white hover:-translate-y-1 group">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-50 border border-slate-100 mr-4 group-hover:scale-110 transition-transform flex-shrink-0">
-                    <Award className="w-5 h-5 text-indigo-500" strokeWidth={2.5} />
+              {/* ─── 3-Box Premium Bento Stats (3-col, 1 row) ─────────── */}
+              <div className="grid grid-cols-3 gap-2.5 sm:gap-3 w-full max-w-sm mx-auto lg:mx-0">
+
+                {/* Box 1: Consultation Fee */}
+                <div className="group flex flex-col items-center lg:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md hover:-translate-y-1">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100 mb-2 group-hover:scale-110 transition-transform">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" strokeWidth={2.5} />
                   </div>
-                  <div>
-                    <p className="text-sm sm:text-[15px] font-black text-slate-900 leading-tight mb-0.5 line-clamp-2">{clinic.degree || "Board Certified Specialist"}</p>
-                    <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.credentials}</p>
-                  </div>
+                  <p className="text-sm sm:text-[15px] font-black text-emerald-600 leading-none mb-1">{formattedFee}</p>
+                  <p className="text-[8px] sm:text-[9.5px] font-black text-slate-400 uppercase tracking-widest text-center lg:text-left">{t.consultFee}</p>
                 </div>
 
-                {/* Fee Box */}
-                <div className="flex flex-col items-center sm:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all hover:bg-white hover:-translate-y-1 group">
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100 mb-2 group-hover:scale-110 transition-transform">
-                    <BadgeCheck className="w-4 h-4 text-emerald-600" strokeWidth={2.5} />
+                {/* Box 2: Avg Consult Time */}
+                <div className="group flex flex-col items-center lg:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md hover:-translate-y-1">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-indigo-50 border border-indigo-100 mb-2 group-hover:scale-110 transition-transform">
+                    <Clock className="w-4 h-4 text-indigo-600" strokeWidth={2.5} />
                   </div>
-                  <p className="text-sm sm:text-base font-black text-emerald-600 leading-none mb-1">{formattedFee}</p>
-                  <p className="text-[8.5px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.consultFee}</p>
+                  <p className="text-sm sm:text-[15px] font-black text-indigo-600 leading-none mb-1">{clinic.averageConsultationMinutes || 15} {lang === "hi" ? "मिनट" : "Min"}</p>
+                  <p className="text-[8px] sm:text-[9.5px] font-black text-slate-400 uppercase tracking-widest text-center lg:text-left">{t.avgConsultTime}</p>
                 </div>
 
-                {/* Smart Queue / Token Box */}
-                <div className="flex flex-col items-center sm:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all hover:bg-white hover:-translate-y-1 group">
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-blue-50 border border-blue-100 mb-2 group-hover:scale-110 transition-transform">
+                {/* Box 3: Smart Queue */}
+                <div className="group flex flex-col items-center lg:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md hover:-translate-y-1">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-50 border border-blue-100 mb-2 group-hover:scale-110 transition-transform">
                     <Zap className="w-4 h-4 text-blue-600" strokeWidth={2.5} />
                   </div>
-                  <p className="text-sm sm:text-base font-black text-blue-600 leading-none mb-1">{t.smartQueueActive}</p>
-                  <p className="text-[8.5px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.liveTracking}</p>
+                  <p className="text-sm sm:text-[15px] font-black text-blue-600 leading-none mb-1">{t.smartQueueActive}</p>
+                  <p className="text-[8px] sm:text-[9.5px] font-black text-slate-400 uppercase tracking-widest text-center lg:text-left">{t.liveTracking}</p>
                 </div>
               </div>
 
-              {/* Pay at clinic & WhatsApp Quick Inquiry Badges */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 pt-1">
-                <div className="px-3.5 py-2 rounded-2xl bg-white/90 backdrop-blur-md border border-emerald-100 flex items-center gap-2 shadow-xs">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span className="text-[10.5px] font-black text-slate-800 uppercase tracking-wider">{t.payFeeAtClinic}</span>
+              {/* ─── Trust Badges Row ─────────────────────────────────── */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
+                <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-white/90 backdrop-blur-md border border-emerald-100 shadow-sm">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="text-[10px] font-black text-slate-800 uppercase tracking-wider">{t.payFeeAtClinic}</span>
                 </div>
 
                 {(clinic.whatsappNumber || clinic.phone) && (
                   <a
-                    href={`https://wa.me/91${String(clinic.whatsappNumber || clinic.phone).replace(/\D/g, "").slice(-10)}?text=${encodeURIComponent(`Hi ${clinic.name}, I would like to inquire about OPD consultation with Dr. ${stripDr(clinic.doctorName)}.`)}`}
+                    href={`https://wa.me/91${String(clinic.whatsappNumber || clinic.phone).replace(/\D/g, "").slice(-10)}?text=${encodeURIComponent(`Hi ${clinic.name}, I would like to inquire about OPD consultation with ${displayDoctorName}.`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3.5 py-2 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 hover:bg-[#25D366] hover:text-white hover:border-[#25D366] transition-all font-black text-[10.5px] uppercase tracking-wider flex items-center gap-1.5 shadow-xs active:scale-95"
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 hover:bg-[#25D366] hover:text-white hover:border-[#25D366] transition-all font-black text-[10px] uppercase tracking-wider shadow-sm active:scale-95"
                   >
-                    <MessageCircle className="w-3.5 h-3.5 text-emerald-600 group-hover:text-white" />
+                    <MessageCircle className="w-3.5 h-3.5" />
                     <span>{t.whatsappInquiry}</span>
                   </a>
                 )}
               </div>
             </div>
 
-            {/* Right Column: Direct Interactive Booking Card (Desktop Only) */}
-            <div className="hidden lg:block w-full lg:w-[460px] shrink-0 animate-in fade-in slide-in-from-right-8 duration-700 delay-150">
-              <div 
-                className="bg-white/95 backdrop-blur-xl rounded-[2.5rem] border border-white/80 p-3 sm:p-4 relative overflow-hidden" 
-                style={{ boxShadow: `0 30px 70px -15px ${themeColor}25, 0 0 0 1px rgba(255,255,255,0.8) inset` }}
+            {/* ─── RIGHT: Booking Widget (Desktop Only) ────────────────── */}
+            <div className="hidden lg:block w-full lg:w-[440px] xl:w-[460px] shrink-0">
+              <div
+                className="bg-white/95 backdrop-blur-2xl rounded-[2rem] border border-white/80 p-4 relative overflow-hidden"
+                style={{ boxShadow: `0 30px 70px -15px ${themeColor}30, 0 0 0 1px rgba(255,255,255,0.9) inset` }}
               >
+                {/* Subtle theme color top accent */}
+                <div className="absolute top-0 inset-x-0 h-1 rounded-t-[2rem]" style={{ background: `linear-gradient(90deg, ${themeColor}, ${themeColor}80)` }} />
                 <BookingClient
                   clinic={clinic}
                   workingDays={workingDays}
@@ -659,10 +693,11 @@ export default async function BookingPage({
                 />
               </div>
             </div>
-            
+
           </div>
         </div>
       </section>
+
 
       {/* ══════════════════════════════════════════════════════════════════════
           MAIN CONTENT (About, Treatments, Location, Reviews, FAQ)
@@ -682,21 +717,31 @@ export default async function BookingPage({
                  <Stethoscope className="w-3.5 h-3.5" style={{ color: themeColor }} /> {t.aboutPractice}
                </div>
                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
-                 Welcome to {clinic.name}
+                 {lang === "hi" ? `${clinic.name} में आपका स्वागत है` : `Welcome to ${clinic.name}`}
                </h2>
                <div className="prose prose-sm sm:prose-base text-slate-600 font-medium leading-relaxed">
                  {clinic.about ? (
                    <p>{clinic.about}</p>
                  ) : (
-                   <>
-                     <p>Led by <strong>Dr. {stripDr(clinic.doctorName)}</strong>, {clinic.name} is a premier healthcare destination specializing in {specialtyConfig.displayName.toLowerCase()}. Our mission is to provide world-class, ethical, and patient-first medical care to our community.</p>
-                     <p>We combine years of clinical excellence with state-of-the-art technology to ensure every patient receives accurate diagnoses and effective treatment plans.</p>
-                   </>
+                   lang === "hi" ? (
+                     <>
+                       <p><strong>डॉ. {stripDr(clinic.doctorName)}</strong> के नेतृत्व में, {clinic.name} {specialtyConfig.displayName.toLowerCase()} में विशेषज्ञता रखने वाला एक प्रमुख स्वास्थ्य केंद्र है। हमारा लक्ष्य हमारे समुदाय को विश्व स्तरीय, नैतिक और रोगी-प्रथम चिकित्सा देखभाल प्रदान करना है।</p>
+                       <p>हम वर्षों की नैदानिक उत्कृष्टता और आधुनिक तकनीक को मिलाकर हर मरीज़ को सटीक निदान और प्रभावी उपचार सुनिश्चित करते हैं।</p>
+                     </>
+                   ) : (
+                     <>
+                       <p>Led by <strong>Dr. {stripDr(clinic.doctorName)}</strong>, {clinic.name} is a premier healthcare destination specializing in {specialtyConfig.displayName.toLowerCase()}. Our mission is to provide world-class, ethical, and patient-first medical care to our community.</p>
+                       <p>We combine years of clinical excellence with state-of-the-art technology to ensure every patient receives accurate diagnoses and effective treatment plans.</p>
+                     </>
+                   )
                  )}
                </div>
-               {/* Point 2: Dynamic tenant-specific mission quote */}
+               {/* Bilingual mission quote */}
                <blockquote className="border-l-4 pl-4 py-2 mt-4 italic text-slate-700 font-semibold text-sm rounded-r-xl bg-slate-50/80 border-slate-300" style={{ borderColor: themeColor }}>
-                 "Our philosophy at {clinic.name} is dedicated to transparent, compassionate care for every patient visiting Dr. {stripDr(clinic.doctorName)}."
+                 {lang === "hi"
+                   ? `"${clinic.name} में हमारी सोच है कि डॉ. ${stripDr(clinic.doctorName)} के प्रत्येक मरीज़ को पारदर्शी और दयालु देखभाल मिले।"`
+                   : `"Our philosophy at ${clinic.name} is dedicated to transparent, compassionate care for every patient visiting Dr. ${stripDr(clinic.doctorName)}."`
+                 }
                </blockquote>
              </div>
              
@@ -706,7 +751,9 @@ export default async function BookingPage({
                  <div className="bg-slate-900 p-5 rounded-3xl text-white flex flex-col justify-between flex-1 shadow-xl relative overflow-hidden group/card border border-slate-800">
                    <div className="flex items-center gap-2 mb-3">
                      <Clock className="w-5 h-5 text-emerald-400" />
-                     <span className="text-xs font-black uppercase tracking-wider text-slate-200">Operating Schedule</span>
+                     <span className="text-xs font-black uppercase tracking-wider text-slate-200">
+                       {lang === "hi" ? "समय सारिणी" : "Operating Schedule"}
+                     </span>
                    </div>
                    <div className="space-y-1.5 text-xs text-slate-300 font-medium max-h-[140px] overflow-y-auto pr-2 custom-scrollbar">
                      {daysMap.map(day => (
@@ -762,7 +809,9 @@ export default async function BookingPage({
           <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 border border-white/80 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)]">
             <div className="text-center mb-8">
               <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{t.whyChooseUs}</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1.5">World-class healthcare built around your comfort.</p>
+              <p className="text-sm text-slate-500 font-medium mt-1.5">
+                {lang === "hi" ? "आपकी सुविधा के लिए विश्व-स्तरीय स्वास्थ्य सेवा।" : "World-class healthcare built around your comfort."}
+              </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div className="flex flex-col items-center text-center gap-3 p-5 rounded-3xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
@@ -770,8 +819,8 @@ export default async function BookingPage({
                   <Timer className="w-7 h-7 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-slate-900 text-sm">Book in 20 Seconds</h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">Select date, time, and enter your name & number. Instant confirmation.</p>
+                  <h3 className="font-extrabold text-slate-900 text-sm">{lang === "hi" ? "20 सेकंड में बुकिंग" : "Book in 20 Seconds"}</h3>
+                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">{lang === "hi" ? "तारीख, समय और नाम-मोबाइल डालें। तुरंत पुष्टि।" : "Select date, time, and enter your name & number. Instant confirmation."}</p>
                 </div>
               </div>
               <div className="flex flex-col items-center text-center gap-3 p-5 rounded-3xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
@@ -779,8 +828,8 @@ export default async function BookingPage({
                   <Activity className="w-7 h-7 text-emerald-600" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-slate-900 text-sm">See Your Queue Live</h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">Track your real-time turn from home. Arrive when the doctor is ready.</p>
+                  <h3 className="font-extrabold text-slate-900 text-sm">{lang === "hi" ? "लाइव कतार देखें" : "See Your Queue Live"}</h3>
+                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">{lang === "hi" ? "घर से अपना नंबर ट्रैक करें। डॉक्टर तैयार हों तब आएं।" : "Track your real-time turn from home. Arrive when the doctor is ready."}</p>
                 </div>
               </div>
               <div className="flex flex-col items-center text-center gap-3 p-5 rounded-3xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
@@ -788,8 +837,8 @@ export default async function BookingPage({
                   <ShieldCheck className="w-7 h-7 text-pink-600" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-slate-900 text-sm">Zero Booking Fee</h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">100% free to book. Pay the consultation fee directly at the clinic.</p>
+                  <h3 className="font-extrabold text-slate-900 text-sm">{lang === "hi" ? "शून्य बुकिंग शुल्क" : "Zero Booking Fee"}</h3>
+                  <p className="text-xs text-slate-500 font-medium mt-1.5 leading-relaxed">{lang === "hi" ? "बुकिंग 100% मुफ्त। फीस सीधे क्लिनिक में दें।" : "100% free to book. Pay the consultation fee directly at the clinic."}</p>
                 </div>
               </div>
             </div>
@@ -825,7 +874,7 @@ export default async function BookingPage({
                   <MapPin className="w-4 h-4 text-slate-400" /> {t.locationContact}
                 </h2>
                 <a href={`https://wa.me/?text=${encodeURIComponent(`Book an appointment with ${clinic.name}: ${BASE_URL}/book/${slug}`)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full text-[10px] font-bold hover:bg-emerald-100 transition-colors active:scale-95" aria-label="Share Clinic Link on WhatsApp">
-                  <Share2 className="w-3 h-3" /> Share
+                  <Share2 className="w-3 h-3" /> {lang === "hi" ? "शेयर" : "Share"}
                 </a>
               </div>
               
@@ -846,7 +895,7 @@ export default async function BookingPage({
                             className="inline-flex items-center justify-center gap-1.5 bg-[#4285F4] text-white px-3 py-2.5 rounded-2xl text-[11px] font-bold hover:bg-[#3367D6] transition-all shadow-md active:scale-95 text-center"
                             aria-label="Navigate via Google Maps"
                           >
-                            <MapPin className="w-3.5 h-3.5" /> Navigate
+                            <MapPin className="w-3.5 h-3.5" /> {lang === "hi" ? "रास्ता" : "Navigate"}
                           </a>
 
                           {clinic.phone && (
@@ -854,7 +903,7 @@ export default async function BookingPage({
                               href={`tel:+91${clinic.phone.replace(/\D/g, "").slice(-10)}`} 
                               className="inline-flex items-center justify-center gap-1.5 bg-slate-900 text-white px-3 py-2.5 rounded-2xl text-[11px] font-bold hover:bg-slate-800 transition-all shadow-md active:scale-95 text-center"
                             >
-                              <Phone className="w-3.5 h-3.5" /> Call Clinic
+                              <Phone className="w-3.5 h-3.5" /> {lang === "hi" ? "कॉल करें" : "Call Clinic"}
                             </a>
                           )}
 
@@ -916,7 +965,7 @@ export default async function BookingPage({
             {/* FAQ */}
             <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] border border-white/80 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] p-6">
               <h2 className="text-sm font-black text-slate-900 flex items-center gap-2 mb-4">
-                <HelpCircle className="w-4 h-4 text-slate-400" /> Frequently Asked Questions
+                <HelpCircle className="w-4 h-4 text-slate-400" /> {lang === "hi" ? "अक्सर पूछे जाने वाले सवाल" : "Frequently Asked Questions"}
               </h2>
               <FAQAccordion faqs={faqItems} themeColor={themeColor} />
             </div>
@@ -931,7 +980,7 @@ export default async function BookingPage({
               <ScrollReveal delay={0.2}>
                 <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
                   <h2 className="text-sm font-black text-slate-800 flex items-center gap-2 mb-4">
-                    <Sparkles className="w-4 h-4 text-slate-400" /> Treatments & Services
+                    <Sparkles className="w-4 h-4 text-slate-400" /> {lang === "hi" ? "उपचार और सेवाएँ" : "Treatments & Services"}
                   </h2>
                   <div className="space-y-3">
                     {services.map((service) => (
@@ -1009,7 +1058,12 @@ export default async function BookingPage({
                 </div>
                 <span className="font-bold text-slate-800 text-sm tracking-tight line-clamp-1">{clinic.name}</span>
               </div>
-              <p className="text-xs text-slate-500 leading-relaxed font-medium">Delivering world-class {specialtyConfig.displayName.toLowerCase()} care with a commitment to clinical excellence, complete transparency, and paramount patient comfort.</p>
+              <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                {lang === "hi"
+                  ? `${clinic.name} में ${specialtyConfig.displayName.toLowerCase()} की विश्व स्तरीय देखभाल — नैदानिक उत्कृष्टता, पारदर्शिता और रोगी आराम के प्रति प्रतिबद्ध।`
+                  : `Delivering world-class ${specialtyConfig.displayName.toLowerCase()} care with a commitment to clinical excellence, complete transparency, and paramount patient comfort.`
+                }
+              </p>
             </div>
             <div className="space-y-4">
               <h4 className="font-black text-slate-800 text-sm uppercase tracking-wider">{t.quickLinks}</h4>
@@ -1024,7 +1078,7 @@ export default async function BookingPage({
               <ul className="space-y-2 text-xs font-medium text-slate-500">
                 <li><Link href="/privacy" target="_blank" className="hover:text-slate-900 transition-colors">{t.privacyPolicy}</Link></li>
                 <li><Link href="/terms" target="_blank" className="hover:text-slate-900 transition-colors">{t.termsOfService}</Link></li>
-                <li><Link href="/refund" target="_blank" className="hover:text-slate-900 transition-colors">Refund & Cancellation</Link></li>
+                <li><Link href="/refund" target="_blank" className="hover:text-slate-900 transition-colors">{lang === "hi" ? "रिफंड और रद्दीकरण" : "Refund & Cancellation"}</Link></li>
               </ul>
             </div>
             <div className="space-y-4">

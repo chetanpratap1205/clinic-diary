@@ -18,9 +18,6 @@ import {
   SPECIALTIES,
   LEAD_SOURCES,
   LEAD_STATUSES,
-  LEAD_PRIORITIES,
-  LEAD_CATEGORIES,
-  getSuggestedPillar,
 } from "./message-builder";
 import { createLead, updateLead, getGrowthPartners, getEmployees } from "./actions";
 import { useEffect } from "react";
@@ -76,8 +73,7 @@ export function AddEditLeadModal({ lead = null, open, onOpenChange, onSuccess }:
   if (!open) return null;
 
   const handleSpecialtyChange = (val: string) => {
-    const suggestedPillar = getSuggestedPillar(val);
-    setForm((f) => ({ ...f, specialty: val, domainPillar: suggestedPillar }));
+    setForm((f) => ({ ...f, specialty: val }));
   };
 
   const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -239,95 +235,12 @@ export function AddEditLeadModal({ lead = null, open, onOpenChange, onSuccess }:
               </div>
             </div>
 
-            {/* Public Profile Details */}
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Public Profile Details (For Demo Page)</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-sm">Degree</Label>
-                  <Input
-                    placeholder="MBBS, MD"
-                    value={form.degree}
-                    onChange={set("degree")}
-                    className="h-9"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm">Consultation Fee (₹)</Label>
-                  <Input
-                    type="number"
-                    placeholder="500"
-                    value={form.consultationFee}
-                    onChange={set("consultationFee")}
-                    className="h-9"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm">Experience (Years)</Label>
-                  <Input
-                    type="number"
-                    placeholder="10"
-                    value={form.experienceYears}
-                    onChange={set("experienceYears")}
-                    className="h-9"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm">Timings</Label>
-                  <Input
-                    placeholder="Mon-Sat 10:00 AM - 8:00 PM"
-                    value={form.timings}
-                    onChange={set("timings")}
-                    className="h-9"
-                  />
-                </div>
-                <div className="space-y-1.5 sm:col-span-2">
-                  <Label className="text-sm">Logo URL</Label>
-                  <Input
-                    placeholder="https://example.com/logo.png"
-                    value={form.logoUrl}
-                    onChange={set("logoUrl")}
-                    className="h-9"
-                  />
-                </div>
-                <div className="space-y-1.5 sm:col-span-2">
-                  <Label className="text-sm">About</Label>
-                  <textarea
-                    placeholder="Short bio about the doctor..."
-                    value={form.about}
-                    onChange={set("about")}
-                    rows={2}
-                    className="w-full text-sm p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
-                  />
-                </div>
-              </div>
-            </div>
+
 
             {/* Pipeline Info */}
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Pipeline & Playbook</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Pipeline & Assignment</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-sm">Lead Category</Label>
-                  <Select
-                    value={form.leadCategory}
-                    onValueChange={(v) => setForm((f) => ({ ...f, leadCategory: v }))}
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LEAD_CATEGORIES.map((c) => (
-                        <SelectItem key={c.value} value={c.value}>
-                          <div>
-                            <p className="font-medium">{c.label}</p>
-                            <p className="text-xs text-slate-500">{c.desc}</p>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
                 
                 <div className="space-y-1.5">
                   <Label className="text-sm">Assigned Partner</Label>
@@ -402,22 +315,6 @@ export function AddEditLeadModal({ lead = null, open, onOpenChange, onSuccess }:
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-sm">Priority</Label>
-                  <Select
-                    value={form.priority}
-                    onValueChange={(v) => setForm((f) => ({ ...f, priority: v }))}
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LEAD_PRIORITIES.map((p) => (
-                        <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
                   <Label className="text-sm">Follow-Up Date</Label>
                   <Input
                     type="date"
@@ -426,25 +323,6 @@ export function AddEditLeadModal({ lead = null, open, onOpenChange, onSuccess }:
                     className="h-9"
                   />
                 </div>
-                {form.specialty && (
-                  <div className="space-y-1.5">
-                    <Label className="text-sm">Domain Pillar</Label>
-                    <Select
-                      value={form.domainPillar}
-                      onValueChange={(v) => setForm((f) => ({ ...f, domainPillar: v }))}
-                    >
-                      <SelectTrigger className="h-9">
-                        <SelectValue placeholder="Auto-suggested from specialty" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="growth">Growth & Reputation</SelectItem>
-                        <SelectItem value="efficiency">Time & Efficiency</SelectItem>
-                        <SelectItem value="continuity">Patient Continuity</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-slate-400">Auto-suggested based on specialty</p>
-                  </div>
-                )}
               </div>
             </div>
 

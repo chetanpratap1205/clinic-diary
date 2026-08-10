@@ -35,28 +35,11 @@ export const LEAD_STATUSES = [
   { value: "rejected", label: "Rejected" },
 ];
 
-export const LEAD_PRIORITIES = [
-  { value: "hot", label: "🔥 Hot" },
-  { value: "warm", label: "🟡 Warm" },
-  { value: "normal", label: "Normal" },
-  { value: "cold", label: "❄ Cold" },
-];
-
-export const LEAD_CATEGORIES = [
-  { value: "A", label: "Cold Outreach", desc: "Discovered via Google Maps / Instagram / LinkedIn" },
-  { value: "B", label: "Visited Clinic", desc: "Your team has physically visited the clinic" },
-  { value: "C", label: "Inbound Lead", desc: "Doctor reached out to you directly" },
-];
-
 export const LEAD_SOURCES = [
   { value: "google_maps", label: "Google Maps 🗺️" },
-  { value: "instagram", label: "Instagram 📸" },
-  { value: "linkedin", label: "LinkedIn 💼" },
-  { value: "field_visit", label: "Field Visit 🚗" },
-  { value: "online", label: "Inbound Web 🌐" },
-  { value: "imported", label: "CSV Import 📄" },
-  { value: "growth_partner", label: "Growth Partner 🤝" },
+  { value: "social_media", label: "Social Media 📱" },
   { value: "referral", label: "Referral 👥" },
+  { value: "manual", label: "Manual / Other ✍️" },
 ];
 
 export const SPECIALTIES = [
@@ -92,13 +75,12 @@ export const SPECIALTIES = [
 export function generateLeadDemoUrl(lead: {
   clinicSlug?: string | null;
 }): string {
-  // We MUST use the actual clinicSlug from the database.
-  // Fallbacks create broken links since they bypass collision checks.
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in";
   if (!lead.clinicSlug) {
     console.warn("generateLeadDemoUrl: lead.clinicSlug is missing, returning base url");
-    return "https://doctor.naturexpress.in/demo";
+    return `${baseUrl}/demo`;
   }
-  return `https://doctor.naturexpress.in/book/${lead.clinicSlug}`;
+  return `${baseUrl}/book/${lead.clinicSlug}`;
 }
 
 // ─── Step / Category Helpers ──────────────────────────────────────────────────
@@ -106,15 +88,10 @@ export function getSuggestedPillar(specialty: string | null | undefined): string
   return "growth";
 }
 
-export function getNextStepLabel(currentStep: number, category: string): string {
+export function getNextStepLabel(currentStep: number): string {
   const next = currentStep + 1;
   if (next > 3) return "All Steps Sent";
-  return `Send Step ${next} (${getCategoryLabel(category)})`;
-}
-
-export function getCategoryLabel(cat: string): string {
-  const found = LEAD_CATEGORIES.find((c) => c.value === cat.toUpperCase());
-  return found?.label ?? "Unknown";
+  return `Send Step ${next}`;
 }
 
 function extractLastName(name: string): string {
@@ -122,198 +99,66 @@ function extractLastName(name: string): string {
   return clean.split(/\s+/)[0] || clean;
 }
 
-// ─── Category A — Cold Outreach Messages ─────────────────────────────────────
-export function buildCategoryAMessage(lead: LeadForMessage, step: number): string {
+// ─── Universal Messaging Sequence ──────────────────────────────────────────────
+export function buildUniversalMessage(lead: LeadForMessage, step: number): string {
   const name = extractLastName(lead.doctorName);
   const clinicName = lead.clinicName || "your clinic";
   const city = lead.city || "your area";
   const demoUrl = generateLeadDemoUrl(lead);
+  const videoUrl = "https://youtu.be/doctor-diary-demo"; // Replace with actual video link later
 
   if (step === 1) {
-    return `Good morning ${formatDoctorName(name)},
+    return `Dr. ${formatDoctorName(name)}, I recently looked for ${clinicName} online but couldn't find a direct way to book an appointment.
 
-While reviewing healthcare listings in ${city}, we noticed that ${clinicName} doesn't yet have a dedicated online booking page that patients can access directly.
+Patients search 24x7, and without a booking link on your Google Maps, you're losing them to competitors.
 
-So we prepared one specifically for your clinic.
-
+To fix this, our engineering team built a custom booking site just for you:
 🔗 ${demoUrl}
 
-It already includes your clinic details and is not public yet.
+Link it to your Google Maps, Instagram, and Clinic QR code so patients can book 24x7x365. 
 
-We'd genuinely appreciate your opinion before we activate it. If you get just 60 seconds today, have a look.
+Watch this 60-second video to see how it works: ${videoUrl}
 
-— Doctor Diary Onboarding Team`;
+Shall we activate this for you?
+
+— Doctor Diary Team`;
   }
 
   if (step === 2) {
-    return `${formatDoctorName(name)},
+    return `Dr. ${formatDoctorName(name)}, checking if you had a moment to see the booking site we built for ${clinicName}?
 
-Thank you if you've already seen the page.
+Clinics in ${city} using this setup have seen patient visits increase by up to 50% simply by being bookable 24x7. 
 
-One thing we noticed after speaking with independent clinics is this:
-Doctors rarely lose patients because of treatment. They lose patients because follow-ups become inconvenient.
+Unlike other apps, we charge 0% commission. You keep 100% of your earnings. Plus, you don't have to change your routine—you can keep writing on your regular paper Rx pad.
 
-That's exactly what Doctor Diary solves for ${clinicName}:
-• Patients book without calling repeatedly.
-• 1-click WhatsApp preset messages reduce missed follow-ups.
-• Reception spends less time answering routine calls.
-• You continue practicing exactly the way you do today (no change to how you write prescriptions).
+All at a cost less than a cup of tea per day.
 
-No commissions. No marketplace. All at a pricing that costs less than a cup of tea per day.
+🔗 ${demoUrl}
 
-If you'd like to activate your clinic page, simply reply:
-*Activate*
-
-We'll take care of everything else.`;
+If you want to stop losing patients to other clinics, reply 'YES' to claim your 14-day free trial.`;
   }
 
   // Step 3 — Clean Exit / Takeaway
-  return `${formatDoctorName(name)},
+  return `Dr. ${formatDoctorName(name)}, this is my last follow-up regarding your custom booking app.
 
-This will be my final message.
+We are limiting this technology to only a few premium clinics in ${city} to ensure they completely dominate local patient searches.
 
-I understand adopting something new isn't a priority when patient care comes first.
-
-Your clinic page will remain reserved here:
+I'll leave your booking site active for another 48 hours:
 🔗 ${demoUrl}
 
-If at any point you decide you'd like patients to book online, reduce follow-up no-shows with 1-click WhatsApp reminders, or simplify reception work, just reply to this chat.
+If you don't need it, no problem. We will release this spot to another specialist in your area. 
 
-We'll handle the setup. Wishing you and your team continued success.
-
-— Doctor Diary Onboarding Team`;
-}
-
-// ─── Category B — Visited Clinic Messages ────────────────────────────────────
-export function buildCategoryBMessage(lead: LeadForMessage, step: number): string {
-  const name = extractLastName(lead.doctorName);
-  const clinicName = lead.clinicName || "your clinic";
-  const demoUrl = generateLeadDemoUrl(lead);
-
-  if (step === 1) {
-    return `Good morning ${formatDoctorName(name)},
-
-Following up on our team's recent visit to ${clinicName}, we wanted to share something we prepared specifically for you.
-
-We noticed many clinics lose out because they lack a dedicated online booking page. So we reserved this digital identity exclusively for your clinic:
-
-🔗 ${demoUrl}
-
-It already includes your clinic details and is not public yet.
-
-We'd genuinely appreciate your opinion before we activate it. If you get just 60 seconds today, have a look.
-
-— Doctor Diary Onboarding Team`;
-  }
-
-  if (step === 2) {
-    return `${formatDoctorName(name)},
-
-Thank you if you've already seen the page we discussed during our visit.
-
-One thing we noticed after speaking with independent clinics is this:
-Doctors rarely lose patients because of treatment. They lose patients because follow-ups become inconvenient.
-
-That's exactly what Doctor Diary solves for ${clinicName}:
-• Patients book without calling repeatedly.
-• 1-click WhatsApp preset messages reduce missed follow-ups.
-• Reception spends less time answering routine calls.
-• You continue practicing exactly the way you do today.
-
-No commissions. No marketplace. All at a pricing that costs less than a cup of tea per day.
-
-If you'd like to activate your clinic page, simply reply:
-*Activate*
-
-We'll take care of everything else.`;
-  }
-
-  return `${formatDoctorName(name)},
-
-This will be my final message.
-
-I understand adopting something new isn't a priority when patient care comes first.
-
-Your clinic page will remain reserved here:
-🔗 ${demoUrl}
-
-If at any point you decide you'd like patients to book online, reduce follow-up no-shows with 1-click WhatsApp messages, or simplify reception work, just reply to this chat.
-
-We'll handle the setup. Wishing you and your team continued success.
-
-— Doctor Diary Onboarding Team`;
-}
-
-// ─── Category C — Inbound Lead Messages ──────────────────────────────────────
-export function buildCategoryCMessage(lead: LeadForMessage, step: number): string {
-  const name = extractLastName(lead.doctorName);
-  const clinicName = lead.clinicName || "your clinic";
-  const demoUrl = generateLeadDemoUrl(lead);
-
-  if (step === 1) {
-    return `Good morning ${formatDoctorName(name)},
-
-Thank you for reaching out regarding Doctor Diary for ${clinicName}. 
-
-We wanted to make sure your digital identity was reserved right away, so we prepared your dedicated online booking page.
-
-🔗 ${demoUrl}
-
-It already includes your clinic details and is not public yet.
-
-We'd genuinely appreciate your opinion on the design before we activate it. Have a look when you get 60 seconds today.
-
-— Doctor Diary Onboarding Team`;
-  }
-
-  if (step === 2) {
-    return `${formatDoctorName(name)},
-
-Thank you if you've already seen the page.
-
-Based on your inquiry, we know you're looking for solutions for ${clinicName}. The biggest issue we see for independent clinics is that they lose patients because follow-ups become inconvenient.
-
-That's exactly what Doctor Diary solves:
-• Patients book without calling repeatedly.
-• 1-click WhatsApp preset messages reduce missed follow-ups.
-• Reception spends less time answering routine calls.
-• You continue practicing exactly the way you do today.
-
-No commissions. No marketplace. All at a pricing that costs less than a cup of tea per day.
-
-If you'd like to officially activate your clinic page, simply reply:
-*Activate*
-
-We'll take care of everything else.`;
-  }
-
-  return `${formatDoctorName(name)},
-
-This will be my final message regarding your inquiry.
-
-I understand adopting something new isn't always an immediate priority when patient care comes first.
-
-Your clinic page will remain reserved here:
-🔗 ${demoUrl}
-
-If at any point you decide you'd like patients to book online, reduce follow-up no-shows with 1-click WhatsApp messages, or simplify reception work, just reply to this chat.
-
-We'll handle the setup. Wishing you and your team continued success.
-
-— Doctor Diary Onboarding Team`;
+Reply 'ACTIVATE' if you want to secure it.`;
 }
 
 // ─── Unified message builder (used by WhatsApp drawer) ────────────────────────
-export function buildMessageForStep(lead: LeadForMessage, category: string, step: number): string {
-  const cat = (category || "A").toUpperCase();
-  if (cat === "B") return buildCategoryBMessage(lead, step);
-  if (cat === "C") return buildCategoryCMessage(lead, step);
-  return buildCategoryAMessage(lead, step);
+export function buildMessageForStep(lead: LeadForMessage, step: number): string {
+  return buildUniversalMessage(lead, step);
 }
 
 export function buildMessageForLead(lead: LeadForMessage, stepOverride?: number): { step: number; text: string } {
   const currentStep = lead.messageSentStep || 0;
   const nextStep = stepOverride !== undefined ? stepOverride : Math.min(currentStep + 1, 3);
-  const text = buildMessageForStep(lead, lead.leadCategory || "A", nextStep);
+  const text = buildMessageForStep(lead, nextStep);
   return { step: nextStep, text };
 }

@@ -441,14 +441,14 @@ export function BookingClient({
                   className="flex-1 border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 py-3 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95"
                 >
                   <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                  Save Android
+                  {lang === "hi" ? "Android/Google" : "Save Android"}
                 </a>
                 <button
                   onClick={downloadIcs}
                   className="flex-1 border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 py-3 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95"
                 >
                   <CalendarCheck className="w-3.5 h-3.5 text-slate-400" />
-                  Save iPhone
+                  {lang === "hi" ? "iPhone/iCal" : "Save iPhone"}
                 </button>
                 <button
                   onClick={shareWA}
@@ -841,19 +841,21 @@ export function BookingClient({
             ) : (
               <span className="relative z-10 flex items-center gap-2">{t.ctaConfirm} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></span>
             )}
-          </motion.button>
+        </motion.button>
 
           {/* Explicit free booking notice */}
           <div className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-50 border border-emerald-100">
             <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
             <p className="text-[11px] text-emerald-700 font-bold text-center leading-tight">
-              {t.trustNote(clinic.consultationFee ? Number(clinic.consultationFee).toLocaleString("en-IN") : undefined)}
+              {t.trustNote(clinic.consultationFee ? `₹${Number(clinic.consultationFee).toLocaleString("en-IN")}` : (lang === "hi" ? "मुफ्त" : "Free"))}
             </p>
           </div>
 
           {/* Explicit cancellation / no-show policy notice (Point 28) */}
           <p className="text-[10.5px] text-slate-400 text-center font-medium leading-tight">
-            Free cancellation & slot release. Please notify clinic if unable to attend.
+            {lang === "hi" 
+              ? "मुफ्त रद्दीकरण और स्लॉट रिलीज़। यदि आप आने में असमर्थ हैं, तो कृपया क्लिनिक को सूचित करें।" 
+              : "Free cancellation & slot release. Please notify clinic if unable to attend."}
           </p>
         </div>
       </form>

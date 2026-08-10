@@ -411,7 +411,7 @@ export const employees = pgTable("employees", {
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   phone: text("phone"),
-  role: text("role").notNull().default("field_sales"), // 'super_admin' | 'area_manager' | 'field_sales' | 'telecaller' | 'onboarding_agent' | 'support_agent'
+  role: text("role").notNull().default("staff"), // 'admin' | 'manager' | 'staff'
   department: text("department").notNull().default("sales"), // 'sales' | 'telecalling' | 'onboarding' | 'support' | 'management'
   managerId: uuid("manager_id").references((): AnyPgColumn => employees.id, { onDelete: "set null" }),
   territoryCities: text("territory_cities").array().default([]).notNull(), // e.g. ['pune', 'mumbai']

@@ -16,12 +16,9 @@ export default async function EmployeeLayout({
   }
 
   const roleLabelMap: Record<string, string> = {
-    super_admin: "Super Admin",
-    area_manager: "Area Manager",
-    field_sales: "Field BD Executive",
-    telecaller: "Telecaller / Sales Desk",
-    onboarding_agent: "Onboarding Specialist",
-    support_agent: "Customer Support",
+    admin: "Super Admin",
+    manager: "Manager",
+    staff: "Staff",
   };
 
   return (
@@ -97,17 +94,31 @@ export default async function EmployeeLayout({
             My Targets
           </Link>
 
-          {(emp.role === "super_admin" || emp.role === "area_manager") && (
+          {(emp.role === "admin" || emp.role === "manager") && (
             <div className="pt-4 mt-4 border-t border-slate-200">
               <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Management
+                Manager Tools
               </span>
               <Link
-                href="/admin"
-                className="flex items-center gap-3 px-3 py-2.5 mt-1 rounded-lg text-sm font-medium text-teal-700 bg-teal-50 hover:bg-teal-100 transition-colors"
+                href="/employee/team-leads"
+                className="flex items-center gap-3 px-3 py-2.5 mt-1 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+              >
+                <Users className="w-4 h-4 text-teal-600" />
+                Team Leads
+              </Link>
+              <Link
+                href="/employee/qr"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
               >
                 <ShieldCheck className="w-4 h-4 text-teal-600" />
-                Super Admin Console
+                QR Codes
+              </Link>
+              <Link
+                href="/employee/marketing"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+              >
+                <Award className="w-4 h-4 text-teal-600" />
+                Marketing
               </Link>
             </div>
           )}

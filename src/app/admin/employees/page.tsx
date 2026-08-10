@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 
 export default async function AdminEmployeesPage() {
   const admin = await getAuthenticatedEmployee();
-  if (!admin || (admin.role !== "super_admin" && admin.role !== "area_manager")) {
+  if (!admin || admin.role !== "admin") {
     redirect("/employee");
   }
 

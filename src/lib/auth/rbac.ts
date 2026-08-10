@@ -4,13 +4,7 @@ import { employees, doctorLeads } from "@/db/schema";
 import { eq, and, inArray, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
-export type EmployeeRole =
-  | "super_admin"
-  | "area_manager"
-  | "field_sales"
-  | "telecaller"
-  | "onboarding_agent"
-  | "support_agent";
+export type EmployeeRole = "admin" | "manager" | "staff";
 
 export interface AuthenticatedEmployee {
   authUserId: string;
@@ -67,7 +61,7 @@ export async function getAuthenticatedEmployee(): Promise<AuthenticatedEmployee 
             employeeCode: "EMP-ADMIN-00",
             name: user.email?.split("@")[0] || "Super Admin",
             email: user.email || `admin-${user.id.slice(0, 6)}@naturexpress.in`,
-            role: "super_admin",
+            role: "admin",
             department: "management",
             territoryCities: [],
             territoryRegions: [],
@@ -101,7 +95,7 @@ export async function getAuthenticatedEmployee(): Promise<AuthenticatedEmployee 
         employeeCode: emp.employeeCode,
         name: emp.name,
         email: emp.email,
-        role: isSuperAdminEnv ? "super_admin" : (emp.role as EmployeeRole),
+        role: isSuperAdminEnv ? "admin" : (emp.role as EmployeeRole),
         department: emp.department,
         managerId: emp.managerId,
         territoryCities: emp.territoryCities || [],
@@ -120,7 +114,7 @@ export async function getAuthenticatedEmployee(): Promise<AuthenticatedEmployee 
         employeeCode: "EMP-ADMIN-00",
         name: user.email?.split("@")[0] || "Super Admin",
         email: user.email || "admin@naturexpress.in",
-        role: "super_admin",
+        role: "admin",
         department: "management",
         managerId: null,
         territoryCities: [],
@@ -149,7 +143,7 @@ export async function requireEmployeeRole(
     redirect("/login");
   }
 
-  if (emp.role === "super_admin") {
+  if (emp.role === "admin") {
     return emp; // Super Admin has universal access
   }
 
@@ -182,7 +176,7 @@ export async function autoAssignLeadRoundRobin(leadCity?: string | null): Promis
       .where(
         and(
           eq(employees.isActive, true),
-          inArray(employees.role, ["telecaller", "field_sales"])
+          eq(employees.role, "staff")
         )
       );
 

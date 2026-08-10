@@ -47,8 +47,6 @@ import {
   getNextStepLabel,
   generateLeadDemoUrl,
   LEAD_STATUSES,
-  LEAD_PRIORITIES,
-  LEAD_CATEGORIES,
   LEAD_SOURCES,
   SPECIALTIES,
 } from "./message-builder";
@@ -66,8 +64,7 @@ interface LeadsClientProps {
   leads: DoctorLead[];
   stats: {
     total: number;
-    hot: number;
-    warm: number;
+
     new: number;
     contacted: number;
     demo_scheduled: number;
@@ -82,8 +79,6 @@ interface LeadsClientProps {
   currentFilters: {
     search?: string;
     status?: string;
-    priority?: string;
-    category?: string;
     specialty?: string;
     city?: string;
     source?: string;
@@ -92,7 +87,7 @@ interface LeadsClientProps {
 }
 
 export function LeadsClient({
-  leads,
+  leads: initialLeads,
   stats,
   cities,
   total,
@@ -104,6 +99,11 @@ export function LeadsClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
+
+  const [leads, setLeads] = useState<DoctorLead[]>(initialLeads);
+  useEffect(() => {
+    setLeads(initialLeads);
+  }, [initialLeads]);
 
   // Bulk selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -153,8 +153,12 @@ export function LeadsClient({
 
   // ─── Fix #5: updateLead correct two-argument signature ────────────────────
   const handleStatusChange = async (lead: DoctorLead, newStatus: string) => {
+    setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, status: newStatus } : l));
     const res = await updateLead(lead.id, { status: newStatus });
-    if (res.error) toast.error(res.error);
+    if (res.error) {
+      toast.error(res.error);
+      setLeads(initialLeads);
+    }
     else {
       toast.success(`Status → ${LEAD_STATUSES.find((s) => s.value === newStatus)?.label ?? newStatus}`);
       startTransition(() => router.refresh());
@@ -162,15 +166,22 @@ export function LeadsClient({
   };
 
   const copyDemoUrl = (lead: DoctorLead) => {
-    const url = generateLeadDemoUrl(lead);
+    let url = generateLeadDemoUrl(lead);
+    if (typeof window !== "undefined" && url.startsWith("https://doctor.naturexpress.in")) {
+       url = url.replace("https://doctor.naturexpress.in", window.location.origin);
+    }
     navigator.clipboard.writeText(url);
     toast.success("Live Demo URL copied! 🔗");
   };
 
   const handleDeleteLead = async (leadId: string) => {
     if (!confirm("Are you sure you want to permanently delete this lead?")) return;
+    setLeads(prev => prev.filter(l => l.id !== leadId));
     const res = await deleteLead(leadId);
-    if (res.error) toast.error(res.error);
+    if (res.error) {
+      toast.error(res.error);
+      setLeads(initialLeads);
+    }
     else {
       toast.success("Lead deleted successfully.");
       setSelectedIds((prev) => {
@@ -203,11 +214,27 @@ export function LeadsClient({
   const handleBulkStatusChange = async (newStatus: string) => {
     if (selectedIds.size === 0) return;
     let count = 0;
+    setLeads(prev => prev.map(l => selectedIds.has(l.id) ? { ...l, status: newStatus } : l));
     for (const id of selectedIds) {
       const res = await updateLead(id, { status: newStatus });
       if (res.success) count++;
     }
     toast.success(`Updated ${count} leads to "${LEAD_STATUSES.find((s) => s.value === newStatus)?.label}"`);
+    setSelectedIds(new Set());
+    startTransition(() => router.refresh());
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Are you sure you want to delete ${selectedIds.size} selected leads?`)) return;
+    
+    setLeads(prev => prev.filter(l => !selectedIds.has(l.id)));
+    let count = 0;
+    for (const id of selectedIds) {
+      const res = await deleteLead(id);
+      if (res.success) count++;
+    }
+    toast.success(`Successfully deleted ${count} leads.`);
     setSelectedIds(new Set());
     startTransition(() => router.refresh());
   };
@@ -271,8 +298,6 @@ export function LeadsClient({
       {/* ─── Header Stats — Grid on mobile, flex on desktop ─────────────────── */}
       <div className="grid grid-cols-2 min-[480px]:grid-cols-4 md:flex md:flex-wrap items-center gap-2 text-xs">
         <StatPill label="Total" value={stats.total} color="slate" />
-        <StatPill label="🔥 Hot" value={stats.hot} color="red" />
-        <StatPill label="🟡 Warm" value={stats.warm} color="amber" />
         <StatPill label="New" value={stats.new} color="blue" />
         <StatPill label="Contacted" value={stats.contacted} color="yellow" />
         <StatPill label="Demo Set" value={stats.demo_scheduled} color="purple" />
@@ -324,6 +349,21 @@ export function LeadsClient({
               ))}
             </div>
           </div>
+          
+          {isAdmin && (
+            <div className="flex items-center pl-3 border-l border-teal-200">
+              <Button 
+                onClick={handleBulkDelete}
+                size="sm" 
+                variant="ghost" 
+                className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50 text-xs px-2.5 gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete Selected
+              </Button>
+            </div>
+          )}
+
           <button
             onClick={() => setSelectedIds(new Set())}
             className="ml-auto p-1 rounded text-teal-500 hover:text-teal-700"
@@ -408,30 +448,6 @@ export function LeadsClient({
           </SelectContent>
         </Select>
 
-        <Select value={currentFilters.priority || "all"} onValueChange={(v) => setFilter("priority", v)}>
-          <SelectTrigger className="h-8 text-xs w-full min-[540px]:w-32">
-            <SelectValue placeholder="Priority" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Priority</SelectItem>
-            {LEAD_PRIORITIES.map((p) => (
-              <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={currentFilters.category || "all"} onValueChange={(v) => setFilter("category", v)}>
-          <SelectTrigger className="h-8 text-xs w-full min-[540px]:w-36">
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {LEAD_CATEGORIES.map((c) => (
-              <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
         {/* Fix #10: Source Channel Filter */}
         <Select value={currentFilters.source || "all"} onValueChange={(v) => setFilter("source", v)}>
           <SelectTrigger className="h-8 text-xs w-full min-[540px]:w-40">
@@ -472,14 +488,27 @@ export function LeadsClient({
         )}
       </div>
 
-      {/* Showing count */}
+      {/* Showing count & Bulk Select All */}
       <div className="flex items-center justify-between">
-        <div className="text-xs text-slate-500 font-medium">
-          Showing <span className="font-bold text-slate-800">{leads.length}</span> of{" "}
-          <span className="font-bold text-slate-800">{total}</span> leads
-          {selectedIds.size > 0 && (
-            <span className="ml-2 text-teal-600 font-semibold">• {selectedIds.size} selected</span>
-          )}
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={toggleSelectAll} 
+            className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-teal-600 transition-colors"
+          >
+            {selectedIds.size === leads.length && leads.length > 0 ? (
+              <CheckSquare className="w-4.5 h-4.5 text-teal-600" />
+            ) : (
+              <Square className="w-4.5 h-4.5" />
+            )}
+            Select All on Page
+          </button>
+          <div className="text-xs text-slate-500 font-medium border-l border-slate-200 pl-4">
+            Showing <span className="font-bold text-slate-800">{leads.length}</span> of{" "}
+            <span className="font-bold text-slate-800">{total}</span> leads
+            {selectedIds.size > 0 && (
+              <span className="ml-2 text-teal-600 font-semibold">• {selectedIds.size} selected</span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -537,9 +566,6 @@ export function LeadsClient({
                       </button>
                     </div>
                   </div>
-                  <div className="flex-shrink-0">
-                    <PriorityBadge priority={lead.priority} />
-                  </div>
                 </div>
 
                 {/* Card Body */}
@@ -555,7 +581,6 @@ export function LeadsClient({
                         <MapPin className="w-3 h-3" /> {lead.city}
                       </span>
                     )}
-                    <SourceChannelBadge source={lead.source} />
                   </div>
 
                   <div className="flex items-center justify-between mt-auto pt-1">
@@ -759,34 +784,15 @@ function StatPill({ label, value, color }: { label: string; value: number; color
 function SourceChannelBadge({ source }: { source?: string | null }) {
   const map: Record<string, { label: string; bg: string }> = {
     google_maps: { label: "Google Maps 🗺️", bg: "bg-emerald-50 text-emerald-800 border-emerald-200" },
-    instagram: { label: "Instagram 📸", bg: "bg-pink-50 text-pink-700 border-pink-200" },
-    linkedin: { label: "LinkedIn 💼", bg: "bg-sky-50 text-sky-700 border-sky-200" },
-    field_visit: { label: "Field Visit 🚗", bg: "bg-amber-50 text-amber-800 border-amber-200" },
-    imported: { label: "CSV Import 📄", bg: "bg-indigo-50 text-indigo-700 border-indigo-200" },
-    online: { label: "Inbound 🌐", bg: "bg-teal-50 text-teal-700 border-teal-200" },
-    growth_partner: { label: "Growth Partner 🤝", bg: "bg-violet-50 text-violet-700 border-violet-200" },
+    social_media: { label: "Social Media 📱", bg: "bg-pink-50 text-pink-700 border-pink-200" },
+    manual: { label: "Manual ✍️", bg: "bg-amber-50 text-amber-800 border-amber-200" },
     referral: { label: "Referral 👥", bg: "bg-rose-50 text-rose-700 border-rose-200" },
   };
 
-  const item = map[source || "online"] || { label: source || "Outreach", bg: "bg-slate-50 text-slate-600 border-slate-200" };
+  const item = map[source || "manual"] || { label: source || "Manual", bg: "bg-slate-50 text-slate-600 border-slate-200" };
 
   return (
     <Badge variant="outline" className={`text-[10px] font-bold ${item.bg}`}>
-      {item.label}
-    </Badge>
-  );
-}
-
-function PriorityBadge({ priority }: { priority?: string | null }) {
-  const map: Record<string, { label: string; bg: string }> = {
-    hot: { label: "HOT 🔥", bg: "bg-red-100 text-red-800 font-black border-red-200" },
-    warm: { label: "WARM 🟡", bg: "bg-amber-100 text-amber-800 font-bold border-amber-200" },
-    normal: { label: "Normal", bg: "bg-slate-100 text-slate-600 border-slate-200" },
-    cold: { label: "Cold ❄", bg: "bg-sky-100 text-sky-700 border-sky-200" },
-  };
-  const item = map[priority || "normal"] || map.normal;
-  return (
-    <Badge variant="outline" className={`text-[10px] ${item.bg}`}>
       {item.label}
     </Badge>
   );

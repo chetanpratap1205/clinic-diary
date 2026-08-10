@@ -61,8 +61,6 @@ async function generateUniqueLeadSlug(doctorName: string, city?: string | null, 
 export interface LeadFilters {
   search?: string;
   status?: string;
-  priority?: string;
-  category?: string;
   specialty?: string;
   city?: string;
   source?: string;
@@ -75,8 +73,6 @@ export async function getLeads(filters: LeadFilters = {}) {
   const {
     search,
     status,
-    priority,
-    category,
     specialty,
     city,
     source,
@@ -97,8 +93,6 @@ export async function getLeads(filters: LeadFilters = {}) {
     );
   }
   if (status && status !== "all") conditions.push(eq(doctorLeads.status, status));
-  if (priority && priority !== "all") conditions.push(eq(doctorLeads.priority, priority));
-  if (category && category !== "all") conditions.push(eq(doctorLeads.leadCategory, category));
   if (specialty && specialty !== "all") conditions.push(ilike(doctorLeads.specialty, `%${specialty}%`));
   if (city && city !== "all") conditions.push(ilike(doctorLeads.city, `%${city}%`));
   if (source && source !== "all") conditions.push(eq(doctorLeads.source, source));
@@ -112,8 +106,6 @@ export async function getLeads(filters: LeadFilters = {}) {
       .from(doctorLeads)
       .where(where)
       .orderBy(
-        // Hot first, then by follow-up date overdue
-        sql`CASE priority WHEN 'hot' THEN 1 WHEN 'warm' THEN 2 WHEN 'normal' THEN 3 ELSE 4 END`,
         desc(doctorLeads.createdAt)
       )
       .limit(pageSize)
@@ -135,16 +127,13 @@ export async function getLeadStats() {
   const rows = await db
     .select({
       status: doctorLeads.status,
-      priority: doctorLeads.priority,
       count: count(),
     })
     .from(doctorLeads)
-    .groupBy(doctorLeads.status, doctorLeads.priority);
+    .groupBy(doctorLeads.status);
 
   const stats = {
     total: 0,
-    hot: 0,
-    warm: 0,
     new: 0,
     contacted: 0,
     demo_scheduled: 0,
@@ -155,8 +144,6 @@ export async function getLeadStats() {
 
   for (const row of rows) {
     stats.total += row.count;
-    if (row.priority === "hot") stats.hot += row.count;
-    if (row.priority === "warm") stats.warm += row.count;
     if (row.status === "new") stats.new += row.count;
     if (row.status === "contacted") stats.contacted += row.count;
     if (row.status === "demo_scheduled") stats.demo_scheduled += row.count;

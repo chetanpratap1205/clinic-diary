@@ -60,7 +60,9 @@ export async function GET(
       name: appName,
       short_name: shortName,
       description: `Official booking app for ${appName}`,
-      start_url: `/book/${slug}`,
+      start_url: `/book/${slug}?utm_source=pwa`,
+      scope: `/book/${slug}`,
+      id: `/book/${slug}`,
       display: "standalone",
       background_color: "#f8fafc", // slate-50
       theme_color: themeColor,

@@ -14,7 +14,7 @@ export async function getEmployeeDashboardStats() {
   const emp = await getAuthenticatedEmployee();
   if (!emp) throw new Error("Unauthorized");
 
-  const isGlobalView = emp.role === "super_admin" || emp.role === "area_manager";
+  const isGlobalView = emp.role === "admin" || emp.role === "manager";
 
   const leadWhere = isGlobalView
     ? undefined
@@ -73,7 +73,7 @@ export async function getEmployeeLeads(options?: {
   const emp = await getAuthenticatedEmployee();
   if (!emp) throw new Error("Unauthorized");
 
-  const isGlobalView = emp.role === "super_admin" || emp.role === "area_manager";
+  const isGlobalView = emp.role === "admin" || emp.role === "manager";
 
   const conditions = [];
 
@@ -178,7 +178,7 @@ export async function editEmployeeLead(formData: FormData) {
     throw new Error("ID, Doctor Name, and Phone are required");
   }
 
-  const isGlobalView = emp.role === "super_admin" || emp.role === "area_manager";
+  const isGlobalView = emp.role === "admin" || emp.role === "manager";
 
   // Verify lead ownership
   const [existingLead] = await db
@@ -230,7 +230,7 @@ export async function logEmployeeFieldVisit(formData: FormData) {
     throw new Error("Lead ID and Notes are required");
   }
 
-  const isGlobalView = emp.role === "super_admin" || emp.role === "area_manager";
+  const isGlobalView = emp.role === "admin" || emp.role === "manager";
 
   // Verify lead ownership
   const [existingLead] = await db
@@ -276,7 +276,7 @@ export async function updateLeadMessageStep(leadId: string, stepNumber: number) 
   const emp = await getAuthenticatedEmployee();
   if (!emp) throw new Error("Unauthorized");
 
-  const isGlobalView = emp.role === "super_admin" || emp.role === "area_manager";
+  const isGlobalView = emp.role === "admin" || emp.role === "manager";
 
   // Verify lead ownership
   const [existingLead] = await db
