@@ -63,11 +63,10 @@ export default function LoginPage() {
       } catch (err) {}
 
       // STRICT SEPARATION: If this user is internal staff or admin,
-      // sign them out immediately and redirect them to the Staff Console.
+      // silently route them to the Staff Console for a seamless experience.
       if (redirectPath === "/admin" || redirectPath === "/employee") {
-        await supabase.auth.signOut();
-        toast.error("Staff & Admin must use the Staff Console to sign in.");
-        setTimeout(() => { window.location.href = "/staff-login"; }, 1500);
+        toast.success("Welcome! Redirecting to your Staff Console...");
+        window.location.href = redirectPath;
         return;
       }
 
