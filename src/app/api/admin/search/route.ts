@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { clinics, growthPartners, doctorLeads } from "@/db/schema";
 import { ilike, or, desc } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
+import { formatDoctorName } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
   try {
@@ -74,7 +75,7 @@ export async function GET(req: NextRequest) {
       })),
       ...matchedLeads.map(l => ({
         id: l.id,
-        title: `Dr. ${l.doctorName}`,
+        title: `${formatDoctorName(l.doctorName)}`,
         subtitle: `${l.clinicName || 'No Clinic Name'} • ${l.phone}`,
         type: "lead",
         href: `/admin/leads` // Leads don't have dedicated detail pages yet, they are on a master table

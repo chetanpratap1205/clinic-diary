@@ -127,7 +127,7 @@ export function QrCodeWidget({ clinicId, clinicName, slug, themeColor }: QrCodeW
   // ─── QR Assigned — show the full widget ─────────────────────────────────────
   return (
     <div
-      className="rounded-3xl border overflow-hidden"
+      className="w-full rounded-3xl border overflow-hidden"
       style={{ borderColor: `${themeColor}25`, background: `linear-gradient(135deg, ${themeColor}12 0%, ${themeColor}05 100%)` }}
     >
       {/* Header */}

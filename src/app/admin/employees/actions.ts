@@ -22,88 +22,97 @@ export async function getAllEmployees() {
 }
 
 export async function addEmployee(formData: FormData) {
-  const admin = await getAuthenticatedEmployee();
-  if (!admin || admin.role !== "super_admin") {
-    throw new Error("Unauthorized. Only Super Admin can add employees.");
-  }
+  try {
+    const admin = await getAuthenticatedEmployee();
+    if (!admin || admin.role !== "super_admin") {
+      return { success: false, error: "Unauthorized. Only Super Admin can add employees." };
+    }
 
-  const name = formData.get("name") as string;
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-  const phone = formData.get("phone") as string;
-  const role = formData.get("role") as string;
-  const department = formData.get("department") as string;
-  const territoryCitiesRaw = (formData.get("territoryCities") as string) || "";
-  const targetMonthlyLeads = parseInt((formData.get("targetMonthlyLeads") as string) || "30", 10);
-  const targetMonthlyConversions = parseInt((formData.get("targetMonthlyConversions") as string) || "5", 10);
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const phone = formData.get("phone") as string;
+    const role = formData.get("role") as string;
+    const department = formData.get("department") as string;
+    const territoryCitiesRaw = (formData.get("territoryCities") as string) || "";
+    const targetMonthlyLeads = parseInt((formData.get("targetMonthlyLeads") as string) || "30", 10);
+    const targetMonthlyConversions = parseInt((formData.get("targetMonthlyConversions") as string) || "5", 10);
 
-  if (!name || !email || !password) {
-    throw new Error("Name, Email, and Initial Password are required");
-  }
+    if (!name || !email || !password) {
+      return { success: false, error: "Name, Email, and Initial Password are required" };
+    }
 
-  // 1. Create the user in Supabase Auth using the Admin API
-  const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-  });
-
-  if (authError || !authData.user) {
-    console.error("Supabase Admin Auth Error:", authError);
-    throw new Error(authError?.message || "Failed to create user in Auth system.");
-  }
-
-  const authUserId = authData.user.id;
-
-  const territoryCities = territoryCitiesRaw
-    .split(",")
-    .map((c) => c.trim().toLowerCase())
-    .filter(Boolean);
-
-  const currentYear = new Date().getFullYear();
-  const maxEmp = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(employees);
-
-  const seq = String((maxEmp[0]?.count || 0) + 1).padStart(4, "0");
-  const randomSuffix = Math.floor(100 + Math.random() * 900);
-  const employeeCode = `EMP-${currentYear}-${seq}-${randomSuffix}`;
-
-  const [newEmp] = await db
-    .insert(employees)
-    .values({
-      authUserId,
-      employeeCode,
-      name,
+    // 1. Create the user in Supabase Auth using the Admin API
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
-      phone,
-      role,
-      department,
-      territoryCities,
-      targetMonthlyLeads,
-      targetMonthlyConversions,
-      isActive: true,
-    })
-    .returning();
+      password,
+      email_confirm: true,
+    });
 
-  revalidatePath("/admin/employees");
-  return { success: true, employee: newEmp };
+    if (authError || !authData.user) {
+      console.error("Supabase Admin Auth Error:", authError);
+      return { success: false, error: authError?.message || "Failed to create user in Auth system." };
+    }
+
+    const authUserId = authData.user.id;
+
+    const territoryCities = territoryCitiesRaw
+      .split(",")
+      .map((c) => c.trim().toLowerCase())
+      .filter(Boolean);
+
+    const currentYear = new Date().getFullYear();
+    const maxEmp = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(employees);
+
+    const seq = String((maxEmp[0]?.count || 0) + 1).padStart(4, "0");
+    const randomSuffix = Math.floor(100 + Math.random() * 900);
+    const employeeCode = `EMP-${currentYear}-${seq}-${randomSuffix}`;
+
+    await db
+      .insert(employees)
+      .values({
+        authUserId,
+        employeeCode,
+        name,
+        email,
+        phone,
+        role,
+        department,
+        territoryCities,
+        targetMonthlyLeads,
+        targetMonthlyConversions,
+        isActive: true,
+      });
+
+    revalidatePath("/admin/employees");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error adding employee:", error);
+    return { success: false, error: error.message || "An unexpected error occurred" };
+  }
 }
 
 export async function toggleEmployeeStatus(employeeId: string, currentActiveStatus: boolean) {
-  const admin = await getAuthenticatedEmployee();
-  if (!admin || admin.role !== "super_admin") {
-    throw new Error("Unauthorized");
+  try {
+    const admin = await getAuthenticatedEmployee();
+    if (!admin || admin.role !== "super_admin") {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    await db
+      .update(employees)
+      .set({
+        isActive: !currentActiveStatus,
+        updatedAt: new Date(),
+      })
+      .where(eq(employees.id, employeeId));
+
+    revalidatePath("/admin/employees");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error toggling employee status:", error);
+    return { success: false, error: error.message || "An unexpected error occurred" };
   }
-
-  await db
-    .update(employees)
-    .set({
-      isActive: !currentActiveStatus,
-      updatedAt: new Date(),
-    })
-    .where(eq(employees.id, employeeId));
-
-  revalidatePath("/admin/employees");
-  return { success: true };
 }

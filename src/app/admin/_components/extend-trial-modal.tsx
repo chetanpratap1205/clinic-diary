@@ -14,6 +14,7 @@ import { Zap, Loader2, Calendar } from "lucide-react";
 import { extendClinicTrialAction } from "@/app/actions/clinics";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { formatDoctorName } from "@/lib/utils";
 
 interface ExtendTrialModalProps {
   clinic: {
@@ -57,7 +58,7 @@ export function ExtendTrialModal({ clinic, open, onOpenChange }: ExtendTrialModa
           </div>
           <DialogTitle className="text-lg font-bold">Extend Clinic Access</DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
-            Grant extra active subscription/trial days to <span className="font-semibold text-slate-800">{clinic.name}</span> (Dr. {clinic.doctorName}).
+            Grant extra active subscription/trial days to <span className="font-semibold text-slate-800">{clinic.name}</span> ({formatDoctorName(clinic.doctorName)}).
           </DialogDescription>
         </DialogHeader>
 

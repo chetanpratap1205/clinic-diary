@@ -49,6 +49,7 @@ import { PresetsManager } from "./components/presets-manager";
 import { ImageUploader } from "@/components/ui/image-uploader";
 import { motion } from "framer-motion";
 import { SPECIALTY_LIST } from "@/lib/specialty-taxonomy";
+import { formatDoctorName } from "@/lib/utils";
 
 const settingsSchema = z.object({
   name: z.string().min(2, "Clinic name must be at least 2 characters"),
@@ -197,9 +198,7 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
   const watchedFields = watch();
   const themeColor = watchedFields.themeColor || "#0ea5e9";
 
-  const displayDoctorName = watchedFields.doctorName?.trim().startsWith("Dr.")
-    ? watchedFields.doctorName
-    : `Dr. ${watchedFields.doctorName || "Doctor Name"}`;
+  const displayDoctorName = formatDoctorName(watchedFields.doctorName || "Doctor Name");
 
   const hasValidMapsUrl = !!watchedFields.googleMapsUrl && watchedFields.googleMapsUrl.startsWith("http");
 
@@ -265,15 +264,15 @@ Make it sound extremely premium, trustworthy, and empathetic. Emphasize that we 
         <div className="xl:col-span-3 space-y-5 sm:space-y-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="w-full h-auto p-1.5 bg-slate-100 sm:rounded-2xl rounded-xl flex flex-col sm:grid sm:grid-cols-3 gap-1.5 mb-6">
-                <TabsTrigger value="profile" className="w-full rounded-lg sm:rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center justify-center gap-2 transition-all">
-                  <User className="w-4 h-4" /> Profile & Brand
+              <TabsList className="w-full h-auto p-1.5 bg-slate-100 sm:rounded-2xl rounded-xl grid grid-cols-3 gap-1 sm:gap-1.5 mb-6">
+                <TabsTrigger value="profile" className="w-full rounded-lg sm:rounded-xl py-2 sm:py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-all truncate">
+                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 hidden min-[375px]:block" /> Profile
                 </TabsTrigger>
-                <TabsTrigger value="location" className="w-full rounded-lg sm:rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center justify-center gap-2 transition-all">
-                  <MapPin className="w-4 h-4" /> Location
+                <TabsTrigger value="location" className="w-full rounded-lg sm:rounded-xl py-2 sm:py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-all truncate">
+                  <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 hidden min-[375px]:block" /> Location
                 </TabsTrigger>
-                <TabsTrigger value="presets" className="w-full rounded-lg sm:rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center justify-center gap-2 transition-all">
-                  <Zap className="w-4 h-4" /> Presets
+                <TabsTrigger value="presets" className="w-full rounded-lg sm:rounded-xl py-2 sm:py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-all truncate">
+                  <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 hidden min-[375px]:block" /> Presets
                 </TabsTrigger>
               </TabsList>
 
@@ -306,11 +305,15 @@ Make it sound extremely premium, trustworthy, and empathetic. Emphasize that we 
                     <label htmlFor="doctor-name" className="text-sm font-semibold text-slate-700">
                       Doctor Name *
                     </label>
-                    <Input
-                      id="doctor-name"
-                      {...register("doctorName")}
-                      className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
-                    />
+                    <div className="relative flex items-center">
+                      <div className="absolute left-3 text-slate-400 font-medium select-none pointer-events-none">Dr.</div>
+                      <Input
+                        id="doctor-name"
+                        {...register("doctorName")}
+                        className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors pl-9"
+                      />
+                    </div>
+                    <p className="text-[10px] text-slate-500 font-medium">Dr. prefix is added automatically</p>
                     {errors.doctorName && <p className="text-xs text-red-500">{errors.doctorName.message}</p>}
                   </div>
                   <div className="space-y-2">

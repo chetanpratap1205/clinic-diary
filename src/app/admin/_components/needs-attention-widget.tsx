@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, Phone, ExternalLink, MessageSquare, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { formatDoctorName } from "@/lib/utils";
 
 export interface InactiveClinic {
   id: string;
@@ -59,7 +60,7 @@ export function NeedsAttentionWidget({ inactiveClinics }: NeedsAttentionWidgetPr
             <div className="divide-y divide-slate-100 rounded-lg border border-slate-200/80 bg-white overflow-hidden">
               {inactiveClinics.map((clinic) => {
                 const formattedPhone = clinic.phone?.replace(/\D/g, "") || "";
-                const waUrl = formattedPhone ? `https://wa.me/91${formattedPhone.slice(-10)}?text=${encodeURIComponent(`Hello Dr. ${clinic.doctorName}, we noticed your clinic (${clinic.name}) on Doctor Diary hasn't booked appointments recently. Need help setting up?`)}` : "#";
+                const waUrl = formattedPhone ? `https://wa.me/91${formattedPhone.slice(-10)}?text=${encodeURIComponent(`Hello ${formatDoctorName(clinic.doctorName)}, we noticed your clinic (${clinic.name}) on Doctor Diary hasn't booked appointments recently. Need help setting up?`)}` : "#";
 
                 return (
                   <div key={clinic.id} className="p-3 hover:bg-slate-50/80 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -73,7 +74,7 @@ export function NeedsAttentionWidget({ inactiveClinics }: NeedsAttentionWidgetPr
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Dr. {clinic.doctorName} • {clinic.phone}
+                        {formatDoctorName(clinic.doctorName)} • {clinic.phone}
                       </p>
                     </div>
 

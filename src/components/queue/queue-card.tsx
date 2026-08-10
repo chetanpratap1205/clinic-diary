@@ -7,6 +7,7 @@ import { WhatsAppShareButton } from "@/components/dashboard/patients/whatsapp-sh
 import { formatTimeDisplay } from "@/lib/format";
 import { getEstimatedStart } from "@/lib/queue-logic";
 import { formatWhatsAppPhone } from "@/lib/phone-utils";
+import { formatDoctorName } from "@/lib/utils";
 
 interface QueueCardProps {
   appt: Appointment;
@@ -172,7 +173,7 @@ export const QueueCard = ({
             <button
               onClick={() => {
                 const trackUrl = `${window.location.origin}/track/${appt.id}`;
-                const text = `*YOUR TURN IS NEXT!* 🏥\n\nHi ${appt.patientName.split(' ')[0]},\nDr. ${clinic.doctorName} is ready for Token *#${tokenDisplay}* at ${clinic.name}.\n\nPlease step up to the consultation room.\n\n📍 *Track Live Status:* ${trackUrl}`;
+                const text = `*YOUR TURN IS NEXT!* 🏥\n\nHi ${appt.patientName.split(' ')[0]},\n${formatDoctorName(clinic.doctorName)} is ready for Token *#${tokenDisplay}* at ${clinic.name}.\n\nPlease step up to the consultation room.\n\n📍 *Track Live Status:* ${trackUrl}`;
                 const formattedPhone = formatWhatsAppPhone(appt.patientPhone);
                 const url = formattedPhone
                   ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(text)}`
@@ -213,7 +214,7 @@ export const QueueCard = ({
                 <button
                   onClick={() => {
                     const fee = appt.feeCollected ?? (clinic.consultationFee || 0);
-                    const text = `*INVOICE & VISIT SUMMARY* 🏥\n\nDear ${appt.patientName},\nThank you for visiting *${clinic.name}* (Dr. ${clinic.doctorName}). We hope you had a comfortable experience!\n\n*Payment Received:* ₹${fee}\n*Date:* ${format(
+                    const text = `*INVOICE & VISIT SUMMARY* 🏥\n\nDear ${appt.patientName},\nThank you for visiting *${clinic.name}* (${formatDoctorName(clinic.doctorName)}). We hope you had a comfortable experience!\n\n*Payment Received:* ₹${fee}\n*Date:* ${format(
                       new Date(),
                       "dd MMM yyyy"
                     )}\n\n📄 *View & Download your Official E-Receipt here:*\n${window.location.origin}/receipt/${
@@ -238,7 +239,7 @@ export const QueueCard = ({
                 <button
                   onClick={() => {
                     const reviewLink = `${window.location.origin}/review/${appt.id}`;
-                    const text = `Hi ${appt.patientName.split(' ')[0]}, thank you for visiting Dr. ${clinic.doctorName}! We hope you had a great experience using our Smart Queue.\n\nCould you take 10 seconds to support us with a quick rating? 🌟\n${reviewLink}`;
+                    const text = `Hi ${appt.patientName.split(' ')[0]}, thank you for visiting ${formatDoctorName(clinic.doctorName)}! We hope you had a great experience using our Smart Queue.\n\nCould you take 10 seconds to support us with a quick rating? 🌟\n${reviewLink}`;
                     const formattedPhone = formatWhatsAppPhone(appt.patientPhone);
                     const url = formattedPhone
                       ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(text)}`

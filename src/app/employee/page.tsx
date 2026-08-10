@@ -4,6 +4,7 @@ import { getEmployeeDashboardStats, getEmployeeLeads } from "./actions";
 import Link from "next/link";
 import { Users, PhoneCall, CalendarCheck, CheckCircle2, PlusCircle, ArrowUpRight, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatDoctorName } from "@/lib/utils";
 
 export default async function EmployeeOverviewPage() {
   const stats = await getEmployeeDashboardStats();
@@ -142,14 +143,14 @@ export default async function EmployeeOverviewPage() {
             <tbody className="divide-y divide-slate-100">
               {recentLeads.slice(0, 6).map((lead) => {
                 const encodedMsg = encodeURIComponent(
-                  `Namaste Dr. ${lead.doctorName}! I'm ${emp.name} from Doctor Diary platform. I noticed your clinic ${lead.clinicName || ""} in ${lead.city || ""}. Would love to share a quick 2-minute demo of our automated clinic diary system!`
+                  `Namaste ${formatDoctorName(lead.doctorName)}! I'm ${emp.name} from Doctor Diary platform. I noticed your clinic ${lead.clinicName || ""} in ${lead.city || ""}. Would love to share a quick 2-minute demo of our automated clinic diary system!`
                 );
                 const waUrl = `https://wa.me/91${lead.phone.replace(/[^0-9]/g, "")}?text=${encodedMsg}`;
 
                 return (
                   <tr key={lead.id} className="hover:bg-slate-50 transition-colors">
                     <td className="p-3">
-                      <p className="font-bold text-slate-900">Dr. {lead.doctorName}</p>
+                      <p className="font-bold text-slate-900">{formatDoctorName(lead.doctorName)}</p>
                       <p className="text-[11px] text-slate-500">{lead.clinicName || "Private Clinic"}</p>
                     </td>
                     <td className="p-3 font-mono font-medium text-slate-800">{lead.phone}</td>

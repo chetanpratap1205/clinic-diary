@@ -19,10 +19,10 @@ export function DecisionGuideModal({ onClose, open, onOpenChange }: DecisionGuid
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm" onClick={handleClose} />
+      <div className="fixed inset-0 bg-black/50 z-[60] backdrop-blur-sm" onClick={handleClose} />
 
       {/* Modal */}
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[94vw] sm:w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[94vw] sm:w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-2xl z-[60] flex flex-col overflow-hidden">
 
         {/* Header */}
         <div className="px-4 sm:px-6 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">

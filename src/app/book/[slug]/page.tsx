@@ -18,6 +18,7 @@ import { BookingClient } from "./booking-client";
 import { BottomActionBar } from "./bottom-action-bar";
 import { ClinicLogo } from "./clinic-logo";
 import { FAQAccordion } from "./faq-accordion";
+import { InstallAppSection } from "@/components/install-app-section";
 import Link from "next/link";
 import { trackLeadView } from "@/app/admin/leads/actions";
 import {
@@ -42,9 +43,11 @@ import {
   CheckCircle2,
   HeartPulse,
   Microscope,
+  Zap,
   Timer
 } from "lucide-react";
 import type { Metadata } from "next";
+import { formatDoctorName } from "@/lib/utils";
 
 // ─── SVG Social Icons ────────────────────────────────────────────────────────
 const Instagram = ({ className }: { className?: string }) => (
@@ -91,17 +94,52 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const [clinic] = await db.select().from(clinics).where(eq(clinics.slug, slug)).limit(1);
-  if (!clinic) return { title: "Not Found" };
+  let [clinic] = await db.select().from(clinics).where(eq(clinics.slug, slug)).limit(1);
+  
+  if (!clinic) {
+    const [lead] = await db.select().from(doctorLeads).where(eq(doctorLeads.clinicSlug, slug)).limit(1);
+    if (!lead) return { title: "Not Found" };
+    
+    // Create a mock clinic from lead data for metadata generation
+    clinic = {
+      id: lead.id,
+      slug: lead.clinicSlug || slug,
+      name: lead.clinicName || `${lead.doctorName}'s Clinic`,
+      doctorName: lead.doctorName,
+      degree: lead.degree || null,
+      specialty: lead.specialty || "General Physician",
+      phone: lead.phone,
+      logoUrl: lead.logoUrl || null,
+      consultationFee: lead.consultationFee || 0,
+      freeFollowupDays: 0,
+      averageConsultationMinutes: 15,
+      themeColor: "#0ea5e9",
+      address: lead.address || null,
+      billingAddress: null,
+      state: lead.city || null,
+      gstin: null,
+      googleMapsUrl: null,
+      about: lead.about || null,
+      heroImageUrl: null,
+      instagramUrl: null,
+      whatsappNumber: lead.phone,
+      facebookUrl: null,
+      referredBy: null,
+      youtubeUrl: null,
+      websiteUrl: null,
+      vitalsPresets: [],
+      complaintPresets: [],
+      diagnosisPresets: [],
+      treatmentPresets: [],
+      createdAt: lead.createdAt,
+    };
+  }
 
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in";
   const specialtyConfig = getSpecialtyConfig(clinic.specialty);
   const lexicon = specialtyConfig.uiLexicon;
   
-  const hasDrPrefix = clinic.doctorName?.trim().toLowerCase().startsWith("dr.") || clinic.doctorName?.trim().toLowerCase().startsWith("dr ");
-  const displayDoctorName = hasDrPrefix 
-    ? clinic.doctorName 
-    : (lexicon.doctorTitle === "Doctor" || lexicon.doctorTitle === "Dentist" || lexicon.doctorTitle === "Veterinarian" ? `Dr. ${clinic.doctorName}` : `${lexicon.doctorTitle} ${clinic.doctorName}`);
+  const displayDoctorName = (lexicon.doctorTitle === "Doctor" || lexicon.doctorTitle === "Dentist" || lexicon.doctorTitle === "Veterinarian") ? formatDoctorName(clinic.doctorName) : `${lexicon.doctorTitle} ${clinic.doctorName}`;
 
   // Extract locality / city from address or state for hyper-local search intent (Point 8)
   const addressParts = clinic.address ? clinic.address.split(",").map((s) => s.trim()) : [];
@@ -218,10 +256,7 @@ export default async function BookingPage({
   const specialtyConfig = getSpecialtyConfig(clinic.specialty);
   const lexicon = specialtyConfig.uiLexicon;
 
-  const hasDrPrefix = clinic.doctorName?.trim().toLowerCase().startsWith("dr.") || clinic.doctorName?.trim().toLowerCase().startsWith("dr ");
-  const displayDoctorName = hasDrPrefix 
-    ? clinic.doctorName 
-    : (lexicon.doctorTitle === "Doctor" || lexicon.doctorTitle === "Dentist" || lexicon.doctorTitle === "Veterinarian" ? `Dr. ${clinic.doctorName}` : `${lexicon.doctorTitle} ${clinic.doctorName}`);
+  const displayDoctorName = (lexicon.doctorTitle === "Doctor" || lexicon.doctorTitle === "Dentist" || lexicon.doctorTitle === "Veterinarian") ? formatDoctorName(clinic.doctorName) : `${lexicon.doctorTitle} ${clinic.doctorName}`;
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in";
 
   const [availRecords, overrideRecords, clinicReviews, statsResult, services, gallery] = await Promise.all([
@@ -440,9 +475,9 @@ export default async function BookingPage({
                   <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/40 to-white/0 opacity-0 group-hover:opacity-100 group-hover:translate-x-full duration-1000 transition-all z-20 pointer-events-none -skew-x-12 -translate-x-full" />
                   <img src={clinic.heroImageUrl!} alt={displayDoctorName} className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" />
                   <div className="absolute top-4 right-4 z-20">
-                    <div className="bg-white/90 backdrop-blur-md text-emerald-700 px-3 py-1.5 rounded-full shadow-lg ring-1 ring-white/50 flex items-center gap-1.5 font-bold text-xs">
-                      <BadgeCheck className="w-4 h-4 text-emerald-500 fill-emerald-100" />
-                      Verified
+                    <div className="bg-white/90 backdrop-blur-md text-slate-800 px-3 py-1.5 rounded-full shadow-lg ring-1 ring-white/50 flex items-center gap-1.5 font-bold text-xs">
+                      <BadgeCheck className="w-4 h-4 text-white fill-[#1d9bf0]" />
+                      {t.verifiedOfficial}
                     </div>
                   </div>
                   <div className="absolute bottom-4 inset-x-4 z-20">
@@ -452,9 +487,9 @@ export default async function BookingPage({
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border border-white"></span>
                         </div>
-                        <span className="text-[11px] font-black uppercase tracking-widest text-emerald-700">Open Now</span>
+                        <span className="text-[11px] font-black uppercase tracking-widest text-emerald-700">{t.openNow}</span>
                       </div>
-                      <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg">Accepting Tokens</span>
+                      <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg">{t.acceptingTokens}</span>
                     </div>
                   </div>
                 </div>
@@ -467,9 +502,9 @@ export default async function BookingPage({
                   }}
                 >
                   <div className="absolute top-4 right-4 z-20">
-                    <div className="bg-white/90 backdrop-blur-md text-emerald-700 px-3 py-1.5 rounded-full shadow-lg ring-1 ring-white/50 flex items-center gap-1.5 font-bold text-xs">
-                      <BadgeCheck className="w-4 h-4 text-emerald-500 fill-emerald-100" />
-                      Verified
+                    <div className="bg-white/90 backdrop-blur-md text-slate-800 px-3 py-1.5 rounded-full shadow-lg ring-1 ring-white/50 flex items-center gap-1.5 font-bold text-xs">
+                      <BadgeCheck className="w-4 h-4 text-white fill-[#1d9bf0]" />
+                      {t.verifiedOfficial}
                     </div>
                   </div>
 
@@ -503,19 +538,21 @@ export default async function BookingPage({
               {/* Mobile Profile Card Header (Mobile Only) */}
               <div className="lg:hidden flex flex-col items-center text-center space-y-4">
                 {/* Doctor Avatar */}
-                <div 
-                  className="w-24 h-24 rounded-full flex items-center justify-center shadow-[0_10px_30px_-5px_rgba(0,0,0,0.2)] relative overflow-hidden"
-                  style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}dd)`, border: '4px solid white' }}
-                >
-                  {isSafeImageUrl(clinic.logoUrl) ? (
-                    <img src={clinic.logoUrl!} alt={displayDoctorName} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-4xl font-black text-white tracking-widest">
-                      {stripDr(clinic.doctorName).charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                  <div className="absolute -bottom-1 -right-1 bg-white p-1 rounded-full shadow-md">
-                    <BadgeCheck className="w-5 h-5 text-emerald-500 fill-emerald-100" />
+                <div className="relative">
+                  <div 
+                    className="w-24 h-24 rounded-full flex items-center justify-center shadow-[0_10px_30px_-5px_rgba(0,0,0,0.2)] overflow-hidden"
+                    style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}dd)`, border: '4px solid white' }}
+                  >
+                    {isSafeImageUrl(clinic.logoUrl) ? (
+                      <img src={clinic.logoUrl!} alt={displayDoctorName} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-4xl font-black text-white tracking-widest">
+                        {stripDr(clinic.doctorName).charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <div className="absolute bottom-0 right-0 bg-white p-0.5 rounded-full shadow-md">
+                    <BadgeCheck className="w-7 h-7 text-white fill-[#1d9bf0]" />
                   </div>
                 </div>
 
@@ -551,52 +588,44 @@ export default async function BookingPage({
                 </p>
               </div>
 
-              {/* 10/10 Bento Box Stats Row */}
-              <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-2 w-full max-w-md mx-auto lg:mx-0">
+              {/* 10/10 Bento Box Stats Row (Updated) */}
+              <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-2 w-full max-w-md mx-auto lg:mx-0">
                 
-                {/* Experience Box */}
-                <div 
-                  className="flex flex-col items-center sm:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all hover:bg-white hover:-translate-y-1 group"
-                >
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center bg-slate-50 border border-slate-100 mb-2 group-hover:scale-110 transition-transform">
-                    <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: themeColor }} />
+                {/* Credentials Box (Full Width for long degrees) */}
+                <div className="col-span-2 flex items-center p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all hover:bg-white hover:-translate-y-1 group">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-50 border border-slate-100 mr-4 group-hover:scale-110 transition-transform flex-shrink-0">
+                    <Award className="w-5 h-5 text-indigo-500" strokeWidth={2.5} />
                   </div>
-                  <p className="text-xs sm:text-base font-black text-slate-900 leading-none mb-1 line-clamp-1">{clinic.degree || "10+ Yrs"}</p>
-                  <p className="text-[8.5px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">{clinic.degree ? "Qualified" : t.experience}</p>
-                </div>
-
-                {/* Rating Box */}
-                <div 
-                  className="flex flex-col items-center sm:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all hover:bg-white hover:-translate-y-1 group"
-                >
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center bg-slate-50 border border-slate-100 mb-2 group-hover:scale-110 transition-transform">
-                    <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 fill-amber-400" />
+                  <div>
+                    <p className="text-sm sm:text-[15px] font-black text-slate-900 leading-tight mb-0.5 line-clamp-2">{clinic.degree || "Board Certified Specialist"}</p>
+                    <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.credentials}</p>
                   </div>
-                  <div className="flex items-end gap-0.5 mb-1">
-                    <p className="text-xs sm:text-base font-black text-slate-900 leading-none">{averageRating}</p>
-                    <p className="text-[9px] font-bold text-slate-400 leading-none pb-[1px]">/5</p>
-                  </div>
-                  <p className="text-[8.5px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">{totalReviews} Ratings</p>
                 </div>
 
                 {/* Fee Box */}
-                <div 
-                  className="flex flex-col items-center sm:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all hover:bg-white hover:-translate-y-1 group"
-                >
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center bg-slate-50 border border-slate-100 mb-2 group-hover:scale-110 transition-transform">
-                    <BadgeCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" />
+                <div className="flex flex-col items-center sm:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all hover:bg-white hover:-translate-y-1 group">
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100 mb-2 group-hover:scale-110 transition-transform">
+                    <BadgeCheck className="w-4 h-4 text-emerald-600" strokeWidth={2.5} />
                   </div>
-                  <p className="text-xs sm:text-base font-black text-emerald-600 leading-none mb-1">{formattedFee}</p>
-                  <p className="text-[8.5px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Consult Fee</p>
+                  <p className="text-sm sm:text-base font-black text-emerald-600 leading-none mb-1">{formattedFee}</p>
+                  <p className="text-[8.5px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.consultFee}</p>
                 </div>
 
+                {/* Smart Queue / Token Box */}
+                <div className="flex flex-col items-center sm:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all hover:bg-white hover:-translate-y-1 group">
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-blue-50 border border-blue-100 mb-2 group-hover:scale-110 transition-transform">
+                    <Zap className="w-4 h-4 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                  <p className="text-sm sm:text-base font-black text-blue-600 leading-none mb-1">{t.smartQueueActive}</p>
+                  <p className="text-[8.5px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.liveTracking}</p>
+                </div>
               </div>
 
               {/* Pay at clinic & WhatsApp Quick Inquiry Badges */}
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 pt-1">
                 <div className="px-3.5 py-2 rounded-2xl bg-white/90 backdrop-blur-md border border-emerald-100 flex items-center gap-2 shadow-xs">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span className="text-[10.5px] font-black text-slate-800 uppercase tracking-wider">Pay Fee at Clinic</span>
+                  <span className="text-[10.5px] font-black text-slate-800 uppercase tracking-wider">{t.payFeeAtClinic}</span>
                 </div>
 
                 {(clinic.whatsappNumber || clinic.phone) && (
@@ -607,7 +636,7 @@ export default async function BookingPage({
                     className="px-3.5 py-2 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 hover:bg-[#25D366] hover:text-white hover:border-[#25D366] transition-all font-black text-[10.5px] uppercase tracking-wider flex items-center gap-1.5 shadow-xs active:scale-95"
                   >
                     <MessageCircle className="w-3.5 h-3.5 text-emerald-600 group-hover:text-white" />
-                    <span>WhatsApp Inquiry</span>
+                    <span>{t.whatsappInquiry}</span>
                   </a>
                 )}
               </div>
@@ -767,6 +796,22 @@ export default async function BookingPage({
           </div>
         </ScrollReveal>
 
+        {/* ══════════════════════════════════════════════════════════════════════
+            INSTALL CLINIC APP SECTION (~65% scroll depth)
+            Shows after "Why Choose Us" — patient has already seen the value,
+            now we invite them to install. Platform-smart: Android gets 1-tap
+            native install, iOS gets visual step guide, Desktop gets address-bar hint.
+            Bilingual: respects the page's selected lang (en/hi).
+        ══════════════════════════════════════════════════════════════════════ */}
+        <ScrollReveal delay={0.1}>
+          <InstallAppSection
+            clinicName={clinic.name}
+            logoUrl={safeLogoUrl}
+            themeColor={themeColor}
+            lang={lang}
+          />
+        </ScrollReveal>
+
         {/* Two Column Layout for the rest */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
@@ -793,19 +838,6 @@ export default async function BookingPage({
                     <p className="text-sm text-slate-800 font-bold leading-snug">{clinic.address}</p>
                     {directionsUrl && (
                       <div className="mt-3 space-y-3">
-                        <div className="w-full h-48 rounded-3xl overflow-hidden border border-slate-200/80 shadow-md relative group">
-                          <iframe 
-                            src={mapEmbedUrl}
-                            width="100%" 
-                            height="100%" 
-                            style={{ border: 0 }} 
-                            allowFullScreen 
-                            loading="lazy" 
-                            referrerPolicy="no-referrer-when-downgrade"
-                            title={`Map showing location of ${clinic.name}`}
-                          />
-                        </div>
-
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                           <a 
                             href={directionsUrl} 

@@ -36,6 +36,7 @@ import { DICTIONARY, Language } from "@/lib/i18n";
 import { PatientInstallButton } from "@/components/pwa-provider";
 import { soundEngine } from "@/lib/sound";
 import { PushOptIn } from "@/components/push-opt-in";
+import { formatDoctorName } from "@/lib/utils";
 
 interface TrackingClientProps {
   appointment: Appointment;
@@ -52,7 +53,7 @@ function generateGoogleCalendarUrl(appointment: Appointment, clinic: Clinic): st
 
   const formatISOForCal = (d: Date) => d.toISOString().replace(/-|:|\.\d\d\d/g, "");
 
-  const title = encodeURIComponent(`Appointment with Dr. ${clinic.doctorName} at ${clinic.name}`);
+  const title = encodeURIComponent(`Appointment with ${formatDoctorName(clinic.doctorName)} at ${clinic.name}`);
   const details = encodeURIComponent(`Token Number: #${appointment.tokenNumber || "N/A"}\nReason: ${appointment.notes || "Consultation"}\nAddress: ${clinic.address || ""}\nPhone: ${clinic.phone}`);
   const location = encodeURIComponent(`${clinic.name}, ${clinic.address || ""}`);
   const dates = `${formatISOForCal(startDateTime)}/${formatISOForCal(endDateTime)}`;
@@ -73,7 +74,7 @@ function downloadIcsFile(appointment: Appointment, clinic: Clinic) {
     "VERSION:2.0",
     "PRODID:-//DoctorDiary//ClinicBooking//EN",
     "BEGIN:VEVENT",
-    `SUMMARY:Appointment with Dr. ${clinic.doctorName}`,
+    `SUMMARY:Appointment with ${formatDoctorName(clinic.doctorName)}`,
     `DESCRIPTION:Token #${appointment.tokenNumber || "N/A"}\\nClinic: ${clinic.name}\\nPhone: ${clinic.phone}`,
     `LOCATION:${clinic.name}, ${clinic.address || ""}`,
     `DTSTART:${formatISOForCal(startDateTime)}`,
@@ -632,7 +633,7 @@ export function TrackingClient({
 
           <a
             href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
-              `🏥 Live Queue Ticket — Token #${appointment.tokenNumber || "—"} with Dr. ${clinic.doctorName} at ${clinic.name}.\nTrack live status here: ${typeof window !== "undefined" ? window.location.href : ""}`
+              `🏥 Live Queue Ticket — Token #${appointment.tokenNumber || "—"} with ${formatDoctorName(clinic.doctorName)} at ${clinic.name}.\nTrack live status here: ${typeof window !== "undefined" ? window.location.href : ""}`
             )}`}
             target="_blank"
             rel="noopener noreferrer"

@@ -4,6 +4,7 @@ import { inArray, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import QRCode from "qrcode";
 import { PrintButton } from "../print/print-button";
+import { formatDoctorName } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -307,7 +308,7 @@ export default async function PrintStandPage({
 
               <div className="stand-doctor-section">
                 <div className="stand-doctor-name">
-                  {item.doctorName ? ("Dr. " + item.doctorName.replace(/^dr\.?\s*/i, "")) : item.clinicName}
+                  {item.doctorName ? (formatDoctorName(item.doctorName).replace(/^dr\.?\s*/i, "")) : item.clinicName}
                 </div>
                 {item.doctorSpecialty && <div className="stand-doctor-specialty">{item.doctorSpecialty}</div>}
               </div>

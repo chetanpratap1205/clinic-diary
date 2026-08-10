@@ -28,6 +28,7 @@ import Link from "next/link";
 import { DashboardCharts } from "./_components/dashboard-charts";
 import { DateRangePicker } from "./_components/date-range-picker";
 import { NeedsAttentionWidget, InactiveClinic } from "./_components/needs-attention-widget";
+import { formatDoctorName } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -383,7 +384,7 @@ export default async function AdminDashboardPage(props: {
                             {clinic.name}
                           </p>
                           <p className="text-xs text-slate-500 truncate">
-                            Dr. {clinic.doctorName} • <span className="text-slate-600">{clinic.specialty}</span>
+                            {formatDoctorName(clinic.doctorName)} • <span className="text-slate-600">{clinic.specialty}</span>
                           </p>
                         </div>
                         <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full shrink-0">

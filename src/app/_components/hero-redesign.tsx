@@ -15,7 +15,7 @@ import {
 
 export function HeroRedesign() {
   return (
-    <section className="relative w-full bg-[#F8FAFC] overflow-hidden lg:h-[calc(100vh-10px)] lg:min-h-[600px] lg:max-h-[820px] flex flex-col justify-center pt-20 lg:pt-22 pb-6 lg:pb-8 group/section">
+    <section className="relative w-full bg-[#F8FAFC] overflow-hidden lg:h-[calc(100vh-10px)] lg:min-h-[600px] lg:max-h-[820px] flex flex-col justify-center pt-24 lg:pt-[100px] pb-6 lg:pb-8 group/section">
       {/* Background Studio Gradients & Grid Lines */}
       <div
         className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none"

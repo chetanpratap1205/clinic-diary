@@ -24,6 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { generateLeadDemoUrl } from "@/app/admin/leads/message-builder";
+import { formatDoctorName } from "@/lib/utils";
 
 interface Props {
   leads: DoctorLead[];
@@ -201,7 +202,7 @@ export function EmployeeLeadsClient({ leads, emp }: Props) {
                 <div className="p-4 border-b border-slate-100 flex items-start justify-between gap-2 bg-slate-50/50">
                   <div className="min-w-0 flex-1">
                     <h3 className="font-bold text-slate-900 truncate" title={lead.doctorName}>
-                      Dr. {lead.doctorName}
+                      {formatDoctorName(lead.doctorName)}
                     </h3>
                     <p className="text-xs font-medium text-slate-500 truncate mt-0.5" title={lead.clinicName || "Private Clinic"}>
                       {lead.clinicName || "Private Clinic"} · {lead.specialty || "GP"}
@@ -421,7 +422,7 @@ export function EmployeeLeadsClient({ leads, emp }: Props) {
             <div className="flex items-center justify-between border-b pb-3">
               <div>
                 <h3 className="font-bold text-slate-900 text-base">Log Field Visit</h3>
-                <p className="text-xs text-slate-500">Dr. {visitModalLead.doctorName} ({visitModalLead.clinicName || "Clinic"})</p>
+                <p className="text-xs text-slate-500">{formatDoctorName(visitModalLead.doctorName)} ({visitModalLead.clinicName || "Clinic"})</p>
               </div>
               <button onClick={() => setVisitModalLead(null)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
@@ -479,7 +480,7 @@ export function EmployeeLeadsClient({ leads, emp }: Props) {
                   <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
                     <MessageSquare className="w-5 h-5 text-emerald-600" /> WhatsApp Playbook
                   </h3>
-                  <p className="text-xs text-slate-500">Dr. {waDrawerLead.doctorName} ({waDrawerLead.phone})</p>
+                  <p className="text-xs text-slate-500">{formatDoctorName(waDrawerLead.doctorName)} ({waDrawerLead.phone})</p>
                 </div>
                 <button onClick={() => setWaDrawerLead(null)} className="text-slate-400 hover:text-slate-600">
                   <X className="w-5 h-5" />
@@ -496,11 +497,11 @@ export function EmployeeLeadsClient({ leads, emp }: Props) {
                     <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">High Intro Rate</span>
                   </div>
                   <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg font-mono">
-                    "Namaste Dr. {waDrawerLead.doctorName}! I'm {emp.name} from Doctor Diary. We help doctors in {waDrawerLead.city || "your city"} send digital prescriptions via WhatsApp automatically. Would you like a quick 2-min demo?"
+                    "Namaste {formatDoctorName(waDrawerLead.doctorName)}! I'm {emp.name} from Doctor Diary. We help doctors in {waDrawerLead.city || "your city"} send digital prescriptions via WhatsApp automatically. Would you like a quick 2-min demo?"
                   </p>
                   <a
                     href={`https://wa.me/91${waDrawerLead.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
-                      `Namaste Dr. ${waDrawerLead.doctorName}! I'm ${emp.name} from Doctor Diary. We help doctors in ${waDrawerLead.city || "your city"} send digital prescriptions via WhatsApp automatically. Would you like a quick 2-min demo?`
+                      `Namaste ${formatDoctorName(waDrawerLead.doctorName)}! I'm ${emp.name} from Doctor Diary. We help doctors in ${waDrawerLead.city || "your city"} send digital prescriptions via WhatsApp automatically. Would you like a quick 2-min demo?`
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -519,11 +520,11 @@ export function EmployeeLeadsClient({ leads, emp }: Props) {
                     <span className="text-[10px] bg-sky-100 text-sky-800 font-bold px-2 py-0.5 rounded">Efficiency Focus</span>
                   </div>
                   <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg font-mono">
-                    "Dr. {waDrawerLead.doctorName}, did you know Doctor Diary reduces clinic follow-up no-shows by 40% using automated WhatsApp reminders? Let's get your clinic set up in 5 minutes!"
+                    "{formatDoctorName(waDrawerLead.doctorName)}, did you know Doctor Diary reduces clinic follow-up no-shows by 40% using automated WhatsApp reminders? Let's get your clinic set up in 5 minutes!"
                   </p>
                   <a
                     href={`https://wa.me/91${waDrawerLead.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
-                      `Dr. ${waDrawerLead.doctorName}, did you know Doctor Diary reduces clinic follow-up no-shows by 40% using automated WhatsApp reminders? Let's get your clinic set up in 5 minutes!`
+                      `${formatDoctorName(waDrawerLead.doctorName)}, did you know Doctor Diary reduces clinic follow-up no-shows by 40% using automated WhatsApp reminders? Let's get your clinic set up in 5 minutes!`
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"

@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { PlusCircle, Loader2, CreditCard, CheckCircle2 } from "lucide-react";
 import { recordOfflinePaymentAction } from "@/app/actions/billing";
 import { toast } from "sonner";
+import { formatDoctorName } from "@/lib/utils";
 
 interface ClinicOption {
   id: string;
@@ -126,7 +127,7 @@ export function RecordOfflinePaymentModal({ clinics }: RecordOfflinePaymentModal
                 <option value="">-- Choose Practice / Clinic --</option>
                 {clinics.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name} (Dr. {c.doctorName})
+                    {c.name} ({formatDoctorName(c.doctorName)})
                   </option>
                 ))}
               </select>

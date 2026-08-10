@@ -3,6 +3,7 @@
  * Universal Messaging Strategy focusing on Patient Experience & Increasing Patient Return
  * Pure TypeScript — no React, no side effects.
  */
+import { formatDoctorName } from "@/lib/utils";
 
 export type LeadCategory = "A" | "B" | "C";
 
@@ -14,6 +15,7 @@ export interface LeadForMessage {
   city?: string | null;
   leadCategory: string;
   messageSentStep: number;
+  clinicSlug?: string | null;
 }
 
 export const MESSAGE_CONFIG = {
@@ -88,35 +90,15 @@ export const SPECIALTIES = [
 
 // ─── Auto-Generated Personalized Demo Preview URL ──────────────────────────────
 export function generateLeadDemoUrl(lead: {
-  doctorName: string;
-  clinicName?: string | null;
-  specialty?: string | null;
-  city?: string | null;
   clinicSlug?: string | null;
 }): string {
-  if (lead.clinicSlug) {
-    return `https://doctor.naturexpress.in/book/${lead.clinicSlug}`;
+  // We MUST use the actual clinicSlug from the database.
+  // Fallbacks create broken links since they bypass collision checks.
+  if (!lead.clinicSlug) {
+    console.warn("generateLeadDemoUrl: lead.clinicSlug is missing, returning base url");
+    return "https://doctor.naturexpress.in/demo";
   }
-
-  let docName = lead.doctorName || "Doctor";
-  // Remove "dr." prefix if it exists before sluggifying, so we can consistently add it
-  if (docName.toLowerCase().startsWith("dr. ")) {
-    docName = docName.substring(4);
-  } else if (docName.toLowerCase().startsWith("dr ")) {
-    docName = docName.substring(3);
-  }
-
-  let slug = docName
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-    
-  // Ensure it starts with dr-
-  if (!slug.startsWith("dr-")) {
-    slug = `dr-${slug}`;
-  }
-
-  return `https://doctor.naturexpress.in/book/${slug}`;
+  return `https://doctor.naturexpress.in/book/${lead.clinicSlug}`;
 }
 
 // ─── Step / Category Helpers ──────────────────────────────────────────────────
@@ -148,7 +130,7 @@ export function buildCategoryAMessage(lead: LeadForMessage, step: number): strin
   const demoUrl = generateLeadDemoUrl(lead);
 
   if (step === 1) {
-    return `Good morning Dr. ${name},
+    return `Good morning ${formatDoctorName(name)},
 
 While reviewing healthcare listings in ${city}, we noticed that ${clinicName} doesn't yet have a dedicated online booking page that patients can access directly.
 
@@ -164,7 +146,7 @@ We'd genuinely appreciate your opinion before we activate it. If you get just 60
   }
 
   if (step === 2) {
-    return `Dr. ${name},
+    return `${formatDoctorName(name)},
 
 Thank you if you've already seen the page.
 
@@ -186,7 +168,7 @@ We'll take care of everything else.`;
   }
 
   // Step 3 — Clean Exit / Takeaway
-  return `Dr. ${name},
+  return `${formatDoctorName(name)},
 
 This will be my final message.
 
@@ -209,7 +191,7 @@ export function buildCategoryBMessage(lead: LeadForMessage, step: number): strin
   const demoUrl = generateLeadDemoUrl(lead);
 
   if (step === 1) {
-    return `Good morning Dr. ${name},
+    return `Good morning ${formatDoctorName(name)},
 
 Following up on our team's recent visit to ${clinicName}, we wanted to share something we prepared specifically for you.
 
@@ -225,7 +207,7 @@ We'd genuinely appreciate your opinion before we activate it. If you get just 60
   }
 
   if (step === 2) {
-    return `Dr. ${name},
+    return `${formatDoctorName(name)},
 
 Thank you if you've already seen the page we discussed during our visit.
 
@@ -246,7 +228,7 @@ If you'd like to activate your clinic page, simply reply:
 We'll take care of everything else.`;
   }
 
-  return `Dr. ${name},
+  return `${formatDoctorName(name)},
 
 This will be my final message.
 
@@ -269,7 +251,7 @@ export function buildCategoryCMessage(lead: LeadForMessage, step: number): strin
   const demoUrl = generateLeadDemoUrl(lead);
 
   if (step === 1) {
-    return `Good morning Dr. ${name},
+    return `Good morning ${formatDoctorName(name)},
 
 Thank you for reaching out regarding Doctor Diary for ${clinicName}. 
 
@@ -285,7 +267,7 @@ We'd genuinely appreciate your opinion on the design before we activate it. Have
   }
 
   if (step === 2) {
-    return `Dr. ${name},
+    return `${formatDoctorName(name)},
 
 Thank you if you've already seen the page.
 
@@ -305,7 +287,7 @@ If you'd like to officially activate your clinic page, simply reply:
 We'll take care of everything else.`;
   }
 
-  return `Dr. ${name},
+  return `${formatDoctorName(name)},
 
 This will be my final message regarding your inquiry.
 

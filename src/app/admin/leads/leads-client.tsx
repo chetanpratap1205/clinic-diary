@@ -57,9 +57,10 @@ import { LeadDetailDrawer } from "./lead-detail-drawer";
 import { AddEditLeadModal } from "./add-edit-lead-modal";
 import { CsvImportModal } from "./csv-import-modal";
 import { DecisionGuideModal } from "./decision-guide-modal";
-import { updateLead, deleteLead } from "./actions";
+import { updateLead, deleteLead, bulkAssignLeads, getEmployees } from "./actions";
 import { ExportLeadsButton } from "./export-leads-button";
 import { ConvertLeadModal } from "./convert-lead-modal";
+import { useEffect } from "react";
 
 interface LeadsClientProps {
   leads: DoctorLead[];
@@ -106,6 +107,11 @@ export function LeadsClient({
 
   // Bulk selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [employeesList, setEmployeesList] = useState<any[]>([]);
+
+  useEffect(() => {
+    getEmployees().then(setEmployeesList);
+  }, []);
 
   // Drawer / modal state
   const [waDrawerLead, setWaDrawerLead] = useState<DoctorLead | null>(null);
@@ -206,6 +212,18 @@ export function LeadsClient({
     startTransition(() => router.refresh());
   };
 
+  const handleBulkEmployeeAssign = async (employeeId: string) => {
+    if (selectedIds.size === 0) return;
+    const res = await bulkAssignLeads(Array.from(selectedIds), employeeId === "unassigned" ? null : employeeId);
+    if (res.error) {
+      toast.error(res.error);
+    } else {
+      toast.success(`Successfully assigned ${selectedIds.size} leads.`);
+      setSelectedIds(new Set());
+      startTransition(() => router.refresh());
+    }
+  };
+
   const hasActiveFilters = Object.values(currentFilters).some((v) => v && v !== "all");
 
   // ─── Follow-up due today / overdue ─────────────────────────────────────────
@@ -270,23 +288,41 @@ export function LeadsClient({
 
       {/* ─── Bulk Actions Bar (shows when rows selected) ─────────────────────── */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 bg-teal-50 border border-teal-200 rounded-xl px-4 py-2.5">
+        <div className="flex items-center gap-3 bg-teal-50 border border-teal-200 rounded-xl px-4 py-2.5 flex-wrap">
           <div className="flex items-center gap-2 text-sm font-semibold text-teal-800">
             <CheckSquare className="w-4 h-4" />
             {selectedIds.size} selected
           </div>
-          <div className="h-4 w-px bg-teal-200" />
-          <span className="text-xs text-teal-700 font-medium">Bulk update status:</span>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {LEAD_STATUSES.filter((s) => s.value !== "converted").map((s) => (
-              <button
-                key={s.value}
-                onClick={() => handleBulkStatusChange(s.value)}
-                className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white border border-teal-300 text-teal-700 hover:bg-teal-100 transition-colors"
-              >
-                → {s.label}
-              </button>
-            ))}
+          <div className="h-4 w-px bg-teal-200 hidden sm:block" />
+          
+          <div className="flex items-center gap-2 border-r border-teal-200 pr-3">
+            <span className="text-xs text-teal-700 font-medium">Assign to:</span>
+            <Select onValueChange={handleBulkEmployeeAssign}>
+              <SelectTrigger className="h-8 w-[160px] text-xs bg-white border-teal-300 focus:ring-teal-500">
+                <SelectValue placeholder="Select member..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unassigned" className="text-slate-400 italic">Unassigned</SelectItem>
+                {employeesList.map((e) => (
+                  <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-teal-700 font-medium">Status:</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {LEAD_STATUSES.filter((s) => s.value !== "converted").map((s) => (
+                <button
+                  key={s.value}
+                  onClick={() => handleBulkStatusChange(s.value)}
+                  className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white border border-teal-300 text-teal-700 hover:bg-teal-100 transition-colors"
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
           </div>
           <button
             onClick={() => setSelectedIds(new Set())}

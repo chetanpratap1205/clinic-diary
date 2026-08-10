@@ -100,6 +100,12 @@ export default function StaffLoginPage() {
         {/* Login Form */}
         <div className="p-6 sm:p-8">
           <form onSubmit={handleStaffLogin} className="space-y-4">
+            <div className="bg-teal-500/10 border border-teal-500/20 rounded-xl p-4 mb-2">
+               <p className="text-xs text-teal-200 leading-relaxed">
+                 <strong>Welcome Team!</strong> Please log in using the email and initial password provided by your administrator. 
+               </p>
+            </div>
+
             <div className="space-y-1.5">
               <Label htmlFor="staff-email" className="text-xs font-bold text-slate-300">
                 Staff Email Address

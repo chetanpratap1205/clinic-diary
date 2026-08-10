@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
+import { formatDoctorName } from "@/lib/utils";
 
 export const runtime = "edge";
 
@@ -134,7 +135,7 @@ export async function GET(request: NextRequest) {
                       {clinicName}
                     </span>
                     <span style={{ fontSize: 22, color: "#475569", fontWeight: 500 }}>
-                      Dr. {doctorName}
+                      {formatDoctorName(doctorName)}
                     </span>
                     {specialty && (
                       <span style={{ fontSize: 18, color: "#94a3b8" }}>{specialty}</span>

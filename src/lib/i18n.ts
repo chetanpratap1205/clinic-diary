@@ -1,3 +1,4 @@
+import { formatDoctorName } from "./utils";
 export type Language = "en" | "hi";
 
 export const DICTIONARY = {
@@ -76,6 +77,21 @@ export const DICTIONARY = {
     compliant: "DPDP Act Compliant",
     disclaimerText: (clinicName: string) => `* Medical Disclaimer: Information on this page is provided directly by ${clinicName}. Token queue estimations are subject to emergency patient triage. In case of a medical emergency, please visit the nearest hospital immediately.`,
     allRightsReserved: "All rights reserved.",
+
+    // Install App Section
+    installHeading: "Install Clinic App",
+    installSubheading: "No App Store needed. Direct to your phone.",
+    installSizeBadge: "< 1 MB",
+    installAndroidCta: "Install Free",
+    installDesktopHint: "Click the",
+    installDesktopHint2: "icon in your browser's address bar to install.",
+    installIOSStep1Title: "Tap Share",
+    installIOSStep1Sub: "Tap the share button (📤) at the bottom of Safari.",
+    installIOSStep2Title: "Add to Home Screen",
+    installIOSStep2Sub: "Scroll down and tap 'Add to Home Screen'.",
+    installIOSDone: "Got it — let's install!",
+    installAlreadyDone: "App already installed ✓",
+    installOfficialBadge: "Official App · Free · No Sign-up",
     
     // Tracking Page
     tracking: "Live Token Tracking",
@@ -111,11 +127,11 @@ export const DICTIONARY = {
     iCal: "iCal (.ics)",
     markedNoShow: "Marked No-Show",
     noLongerActive: "This appointment is no longer active.",
-    inConsultation: (name: string) => `Dr. ${name} is seeing you now.`,
+    inConsultation: (name: string) => `${formatDoctorName(name)} is seeing you now.`,
     visitCompleteTitle: "Visit Complete!",
-    visitCompleteSub: (name: string) => `Thank you for visiting Dr. ${name}`,
+    visitCompleteSub: (name: string) => `Thank you for visiting ${formatDoctorName(name)}`,
     howWasVisit: "How was your visit?",
-    rateVisit: (name: string) => `Tap a star to rate your experience with Dr. ${name}`,
+    rateVisit: (name: string) => `Tap a star to rate your experience with ${formatDoctorName(name)}`,
     eReceiptStatus: "E-Receipt Status",
     receiptGenerated: "Official Receipt Generated",
     viewReceipt: "View E-Receipt",
@@ -125,10 +141,10 @@ export const DICTIONARY = {
     openInMaps: "Open in Maps",
     bookNextVisit: "Book Your Next Visit",
     bookNewAppointment: "Book a New Appointment",
-    withDr: (name: string, clinic: string) => `with Dr. ${name} at ${clinic}`,
+    withDr: (name: string, clinic: string) => `with ${formatDoctorName(name)} at ${clinic}`,
     cancelThisAppt: "Cancel this appointment",
     cancelApptTitle: "Cancel Appointment?",
-    cancelApptDesc: (name: string) => `This will cancel your appointment with Dr. ${name}. This action cannot be undone.`,
+    cancelApptDesc: (name: string) => `This will cancel your appointment with ${formatDoctorName(name)}. This action cannot be undone.`,
     keepIt: "Keep It",
     yesCancel: "Yes, Cancel",
     
@@ -139,7 +155,17 @@ export const DICTIONARY = {
     findStatus: "Find Status",
     invalidMobile: "Please enter a valid 10-digit mobile number",
     backToBooking: "Back to Booking",
-    dataSafe: "Your data is safe and secure."
+    dataSafe: "Your data is safe and secure.",
+    // New Booking Page Elements
+    verifiedOfficial: "Verified",
+    openNow: "Open Now",
+    acceptingTokens: "Accepting Tokens",
+    credentials: "Education & Credentials",
+    consultFee: "Consult Fee",
+    smartQueueActive: "Smart Queue Active",
+    liveTracking: "Live Token Tracking",
+    payFeeAtClinic: "Pay Fee at Clinic",
+    whatsappInquiry: "WhatsApp Inquiry"
   },
   hi: {
     // Shared
@@ -217,6 +243,21 @@ export const DICTIONARY = {
     disclaimerText: (clinicName: string) => `* चिकित्सा अस्वीकरण: इस पृष्ठ की जानकारी सीधे ${clinicName} द्वारा प्रदान की गई है। टोकन कतार का अनुमान आपातकालीन मरीजों पर निर्भर है। मेडिकल इमरजेंसी में कृपया तुरंत नजदीकी अस्पताल जाएं।`,
     allRightsReserved: "सभी अधिकार सुरक्षित।",
 
+    // Install App Section
+    installHeading: "क्लिनिक ऐप इंस्टॉल करें",
+    installSubheading: "कोई App Store नहीं। सीधे आपके फ़ोन पर।",
+    installSizeBadge: "1 MB से कम",
+    installAndroidCta: "मुफ्त इंस्टॉल करें",
+    installDesktopHint: "ब्राउज़र के address bar में",
+    installDesktopHint2: "आइकन पर क्लिक करें।",
+    installIOSStep1Title: "Share दबाएं",
+    installIOSStep1Sub: "Safari के नीचे Share बटन (📤) दबाएं।",
+    installIOSStep2Title: "Home Screen पर जोड़ें",
+    installIOSStep2Sub: "नीचे scroll करें और 'Add to Home Screen' दबाएं।",
+    installIOSDone: "समझ गया — चलिए इंस्टॉल करते हैं!",
+    installAlreadyDone: "ऐप पहले से इंस्टॉल है ✓",
+    installOfficialBadge: "आधिकारिक ऐप · मुफ्त · कोई साइनअप नहीं",
+
     // Tracking Page
     tracking: "लाइव टोकन ट्रैकिंग",
     currentStatus: "वर्तमान स्थिति",
@@ -279,6 +320,16 @@ export const DICTIONARY = {
     findStatus: "स्थिति खोजें",
     invalidMobile: "कृपया सही 10-अंकीय मोबाइल नंबर दर्ज करें",
     backToBooking: "बुकिंग पर वापस जाएं",
-    dataSafe: "आपका डेटा सुरक्षित है।"
+    dataSafe: "आपका डेटा सुरक्षित है।",
+    // New Booking Page Elements
+    verifiedOfficial: "सत्यापित",
+    openNow: "अभी खुला है",
+    acceptingTokens: "टोकन उपलब्ध",
+    credentials: "शिक्षा और योग्यता",
+    consultFee: "परामर्श शुल्क",
+    smartQueueActive: "स्मार्ट कतार चालू",
+    liveTracking: "लाइव टोकन ट्रैकिंग",
+    payFeeAtClinic: "क्लिनिक में भुगतान करें",
+    whatsappInquiry: "WhatsApp पूछताछ"
   },
 };

@@ -22,7 +22,7 @@ import {
   LEAD_CATEGORIES,
   getSuggestedPillar,
 } from "./message-builder";
-import { createLead, updateLead, getGrowthPartners } from "./actions";
+import { createLead, updateLead, getGrowthPartners, getEmployees } from "./actions";
 import { useEffect } from "react";
 import { format } from "date-fns";
 
@@ -36,11 +36,13 @@ interface AddEditLeadModalProps {
 export function AddEditLeadModal({ lead = null, open, onOpenChange, onSuccess }: AddEditLeadModalProps) {
   const [isPending, startTransition] = useTransition();
   const [partners, setPartners] = useState<any[]>([]);
+  const [employeesList, setEmployeesList] = useState<any[]>([]);
   const isEdit = !!lead;
 
   useEffect(() => {
     if (open) {
       getGrowthPartners().then(setPartners);
+      getEmployees().then(setEmployeesList);
     }
   }, [open]);
 
@@ -58,6 +60,7 @@ export function AddEditLeadModal({ lead = null, open, onOpenChange, onSuccess }:
     leadCategory: lead?.leadCategory ?? "A",
     domainPillar: lead?.domainPillar ?? "",
     assignedTo: lead?.assignedTo ?? "",
+    assignedEmployeeId: lead?.assignedEmployeeId ?? "",
     notes: lead?.notes ?? "",
     followUpDate: lead?.followUpDate
       ? format(new Date(lead.followUpDate), "yyyy-MM-dd")
@@ -106,6 +109,7 @@ export function AddEditLeadModal({ lead = null, open, onOpenChange, onSuccess }:
         leadCategory: form.leadCategory,
         domainPillar: form.domainPillar || undefined,
         assignedTo: form.assignedTo || undefined,
+        assignedEmployeeId: form.assignedEmployeeId || undefined,
         notes: form.notes || undefined,
         followUpDate: form.followUpDate || undefined,
         degree: form.degree || undefined,
@@ -339,6 +343,26 @@ export function AddEditLeadModal({ lead = null, open, onOpenChange, onSuccess }:
                       {partners.map((p) => (
                         <SelectItem key={p.id} value={p.id}>
                           {p.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Assigned Team Member</Label>
+                  <Select
+                    value={form.assignedEmployeeId}
+                    onValueChange={(v) => setForm((f) => ({ ...f, assignedEmployeeId: v === "unassigned" ? "" : v }))}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Auto-assign or select manually" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unassigned" className="text-slate-400 italic">Auto-assign or select manually</SelectItem>
+                      {employeesList.map((e) => (
+                        <SelectItem key={e.id} value={e.id}>
+                          {e.name}
                         </SelectItem>
                       ))}
                     </SelectContent>

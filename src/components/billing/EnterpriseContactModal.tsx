@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Building2, Sparkles, Send, CheckCircle2, Shield, Phone, Users } from "lucide-react";
 import { toast } from "sonner";
+import { formatDoctorName } from "@/lib/utils";
 
 interface EnterpriseContactModalProps {
   isOpen: boolean;
@@ -54,7 +55,7 @@ export function EnterpriseContactModal({ isOpen, onClose, adminName }: Enterpris
 
       // Formulate WhatsApp redirection for instant response
       const waText = encodeURIComponent(
-        `Hi Doctor Diary Enterprise Team,\nI would like to inquire about the Enterprise / Polyclinic plan.\n\nName: Dr. ${doctorName}\nClinic/Hospital: ${clinicName || "N/A"}\nNumber of Doctors: ${doctorCount}\nRequirements: ${notes || "Multi-doctor setup"}`
+        `Hi Doctor Diary Enterprise Team,\nI would like to inquire about the Enterprise / Polyclinic plan.\n\nName: ${formatDoctorName(doctorName)}\nClinic/Hospital: ${clinicName || "N/A"}\nNumber of Doctors: ${doctorCount}\nRequirements: ${notes || "Multi-doctor setup"}`
       );
       setTimeout(() => {
         window.open(`https://wa.me/918077170715?text=${waText}`, "_blank");

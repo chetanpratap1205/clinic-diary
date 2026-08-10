@@ -5,6 +5,7 @@ import { eq, and } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { format } from "date-fns";
 import { PrintButton } from "@/components/billing/PrintButton";
+import { formatDoctorName } from "@/lib/utils";
 
 export default async function InvoicePage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -108,7 +109,7 @@ export default async function InvoicePage(props: { params: Promise<{ id: string 
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Billed To / Customer Details:</h3>
             <div className="text-gray-900 font-bold text-lg mb-1">{clinicRecord.name}</div>
             <div className="text-gray-600 space-y-0.5 text-sm">
-              <p>Attn: Dr. {clinicRecord.doctorName}</p>
+              <p>Attn: {formatDoctorName(clinicRecord.doctorName)}</p>
               {clinicRecord.billingAddress ? (
                 <p>{clinicRecord.billingAddress}</p>
               ) : clinicRecord.address ? (

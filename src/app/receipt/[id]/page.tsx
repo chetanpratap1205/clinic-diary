@@ -7,6 +7,7 @@ import { CheckCircle2, Building2, MapPin, Calendar, Receipt, CalendarPlus } from
 import Link from "next/link";
 import { formatTimeDisplay } from "@/lib/format";
 import { PrintButton } from "./print-button";
+import { formatDoctorName } from "@/lib/utils";
 
 export const metadata = {
   title: "Digital Receipt | Doctor Diary",
@@ -77,7 +78,7 @@ export default async function ReceiptPage(props: { params: Promise<{ id: string 
               <div>
                 <h1 className="text-2xl font-black text-slate-900 tracking-tight mb-1">{clinic.name}</h1>
                 <p className="text-slate-600 font-medium flex items-center gap-1.5 text-sm">
-                  <Building2 className="w-4 h-4 text-slate-400" /> Dr. {clinic.doctorName}
+                  <Building2 className="w-4 h-4 text-slate-400" /> {formatDoctorName(clinic.doctorName)}
                 </p>
                 {clinic.address && (
                   <p className="text-slate-500 flex items-start gap-1.5 text-sm mt-2 max-w-[250px]">

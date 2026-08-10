@@ -1,3 +1,4 @@
+import { formatDoctorName } from "./utils";
 export type ClinicState = {
   lifetimeAppointments: number;
   todayAppointments: number;
@@ -51,7 +52,7 @@ export function getDashboardInsight(state: ClinicState): InsightBanner {
 
   // Rule 2: Onboarding - Brand new clinic
   if (lifetimeAppointments < 5) {
-    const whatsappText = encodeURIComponent(`Book your appointment with Dr. ${doctorName} online:\n${bookingUrl}`);
+    const whatsappText = encodeURIComponent(`Book your appointment with ${formatDoctorName(doctorName)} online:\n${bookingUrl}`);
     return {
       id: "onboarding",
       variant: "info",

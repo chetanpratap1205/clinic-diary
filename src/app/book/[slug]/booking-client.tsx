@@ -24,6 +24,7 @@ import { PatientInstallButton } from "@/components/pwa-provider";
 import { PushOptIn } from "@/components/push-opt-in";
 import confetti from "canvas-confetti";
 import { DICTIONARY, Language } from "@/lib/i18n";
+import { formatDoctorName } from "@/lib/utils";
 
 function getContrastColor(hexcolor: string): string {
   if (!hexcolor) return "#ffffff";
@@ -278,7 +279,7 @@ export function BookingClient({
   const calUrl = () => {
     if (!successData || !selectedTime) return "#";
     const start = format(selectedDate, "yyyyMMdd") + "T" + selectedTime.replace(":", "") + "00";
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Appointment – Dr. ${doctorFirst}`)}&dates=${start}/${start}&details=${encodeURIComponent(`Consultation at ${clinic.name}`)}&location=${encodeURIComponent(clinic.address || clinic.name)}&ctz=Asia/Kolkata`;
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Appointment – ${formatDoctorName(doctorFirst)}`)}&dates=${start}/${start}&details=${encodeURIComponent(`Consultation at ${clinic.name}`)}&location=${encodeURIComponent(clinic.address || clinic.name)}&ctz=Asia/Kolkata`;
   };
 
   const downloadIcs = () => {
@@ -296,8 +297,8 @@ export function BookingClient({
       "VERSION:2.0",
       "PRODID:-//Doctor Diary//EN",
       "BEGIN:VEVENT",
-      `SUMMARY:Appointment - Dr. ${doctorFirst}`,
-      `DESCRIPTION:Consultation with Dr. ${doctorFirst} at ${clinic.name}`,
+      `SUMMARY:Appointment - ${formatDoctorName(doctorFirst)}`,
+      `DESCRIPTION:Consultation with ${formatDoctorName(doctorFirst)} at ${clinic.name}`,
       `LOCATION:${clinic.address || clinic.name}`,
       `DTSTART:${startTimeStr}`,
       `DTEND:${endTimeStr}`,
@@ -380,7 +381,7 @@ export function BookingClient({
                 </div>
                 <div className="text-right">
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Doctor</p>
-                  <p className="text-xs font-black text-slate-900">Dr. {doctorFirst}</p>
+                  <p className="text-xs font-black text-slate-900">{formatDoctorName(doctorFirst)}</p>
                 </div>
               </div>
 

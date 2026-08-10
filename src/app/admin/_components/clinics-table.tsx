@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ExtendTrialModal } from "./extend-trial-modal";
+import { formatDoctorName } from "@/lib/utils";
 
 export type ClinicRow = {
   id: string;
@@ -294,7 +295,7 @@ export function ClinicsTable({
                   const formattedPhone = clinic.phone?.replace(/\D/g, "") || "";
                   const waUrl = formattedPhone
                     ? `https://wa.me/91${formattedPhone.slice(-10)}?text=${encodeURIComponent(
-                        `Hello Dr. ${clinic.doctorName}, checking in from Doctor Diary admin support regarding ${clinic.name}. Need any assistance?`
+                        `Hello ${formatDoctorName(clinic.doctorName)}, checking in from Doctor Diary admin support regarding ${clinic.name}. Need any assistance?`
                       )}`
                     : "#";
 
@@ -304,7 +305,7 @@ export function ClinicsTable({
                         <div>
                           <p className="font-semibold text-slate-900 text-sm truncate">{clinic.name}</p>
                           <p className="text-xs text-slate-500 mt-0.5 truncate">
-                            Dr. {clinic.doctorName} • {clinic.phone}
+                            {formatDoctorName(clinic.doctorName)} • {clinic.phone}
                           </p>
                         </div>
                       </TableCell>

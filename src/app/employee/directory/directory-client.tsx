@@ -8,6 +8,7 @@ import { Search, MapPin, Building2, UserPlus, CheckCircle, Loader2 } from "lucid
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { formatDoctorName } from "@/lib/utils";
 
 interface Props {
   clinics: UnclaimedClinic[];
@@ -79,7 +80,7 @@ export function DirectoryClient({ clinics, emp }: Props) {
                 </span>
               </div>
 
-              <h3 className="font-bold text-slate-900 text-base mt-2">Dr. {clinic.doctorName}</h3>
+              <h3 className="font-bold text-slate-900 text-base mt-2">{formatDoctorName(clinic.doctorName)}</h3>
               <p className="text-xs font-semibold text-slate-600 flex items-center gap-1 mt-0.5">
                 <Building2 className="w-3.5 h-3.5 text-slate-400" /> {clinic.clinicName}
               </p>

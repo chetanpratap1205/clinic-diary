@@ -212,10 +212,24 @@ export async function createLead(data: {
   timings?: string;
   about?: string;
   logoUrl?: string;
+  assignedEmployeeId?: string;
 }) {
   try {
     const pillar = data.domainPillar || getSuggestedPillar(data.specialty);
-    const { assignedEmployeeId, assignedManagerId } = await autoAssignLeadRoundRobin(data.city);
+    
+    // Auto assign only if no manual employee is provided
+    let assignedEmployeeId: string | null = data.assignedEmployeeId || null;
+    let assignedManagerId: string | null = null;
+    if (!assignedEmployeeId) {
+      const autoAssigned = await autoAssignLeadRoundRobin(data.city);
+      assignedEmployeeId = autoAssigned.assignedEmployeeId;
+      assignedManagerId = autoAssigned.assignedManagerId;
+    } else {
+      // Fetch manager for the manually assigned employee
+      const { employees } = await import("@/db/schema");
+      const [emp] = await db.select({ managerId: employees.managerId }).from(employees).where(eq(employees.id, assignedEmployeeId)).limit(1);
+      assignedManagerId = emp?.managerId || null;
+    }
 
     const clinicSlug = await generateUniqueLeadSlug(data.doctorName, data.city, data.specialty);
 
@@ -271,6 +285,7 @@ export async function updateLead(
     leadCategory: string;
     domainPillar: string | null;
     assignedTo: string | null;
+    assignedEmployeeId: string | null;
     notes: string | null;
     followUpDate: string | null;
     demoScheduledAt: string | null;
@@ -306,6 +321,18 @@ export async function updateLead(
     if (data.leadCategory !== undefined) updateData.leadCategory = data.leadCategory;
     if (data.notes !== undefined) updateData.notes = data.notes;
     if (data.assignedTo !== undefined) updateData.assignedTo = data.assignedTo;
+    
+    if (data.assignedEmployeeId !== undefined) {
+      updateData.assignedEmployeeId = data.assignedEmployeeId;
+      if (data.assignedEmployeeId) {
+        // Fetch manager for the manually assigned employee
+        const { employees } = await import("@/db/schema");
+        const [emp] = await db.select({ managerId: employees.managerId }).from(employees).where(eq(employees.id, data.assignedEmployeeId)).limit(1);
+        updateData.assignedManagerId = emp?.managerId || null;
+      } else {
+        updateData.assignedManagerId = null;
+      }
+    }
     if (data.followUpDate !== undefined) {
       updateData.followUpDate = data.followUpDate ? new Date(data.followUpDate) : null;
     }
@@ -590,5 +617,40 @@ export async function trackLeadView(clinicSlug: string) {
   } catch (err) {
     // Swallow errors silently — tracking must never break the patient-facing page
     console.warn("trackLeadView failed silently:", err);
+  }
+}
+
+// ─── Get Employees for Assignment ──────────────────────────────────────────────
+export async function getEmployees() {
+  const { employees } = await import("@/db/schema");
+  return db
+    .select({
+      id: employees.id,
+      name: employees.name,
+      role: employees.role,
+      department: employees.department,
+    })
+    .from(employees)
+    .where(eq(employees.isActive, true))
+    .orderBy(employees.name);
+}
+
+// ─── Bulk Assign Leads ─────────────────────────────────────────────────────────
+export async function bulkAssignLeads(leadIds: string[], employeeId: string | null) {
+  if (!leadIds || leadIds.length === 0) return { error: "No leads selected" };
+  try {
+    await db
+      .update(doctorLeads)
+      .set({
+        assignedEmployeeId: employeeId,
+        updatedAt: new Date(),
+      })
+      .where(inArray(doctorLeads.id, leadIds));
+
+    revalidatePath("/admin/leads");
+    return { success: true };
+  } catch (err) {
+    console.error("bulkAssignLeads error:", err);
+    return { error: "Failed to bulk assign leads." };
   }
 }

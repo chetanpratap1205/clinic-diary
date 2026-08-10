@@ -15,6 +15,7 @@ import {
 import { FollowUpsTable, type FollowUpRow } from "../_components/followups-table";
 import { ExportFollowUpsButton } from "../_components/export-followups-button";
 import { NotifyDoctorButton } from "../_components/notify-doctor-button";
+import { formatDoctorName } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Follow-Ups & Patient Retention | Admin Console" };
@@ -277,7 +278,7 @@ export default async function FollowUpsPage(props: {
                     <TableRow key={row.clinicName} className="hover:bg-slate-50/60 transition-colors">
                       <TableCell className="min-w-[180px]">
                         <p className="font-semibold text-xs text-slate-900 truncate">{row.clinicName}</p>
-                        <p className="text-[10px] text-slate-500 truncate">Dr. {row.doctorName}</p>
+                        <p className="text-[10px] text-slate-500 truncate">{formatDoctorName(row.doctorName)}</p>
                       </TableCell>
 
                       <TableCell className="text-right text-xs text-amber-700 font-bold whitespace-nowrap">

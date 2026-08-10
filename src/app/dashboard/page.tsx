@@ -1,4 +1,5 @@
 import { getAuthUser } from "@/lib/auth";
+import { formatDoctorName } from "@/lib/utils";
 import { db } from "@/db";
 import { appointments, clinics, followUps, patients, subscriptions } from "@/db/schema";
 import { eq, and, gte, lte, count, lt } from "drizzle-orm";
@@ -144,9 +145,7 @@ export default async function DashboardPage() {
   }/book/${clinicData?.slug}`;
 
   const nameStr = authUser.name || "Doctor";
-  const displayName = nameStr.startsWith("Dr.") || nameStr.startsWith("Dr ")
-    ? nameStr
-    : nameStr.split(" ")[0];
+  const displayName = formatDoctorName(nameStr.split(" ")[0]);
 
   // Engine State Prep
   const sub = subscriptionResult[0];

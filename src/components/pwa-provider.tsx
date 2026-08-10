@@ -45,8 +45,8 @@ export function PWAProvider() {
         if (daysSince < 3) return; // Hide for 3 days if dismissed
       }
       
-      // Show install banner after 45 seconds of usage
-      setTimeout(() => setShowBanner(true), 45000);
+      // Show install banner after 8 seconds of usage (patients book in ~60s; 45s was too late)
+      setTimeout(() => setShowBanner(true), 8000);
     };
 
     window.addEventListener("beforeinstallprompt", handler);

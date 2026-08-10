@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { reminderLogs } from "@/db/schema";
 import { format } from "date-fns";
+import { formatDoctorName } from "@/lib/utils";
 
 export type NotificationChannel = "sms" | "whatsapp" | "email" | "console";
 export type TriggerType = "booking_confirmation" | "reminder_24h" | "reminder_1h" | "cancellation" | "status_update";
@@ -39,13 +40,13 @@ export async function sendNotification(
 
     switch (triggerType) {
       case "booking_confirmation":
-        message = `Hi ${payload.patientName}, your appointment with Dr. ${payload.doctorName} at ${payload.clinicName} is confirmed for ${formattedDate} at ${formattedTime}.\n\nTrack your live status here: ${payload.trackingUrl}`;
+        message = `Hi ${payload.patientName}, your appointment with ${formatDoctorName(payload.doctorName)} at ${payload.clinicName} is confirmed for ${formattedDate} at ${formattedTime}.\n\nTrack your live status here: ${payload.trackingUrl}`;
         break;
       case "status_update":
-        message = `Update: Dr. ${payload.doctorName} is reviewing your file. Check your live status: ${payload.trackingUrl}`;
+        message = `Update: ${formatDoctorName(payload.doctorName)} is reviewing your file. Check your live status: ${payload.trackingUrl}`;
         break;
       default:
-        message = `Update for your appointment with Dr. ${payload.doctorName}: ${payload.trackingUrl}`;
+        message = `Update for your appointment with ${formatDoctorName(payload.doctorName)}: ${payload.trackingUrl}`;
     }
 
     // 2. Sending Logic (MSG91 / Fast2SMS or Simulated)

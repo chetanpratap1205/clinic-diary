@@ -18,6 +18,7 @@ import type { DoctorLead } from "@/db/schema";
 import { getCategoryLabel, LEAD_CATEGORIES, buildMessageForStep } from "./message-builder";
 import { markMessageSent } from "./actions";
 import { DecisionGuideModal } from "./decision-guide-modal";
+import { format } from "date-fns";
 
 // ─── Step metadata ────────────────────────────────────────────────────────────
 const STEP_META: Record<number, { label: string; subtitle: string; timing: string; timingColor: string }> = {
@@ -87,63 +88,63 @@ function MessageCard({ lead, category, step, activeSentStep, onStepSent }: Messa
   };
 
   return (
-    <div className="relative pl-10 pb-8 last:pb-0">
+    <div className="relative pl-10 pb-10 last:pb-0">
       {/* Timeline Line */}
       {step !== 3 && (
-        <div className={`absolute left-4 top-8 bottom-0 w-0.5 -ml-[1px] ${isSent ? "bg-emerald-400" : "bg-slate-200"}`} />
+        <div className={`absolute left-4 top-10 bottom-0 w-[2px] -ml-[1px] rounded-full ${isSent ? "bg-emerald-400" : "bg-slate-200"}`} />
       )}
 
       {/* Timeline Dot */}
-      <div className={`absolute left-0 top-1 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ring-4 ring-white ${
+      <div className={`absolute left-0 top-1.5 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ring-4 ring-white shadow-sm z-10 transition-colors ${
         isSent ? "bg-emerald-500 text-white" : 
-        isRecommended ? "bg-green-600 text-white ring-green-100 shadow-md" : 
+        isRecommended ? "bg-green-600 text-white ring-green-50 shadow-md scale-110" : 
         "bg-slate-100 text-slate-400"
       }`}>
         {isSent ? "✓" : step}
       </div>
 
       {/* Card */}
-      <div className={`rounded-2xl border transition-all ${
-        isLocked ? "opacity-60 grayscale-[0.5] pointer-events-none border-slate-100 bg-slate-50/50" :
-        isRecommended ? "border-green-300 shadow-lg bg-white ring-1 ring-green-100" :
-        "border-slate-200 bg-white"
+      <div className={`rounded-2xl border transition-all duration-300 ${
+        isLocked ? "opacity-50 grayscale-[0.3] pointer-events-none border-slate-100 bg-slate-50/50" :
+        isRecommended ? "border-green-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white ring-1 ring-green-100/50" :
+        "border-slate-200 bg-white shadow-sm hover:shadow-md"
       }`}>
         {/* Header */}
-        <div className="flex items-start justify-between p-4 border-b border-slate-100">
+        <div className="flex items-start justify-between p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
           <div>
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span className={`text-sm font-bold ${isLocked ? "text-slate-500" : "text-slate-800"}`}>
+            <div className="flex items-center gap-2 flex-wrap mb-1.5">
+              <span className={`text-sm font-extrabold tracking-tight ${isLocked ? "text-slate-500" : "text-slate-800"}`}>
                 {stepMeta.label}
               </span>
               {isRecommended && (
-                <span className="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-200 uppercase tracking-wide">
+                <span className="text-[10px] font-bold bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full border border-green-200 uppercase tracking-wider shadow-sm">
                   Send Next
                 </span>
               )}
               {isSent && (
-                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">
-                  ✓ Sent
+                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full border border-emerald-200 shadow-sm flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Sent
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-500">{stepMeta.subtitle}</p>
+            <p className="text-xs font-medium text-slate-500">{stepMeta.subtitle}</p>
           </div>
-          <span className={`text-[10px] font-bold px-2 py-1 rounded-lg border flex items-center gap-1 ${stepMeta.timingColor}`}>
-            <Clock className="w-3 h-3" />
+          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1.5 shadow-sm ${stepMeta.timingColor}`}>
+            <Clock className="w-3.5 h-3.5" />
             {stepMeta.timing}
           </span>
         </div>
 
         {/* Message Content (Only show if not locked) */}
         {!isLocked && (
-          <div className="p-4 space-y-4">
+          <div className="p-5 space-y-5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Message Preview
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <MessageCircle className="w-3.5 h-3.5" /> Message Preview
               </span>
               <button
                 onClick={handleEditToggle}
-                className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-green-600 transition-colors font-medium"
+                className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-teal-600 transition-colors font-semibold bg-slate-50 hover:bg-teal-50 px-2.5 py-1 rounded-md"
               >
                 {isEditing ? <RotateCcw className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5" />}
                 {isEditing ? "Reset to Default" : "Edit Message"}
@@ -154,36 +155,46 @@ function MessageCard({ lead, category, step, activeSentStep, onStepSent }: Messa
               <textarea
                 value={editedMsg}
                 onChange={(e) => setEditedMsg(e.target.value)}
-                rows={12}
-                className="w-full text-sm p-4 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent resize-none leading-relaxed text-slate-700"
+                rows={10}
+                className="w-full text-[13px] p-4 rounded-xl border-2 border-teal-100 bg-white focus:outline-none focus:ring-0 focus:border-teal-400 resize-none leading-relaxed text-slate-700 shadow-inner transition-colors"
               />
             ) : (
-              <div className="bg-[#E7FDE1] rounded-xl px-5 py-4 text-[13px] text-slate-800 leading-relaxed whitespace-pre-wrap font-sans border border-[#c4efb9] shadow-inner relative">
-                {displayMessage}
+              <div className="relative">
+                {/* Visual WhatsApp Bubble */}
+                <div className="bg-[#E7FDE1] rounded-2xl rounded-tl-sm px-4 py-3.5 text-[14px] text-[#111B21] leading-[1.4] whitespace-pre-wrap font-sans shadow-[0_1px_0.5px_rgba(0,0,0,0.13)]">
+                  {displayMessage}
+                  {/* WhatsApp Time indicator mockup */}
+                  <div className="text-[10px] text-slate-500 text-right mt-1 opacity-70">
+                    {format(new Date(), "HH:mm")}
+                  </div>
+                </div>
                 {/* Visual WhatsApp Tail */}
-                <div className="absolute -left-1.5 top-4 w-3 h-3 bg-[#E7FDE1] border-l border-t border-[#c4efb9] transform -rotate-45" />
+                <svg viewBox="0 0 8 13" width="8" height="13" className="absolute -left-2 top-0 text-[#E7FDE1]">
+                  <path opacity=".13" d="M5.188 1H0v11.193l6.467-8.625C7.526 2.156 6.958 1 5.188 1z" />
+                  <path fill="currentColor" d="M5.188 0H0v11.193l6.467-8.625C7.526 1.156 6.958 0 5.188 0z" />
+                </svg>
               </div>
             )}
 
             {/* Actions */}
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-2.5 pt-3 border-t border-slate-100">
               <Button
                 onClick={handleSend}
                 disabled={isPending}
-                className="flex-1 bg-[#25D366] hover:bg-[#1EBE5A] text-white h-12 text-sm gap-2 font-bold rounded-xl shadow-sm hover:shadow-md transition-all"
+                className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white h-11 text-sm gap-2 font-bold rounded-xl shadow-[0_4px_14px_0_rgba(37,211,102,0.39)] hover:shadow-[0_6px_20px_rgba(37,211,102,0.23)] hover:-translate-y-0.5 transition-all"
               >
                 <Send className="w-4 h-4" />
-                {isSent ? "Resend on WhatsApp ↗" : "Send on WhatsApp ↗"}
+                {isSent ? "Resend via WhatsApp" : "Send via WhatsApp"}
               </Button>
               {!isSent && (
                 <Button
                   onClick={handleMarkSent}
                   disabled={isPending}
                   variant="outline"
-                  className="h-12 px-4 text-xs font-medium text-slate-600 gap-2 flex-shrink-0 rounded-xl hover:bg-slate-50"
+                  className="h-11 px-4 text-xs font-semibold text-slate-700 gap-2 flex-shrink-0 rounded-xl hover:bg-slate-100 border-slate-200 transition-colors"
                   title="Mark as sent without opening WhatsApp"
                 >
-                  <CheckCircle2 className="w-4 h-4" />
+                  <CheckCircle2 className="w-4 h-4 text-slate-400" />
                   Mark Sent
                 </Button>
               )}
@@ -194,11 +205,10 @@ function MessageCard({ lead, category, step, activeSentStep, onStepSent }: Messa
                   toast.success("Message copied to clipboard!");
                 }}
                 variant="outline"
-                className="h-12 px-3 text-xs font-medium text-slate-600 gap-1.5 flex-shrink-0 rounded-xl hover:bg-slate-50"
+                className="h-11 w-11 p-0 flex items-center justify-center text-slate-600 flex-shrink-0 rounded-xl hover:bg-slate-100 border-slate-200 transition-colors"
                 title="Copy message to clipboard"
               >
-                <Copy className="w-3.5 h-3.5" />
-                Copy
+                <Copy className="w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -229,7 +239,6 @@ export function WhatsAppMessageDrawer({ lead, open, onOpenChange, onStepSent }: 
 
   return (
     <>
-      {guideOpen && <DecisionGuideModal onClose={() => setGuideOpen(false)} />}
 
       {/* Backdrop */}
       <div 
@@ -358,6 +367,8 @@ export function WhatsAppMessageDrawer({ lead, open, onOpenChange, onStepSent }: 
           </div>
         </div>
       </div>
+      
+      {guideOpen && <DecisionGuideModal onClose={() => setGuideOpen(false)} open={guideOpen} onOpenChange={setGuideOpen} />}
     </>
   );
 }

@@ -2,6 +2,7 @@ import { AlertTriangle, Copy, Check } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { FadeInUp } from "@/components/dashboard/dashboard-animations";
+import { formatDoctorName } from "@/lib/utils";
 
 interface SmartQueueConductorProps {
   delayMinutes: number;
@@ -14,7 +15,7 @@ export const SmartQueueConductor = ({ delayMinutes, doctorName }: SmartQueueCond
   // We only activate the conductor if delay is significant (> 15 mins)
   if (delayMinutes <= 15) return null;
 
-  const apologyMessage = `Dr. ${doctorName} is currently running ${delayMinutes} minutes behind schedule due to an unexpected emergency. We sincerely apologize for the delay. Your queue position is secured and we will see you shortly.`;
+  const apologyMessage = `${formatDoctorName(doctorName)} is currently running ${delayMinutes} minutes behind schedule due to an unexpected emergency. We sincerely apologize for the delay. Your queue position is secured and we will see you shortly.`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(apologyMessage);

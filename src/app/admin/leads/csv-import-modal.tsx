@@ -76,9 +76,19 @@ function parseCSV(text: string): ParsedRow[] {
   const lines = text.trim().split(/\r?\n/);
   if (lines.length < 2) return [];
 
-  const headers = lines[0]
-    .split(",")
-    .map((h) => h.replace(/"/g, "").trim().toLowerCase());
+  // Robust CSV parser to handle quotes
+  const parseCsvLine = (line: string): string[] => {
+    const re = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+    return line.split(re).map(cell => {
+      let clean = cell.trim();
+      if (clean.startsWith('"') && clean.endsWith('"')) {
+        clean = clean.substring(1, clean.length - 1).replace(/""/g, '"');
+      }
+      return clean;
+    });
+  };
+
+  const headers = parseCsvLine(lines[0]).map((h) => h.toLowerCase());
 
   const colMap: Record<number, keyof ParsedRow> = {};
   headers.forEach((h, i) => {
@@ -88,7 +98,7 @@ function parseCSV(text: string): ParsedRow[] {
 
   const rows: ParsedRow[] = [];
   for (let i = 1; i < lines.length; i++) {
-    const cells = lines[i].split(",").map((c) => c.replace(/"/g, "").trim());
+    const cells = parseCsvLine(lines[i]);
     if (cells.every((c) => !c)) continue;
 
     const row: Partial<ParsedRow> = {};
@@ -101,10 +111,17 @@ function parseCSV(text: string): ParsedRow[] {
     });
 
     if (row.doctorName || row.phone) {
+      // Clean phone number: remove all non-digits, keep '+' if it's the first character
+      let rawPhone = row.phone || "";
+      let phone = rawPhone.replace(/\D/g, "");
+      if (rawPhone.startsWith("+")) {
+        phone = "+" + phone;
+      }
+      
       rows.push({
         doctorName: row.doctorName || "Unknown Doctor",
         clinicName: row.clinicName,
-        phone: row.phone || "",
+        phone: phone,
         email: row.email,
         specialty: row.specialty,
         city: row.city,

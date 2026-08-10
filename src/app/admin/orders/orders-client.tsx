@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import QRCode from "qrcode";
 import { toast } from "sonner";
+import { formatDoctorName } from "@/lib/utils";
 import {
   markOrderShipped,
   updateOrderStatus,
@@ -383,7 +384,7 @@ export function OrdersClient({ orders, clinics = [], products = [] }: OrdersClie
                       {/* Clinic & Address */}
                       <TableCell className="min-w-[220px]">
                         <p className="font-bold text-slate-900 text-sm leading-snug">{o.clinicName}</p>
-                        <p className="text-xs text-slate-600">{o.clinicDoctorName ? `Dr. ${o.clinicDoctorName}` : o.clinicPhone}</p>
+                        <p className="text-xs text-slate-600">{o.clinicDoctorName ? `${formatDoctorName(o.clinicDoctorName)}` : o.clinicPhone}</p>
                         <div className="flex items-center gap-1 mt-1 text-[11px] text-slate-500 bg-slate-50 p-1.5 rounded border border-slate-100">
                           <MapPin className="w-3 h-3 text-slate-400 flex-shrink-0" />
                           <span className="truncate max-w-[180px]" title={address}>{address}</span>
@@ -538,7 +539,7 @@ export function OrdersClient({ orders, clinics = [], products = [] }: OrdersClie
                 <SelectContent>
                   {clinics.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
-                      {c.name} {c.doctorName ? `(Dr. ${c.doctorName})` : ""} — {c.phone}
+                      {c.name} {c.doctorName ? `(${formatDoctorName(c.doctorName)})` : ""} — {c.phone}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -647,7 +648,7 @@ export function OrdersClient({ orders, clinics = [], products = [] }: OrdersClie
               <div className="border-b-2 border-slate-900 pb-3">
                 <p className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">DELIVER TO:</p>
                 <p className="font-black text-base mt-1">{printLabelOrder.clinicName}</p>
-                <p className="text-xs font-bold text-slate-700">{printLabelOrder.clinicDoctorName ? `Dr. ${printLabelOrder.clinicDoctorName}` : ""}</p>
+                <p className="text-xs font-bold text-slate-700">{printLabelOrder.clinicDoctorName ? `${formatDoctorName(printLabelOrder.clinicDoctorName)}` : ""}</p>
                 <p className="text-xs text-slate-800 mt-1 font-medium leading-relaxed">
                   {printLabelOrder.order.shippingAddress || printLabelOrder.clinicAddress || "No Address Provided"}
                 </p>
