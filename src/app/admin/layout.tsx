@@ -8,20 +8,24 @@ import { AdminNav } from "./_components/admin-nav";
 import { AdminMobileNav } from "./_components/admin-mobile-nav";
 import { GlobalSearch } from "./_components/global-search";
 
+import { getAuthenticatedEmployee } from "@/lib/auth/rbac";
+
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user: authUser },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/staff-login");
+  if (!authUser) redirect("/staff-login");
 
-  const adminIds = (process.env.ADMIN_USER_IDS ?? "")
-    .split(",")
-    .map((s) => s.trim());
-  if (!adminIds.includes(user.id)) {
+  const emp = await getAuthenticatedEmployee();
+
+  if (!emp || (emp.role !== "super_admin" && emp.role !== "area_manager")) {
     redirect("/dashboard");
   }
+
+  // Create a user-like object for the UI components
+  const user = { email: emp.email, id: emp.authUserId };
 
   return (
     <div className="flex h-screen bg-slate-50 text-slate-900 overflow-auto lg:overflow-hidden print:h-auto print:block print:bg-white print:overflow-visible">
