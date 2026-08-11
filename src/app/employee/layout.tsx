@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { getAuthenticatedEmployee } from "@/lib/auth/rbac";
 import Link from "next/link";
-import { LogOut, LayoutDashboard, Users, MapPin, Award, ShieldCheck } from "lucide-react";
+import { LogOut, LayoutDashboard, Users, MapPin, Award, ShieldCheck, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 
 export default async function EmployeeLayout({
   children,
@@ -20,6 +21,68 @@ export default async function EmployeeLayout({
     manager: "Manager",
     staff: "Staff",
   };
+
+  const navLinks = (
+    <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+      <Link
+        href="/employee"
+        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+      >
+        <LayoutDashboard className="w-4 h-4" />
+        Overview
+      </Link>
+      <Link
+        href="/employee/leads"
+        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+      >
+        <Users className="w-4 h-4" />
+        My Doctor Leads
+      </Link>
+      <Link
+        href="/employee/directory"
+        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+      >
+        <MapPin className="w-4 h-4" />
+        Unclaimed Directory
+      </Link>
+      <Link
+        href="/employee/performance"
+        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+      >
+        <Award className="w-4 h-4" />
+        My Targets
+      </Link>
+
+      {(emp.role === "admin" || emp.role === "manager") && (
+        <div className="pt-4 mt-4 border-t border-slate-200">
+          <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            Manager Tools
+          </span>
+          <Link
+            href="/employee/team-leads"
+            className="flex items-center gap-3 px-3 py-2.5 mt-1 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+          >
+            <Users className="w-4 h-4 text-teal-600" />
+            Team Leads
+          </Link>
+          <Link
+            href="/employee/qr"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+          >
+            <ShieldCheck className="w-4 h-4 text-teal-600" />
+            QR Codes
+          </Link>
+          <Link
+            href="/employee/marketing"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+          >
+            <Award className="w-4 h-4 text-teal-600" />
+            Marketing
+          </Link>
+        </div>
+      )}
+    </nav>
+  );
 
   return (
     <div className="flex h-screen bg-slate-50 text-slate-900 overflow-hidden">
@@ -64,65 +127,7 @@ export default async function EmployeeLayout({
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          <Link
-            href="/employee"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
-          >
-            <LayoutDashboard className="w-4 h-4" />
-            Overview
-          </Link>
-          <Link
-            href="/employee/leads"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
-          >
-            <Users className="w-4 h-4" />
-            My Doctor Leads
-          </Link>
-          <Link
-            href="/employee/directory"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
-          >
-            <MapPin className="w-4 h-4" />
-            Unclaimed Directory
-          </Link>
-          <Link
-            href="/employee/performance"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
-          >
-            <Award className="w-4 h-4" />
-            My Targets
-          </Link>
-
-          {(emp.role === "admin" || emp.role === "manager") && (
-            <div className="pt-4 mt-4 border-t border-slate-200">
-              <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Manager Tools
-              </span>
-              <Link
-                href="/employee/team-leads"
-                className="flex items-center gap-3 px-3 py-2.5 mt-1 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
-              >
-                <Users className="w-4 h-4 text-teal-600" />
-                Team Leads
-              </Link>
-              <Link
-                href="/employee/qr"
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
-              >
-                <ShieldCheck className="w-4 h-4 text-teal-600" />
-                QR Codes
-              </Link>
-              <Link
-                href="/employee/marketing"
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
-              >
-                <Award className="w-4 h-4 text-teal-600" />
-                Marketing
-              </Link>
-            </div>
-          )}
-        </nav>
+        {navLinks}
 
         {/* Footer */}
         <div className="p-4 border-t border-slate-200 shrink-0">
@@ -143,6 +148,47 @@ export default async function EmployeeLayout({
         {/* Top Header */}
         <header className="h-14 bg-white border-b border-slate-200 flex items-center px-4 sm:px-6 shrink-0 justify-between">
           <div className="flex items-center gap-3">
+            <Sheet>
+              <SheetTrigger
+                render={<Button variant="ghost" size="icon" className="lg:hidden shrink-0 h-8 w-8 text-slate-600" />}
+              >
+                <Menu className="w-5 h-5" />
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72 p-0 flex flex-col">
+                <SheetHeader className="p-4 border-b border-slate-200 text-left sr-only">
+                  <SheetTitle>Navigation Menu</SheetTitle>
+                </SheetHeader>
+                {/* Employee Info Header Card (Mobile) */}
+                <div className="p-4 bg-slate-50/70 border-b border-slate-100 mt-8">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-teal-600" />
+                    <span className="text-sm font-semibold text-slate-700 truncate">
+                      {emp.name}
+                    </span>
+                  </div>
+                  <div className="mt-1 flex items-center justify-between">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-teal-100 text-teal-800">
+                      {roleLabelMap[emp.role] || emp.role}
+                    </span>
+                    <span className="text-xs font-medium text-slate-500">
+                      {emp.employeeCode}
+                    </span>
+                  </div>
+                </div>
+                {navLinks}
+                <div className="p-4 border-t border-slate-200 shrink-0">
+                  <form action="/auth/signout" method="post">
+                    <Button
+                      variant="outline"
+                      className="w-full flex items-center justify-center gap-2 h-9 text-xs text-slate-700 hover:bg-rose-50 hover:text-rose-600 border-slate-200"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      Sign Out
+                    </Button>
+                  </form>
+                </div>
+              </SheetContent>
+            </Sheet>
             <div className="lg:hidden w-7 h-7 rounded-md bg-teal-50 flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/icon-192.png" alt="Logo" className="w-5 h-5" />

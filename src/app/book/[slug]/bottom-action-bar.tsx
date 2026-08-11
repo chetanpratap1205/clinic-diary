@@ -60,7 +60,7 @@ export function BottomActionBar({ clinic, workingDays, closedDates, lexicon, lan
               </span>
               <Activity className="w-4 h-4" strokeWidth={2.5} />
             </div>
-            <span className="text-[9px] font-black uppercase tracking-widest leading-none mt-0.5">{t.statusWait || "Status"}</span>
+            <span className="text-[9px] font-black uppercase tracking-widest leading-none mt-0.5">{t.liveQueue || "Live Queue"}</span>
           </Link>
 
           {/* Book Appointment Pulsing Button */}

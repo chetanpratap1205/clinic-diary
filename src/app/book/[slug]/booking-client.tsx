@@ -15,7 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
   Clock, Calendar as CalendarIcon, CheckCircle2, User,
-  Loader2, ArrowRight, Sparkles, CalendarCheck, Calendar, Phone,
+  Loader2, ArrowRight, Sparkles, Calendar, Phone,
   ChevronLeft, ChevronRight, Sun, Sunset, Moon, ShieldCheck, Share2,
   FileText
 } from "lucide-react";
@@ -433,31 +433,15 @@ export function BookingClient({
                 <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
               </motion.button>
 
-              <div className="flex gap-2">
-                <a
-                  href={calUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 py-3 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95"
-                >
-                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                  {lang === "hi" ? "Android/Google" : "Save Android"}
-                </a>
-                <button
-                  onClick={downloadIcs}
-                  className="flex-1 border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 py-3 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95"
-                >
-                  <CalendarCheck className="w-3.5 h-3.5 text-slate-400" />
-                  {lang === "hi" ? "iPhone/iCal" : "Save iPhone"}
-                </button>
-                <button
-                  onClick={shareWA}
-                  className="w-11 bg-[#25D366] text-white py-3 rounded-xl font-bold text-xs flex items-center justify-center hover:bg-[#1fba5a] transition-all shadow-md active:scale-95 flex-shrink-0"
-                  aria-label="Share via WhatsApp"
-                >
-                  <Share2 className="w-4 h-4" />
-                </button>
-              </div>
+              {/* WhatsApp share — full-width with label */}
+              <button
+                onClick={shareWA}
+                className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white py-3 rounded-2xl font-bold text-sm hover:bg-[#1fba5a] transition-all shadow-md active:scale-95"
+                aria-label="Share via WhatsApp"
+              >
+                <Share2 className="w-4 h-4" />
+                <span>{lang === "hi" ? "WhatsApp पर शेयर करें" : "Share via WhatsApp"}</span>
+              </button>
 
               <p className="text-[11px] text-slate-400 flex items-center justify-center gap-1.5 pt-1 mb-2 font-medium">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
@@ -538,7 +522,7 @@ export function BookingClient({
             }} 
             className="text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-full border border-emerald-200/80 transition-colors shadow-sm active:scale-95"
           >
-            Select Today
+            {lang === "hi" ? "آज चुनें" : "Select Today"}
           </button>
         )}
       </div>
@@ -909,7 +893,7 @@ export function BookingClient({
             <div />
           )}
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-            Step {step} of 3
+            {lang === "hi" ? `चरण ${step} / 3` : `Step ${step} of 3`}
           </span>
         </div>
 

@@ -45,8 +45,10 @@ const HEADER_MAP: Record<string, keyof ParsedRow> = {
   "hospital": "clinicName",
   "phone": "phone",
   "mobile": "phone",
+  "mobile phone": "phone",
   "phone number": "phone",
   "mobile number": "phone",
+  "mobile no": "phone",
   "contact": "phone",
   "whatsapp": "phone",
   "email": "email",
@@ -61,6 +63,7 @@ const HEADER_MAP: Record<string, keyof ParsedRow> = {
   "address": "address",
   "source": "source",
   "category": "leadCategory",
+  "cat": "leadCategory",
   "lead category": "leadCategory",
   "type": "leadCategory",
   "state": "state",
@@ -72,9 +75,25 @@ const HEADER_MAP: Record<string, keyof ParsedRow> = {
   "map url": "googleMapsUrl",
 };
 
-function parseCSV(text: string): ParsedRow[] {
+const COLUMN_LABELS: Record<keyof ParsedRow, string> = {
+  doctorName: "Doctor",
+  clinicName: "Clinic Name",
+  phone: "Phone",
+  email: "Email",
+  specialty: "Specialty",
+  city: "City",
+  address: "Address",
+  source: "Source",
+  leadCategory: "Category",
+  state: "State",
+  degree: "Degree",
+  consultationFee: "Fee",
+  googleMapsUrl: "Map URL",
+};
+
+function parseCSV(text: string): { rows: ParsedRow[], columns: (keyof ParsedRow)[] } {
   const lines = text.trim().split(/\r?\n/);
-  if (lines.length < 2) return [];
+  if (lines.length < 2) return { rows: [], columns: [] };
 
   // Robust CSV parser to handle quotes
   const parseCsvLine = (line: string): string[] => {
@@ -88,13 +107,22 @@ function parseCSV(text: string): ParsedRow[] {
     });
   };
 
-  const headers = parseCsvLine(lines[0]).map((h) => h.toLowerCase());
+  const headers = parseCsvLine(lines[0]).map((h) => h.toLowerCase().trim());
 
   const colMap: Record<number, keyof ParsedRow> = {};
+  const detectedKeys = new Set<keyof ParsedRow>();
   headers.forEach((h, i) => {
     const key = HEADER_MAP[h];
-    if (key) colMap[i] = key;
+    if (key) {
+      colMap[i] = key;
+      detectedKeys.add(key);
+    }
   });
+
+  // Always show required columns in preview so user knows if they're missing
+  detectedKeys.add("doctorName");
+  detectedKeys.add("phone");
+  const columns = Array.from(detectedKeys);
 
   const rows: ParsedRow[] = [];
   for (let i = 1; i < lines.length; i++) {
@@ -119,7 +147,7 @@ function parseCSV(text: string): ParsedRow[] {
       }
       
       rows.push({
-        doctorName: row.doctorName || "Unknown Doctor",
+        doctorName: row.doctorName || "",
         clinicName: row.clinicName,
         phone: phone,
         email: row.email,
@@ -135,7 +163,7 @@ function parseCSV(text: string): ParsedRow[] {
       });
     }
   }
-  return rows;
+  return { rows, columns };
 }
 
 export function CsvImportModal({ open, onOpenChange, onSuccess, onClose, onImported }: CsvImportModalProps) {
@@ -144,7 +172,7 @@ export function CsvImportModal({ open, onOpenChange, onSuccess, onClose, onImpor
   if (open === false) return null;
   const [isPending, startTransition] = useTransition();
   const [dragOver, setDragOver] = useState(false);
-  const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
+  const [parsedData, setParsedData] = useState<{ rows: ParsedRow[], columns: (keyof ParsedRow)[] } | null>(null);
   const [fileName, setFileName] = useState("");
   const [result, setResult] = useState<ImportResult | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -158,9 +186,9 @@ export function CsvImportModal({ open, onOpenChange, onSuccess, onClose, onImpor
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target?.result as string;
-      const rows = parseCSV(text);
-      setParsedRows(rows);
-      if (rows.length === 0) {
+      const data = parseCSV(text);
+      setParsedData(data);
+      if (data.rows.length === 0) {
         toast.error("No valid rows found. Check your CSV format.");
       }
     };
@@ -175,12 +203,12 @@ export function CsvImportModal({ open, onOpenChange, onSuccess, onClose, onImpor
   };
 
   const handleImport = () => {
-    if (parsedRows.length === 0) {
+    if (!parsedData || parsedData.rows.length === 0) {
       toast.error("No rows to import");
       return;
     }
     startTransition(async () => {
-      const res = await importLeads(parsedRows);
+      const res = await importLeads(parsedData.rows);
       setResult(res);
       toast.success(`✅ Import complete: ${res.added} added, ${res.skipped} skipped`);
       handleSuccess();
@@ -231,7 +259,7 @@ export function CsvImportModal({ open, onOpenChange, onSuccess, onClose, onImpor
           </div>
 
           {/* Drop Zone */}
-          {!parsedRows.length && !result && (
+          {(!parsedData || parsedData.rows.length === 0) && !result && (
             <div
               onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
@@ -262,14 +290,14 @@ export function CsvImportModal({ open, onOpenChange, onSuccess, onClose, onImpor
           )}
 
           {/* Preview */}
-          {parsedRows.length > 0 && !result && (
+          {parsedData && parsedData.rows.length > 0 && !result && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-teal-600" />
                   <span className="text-sm font-semibold text-slate-700">{fileName}</span>
                 </div>
-                <span className="text-sm font-bold text-teal-700">{parsedRows.length} rows detected</span>
+                <span className="text-sm font-bold text-teal-700">{parsedData.rows.length} rows detected</span>
               </div>
 
               {/* Preview Table */}
@@ -283,34 +311,43 @@ export function CsvImportModal({ open, onOpenChange, onSuccess, onClose, onImpor
                   <table className="w-full text-xs">
                     <thead className="bg-slate-50">
                       <tr>
-                        <th className="text-left px-3 py-2 text-slate-400 font-medium whitespace-nowrap">Doctor</th>
-                        <th className="text-left px-3 py-2 text-slate-400 font-medium whitespace-nowrap">Phone</th>
-                        <th className="text-left px-3 py-2 text-slate-400 font-medium whitespace-nowrap">Specialty</th>
-                        <th className="text-left px-3 py-2 text-slate-400 font-medium whitespace-nowrap">City</th>
-                        <th className="text-left px-3 py-2 text-slate-400 font-medium whitespace-nowrap">Cat.</th>
+                        {parsedData.columns.map(col => (
+                           <th key={col} className="text-left px-3 py-2 text-slate-400 font-medium whitespace-nowrap">
+                             {COLUMN_LABELS[col] || col}
+                           </th>
+                        ))}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {parsedRows.slice(0, 5).map((row, i) => (
+                      {parsedData.rows.slice(0, 5).map((row, i) => (
                         <tr key={i}>
-                          <td className="px-3 py-2 font-medium text-slate-700 max-w-[140px] truncate">{row.doctorName}</td>
-                          <td className="px-3 py-2 text-slate-500 font-mono">{row.phone || "—"}</td>
-                          <td className="px-3 py-2 text-slate-500 max-w-[100px] truncate">{row.specialty || "—"}</td>
-                          <td className="px-3 py-2 text-slate-500">{row.city || "—"}</td>
-                          <td className="px-3 py-2">
-                            <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-semibold">
-                              {row.leadCategory || "A"}
-                            </span>
-                          </td>
+                          {parsedData.columns.map(col => {
+                            if (col === 'doctorName' || col === 'phone') {
+                               return (
+                                 <td key={col} className="px-3 py-2 font-medium max-w-[140px] truncate">
+                                   {row[col] ? (
+                                     <span className={col === 'doctorName' ? "text-slate-700" : "text-slate-500 font-mono"}>{row[col]}</span>
+                                   ) : (
+                                     <span className="text-red-600 bg-red-50 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Missing (Req)</span>
+                                   )}
+                                 </td>
+                               );
+                            }
+                            return (
+                               <td key={col} className="px-3 py-2 text-slate-500 max-w-[140px] truncate">
+                                 {row[col] || "—"}
+                               </td>
+                            );
+                          })}
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-                {parsedRows.length > 5 && (
+                {parsedData.rows.length > 5 && (
                   <div className="px-4 py-2 bg-slate-50 border-t border-slate-200">
                     <p className="text-xs text-slate-400">
-                      + {parsedRows.length - 5} more rows not shown in preview
+                      + {parsedData.rows.length - 5} more rows not shown in preview
                     </p>
                   </div>
                 )}
@@ -363,10 +400,10 @@ export function CsvImportModal({ open, onOpenChange, onSuccess, onClose, onImpor
               <Button
                 onClick={handleImport}
                 className="flex-1 bg-teal-600 hover:bg-teal-700 h-10 gap-2"
-                disabled={parsedRows.length === 0 || isPending}
+                disabled={!parsedData || parsedData.rows.length === 0 || isPending}
               >
                 {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                Import {parsedRows.length > 0 ? `${parsedRows.length} Leads` : "Leads"}
+                Import {parsedData && parsedData.rows.length > 0 ? `${parsedData.rows.length} Leads` : "Leads"}
               </Button>
             </>
           )}

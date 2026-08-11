@@ -9,7 +9,7 @@ export default async function TeamLeadsPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  await requireEmployeeRole(["admin", "manager"]);
+  const emp = await requireEmployeeRole(["admin", "manager"]);
 
   const params = await searchParams;
 
@@ -21,14 +21,15 @@ export default async function TeamLeadsPage({
     specialty: params.specialty,
     city: params.city,
     source: params.source,
+    assignedManagerId: emp.role === "manager" ? emp.employeeId : undefined,
     page: params.page ? parseInt(params.page) : 1,
     pageSize: 50,
   };
 
   const [{ leads, total, totalPages }, stats, cities] = await Promise.all([
     getLeads(filters),
-    getLeadStats(),
-    getLeadCities(),
+    getLeadStats(filters),
+    getLeadCities(filters),
   ]);
 
   return (

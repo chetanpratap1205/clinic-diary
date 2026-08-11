@@ -14,7 +14,7 @@ export async function getEmployeeDashboardStats() {
   const emp = await getAuthenticatedEmployee();
   if (!emp) throw new Error("Unauthorized");
 
-  const isGlobalView = emp.role === "admin" || emp.role === "manager";
+  const isGlobalView = emp.role === "admin";
 
   const leadWhere = isGlobalView
     ? undefined
@@ -73,7 +73,7 @@ export async function getEmployeeLeads(options?: {
   const emp = await getAuthenticatedEmployee();
   if (!emp) throw new Error("Unauthorized");
 
-  const isGlobalView = emp.role === "admin" || emp.role === "manager";
+  const isGlobalView = emp.role === "admin";
 
   const conditions = [];
 

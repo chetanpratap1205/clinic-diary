@@ -166,7 +166,13 @@ export const DICTIONARY = {
     liveTracking: "Live Token Tracking",
     payFeeAtClinic: "Pay Fee at Clinic",
     whatsappInquiry: "WhatsApp Inquiry",
-    avgConsultTime: "Avg Consult Time"
+    avgConsultTime: "Avg Consult Time",
+    liveQueue: "Live Queue",
+    liveQueueTrack: "Track →",
+    chatOnWhatsapp: "Chat on WhatsApp",
+    zeroBookingFee: "₹0 Booking Fee",
+    openToday: "Today:",
+    verifiedTooltip: "Identity & professional details verified by Doctor Diary."
   },
   hi: {
     // Shared
@@ -332,6 +338,12 @@ export const DICTIONARY = {
     liveTracking: "लाइव टोकन ट्रैकिंग",
     payFeeAtClinic: "क्लिनिक में भुगतान करें",
     whatsappInquiry: "WhatsApp पूछताछ",
-    avgConsultTime: "औसत समय"
+    avgConsultTime: "औसत समय",
+    liveQueue: "लाइव कतार",
+    liveQueueTrack: "ट्रैक करें →",
+    chatOnWhatsapp: "WhatsApp पर बात करें",
+    zeroBookingFee: "बुकिंग शुल्क ₹0",
+    openToday: "आज:",
+    verifiedTooltip: "पहचान और योग्यता Doctor Diary द्वारा सत्यापित।"
   },
 };

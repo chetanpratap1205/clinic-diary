@@ -64,6 +64,7 @@ export interface LeadFilters {
   specialty?: string;
   city?: string;
   source?: string;
+  assignedManagerId?: string;
   page?: number;
   pageSize?: number;
 }
@@ -76,6 +77,7 @@ export async function getLeads(filters: LeadFilters = {}) {
     specialty,
     city,
     source,
+    assignedManagerId,
     page = 1,
     pageSize = 50,
   } = filters;
@@ -96,6 +98,7 @@ export async function getLeads(filters: LeadFilters = {}) {
   if (specialty && specialty !== "all") conditions.push(ilike(doctorLeads.specialty, `%${specialty}%`));
   if (city && city !== "all") conditions.push(ilike(doctorLeads.city, `%${city}%`));
   if (source && source !== "all") conditions.push(eq(doctorLeads.source, source));
+  if (assignedManagerId) conditions.push(eq(doctorLeads.assignedManagerId, assignedManagerId));
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
   const offset = (page - 1) * pageSize;
@@ -123,13 +126,20 @@ export async function getLeads(filters: LeadFilters = {}) {
 }
 
 // ─── Get Lead Stats (for header pills) ────────────────────────────────────────
-export async function getLeadStats() {
+export async function getLeadStats(filters: LeadFilters = {}) {
+  const conditions = [];
+  if (filters.assignedManagerId) {
+    conditions.push(eq(doctorLeads.assignedManagerId, filters.assignedManagerId));
+  }
+  const where = conditions.length > 0 ? and(...conditions) : undefined;
+
   const rows = await db
     .select({
       status: doctorLeads.status,
       count: count(),
     })
     .from(doctorLeads)
+    .where(where)
     .groupBy(doctorLeads.status);
 
   const stats = {
@@ -152,15 +162,18 @@ export async function getLeadStats() {
   }
 
   // Count overdue follow-ups
+  const overdueConditions = [
+    lt(doctorLeads.followUpDate, new Date()),
+    inArray(doctorLeads.status, ["new", "contacted", "demo_scheduled"])
+  ];
+  if (filters.assignedManagerId) {
+    overdueConditions.push(eq(doctorLeads.assignedManagerId, filters.assignedManagerId));
+  }
+
   const overdueRows = await db
     .select({ count: count() })
     .from(doctorLeads)
-    .where(
-      and(
-        lt(doctorLeads.followUpDate, new Date()),
-        inArray(doctorLeads.status, ["new", "contacted", "demo_scheduled"])
-      )
-    );
+    .where(and(...overdueConditions));
   stats.overdue = overdueRows[0]?.count ?? 0;
 
   return stats;
@@ -497,11 +510,16 @@ export async function importLeads(
 }
 
 // ─── Get distinct cities for filter dropdown ──────────────────────────────────
-export async function getLeadCities() {
+export async function getLeadCities(filters: LeadFilters = {}) {
+  const conditions = [sql`${doctorLeads.city} IS NOT NULL`];
+  if (filters.assignedManagerId) {
+    conditions.push(eq(doctorLeads.assignedManagerId, filters.assignedManagerId));
+  }
+
   const rows = await db
     .selectDistinct({ city: doctorLeads.city })
     .from(doctorLeads)
-    .where(sql`${doctorLeads.city} IS NOT NULL`)
+    .where(and(...conditions))
     .orderBy(doctorLeads.city);
   return rows.map((r) => r.city).filter(Boolean) as string[];
 }

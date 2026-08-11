@@ -19,6 +19,7 @@ import { BottomActionBar } from "./bottom-action-bar";
 import { ClinicLogo } from "./clinic-logo";
 import { FAQAccordion } from "./faq-accordion";
 import { InstallAppSection } from "@/components/install-app-section";
+import { InstallAppBanner } from "@/components/install-app-banner";
 import Link from "next/link";
 import Image from "next/image";
 import { trackLeadView } from "@/app/admin/leads/actions";
@@ -28,7 +29,6 @@ import {
   Clock,
   Navigation,
   Star,
-  BadgeCheck,
   ShieldCheck,
   Stethoscope,
   MessageCircle,
@@ -38,11 +38,11 @@ import {
   Activity,
   Share2,
   CheckCircle2,
-  Zap,
   Timer,
 } from "lucide-react";
 import type { Metadata } from "next";
 import { formatDoctorName } from "@/lib/utils";
+import { VerifiedBadge } from "./verified-badge";
 
 // ─── SVG Social Icons ────────────────────────────────────────────────────────
 const Instagram = ({ className }: { className?: string }) => (
@@ -299,6 +299,9 @@ export default async function BookingPage({
     return acc;
   }, {} as Record<string, string[]>);
   const hasSchedule = Object.keys(schedule).length > 0;
+  // Compute today’s clinic timings to surface above-fold on mobile
+  const todayDayName = daysMap[new Date().getDay()];
+  const todayTimings = schedule[todayDayName] || null;
 
   // Point 1, 14, 19, 29: Unified Google Maps intent and embed URL for robust native app handoff
   const searchQuery = encodeURIComponent(`${clinic.name}, ${clinic.address || ""}`.trim());
@@ -446,6 +449,16 @@ export default async function BookingPage({
       
 
       {/* ══════════════════════════════════════════════════════════════════════
+          STICKY TOP BANNER FOR PWA INSTALL
+      ══════════════════════════════════════════════════════════════════════ */}
+      <InstallAppBanner
+        clinicName={clinic.name}
+        logoUrl={safeLogoUrl}
+        themeColor={themeColor}
+        lang={lang}
+      />
+
+      {/* ══════════════════════════════════════════════════════════════════════
           PREMIUM HERO SECTION — WOW First Impression
           Desktop: 3-col (Doctor Portrait | Info+Stats | Booking Widget)
           Mobile:  Avatar → Name → Specialty → Stats → [Book CTA via bottom bar]
@@ -494,22 +507,23 @@ export default async function BookingPage({
                 )}
                 {/* Shimmer effect on hover */}
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
-                {/* Verified badge */}
-                <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
-                  <BadgeCheck className="w-4 h-4 text-white fill-[#1d9bf0]" />
-                  <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">{t.verifiedOfficial}</span>
+                {/* Verified badge — tap to reveal explanation tooltip */}
+                <div className="absolute top-4 right-4">
+                  <VerifiedBadge label={t.verifiedOfficial} tooltip={t.verifiedTooltip} variant="pill" />
                 </div>
-                {/* Live status strip at bottom */}
-                <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/70 via-black/30 to-transparent">
-                  <div className="flex items-center gap-2">
-                    <span className="relative flex h-2.5 w-2.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                    </span>
-                    <span className="text-[11px] font-black text-white uppercase tracking-widest">{t.openNow}</span>
-                    <span className="ml-auto text-[10px] font-bold text-white/70 bg-white/10 px-2 py-0.5 rounded-full">{t.acceptingTokens}</span>
+                {/* Live status strip — only shows when clinic has hours scheduled for today */}
+                {todayTimings && (
+                  <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/70 via-black/30 to-transparent">
+                    <div className="flex items-center gap-2">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                      </span>
+                      <span className="text-[11px] font-black text-white uppercase tracking-widest">{t.openToday}</span>
+                      <span className="ml-auto text-[10px] font-bold text-white/70 bg-white/10 px-2 py-0.5 rounded-full">{todayTimings[0]}</span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Clinic name badge below portrait */}
@@ -555,12 +569,9 @@ export default async function BookingPage({
                           <span className="text-[10px] font-black text-white uppercase tracking-widest">{specialtyConfig.heroBadge}</span>
                         </div>
                         <h1 id="hero-doctor-name" className="text-xl font-black text-white drop-shadow-lg leading-tight">{displayDoctorName}</h1>
-                        {clinic.degree && <p className="text-[11px] text-white/80 font-semibold mt-0.5">{clinic.degree}</p>}
+                        {clinic.degree && <p className="text-[11px] text-white/80 font-semibold mt-0.5">{clinic.degree.replace(/ and /gi, ' · ')}</p>}
                       </div>
-                      <div className="bg-white/90 backdrop-blur-md px-2.5 py-1.5 rounded-full shadow flex items-center gap-1.5">
-                        <BadgeCheck className="w-3.5 h-3.5 text-white fill-[#1d9bf0]" />
-                        <span className="text-[9px] font-black text-slate-800">{t.verifiedOfficial}</span>
-                      </div>
+                      <VerifiedBadge label={t.verifiedOfficial} tooltip={t.verifiedTooltip} variant="pill-sm" />
                     </div>
                   </div>
                 )}
@@ -580,8 +591,8 @@ export default async function BookingPage({
                           stripDr(clinic.doctorName).charAt(0).toUpperCase()
                         )}
                       </div>
-                      <div className="absolute -bottom-1 -right-1 bg-white p-0.5 rounded-full shadow-md">
-                        <BadgeCheck className="w-7 h-7 text-white fill-[#1d9bf0]" />
+                      <div className="absolute -bottom-1 -right-1">
+                        <VerifiedBadge label={t.verifiedOfficial} tooltip={t.verifiedTooltip} variant="icon-only" />
                       </div>
                     </div>
                     {/* Name + specialty (shown only when no hero image) */}
@@ -592,7 +603,7 @@ export default async function BookingPage({
                       </div>
                       <h1 id="hero-doctor-name" className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{displayDoctorName}</h1>
                       <p className="text-xs text-slate-500 font-bold">
-                        {clinic.degree ? `${clinic.degree} · ${specialtyConfig.displayName}` : specialtyConfig.displayName}
+                        {clinic.degree ? `${clinic.degree.replace(/ and /gi, ' · ')} · ${specialtyConfig.displayName}` : specialtyConfig.displayName}
                       </p>
                     </div>
                   </>
@@ -612,7 +623,7 @@ export default async function BookingPage({
                   {displayDoctorName}
                 </h1>
                 {clinic.degree && (
-                  <p className="text-sm text-slate-500 font-semibold">{clinic.degree} · {specialtyConfig.displayName}</p>
+                  <p className="text-sm text-slate-500 font-semibold">{clinic.degree.replace(/ and /gi, ' · ')} · {specialtyConfig.displayName}</p>
                 )}
                 <p className="text-base text-slate-600 font-medium max-w-md leading-relaxed">
                   {lang === "hi"
@@ -634,24 +645,60 @@ export default async function BookingPage({
                   <p className="text-[8px] sm:text-[9.5px] font-black text-slate-400 uppercase tracking-widest text-center lg:text-left">{t.consultFee}</p>
                 </div>
 
-                {/* Box 2: Avg Consult Time */}
+                {/* Box 2: Zero Booking Fee */}
                 <div className="group flex flex-col items-center lg:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md hover:-translate-y-1">
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-indigo-50 border border-indigo-100 mb-2 group-hover:scale-110 transition-transform">
-                    <Clock className="w-4 h-4 text-indigo-600" strokeWidth={2.5} />
+                    <ShieldCheck className="w-4 h-4 text-indigo-600" strokeWidth={2.5} />
                   </div>
-                  <p className="text-sm sm:text-[15px] font-black text-indigo-600 leading-none mb-1">{clinic.averageConsultationMinutes || 15} {lang === "hi" ? "मिनट" : "Min"}</p>
-                  <p className="text-[8px] sm:text-[9.5px] font-black text-slate-400 uppercase tracking-widest text-center lg:text-left">{t.avgConsultTime}</p>
+                  <p className="text-sm sm:text-[15px] font-black text-indigo-600 leading-none mb-1">₹0</p>
+                  <p className="text-[8px] sm:text-[9.5px] font-black text-slate-400 uppercase tracking-widest text-center lg:text-left">{lang === "hi" ? "ऑनलाइन बुकिंग" : "Online Booking"}</p>
                 </div>
 
-                {/* Box 3: Smart Queue */}
-                <div className="group flex flex-col items-center lg:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md hover:-translate-y-1">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-50 border border-blue-100 mb-2 group-hover:scale-110 transition-transform">
-                    <Zap className="w-4 h-4 text-blue-600" strokeWidth={2.5} />
+                {/* Box 3: Live Queue */}
+                <Link
+                  href={`/status/${clinic.slug}?lang=${lang}`}
+                  className="group flex flex-col items-center lg:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md hover:-translate-y-1 relative"
+                >
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100 mb-2 group-hover:scale-110 transition-transform relative">
+                    <Activity className="w-4 h-4 text-emerald-600" strokeWidth={2.5} />
+                    <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                    </span>
                   </div>
-                  <p className="text-sm sm:text-[15px] font-black text-blue-600 leading-none mb-1">{t.smartQueueActive}</p>
-                  <p className="text-[8px] sm:text-[9.5px] font-black text-slate-400 uppercase tracking-widest text-center lg:text-left">{t.liveTracking}</p>
-                </div>
+                  <p className="text-sm sm:text-[15px] font-black text-emerald-600 leading-none mb-1">{t.liveQueue}</p>
+                  <p className="text-[8px] sm:text-[9.5px] font-black text-slate-400 uppercase tracking-widest text-center lg:text-left">{t.liveQueueTrack}</p>
+                </Link>
               </div>
+
+              {/* ─── Compact Location + Today’s Hours Strip ──────── */}
+              {(clinic.address || todayTimings) && (
+                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-4 gap-y-1.5 w-full max-w-sm mx-auto lg:mx-0">
+                  {todayTimings && (
+                    <span className="flex items-center gap-1.5 text-[11px] font-bold">
+                      <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                      </span>
+                      <span className="text-emerald-700 font-black">{t.openToday}</span>
+                      <span className="text-slate-500">{todayTimings.join(" · ")}</span>
+                    </span>
+                  )}
+                  {clinic.address && (
+                    <a
+                      href={directionsUrl || "#"}
+                      target={directionsUrl ? "_blank" : undefined}
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-slate-800 transition-colors active:scale-95 group/loc"
+                      aria-label="Get directions to clinic"
+                    >
+                      <MapPin className="w-3 h-3 flex-shrink-0" style={{ color: themeColor }} />
+                      <span className="truncate max-w-[150px] sm:max-w-[200px]">{clinic.address.split(",")[0]}</span>
+                      {directionsUrl && <Navigation className="w-2.5 h-2.5 flex-shrink-0 opacity-60" />}
+                    </a>
+                  )}
+                </div>
+              )}
 
               {/* ─── Trust Badges Row ─────────────────────────────────── */}
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
@@ -665,10 +712,10 @@ export default async function BookingPage({
                     href={`https://wa.me/91${String(clinic.whatsappNumber || clinic.phone).replace(/\D/g, "").slice(-10)}?text=${encodeURIComponent(`Hi ${clinic.name}, I would like to inquire about OPD consultation with ${displayDoctorName}.`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 hover:bg-[#25D366] hover:text-white hover:border-[#25D366] transition-all font-black text-[10px] uppercase tracking-wider shadow-sm active:scale-95"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-transparent border border-emerald-300 text-emerald-700 hover:bg-[#25D366] hover:text-white hover:border-[#25D366] transition-all font-bold text-[10px] uppercase tracking-wider active:scale-95"
                   >
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    <span>{t.whatsappInquiry}</span>
+                    <MessageCircle className="w-3 h-3" />
+                    <span>{t.chatOnWhatsapp}</span>
                   </a>
                 )}
               </div>
@@ -769,7 +816,7 @@ export default async function BookingPage({
                    </div>
                    <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-emerald-400 font-bold">
                      <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Live Queue Active</span>
-                     <span>Fast Booking</span>
+                     {lang === "hi" ? "मुफ्त बुकिंग" : "Book Free Online"}
                    </div>
                  </div>
                </div>
@@ -783,21 +830,31 @@ export default async function BookingPage({
             <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 border border-white/80 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)]">
               <div className="flex items-center justify-between mb-6">
                 <div>
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                    {lang === "hi" ? "विशेषज्ञता क्षेत्र" : "Conditions We Treat"}
+                  </h2>
+                  <p className="text-sm text-slate-500 font-medium mt-1">
+                    {lang === "hi" ? `${clinic.name} में उपचार की जाने वाली प्रमुख स्थितियाँ` : `Common conditions treated at ${clinic.name}`}
+                  </p>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {specialtyConfig.commonTreatments.map((treatment, i) => (
-                  <div 
-                    key={i} 
-                    className="group flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm transition-all duration-300"
+                  <a
+                    key={i}
+                    href="#booking"
+                    className="group flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm transition-all duration-300 hover:border-slate-300 hover:shadow-md hover:-translate-y-0.5"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100" style={{ color: themeColor }}>
+                      <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:scale-110 transition-transform" style={{ color: themeColor }}>
                         <CheckCircle2 className="w-4 h-4" />
                       </div>
                       <span className="text-sm font-extrabold text-slate-800">{treatment}</span>
                     </div>
-                  </div>
+                    <span className="text-[10px] font-black uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5" style={{ color: themeColor }}>
+                      {lang === "hi" ? "बुक करें" : "Book"} →
+                    </span>
+                  </a>
                 ))}
               </div>
             </div>
