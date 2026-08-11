@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getAuthenticatedEmployee } from "@/lib/auth/rbac";
 import Link from "next/link";
-import { LogOut, LayoutDashboard, Users, MapPin, Award, ShieldCheck, Menu } from "lucide-react";
+import { LogOut, LayoutDashboard, Users, MapPin, Award, ShieldCheck, Menu, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 
@@ -19,7 +19,6 @@ export default async function EmployeeLayout({
   const roleLabelMap: Record<string, string> = {
     admin: "Super Admin",
     manager: "Manager",
-    staff: "Staff",
   };
 
   const navLinks = (
@@ -37,6 +36,13 @@ export default async function EmployeeLayout({
       >
         <Users className="w-4 h-4" />
         My Doctor Leads
+      </Link>
+      <Link
+        href="/employee/clinics"
+        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+      >
+        <Building2 className="w-4 h-4" />
+        My Clinics
       </Link>
       <Link
         href="/employee/directory"
@@ -58,13 +64,7 @@ export default async function EmployeeLayout({
           <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
             Manager Tools
           </span>
-          <Link
-            href="/employee/team-leads"
-            className="flex items-center gap-3 px-3 py-2.5 mt-1 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
-          >
-            <Users className="w-4 h-4 text-teal-600" />
-            Team Leads
-          </Link>
+
           <Link
             href="/employee/qr"
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
@@ -103,7 +103,7 @@ export default async function EmployeeLayout({
               Doctor Diary
             </span>
             <span className="text-[10px] font-bold text-teal-600 uppercase tracking-widest">
-              Staff Portal
+              Manager Portal
             </span>
           </div>
         </div>
@@ -194,7 +194,7 @@ export default async function EmployeeLayout({
               <img src="/icon-192.png" alt="Logo" className="w-5 h-5" />
             </div>
             <h1 className="text-sm font-semibold text-slate-800">
-              Internal Staff Portal
+              Manager Portal
             </h1>
             <span className="hidden sm:inline-block text-xs px-2 py-0.5 rounded bg-slate-100 font-mono text-slate-600">
               {emp.employeeCode}
@@ -232,6 +232,13 @@ export default async function EmployeeLayout({
         >
           <Users className="w-5 h-5" />
           <span className="text-[10px] font-medium">Leads</span>
+        </Link>
+        <Link
+          href="/employee/clinics"
+          className="flex flex-col items-center justify-center gap-1 text-slate-600 hover:text-teal-600 py-1 px-2"
+        >
+          <Building2 className="w-5 h-5" />
+          <span className="text-[10px] font-medium">Clinics</span>
         </Link>
         <Link
           href="/employee/directory"

@@ -19,7 +19,6 @@ import { BottomActionBar } from "./bottom-action-bar";
 import { ClinicLogo } from "./clinic-logo";
 import { FAQAccordion } from "./faq-accordion";
 import { InstallAppSection } from "@/components/install-app-section";
-import { InstallAppBanner } from "@/components/install-app-banner";
 import Link from "next/link";
 import Image from "next/image";
 import { trackLeadView } from "@/app/admin/leads/actions";
@@ -134,7 +133,7 @@ export async function generateMetadata({
   const specialtyConfig = getSpecialtyConfig(clinic.specialty);
   const lexicon = specialtyConfig.uiLexicon;
   
-  const displayDoctorName = (lexicon.doctorTitle === "Doctor" || lexicon.doctorTitle === "Dentist" || lexicon.doctorTitle === "Veterinarian") ? formatDoctorName(clinic.doctorName) : `${lexicon.doctorTitle} ${clinic.doctorName}`;
+  const displayDoctorName = formatDoctorName(clinic.doctorName);
 
   // Extract locality / city from address or state for hyper-local search intent (Point 8)
   const addressParts = clinic.address ? clinic.address.split(",").map((s) => s.trim()) : [];
@@ -251,7 +250,7 @@ export default async function BookingPage({
   const specialtyConfig = getSpecialtyConfig(clinic.specialty);
   const lexicon = specialtyConfig.uiLexicon;
 
-  const displayDoctorName = (lexicon.doctorTitle === "Doctor" || lexicon.doctorTitle === "Dentist" || lexicon.doctorTitle === "Veterinarian") ? formatDoctorName(clinic.doctorName) : `${lexicon.doctorTitle} ${clinic.doctorName}`;
+  const displayDoctorName = formatDoctorName(clinic.doctorName);
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in";
 
   const [availRecords, overrideRecords, clinicReviews, statsResult, services, gallery] = await Promise.all([
@@ -447,16 +446,6 @@ export default async function BookingPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
       />
       
-
-      {/* ══════════════════════════════════════════════════════════════════════
-          STICKY TOP BANNER FOR PWA INSTALL
-      ══════════════════════════════════════════════════════════════════════ */}
-      <InstallAppBanner
-        clinicName={clinic.name}
-        logoUrl={safeLogoUrl}
-        themeColor={themeColor}
-        lang={lang}
-      />
 
       {/* ══════════════════════════════════════════════════════════════════════
           PREMIUM HERO SECTION — WOW First Impression

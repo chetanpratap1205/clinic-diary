@@ -14,8 +14,13 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const [clinic] = await db.select().from(clinics).where(eq(clinics.slug, slug)).limit(1);
-  if (!clinic) return { title: "Not Found" };
+  let [clinic] = await db.select().from(clinics).where(eq(clinics.slug, slug)).limit(1);
+  if (!clinic) {
+    const { doctorLeads } = await import("@/db/schema");
+    const [lead] = await db.select().from(doctorLeads).where(eq(doctorLeads.clinicSlug, slug)).limit(1);
+    if (!lead) return { title: "Not Found" };
+    clinic = { name: lead.clinicName || `${lead.doctorName}'s Clinic` } as any;
+  }
 
   return {
     title: `Check Status | ${clinic.name}`,
@@ -34,8 +39,22 @@ export default async function StatusPage({
   const resolvedSearchParams = await searchParams;
   const lang = (resolvedSearchParams.lang as Language) || "en";
   const t = DICTIONARY[lang];
-  const [clinic] = await db.select().from(clinics).where(eq(clinics.slug, slug)).limit(1);
-  if (!clinic) notFound();
+  let [clinic] = await db.select().from(clinics).where(eq(clinics.slug, slug)).limit(1);
+  if (!clinic) {
+    const { doctorLeads } = await import("@/db/schema");
+    const [lead] = await db.select().from(doctorLeads).where(eq(doctorLeads.clinicSlug, slug)).limit(1);
+    if (!lead) notFound();
+    
+    // Create a minimal mock clinic
+    clinic = {
+      id: lead.id,
+      slug: lead.clinicSlug || slug,
+      name: lead.clinicName || `${lead.doctorName}'s Clinic`,
+      doctorName: lead.doctorName,
+      logoUrl: lead.logoUrl || null,
+      themeColor: "#0ea5e9",
+    } as any;
+  }
 
   const themeColor = clinic.themeColor ?? "#0ea5e9";
 

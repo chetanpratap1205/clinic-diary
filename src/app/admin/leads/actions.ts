@@ -65,6 +65,7 @@ export interface LeadFilters {
   city?: string;
   source?: string;
   assignedManagerId?: string;
+  assignedEmployeeId?: string;
   page?: number;
   pageSize?: number;
 }
@@ -78,6 +79,7 @@ export async function getLeads(filters: LeadFilters = {}) {
     city,
     source,
     assignedManagerId,
+    assignedEmployeeId,
     page = 1,
     pageSize = 50,
   } = filters;
@@ -99,6 +101,7 @@ export async function getLeads(filters: LeadFilters = {}) {
   if (city && city !== "all") conditions.push(ilike(doctorLeads.city, `%${city}%`));
   if (source && source !== "all") conditions.push(eq(doctorLeads.source, source));
   if (assignedManagerId) conditions.push(eq(doctorLeads.assignedManagerId, assignedManagerId));
+  if (assignedEmployeeId) conditions.push(eq(doctorLeads.assignedEmployeeId, assignedEmployeeId));
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
   const offset = (page - 1) * pageSize;
@@ -131,6 +134,9 @@ export async function getLeadStats(filters: LeadFilters = {}) {
   if (filters.assignedManagerId) {
     conditions.push(eq(doctorLeads.assignedManagerId, filters.assignedManagerId));
   }
+  if (filters.assignedEmployeeId) {
+    conditions.push(eq(doctorLeads.assignedEmployeeId, filters.assignedEmployeeId));
+  }
   const where = conditions.length > 0 ? and(...conditions) : undefined;
 
   const rows = await db
@@ -161,13 +167,15 @@ export async function getLeadStats(filters: LeadFilters = {}) {
     if (row.status === "rejected") stats.rejected += row.count;
   }
 
-  // Count overdue follow-ups
   const overdueConditions = [
     lt(doctorLeads.followUpDate, new Date()),
     inArray(doctorLeads.status, ["new", "contacted", "demo_scheduled"])
   ];
   if (filters.assignedManagerId) {
     overdueConditions.push(eq(doctorLeads.assignedManagerId, filters.assignedManagerId));
+  }
+  if (filters.assignedEmployeeId) {
+    overdueConditions.push(eq(doctorLeads.assignedEmployeeId, filters.assignedEmployeeId));
   }
 
   const overdueRows = await db
@@ -514,6 +522,9 @@ export async function getLeadCities(filters: LeadFilters = {}) {
   const conditions = [sql`${doctorLeads.city} IS NOT NULL`];
   if (filters.assignedManagerId) {
     conditions.push(eq(doctorLeads.assignedManagerId, filters.assignedManagerId));
+  }
+  if (filters.assignedEmployeeId) {
+    conditions.push(eq(doctorLeads.assignedEmployeeId, filters.assignedEmployeeId));
   }
 
   const rows = await db

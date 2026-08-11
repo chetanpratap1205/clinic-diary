@@ -11,7 +11,7 @@ export async function GET(
     const { slug } = await params;
     
     // Fetch clinic by slug
-    const [clinic] = await db
+    let [clinic] = await db
       .select({
         name: clinics.name,
         themeColor: clinics.themeColor,
@@ -22,7 +22,22 @@ export async function GET(
       .limit(1);
 
     if (!clinic) {
-      return new NextResponse("Clinic not found", { status: 404 });
+      const { doctorLeads } = await import("@/db/schema");
+      const [lead] = await db.select({
+        name: doctorLeads.clinicName,
+        doctorName: doctorLeads.doctorName,
+        logoUrl: doctorLeads.logoUrl,
+      }).from(doctorLeads).where(eq(doctorLeads.clinicSlug, slug)).limit(1);
+      
+      if (!lead) {
+        return new NextResponse("Clinic not found", { status: 404 });
+      }
+      
+      clinic = {
+        name: lead.name || `${lead.doctorName}'s Clinic`,
+        themeColor: "#0ea5e9",
+        logoUrl: lead.logoUrl || null,
+      };
     }
 
     const themeColor = clinic.themeColor || "#0ea5e9";
