@@ -7,6 +7,23 @@ import { format } from "date-fns";
 import { PrintButton } from "@/components/billing/PrintButton";
 import { formatDoctorName } from "@/lib/utils";
 
+function numberToWords(num: number): string {
+  const a = ['', 'one ', 'two ', 'three ', 'four ', 'five ', 'six ', 'seven ', 'eight ', 'nine ', 'ten ', 'eleven ', 'twelve ', 'thirteen ', 'fourteen ', 'fifteen ', 'sixteen ', 'seventeen ', 'eighteen ', 'nineteen '];
+  const b = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+  
+  const numStr = num.toString();
+  if (numStr.length > 9) return 'overflow';
+  let n = ('000000000' + numStr).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+  if (!n) return '';
+  let str = '';
+  str += (Number(n[1]) !== 0) ? (a[Number(n[1])] || b[n[1][0] as any] + ' ' + a[n[1][1] as any]) + 'crore ' : '';
+  str += (Number(n[2]) !== 0) ? (a[Number(n[2])] || b[n[2][0] as any] + ' ' + a[n[2][1] as any]) + 'lakh ' : '';
+  str += (Number(n[3]) !== 0) ? (a[Number(n[3])] || b[n[3][0] as any] + ' ' + a[n[3][1] as any]) + 'thousand ' : '';
+  str += (Number(n[4]) !== 0) ? (a[Number(n[4])] || b[n[4][0] as any] + ' ' + a[n[4][1] as any]) + 'hundred ' : '';
+  str += (Number(n[5]) !== 0) ? ((str !== '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0] as any] + ' ' + a[n[5][1] as any]) : '';
+  return str.trim();
+}
+
 export default async function InvoicePage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
   const authUser = await getAuthUser();
@@ -44,7 +61,7 @@ export default async function InvoicePage(props: { params: Promise<{ id: string 
   const totalGstAmount = totalAmountINR - taxableValue;
 
   const isIntraState = clinicRecord.state 
-    ? (clinicRecord.state.toLowerCase().includes('uttar pradesh') || clinicRecord.state.toLowerCase() === 'up')
+    ? (["uttar pradesh", "up", "u.p", "u.p."].some(s => clinicRecord.state!.toLowerCase().includes(s)))
     : false;
 
   const cgst = isIntraState ? totalGstAmount / 2 : 0;
@@ -94,8 +111,8 @@ export default async function InvoicePage(props: { params: Promise<{ id: string 
             </div>
             <h2 className="text-3xl font-bold text-slate-800 uppercase tracking-widest mb-2 mt-1">TAX INVOICE</h2>
             <div className="space-y-0.5 text-gray-600 mt-4 text-sm">
-              <p><span className="font-semibold">Invoice No:</span> {invoiceRecord.razorpayOrderId.replace('order_', 'INV-')}</p>
-              <p><span className="font-semibold">Order ID:</span> {invoiceRecord.razorpayOrderId}</p>
+              <p><span className="font-semibold">Invoice No:</span> {invoiceRecord.invoiceNumber || "N/A"}</p>
+              <p><span className="font-semibold">Order ID:</span> {invoiceRecord.razorpayOrderId || "N/A"}</p>
               <p><span className="font-semibold">Invoice Date:</span> {format(new Date(invoiceRecord.paidAt), "dd-MMM-yyyy")}</p>
               <p><span className="font-semibold">Place of Supply:</span> {clinicRecord.state || "Unregistered (B2C)"}</p>
               <p><span className="font-semibold">Reverse Charge:</span> N.A.</p>
@@ -196,6 +213,15 @@ export default async function InvoicePage(props: { params: Promise<{ id: string 
               </div>
             </div>
           </div>
+        </div>
+        
+        {/* Amount in words */}
+        <div className="mb-12 border-t border-b border-slate-100 py-4">
+          <p className="text-xs text-gray-500 font-medium">Amount in Words:</p>
+          <p className="text-sm font-bold text-gray-900 capitalize">
+            {/* Note: In a real app we'd use a library like 'number-to-words', keeping it simple for now or you can add a small util */}
+            Indian Rupees {numberToWords(totalAmountINR)} Only
+          </p>
         </div>
 
         {/* Footer */}

@@ -126,6 +126,7 @@ export default async function BillingPage(props: {
       paidAt: paymentLogs.paidAt,
       planName: paymentLogs.planName,
       planId: paymentLogs.planId,
+      invoiceNumber: paymentLogs.invoiceNumber,
       razorpayOrderId: paymentLogs.razorpayOrderId,
       razorpayPaymentId: paymentLogs.razorpayPaymentId,
       clinicName: clinics.name,
@@ -270,14 +271,14 @@ export default async function BillingPage(props: {
       </div>
 
       {/* Plan Revenue Distribution Cards */}
-      {planBreakdown.length > 0 && (
-        <Card className="shadow-xs border-slate-200/80">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-bold text-slate-800">
-              Revenue Breakdown by Subscription Tier
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card className="shadow-xs border-slate-200/80">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-bold text-slate-800">
+            Revenue Breakdown by Subscription Tier
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {planBreakdown.length > 0 ? (
             <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
               {planBreakdown.map((plan) => {
                 const revenue = Number(plan.totalPaise) / 100;
@@ -314,9 +315,13 @@ export default async function BillingPage(props: {
                 );
               })}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <div className="text-center py-6 text-sm text-slate-500 bg-slate-50/50 rounded-lg border border-dashed border-slate-200">
+              No revenue data available yet.
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Searchable, Filterable Payment Ledger Table */}
       <BillingTable

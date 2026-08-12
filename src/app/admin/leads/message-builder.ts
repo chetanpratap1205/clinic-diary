@@ -105,50 +105,48 @@ export function buildUniversalMessage(lead: LeadForMessage, step: number): strin
   const clinicName = lead.clinicName || "your clinic";
   const city = lead.city || "your area";
   const demoUrl = generateLeadDemoUrl(lead);
-  const videoUrl = "https://youtu.be/doctor-diary-demo"; // Replace with actual video link later
 
   if (step === 1) {
-    return `Dr. ${formatDoctorName(name)}, I recently looked for ${clinicName} online but couldn't find a direct way to book an appointment.
+    return `Dr. ${formatDoctorName(name)}, I recently searched for ${clinicName} online but noticed patients can't book an appointment directly from Google.
 
-Patients search 24x7, and without a booking link on your Google Maps, you're losing them to competitors.
+You are likely losing walk-ins and new patients simply because they search after clinic hours.
 
-To fix this, our engineering team built a custom booking site just for you:
+To fix this, our engineering team built a custom digital front desk just for your clinic:
 🔗 ${demoUrl}
 
-Link it to your Google Maps, Instagram, and Clinic QR code so patients can book 24x7x365. 
+This isn't a marketplace like Practo. It's your clinic, under your own name. Walk-ins still come, and you still use your paper Rx pad—we just handle the digital booking automatically.
 
-Watch this 60-second video to see how it works: ${videoUrl}
+Tap the link to see how it looks. Shall we activate this for you?
 
-Shall we activate this for you?
-
-— Doctor Diary Team`;
+— Doctor Diary Onboarding`;
   }
 
   if (step === 2) {
-    return `Dr. ${formatDoctorName(name)}, checking if you had a moment to see the booking site we built for ${clinicName}?
+    return `Dr. ${formatDoctorName(name)}, just checking if you had a moment to see the booking app we built for ${clinicName}?
 
-Clinics in ${city} using this setup have seen patient visits increase by up to 50% simply by being bookable 24x7. 
+Top doctors in ${city} are switching to this system because of three simple rules:
+1. 0% Commission (Patients pay you directly at the desk).
+2. Zero Disruption (Keep using your paper Rx pad).
+3. 24/7 Visibility (Patients book even when the clinic is closed).
 
-Unlike other apps, we charge 0% commission. You keep 100% of your earnings. Plus, you don't have to change your routine—you can keep writing on your regular paper Rx pad.
-
-All at a cost less than a cup of tea per day.
+All for less than the cost of a cup of tea per day.
 
 🔗 ${demoUrl}
 
-If you want to stop losing patients to other clinics, reply 'YES' to claim your 14-day free trial.`;
+Reply 'YES' to claim your 14-day free trial and stop losing patients to competitors.`;
   }
 
   // Step 3 — Clean Exit / Takeaway
-  return `Dr. ${formatDoctorName(name)}, this is my last follow-up regarding your custom booking app.
+  return `Dr. ${formatDoctorName(name)}, this is my final message regarding the digital front desk we built for you.
 
-We are limiting this technology to only a few premium clinics in ${city} to ensure they completely dominate local patient searches.
+We are strictly limiting this technology to a few premium clinics in ${city} to ensure they dominate local patient searches without overcrowding the system.
 
-I'll leave your booking site active for another 48 hours:
+I'll leave your custom booking link active for 48 more hours:
 🔗 ${demoUrl}
 
-If you don't need it, no problem. We will release this spot to another specialist in your area. 
+If you prefer sticking to the old manual system, no problem at all. We will release this spot to another specialist in your area tomorrow.
 
-Reply 'ACTIVATE' if you want to secure it.`;
+Reply 'ACTIVATE' if you want to secure your clinic's digital upgrade.`;
 }
 
 // ─── Unified message builder (used by WhatsApp drawer) ────────────────────────

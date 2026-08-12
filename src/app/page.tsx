@@ -37,6 +37,7 @@ import { LeadMagnetSection } from "./_components/lead-magnet";
 import { HomePricingSection } from "./_components/home-pricing-section";
 import { TerritoryChecker } from "./_components/territory-checker";
 import { EnterpriseSecurityGrid } from "./_components/enterprise-security-grid";
+import { ZeroFrictionGuarantee } from "./_components/zero-friction-guarantee";
 
 export default function HomePage() {
   return (
@@ -54,17 +55,20 @@ export default function HomePage() {
       {/* Section 2: The Mirror */}
       <TheMirror />
 
-      {/* Section 3: Digital Front Desk Introduction */}
+      {/* Section 3: Zero Friction Guarantee */}
+      <ZeroFrictionGuarantee />
+
+      {/* Section 4: Digital Clinic / Ownership */}
+      <DigitalClinicOwnership />
+
+      {/* Section 5: Digital Front Desk Introduction */}
       <DigitalFrontDesk />
 
-      {/* Section 4: Patient Journey Timeline */}
+      {/* Section 6: Patient Journey Timeline */}
       <PatientJourneyTimeline />
 
-      {/* Section 5: Doctor Dashboard View */}
+      {/* Section 7: Doctor Dashboard View */}
       <DoctorDashboard />
-
-      {/* Section 6: Digital Clinic / Ownership */}
-      <DigitalClinicOwnership />
 
       {/* Exclusivity Checker */}
       <TerritoryChecker />
@@ -74,59 +78,6 @@ export default function HomePage() {
 
       {/* Enterprise Infrastructure & Security Grid */}
       <EnterpriseSecurityGrid />
-
-      {/* White-Glove Migration Guarantee */}
-      <section className="py-20 px-4 sm:px-6 bg-white relative border-t border-b border-slate-200/80 overflow-hidden">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-12 relative z-10">
-          <div className="flex-1 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 bg-emerald-50 text-[#00B7A8] border border-emerald-200 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest mb-6">
-              <Shield className="w-4 h-4" /> Zero Downtime Guarantee
-            </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#0B132B] mb-4 tracking-tight">
-              Terrified of losing your current patient records?
-            </h2>
-            <p className="text-slate-600 text-lg leading-relaxed mb-8 font-medium">
-              We know that switching software feels stressful for your clinic. That's why we include our <strong className="text-[#0B132B]">White-Glove Data Migration</strong> completely free.
-            </p>
-            <ul className="space-y-4 mb-8">
-              {[
-                "We securely export data from your old software or Excel sheets.",
-                "Zero downtime. Your clinic keeps running smoothly.",
-                "100% of your patient records safely transferred in 48 hours."
-              ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3 text-slate-700 font-semibold text-sm sm:text-base">
-                  <div className="bg-emerald-50 rounded-full p-1 border border-emerald-200 text-[#00B7A8] shadow-sm">
-                    <Check className="w-4 h-4" strokeWidth={3} />
-                  </div>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-          
-          <div className="w-full md:w-5/12">
-            <div className="bg-[#F8FAFC] border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xl relative group overflow-hidden">
-              <div className="flex items-center justify-center mb-6">
-                <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center border border-emerald-200 relative">
-                  <Activity className="w-8 h-8 text-[#00B7A8] relative z-10" />
-                </div>
-              </div>
-              <div className="text-center">
-                <h3 className="text-xl font-bold text-[#0B132B] mb-2">Concierge Onboarding</h3>
-                <p className="text-slate-600 text-sm mb-6 leading-relaxed font-medium">
-                  You just hand us your Excel sheets or old software login, and our engineering team handles the rest securely.
-                </p>
-                <div className="w-full bg-slate-200 rounded-full h-2.5 mb-3 overflow-hidden p-0.5">
-                  <div className="bg-gradient-to-r from-[#00B7A8] to-emerald-500 h-full w-[100%] rounded-full shadow-sm"></div>
-                </div>
-                <div className="text-[#00B7A8] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1">
-                  <CheckCircle className="w-3.5 h-3.5" /> Migration Complete
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Premium Pricing Tier */}
       <HomePricingSection />
@@ -150,7 +101,7 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-4">
                 <Link href="/signup">
                   <Button size="lg" className="rounded-full bg-[#00B7A8] hover:bg-[#00998c] text-white h-14 px-8 font-bold text-base shadow-[0_8px_30px_rgba(0,183,168,0.35)] transition-all">
-                    Start Your Clinic with Doctor Diary →
+                    Claim Your Clinic's Digital Space →
                   </Button>
                 </Link>
               </div>

@@ -36,10 +36,11 @@ export const QueueCard = ({
 
   return (
     <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95, height: 0 }}
+      layout="position"
+      initial={{ opacity: 0, scale: 0.95, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95, height: 0, marginTop: 0, marginBottom: 0, padding: 0 }}
+      transition={{ type: "spring", stiffness: 400, damping: 30 }}
       className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col gap-3 group relative overflow-hidden"
     >
       {appt.status === "in_consultation" && (

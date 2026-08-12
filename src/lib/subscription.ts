@@ -80,7 +80,7 @@ export async function getClinicAccessStatus(clinicId: string): Promise<ClinicAcc
   const now = new Date();
 
   if (isBefore(now, trialEndDate)) {
-    const daysRemaining = Math.max(1, differenceInDays(trialEndDate, now) + 1);
+    const daysRemaining = Math.max(0, differenceInDays(trialEndDate, now));
     return {
       hasAccess: true,
       status: "trial_active",

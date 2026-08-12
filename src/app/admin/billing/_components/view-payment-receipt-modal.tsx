@@ -15,6 +15,7 @@ import { format } from "date-fns";
 
 export interface PaymentReceipt {
   id: string;
+  invoiceNumber: string | null;
   amountPaise: number;
   status: string;
   paidAt: Date | string;
@@ -53,7 +54,7 @@ export function ViewPaymentReceiptModal({ receipt, open, onOpenChange }: ViewPay
               <div>
                 <DialogTitle className="text-base font-bold text-slate-900">Payment Invoice Receipt</DialogTitle>
                 <DialogDescription className="text-xs text-slate-500">
-                  Transaction Receipt #{receipt.id.slice(0, 8).toUpperCase()}
+                  Invoice #{receipt.invoiceNumber || receipt.id.slice(0, 8).toUpperCase()}
                 </DialogDescription>
               </div>
             </div>
@@ -88,6 +89,10 @@ export function ViewPaymentReceiptModal({ receipt, open, onOpenChange }: ViewPay
             <div className="flex justify-between items-center pt-2 border-t border-slate-200">
               <span className="text-sm font-bold text-slate-800">Total Billed Amount:</span>
               <span className="text-lg font-black text-emerald-700">₹{amountRupees}</span>
+            </div>
+            
+            <div className="flex justify-between items-center text-[10px] text-slate-500 pt-1">
+              <span>(Includes 18% GST: ₹{((receipt.amountPaise / 100) - (receipt.amountPaise / 100 / 1.18)).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>
             </div>
           </div>
 

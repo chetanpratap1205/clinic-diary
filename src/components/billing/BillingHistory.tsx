@@ -18,7 +18,8 @@ import Link from "next/link";
 
 type PaymentLog = {
   id: string;
-  razorpayOrderId: string;
+  invoiceNumber: string | null;
+  razorpayOrderId: string | null;
   planName: string;
   amountPaise: number;
   paidAt: Date;
@@ -45,7 +46,7 @@ export function BillingHistory({ paymentHistory }: BillingHistoryProps) {
             <Table>
               <TableHeader className="bg-slate-50">
                 <TableRow>
-                  <TableHead className="font-semibold text-gray-700">Order ID</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Invoice No.</TableHead>
                   <TableHead className="font-semibold text-gray-700">Date</TableHead>
                   <TableHead className="font-semibold text-gray-700">Plan</TableHead>
                   <TableHead className="font-semibold text-gray-700">Amount</TableHead>
@@ -63,7 +64,7 @@ export function BillingHistory({ paymentHistory }: BillingHistoryProps) {
                 ) : (
                   paymentHistory.map((invoice) => (
                     <TableRow key={invoice.id} className="hover:bg-slate-50/50">
-                      <TableCell className="font-medium text-gray-900">{invoice.razorpayOrderId}</TableCell>
+                      <TableCell className="font-medium text-gray-900">{invoice.invoiceNumber || "N/A"}</TableCell>
                       <TableCell className="text-gray-600">
                         {format(new Date(invoice.paidAt), "MMM dd, yyyy")}
                       </TableCell>

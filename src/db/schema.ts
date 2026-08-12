@@ -256,8 +256,9 @@ export const paymentLogs = pgTable("payment_logs", {
   clinicId: uuid("clinic_id")
     .notNull()
     .references(() => clinics.id, { onDelete: "cascade" }),
-  razorpayOrderId: text("razorpay_order_id").notNull(),
-  razorpayPaymentId: text("razorpay_payment_id").notNull(),
+  invoiceNumber: text("invoice_number").unique(),
+  razorpayOrderId: text("razorpay_order_id"),
+  razorpayPaymentId: text("razorpay_payment_id"),
   planId: text("plan_id").notNull(),       // monthly / quarterly / yearly
   planName: text("plan_name").notNull(),   // "1 Month" / "3 Months" / "12 Months"
   amountPaise: integer("amount_paise").notNull(), // amount in paise (e.g. 129900)

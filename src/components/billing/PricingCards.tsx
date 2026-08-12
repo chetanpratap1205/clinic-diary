@@ -117,6 +117,14 @@ export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
         <p className="text-slate-600 text-base max-w-2xl mx-auto">
           GST Invoice Provided. Cancel or upgrade anytime with zero hidden fees.
         </p>
+        <div className="pt-4 flex items-center justify-center gap-2 text-sm font-semibold text-slate-700">
+          <div className="flex -space-x-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-slate-200" />
+            ))}
+          </div>
+          Trusted by 500+ clinics across India
+        </div>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto items-stretch">
@@ -165,14 +173,14 @@ export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
                 
                 <div className="mb-6 flex items-baseline gap-2">
                   <span className={`text-4xl font-black tracking-tight ${plan.popular || isEnterprise ? "text-white" : "text-slate-900"}`}>
-                    {plan.price}
+                    {isEnterprise ? plan.price : `₹${Math.round(plan.basePrice * 1.18).toLocaleString()}`}
                   </span>
                   <span className={`text-xs font-semibold ${plan.popular || isEnterprise ? "text-slate-400" : "text-slate-500"}`}>
                     {plan.duration}
                   </span>
                 </div>
                 {!isEnterprise ? (
-                  <p className={`text-xs -mt-4 mb-6 ${plan.popular ? "text-slate-400" : "text-slate-400"}`}>+ 18% GST</p>
+                  <p className={`text-xs -mt-4 mb-6 ${plan.popular ? "text-slate-400" : "text-slate-400"}`}>incl. 18% GST (₹{plan.basePrice.toLocaleString()} base)</p>
                 ) : (
                   <p className="text-xs -mt-4 mb-6 text-teal-400 font-semibold">Custom SLAs & Setup</p>
                 )}
@@ -217,9 +225,14 @@ export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
                     ) : (PLAN_RANKS[plan.id] || 0) < activeRank ? (
                       "Downgrade"
                     ) : (
-                      "Start 14-Day Free Trial"
+                      "Subscribe Now"
                     )}
                   </Button>
+                )}
+                {!isEnterprise && activePlanId !== plan.id && (PLAN_RANKS[plan.id] || 0) >= activeRank && (
+                  <p className={`text-[10px] text-center mt-2 ${plan.popular ? "text-slate-400" : "text-slate-500"}`}>
+                    14-day trial automatically applied if eligible
+                  </p>
                 )}
               </div>
             </motion.div>

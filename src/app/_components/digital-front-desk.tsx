@@ -76,8 +76,8 @@ export function DigitalFrontDesk() {
             Meet your clinic's digital front desk.
           </h2>
           <p className="text-slate-600 text-lg sm:text-xl font-medium leading-relaxed">
-            Not an ERP. Not a marketplace. Not another complex app to manage.<br className="hidden sm:inline" />
-            A calm, connected operating layer—built to work around your clinic's existing workflow.
+            Everything your receptionist does manually — done automatically, under your clinic's name.<br className="hidden sm:inline" />
+            Not a marketplace. A calm, connected operating layer that respects your existing workflow.
           </p>
         </div>
 

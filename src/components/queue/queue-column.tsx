@@ -45,7 +45,7 @@ export const QueueColumn = ({
         </span>
       </div>
       <div className="flex flex-col gap-3 flex-1 overflow-y-auto hide-scrollbar pb-4">
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence>
           {items.map((appt: Appointment) => (
             <QueueCard
               key={appt.id}

@@ -68,11 +68,21 @@ export async function POST(req: NextRequest) {
     const activeSub = existingSubs[0];
     const now = new Date();
     
+    const planDetails = PLANS[planId as keyof typeof PLANS];
+
+    // Determine trial status to handle deferred billing
+    const { getClinicAccessStatus } = await import("@/lib/subscription");
+    const accessStatus = await getClinicAccessStatus(authUser.clinicId);
+    
     // Enterprise Upgrade Logic: Proration / Time Extension
-    // If they have an active subscription that hasn't expired, we append the new time to the end of it
-    const currentPeriodStart = activeSub && activeSub.currentPeriodEnd && activeSub.currentPeriodEnd > now 
-      ? new Date(activeSub.currentPeriodEnd) 
-      : now;
+    let currentPeriodStart = now;
+    if (activeSub && activeSub.currentPeriodEnd && activeSub.currentPeriodEnd > now) {
+      // Append new time to end of existing active subscription
+      currentPeriodStart = new Date(activeSub.currentPeriodEnd);
+    } else if (accessStatus.status === "trial_active" && accessStatus.trialEndDate) {
+      // Deferred billing: start period after trial ends
+      currentPeriodStart = new Date(accessStatus.trialEndDate);
+    }
     
     const currentPeriodEnd = new Date(currentPeriodStart);
     
@@ -81,8 +91,6 @@ export async function POST(req: NextRequest) {
     } else if (planId === "yearly") {
       currentPeriodEnd.setFullYear(currentPeriodEnd.getFullYear() + 1);
     }
-
-    const planDetails = PLANS[planId as keyof typeof PLANS];
 
     // Wrap operations in a single database transaction to guarantee 100% data consistency
     await db.transaction(async (tx) => {
@@ -109,9 +117,22 @@ export async function POST(req: NextRequest) {
         });
       }
 
+      // Generate Invoice Number: DD/{FY}/{SEQUENCE}
+      const currentYear = now.getFullYear();
+      const nextYear = currentYear + 1;
+      const fy = `${currentYear}-${nextYear.toString().slice(-2)}`;
+      
+      const [allPayments] = await tx
+        .select({ count: sql<number>`count(*)` })
+        .from(paymentLogs);
+      
+      const sequence = (Number(allPayments.count) + 1).toString().padStart(5, '0');
+      const invoiceNumber = `DD/${fy}/${sequence}`;
+
       // Insert payment log inside the same transaction
       const [insertedPayment] = await tx.insert(paymentLogs).values({
         clinicId: authUser.clinicId!,
+        invoiceNumber,
         razorpayOrderId: razorpay_order_id,
         razorpayPaymentId: razorpay_payment_id,
         planId,

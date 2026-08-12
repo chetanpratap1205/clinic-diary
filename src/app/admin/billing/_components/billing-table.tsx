@@ -17,6 +17,7 @@ import { ViewPaymentReceiptModal, type PaymentReceipt } from "./view-payment-rec
 
 export type PaymentRow = {
   id: string;
+  invoiceNumber: string | null;
   amountPaise: number;
   status: string;
   paidAt: Date | string;
@@ -211,7 +212,7 @@ export function BillingTable({
                       </Badge>
                     </TableCell>
                     <TableCell className="hidden md:table-cell font-mono text-[11px] text-slate-500 max-w-[150px] truncate">
-                      {payment.razorpayOrderId ?? payment.id.slice(0, 10)}
+                      {payment.invoiceNumber || payment.razorpayOrderId || payment.id.slice(0, 10)}
                     </TableCell>
                     <TableCell className="text-right">
                       <button

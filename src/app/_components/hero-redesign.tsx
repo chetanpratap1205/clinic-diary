@@ -37,6 +37,16 @@ export function HeroRedesign() {
           {/* Left Column: Typography, Badges & CTAs */}
           <div className="lg:col-span-6 flex flex-col text-center lg:text-left items-center lg:items-start my-auto">
             
+            {/* Eyebrow Tag */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="inline-flex items-center gap-2 bg-[#00B7A8]/10 text-[#00B7A8] border border-[#00B7A8]/20 rounded-full px-4 py-1.5 text-[11px] font-black uppercase tracking-widest mb-4"
+            >
+              For India's 10 Lakh+ Independent Doctors
+            </motion.div>
+
             {/* Main Headline */}
             <motion.h1
               initial={{ opacity: 0, y: 15 }}
@@ -44,9 +54,9 @@ export function HeroRedesign() {
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               className="text-[26px] min-[375px]:text-[30px] sm:text-[44px] lg:text-[48px] xl:text-[54px] font-black text-[#0B132B] leading-[1.1] tracking-tight mb-3 sm:mb-4"
             >
-              <span className="block">Your clinic,</span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#00B7A8] via-emerald-600 to-[#00897B] whitespace-nowrap">
-                exactly as you envisioned it.
+              <span className="block">Your patients already trust you.</span>
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#00B7A8] via-emerald-600 to-[#00897B]">
+                Now give your clinic the system it deserves.
               </span>
             </motion.h1>
 
@@ -57,7 +67,7 @@ export function HeroRedesign() {
               transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
               className="text-sm sm:text-base text-slate-600 mb-5 max-w-lg leading-relaxed font-medium"
             >
-              Doctor Diary is the digital front desk for independent clinics. Booking. Live queue. WhatsApp. Follow-ups. All under your clinic's name.
+              Doctor Diary gives your clinic its own booking page, a smarter queue, and better patient communication — all under your name, not ours. Walk-ins still come. New patients find you too.
             </motion.p>
 
             {/* CTAs */}
@@ -73,18 +83,18 @@ export function HeroRedesign() {
                   className="relative overflow-hidden w-full sm:w-auto bg-[#00B7A8] hover:bg-[#00998c] text-white h-12 sm:h-13 px-8 text-sm sm:text-base font-bold rounded-full transition-all flex items-center justify-center gap-2 group shadow-[0_6px_20px_rgba(0,183,168,0.3)] hover:shadow-[0_10px_30px_rgba(0,183,168,0.45)] hover:-translate-y-0.5"
                 >
                   <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:animate-[shimmer_1.5s_infinite]" />
-                  <span className="relative z-10">See Doctor Diary in Action</span>
+                  <span className="relative z-10">Set Up Your Clinic — It's Free</span>
                   <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform relative z-10" />
                 </Button>
               </Link>
 
-              <Link href="/signup" className="w-full sm:w-auto">
+              <Link href="/demo" className="w-full sm:w-auto">
                 <Button
                   variant="outline"
                   size="lg"
                   className="w-full sm:w-auto bg-white/90 backdrop-blur-md border-slate-200 text-[#0B132B] hover:bg-white h-12 sm:h-13 px-7 text-sm sm:text-base font-bold rounded-full transition-all flex items-center justify-center gap-2 group shadow-sm hover:shadow-md"
                 >
-                  Start Free — No Card Needed
+                  See How It Works →
                 </Button>
               </Link>
             </motion.div>
@@ -100,19 +110,19 @@ export function HeroRedesign() {
                 <div className="bg-emerald-500/10 p-0.5 rounded-full text-emerald-600">
                   <Check className="w-3.5 h-3.5" strokeWidth={3} />
                 </div>
-                <span>Your patients. Your clinic.</span>
+                <span>No disruption to your current patients</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="bg-emerald-500/10 p-0.5 rounded-full text-emerald-600">
                   <Check className="w-3.5 h-3.5" strokeWidth={3} />
                 </div>
-                <span>No Credit Card Needed</span>
+                <span>Works for 40+ specialties</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="bg-emerald-500/10 p-0.5 rounded-full text-emerald-600">
                   <Check className="w-3.5 h-3.5" strokeWidth={3} />
                 </div>
-                <span>Quick Clinic Setup</span>
+                <span>Your name, not ours</span>
               </div>
             </motion.div>
           </div>
@@ -138,57 +148,42 @@ export function HeroRedesign() {
               />
             </motion.div>
 
-            {/* 3 Floating Frosted Glass Micro-Widgets */}
+            {/* 2 Floating Frosted Glass Micro-Widgets */}
 
-            {/* Widget 1: Top Left - Zero Chaos */}
+            {/* Widget 1: Top Left - Direct Payments */}
             <motion.div
               initial={{ opacity: 0, x: -15 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
-              className="absolute left-[0%] lg:left-[2%] top-[12%] lg:top-[15%] bg-white/95 backdrop-blur-xl border border-emerald-500/30 p-3 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.08)] z-30 max-w-[160px] sm:max-w-[180px]"
+              className="absolute left-[0%] lg:left-[2%] top-[12%] lg:top-[20%] bg-white/95 backdrop-blur-xl border border-emerald-500/30 p-3.5 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.08)] z-30 max-w-[180px] sm:max-w-[200px]"
             >
-              <div className="flex items-center gap-1.5 mb-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[11px] font-extrabold text-[#0B132B] uppercase tracking-wider">Zero Chaos</span>
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="bg-emerald-100 rounded-full p-1.5 text-emerald-600">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <span className="text-[11px] font-extrabold text-[#0B132B] uppercase tracking-wider">Direct Payments</span>
               </div>
-              <div className="text-xs font-bold text-slate-800">Queue: 3 Patients</div>
-              <div className="text-[10px] text-slate-500 font-medium mt-0.5">Live updates on their phone</div>
+              <p className="text-[11px] font-semibold text-slate-600 leading-snug">
+                Patients pay at your desk, just like always.
+              </p>
             </motion.div>
 
-            {/* Widget 2: Bottom Right - New Booking */}
+            {/* Widget 2: Bottom Right - Keep your Rx Pad */}
             <motion.div
               initial={{ opacity: 0, x: 15 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.7 }}
-              className="absolute right-[0%] lg:right-[2%] bottom-[15%] lg:bottom-[20%] bg-white/95 backdrop-blur-xl border border-blue-500/20 p-3 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.08)] z-30 max-w-[170px] sm:max-w-[190px]"
+              className="absolute right-[0%] lg:right-[2%] bottom-[15%] lg:bottom-[20%] bg-white/95 backdrop-blur-xl border border-slate-200 p-3.5 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.08)] z-30 max-w-[180px] sm:max-w-[200px]"
             >
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className="bg-blue-500 rounded-full p-1 text-white">
-                  <Calendar className="w-3 h-3" />
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="bg-[#0B132B] rounded-full p-1.5 text-white">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                 </div>
-                <span className="text-[11px] font-bold text-slate-900 uppercase tracking-wider">New Booking</span>
+                <span className="text-[11px] font-bold text-[#0B132B] uppercase tracking-wider">Keep your Rx Pad</span>
               </div>
-              <p className="text-[10px] text-slate-600 leading-snug font-medium">
-                Patient booked via clinic QR
+              <p className="text-[11px] font-semibold text-slate-600 leading-snug">
+                No typing required. Write prescriptions as you do today.
               </p>
-            </motion.div>
-
-            {/* Widget 3: Center near Phone - Phone UI Simulation */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.9 }}
-              className="absolute left-[50%] -translate-x-1/2 bottom-[35%] lg:bottom-[40%] bg-white/95 backdrop-blur-xl border border-slate-200/50 p-4 rounded-3xl shadow-[0_20px_40px_rgba(0,0,0,0.12)] z-30 w-48 text-center"
-            >
-              <div className="text-[11px] text-slate-500 font-bold uppercase tracking-widest mb-1">Today's Clinic</div>
-              <div className="text-2xl font-black text-[#0B132B] mb-3">24 <span className="text-sm font-semibold text-slate-500">patients</span></div>
-              
-              <div className="bg-emerald-50 border border-emerald-100 rounded-xl py-2 px-3 mb-2 flex items-center justify-center gap-2 shadow-inner">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[13px] font-extrabold text-emerald-800">Now serving #18</span>
-              </div>
-              
-              <div className="text-[11px] font-bold text-slate-600">6 waiting</div>
             </motion.div>
 
 

@@ -10,15 +10,15 @@ export function PatientJourneyTimeline() {
   const steps = [
     {
       time: "8:30 AM",
-      title: "Patient Priya arrives at your clinic",
-      desc: "Instead of standing in a queue or asking the receptionist, she scans the custom acrylic QR stand on the counter.",
-      tag: "Scan & Book",
+      title: "Walk-in & Online seamlessly merge",
+      desc: "Priya (walk-in) scans the QR code at your desk. Rahul (online) books from home via your Google profile. Both join the exact same smart queue.",
+      tag: "Unified Queue",
       badge: "No app needed"
     },
     {
       time: "8:32 AM",
       title: "Instant confirmation on WhatsApp",
-      desc: "Her appointment is booked in 3 taps. She gets a WhatsApp message with her queue number and estimated waiting time immediately.",
+      desc: "Both patients get a WhatsApp message with their queue number and estimated waiting time immediately. No phone calls to the receptionist.",
       tag: "WhatsApp Confirmed",
       badge: "You are #24"
     },
@@ -61,7 +61,7 @@ export function PatientJourneyTimeline() {
             No more "Doctor, mera number kab aayega?"
           </h2>
           <p className="text-slate-300 text-lg sm:text-xl font-medium leading-relaxed">
-            Every interaction is direct, digital, and automated. Show patients a clinic experience that matches the tier of your medical expertise.
+            Walk-ins and online bookings merged into one smart queue. Show patients a clinic experience that matches the tier of your medical expertise.
           </p>
         </div>
 

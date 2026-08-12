@@ -116,7 +116,7 @@ export function BillingOverview({ activeSub, accessStatus, appointmentCount, tot
                 {!activeSub && isTrialActive && (
                   <Badge className="bg-sky-500/20 text-sky-300 border border-sky-500/30 flex gap-1.5 items-center px-3 py-1 shadow-inner backdrop-blur-md">
                     <Sparkles className="w-3.5 h-3.5" />
-                    {accessStatus?.daysRemaining} Days Left
+                    {accessStatus?.daysRemaining === 0 ? "Expires Today" : `${accessStatus?.daysRemaining} Days Left`}
                   </Badge>
                 )}
               </div>
