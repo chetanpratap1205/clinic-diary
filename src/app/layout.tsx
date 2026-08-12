@@ -19,17 +19,18 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Doctor Diary - Clinic Management Software for Indian Doctors | Reduce No-Shows",
+  title: "Doctor Diary — Digital Front Desk for Independent Clinics in India",
   description:
-    "Doctor Diary helps independent clinics in India eliminate no-shows, automate WhatsApp reminders, and fill their calendar 24/7. Trusted by 1,200+ doctors.",
+    "Doctor Diary gives independent clinics booking, live queue, WhatsApp, and follow-ups — all under your clinic's name. No marketplace.",
   keywords: [
+    "digital front desk for clinics",
     "clinic management software India",
     "doctor appointment software India",
-    "how to reduce patient no-shows",
     "WhatsApp appointment reminder clinic",
     "online appointment booking for doctors India",
+    "live queue tracker for doctors",
     "practice management software India",
-    "clinic growth software"
+    "independent clinic software"
   ],
   metadataBase: new URL(BASE_URL),
   manifest: "/manifest.json",
@@ -46,9 +47,9 @@ export const metadata: Metadata = {
     apple: [{ url: "/icon-192.png", sizes: "192x192" }],
   },
   openGraph: {
-    title: "Doctor Diary - Clinic Management Software for Indian Doctors",
+    title: "Doctor Diary — Digital Front Desk for Independent Clinics in India",
     description:
-      "Doctor Diary helps independent clinics in India eliminate no-shows, automate WhatsApp reminders, and fill their calendar 24/7. Trusted by 1,200+ doctors.",
+      "Doctor Diary gives independent clinics booking, live queue, WhatsApp, and follow-ups — all under your clinic's name. No marketplace.",
     siteName: "Doctor Diary",
     type: "website",
     url: BASE_URL,
@@ -57,15 +58,15 @@ export const metadata: Metadata = {
         url: `/api/og`,
         width: 1200,
         height: 630,
-        alt: "Doctor Diary - Clinic Management Software for Indian Doctors",
+        alt: "Doctor Diary — Digital Front Desk for Independent Clinics in India",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Doctor Diary - Clinic Management Software for Indian Doctors",
+    title: "Doctor Diary — Digital Front Desk for Independent Clinics in India",
     description:
-      "Doctor Diary helps independent clinics in India eliminate no-shows, automate WhatsApp reminders, and fill their calendar 24/7. Trusted by 1,200+ doctors.",
+      "Doctor Diary gives independent clinics booking, live queue, WhatsApp, and follow-ups — all under your clinic's name. No marketplace.",
     images: [`/api/og`],
   },
 };

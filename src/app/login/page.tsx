@@ -131,7 +131,7 @@ export default function LoginPage() {
             <div className="text-slate-300 text-sm font-medium">
               Join{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 font-black">
-                1,200+ Top Doctors
+                independent clinics
               </span>{" "}
               delivering premium care.
             </div>

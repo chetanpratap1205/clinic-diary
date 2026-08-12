@@ -229,7 +229,7 @@ export function BookingClient({
 
       if (isLead) {
         // SIMULATION MODE FOR MARKETING LEADS
-        res = { appointmentId: `demo-${Date.now()}`, tokenNumber: 1 };
+        res = { appointmentId: `demo-${clinic.slug}`, tokenNumber: 14 };
         await new Promise((resolve) => setTimeout(resolve, 800));
       } else {
         res = await createBooking(

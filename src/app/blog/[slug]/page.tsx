@@ -178,7 +178,7 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
               Transform Your Practice with Doctor Diary
             </h3>
             <p className="text-slate-300 text-sm mb-6">
-              Join 1,200+ doctors across India who reduced patient no-shows and automated WhatsApp booking.
+              Join independent doctors across India who reduced patient no-shows and automated WhatsApp booking.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/signup" className="w-full sm:w-auto">

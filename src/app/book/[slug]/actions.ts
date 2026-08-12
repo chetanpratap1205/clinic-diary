@@ -343,6 +343,13 @@ export async function createBooking(
 
 export async function findPatientAppointment(clinicId: string, phone: string) {
   try {
+    // 0. Check if it's a demo lead first to bypass real lookups
+    const { doctorLeads } = await import("@/db/schema");
+    const leads = await db.select({ slug: doctorLeads.clinicSlug }).from(doctorLeads).where(eq(doctorLeads.id, clinicId)).limit(1);
+    if (leads.length > 0) {
+      return { appointmentId: `demo-${leads[0].slug || clinicId}` };
+    }
+
     const todayStr = getClinicTodayDate();
     
     // 1. Try to find an appointment for today

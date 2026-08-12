@@ -249,7 +249,7 @@ export function DemoPageClient() {
           </div>
 
           <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 leading-[1.15]">
-            See How 1,200+ Doctors Save 2+ Hours Daily & <span className="text-[#00B7A8]">Eliminate Patient No-Shows</span>
+            See How Independent Doctors Save 2+ Hours Daily & <span className="text-[#00B7A8]">Eliminate Patient No-Shows</span>
           </h1>
           
           <p className="text-slate-600 text-sm sm:text-lg mt-3 max-w-3xl mx-auto font-medium leading-relaxed">
@@ -490,7 +490,7 @@ export function DemoPageClient() {
         <div className="w-full max-w-4xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-3xl p-8 sm:p-12 text-center relative overflow-hidden shadow-2xl">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-teal-500/20 border border-teal-500/40 text-teal-300 text-xs font-bold uppercase tracking-wider mb-4">
             <Sparkles className="w-3.5 h-3.5" />
-            Join 1,200+ Verified Doctors in India
+            Join Verified Doctors in India
           </div>
 
           <h2 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight mb-3">

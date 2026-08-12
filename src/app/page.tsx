@@ -23,9 +23,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { InstallButton } from "@/components/pwa-provider";
 import { PremiumIcon } from "@/components/ui/premium-icon";
-import { HomeRoiCalculator } from "./_components/home-roi-calculator";
 import { SocialProofPopup } from "./_components/social-proof-popup";
-import { ExperienceEngine } from "./_components/experience-engine";
+import { TheMirror } from "./_components/the-mirror";
+import { DigitalFrontDesk } from "./_components/digital-front-desk";
+import { PatientJourneyTimeline } from "./_components/patient-journey-timeline";
+import { DoctorDashboard } from "./_components/doctor-dashboard";
+import { DigitalClinicOwnership } from "./_components/digital-clinic-ownership";
+import { DoctorStories } from "./_components/doctor-stories";
 import { RotatingSpecialty } from "./_components/rotating-specialty";
 import { HeroRedesign } from "./_components/hero-redesign";
 import { HomeNav } from "./_components/home-nav";
@@ -47,40 +51,26 @@ export default function HomePage() {
         <HeroRedesign />
       </div>
 
-      {/* ROI Calculator Section */}
-      <section className="py-20 px-4 sm:px-6 relative border-t border-slate-200/80 bg-[#F8FAFC]">
-        <div className="relative z-10 w-full max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-             <h2 className="text-3xl sm:text-4xl font-black text-[#0B132B] mb-4 tracking-tight">
-               See Your Exact ROI.
-             </h2>
-             <p className="text-slate-600 font-medium">Calculate how much revenue you are losing to empty slots.</p>
-          </div>
-          <HomeRoiCalculator />
-        </div>
-      </section>
+      {/* Section 2: The Mirror */}
+      <TheMirror />
 
-      {/* Territory PIN Code Exclusivity Checker */}
+      {/* Section 3: Digital Front Desk Introduction */}
+      <DigitalFrontDesk />
+
+      {/* Section 4: Patient Journey Timeline */}
+      <PatientJourneyTimeline />
+
+      {/* Section 5: Doctor Dashboard View */}
+      <DoctorDashboard />
+
+      {/* Section 6: Digital Clinic / Ownership */}
+      <DigitalClinicOwnership />
+
+      {/* Exclusivity Checker */}
       <TerritoryChecker />
 
-      {/* 0% Commission Guarantee Section */}
-      <section className="py-16 px-4 sm:px-6 bg-emerald-50/60 border-y border-emerald-200/80 relative overflow-hidden flex flex-col items-center">
-        <div className="max-w-4xl mx-auto text-center relative z-10 flex flex-col items-center gap-6">
-          <div className="inline-flex items-center justify-center p-3 bg-white rounded-2xl border border-emerald-200 shadow-sm mb-2">
-            <Lock className="w-8 h-8 text-[#00B7A8]" />
-          </div>
-          <h2 className="text-3xl md:text-5xl font-black text-[#0B132B] tracking-tight">
-            We build your software.<br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00B7A8] via-emerald-600 to-[#00897B]">We never touch your money.</span>
-          </h2>
-          <p className="text-slate-700 text-lg sm:text-xl font-medium max-w-2xl leading-relaxed">
-            Unlike aggregator apps, we charge <strong className="text-[#0B132B]">0% commission</strong> on patient fees. You take payments directly from your patients, exactly as you do now. No interference. No hidden cuts.
-          </p>
-        </div>
-      </section>
-
-      {/* The Growth & Experience Engine (Bento Grid) */}
-      <ExperienceEngine />
+      {/* Section 7: Social Proof / Doctor Stories */}
+      <DoctorStories />
 
       {/* Enterprise Infrastructure & Security Grid */}
       <EnterpriseSecurityGrid />
@@ -151,17 +141,22 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 gap-12 items-center relative z-10 text-left mb-20">
             <div>
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-6 tracking-tight">
-                Secure your area's<br/>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">digital dominance.</span>
+                Your clinic is already a brand.<br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Give it the technology it deserves.</span>
               </h2>
               <p className="text-slate-300 text-lg mb-8 font-medium max-w-md">
-                Patients are searching for premium clinics right now. Claim your 0% commission infrastructure before local competitors do.
+                Get started today in under 5 minutes. Secure your founding pricing and area exclusivity.
               </p>
-              <Link href="/signup">
-                <Button size="lg" className="rounded-full bg-[#00B7A8] hover:bg-[#00998c] text-white h-14 px-10 font-bold text-lg shadow-[0_8px_30px_rgba(0,183,168,0.35)] hover:scale-105 transition-all">
-                  Start Your Free Trial Now
-                </Button>
-              </Link>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-4">
+                <Link href="/signup">
+                  <Button size="lg" className="rounded-full bg-[#00B7A8] hover:bg-[#00998c] text-white h-14 px-8 font-bold text-base shadow-[0_8px_30px_rgba(0,183,168,0.35)] transition-all">
+                    Start Your Clinic with Doctor Diary →
+                  </Button>
+                </Link>
+              </div>
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-4">
+                Your clinic. Your patients. Your relationship.
+              </p>
             </div>
             
             <div className="relative w-full aspect-square md:aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 group">

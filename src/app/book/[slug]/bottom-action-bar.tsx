@@ -45,46 +45,47 @@ export function BottomActionBar({ clinic, workingDays, closedDates, lexicon, lan
           {/* Live Status Widget Button */}
           <Link
             href={`/status/${clinic.slug}?lang=${lang}`}
-            className="flex-shrink-0 w-[32%] max-w-[140px] h-14 rounded-full flex flex-col items-center justify-center gap-0.5 border shadow-sm transition-all relative overflow-hidden group cursor-pointer hover:scale-[1.03] active:scale-[0.95]"
+            className="flex-shrink-0 w-[28%] max-w-[120px] h-14 rounded-full flex flex-col items-center justify-center gap-0.5 transition-all relative overflow-hidden group cursor-pointer hover:scale-[1.03] active:scale-[0.95]"
             style={{ 
-              backgroundColor: `${themeColor}0a`, 
-              borderColor: `${themeColor}25`,
+              backgroundColor: `${themeColor}10`, 
               color: themeColor 
             }}
             aria-label="Live Status"
           >
-            <div className="flex items-center gap-1.5">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-              </span>
+            <div className="flex items-center gap-1.5 opacity-80">
               <Activity className="w-4 h-4" strokeWidth={2.5} />
             </div>
-            <span className="text-[9px] font-black uppercase tracking-widest leading-none mt-0.5">{t.liveQueue || "Live Queue"}</span>
+            <span className="text-[9px] font-black uppercase tracking-widest leading-none mt-0.5 opacity-80">{t.liveQueue || "Live Queue"}</span>
           </Link>
 
           {/* Book Appointment Pulsing Button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.96 }}
-            onClick={() => setIsModalOpen(true)}
-            className="flex-1 h-14 rounded-full text-white flex items-center justify-center gap-2.5 sm:gap-3 shadow-xl relative overflow-hidden group"
-            style={{ 
-              background: `linear-gradient(135deg, ${themeColor}, ${themeColor}dd)`, 
-              boxShadow: `0 12px 30px -6px ${themeColor}70` 
-            }}
-            aria-label="Book Free Appointment"
-          >
-            {/* Soft Ambient Pulse Ring */}
-            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-[-20deg]" />
-            
-            <CalendarCheck className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" strokeWidth={2.5} />
-            <div className="flex flex-col items-start text-left">
-              <span className="text-[14px] sm:text-[15px] font-black leading-tight tracking-tight drop-shadow-sm">{t.bookAppointment}</span>
-              <span className="text-[9.5px] font-bold text-white/90 leading-tight uppercase tracking-wider">{lang === "hi" ? "क्लिनिक में भुगतान · मुफ्त टोकन" : "Pay at Clinic · Free Token"}</span>
-            </div>
-          </motion.button>
+          <div className="flex-1 relative">
+            <div 
+              className="absolute -inset-1 rounded-full opacity-40 blur-md animate-pulse"
+              style={{ backgroundColor: themeColor }}
+            />
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={() => setIsModalOpen(true)}
+              className="w-full h-14 rounded-full text-white flex items-center justify-center gap-2.5 sm:gap-3 shadow-2xl relative overflow-hidden group"
+              style={{ 
+                background: `linear-gradient(135deg, ${themeColor}, ${themeColor}e6)`, 
+                boxShadow: `0 15px 35px -5px ${themeColor}80` 
+              }}
+              aria-label="Book Free Appointment"
+            >
+              {/* Soft Ambient Pulse Ring */}
+              <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg]" />
+              
+              <CalendarCheck className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" strokeWidth={2.5} />
+              <div className="flex flex-col items-start text-left">
+                <span className="text-[15px] sm:text-[16px] font-black leading-tight tracking-tight drop-shadow-md">{t.bookAppointment}</span>
+                <span className="text-[9.5px] font-bold text-white/90 leading-tight uppercase tracking-wider">{lang === "hi" ? "क्लिनिक में भुगतान · मुफ्त टोकन" : "Pay at Clinic · Free Token"}</span>
+              </div>
+            </motion.button>
+          </div>
         </div>
       </div>
 

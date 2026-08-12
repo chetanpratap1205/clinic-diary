@@ -193,7 +193,7 @@ export default function BlogIndexPage() {
               Ready to Automate Your Practice?
             </h3>
             <p className="text-slate-300 text-sm mb-6 leading-relaxed">
-              Join 1,200+ doctors across India using Doctor Diary to eliminate no-shows and increase clinic efficiency.
+              Join independent doctors across India using Doctor Diary to eliminate no-shows and increase clinic efficiency.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/signup" className="w-full sm:w-auto">

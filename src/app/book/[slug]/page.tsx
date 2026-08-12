@@ -19,6 +19,7 @@ import { BottomActionBar } from "./bottom-action-bar";
 import { ClinicLogo } from "./clinic-logo";
 import { FAQAccordion } from "./faq-accordion";
 import { InstallAppSection } from "@/components/install-app-section";
+import { ExpandableText } from "@/components/expandable-text";
 import Link from "next/link";
 import Image from "next/image";
 import { trackLeadView } from "@/app/admin/leads/actions";
@@ -644,20 +645,42 @@ export default async function BookingPage({
                 </div>
 
                 {/* Box 3: Live Queue */}
-                <Link
-                  href={`/status/${clinic.slug}?lang=${lang}`}
-                  className="group flex flex-col items-center lg:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md hover:-translate-y-1 relative"
-                >
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100 mb-2 group-hover:scale-110 transition-transform relative">
-                    <Activity className="w-4 h-4 text-emerald-600" strokeWidth={2.5} />
-                    <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
-                    </span>
-                  </div>
-                  <p className="text-sm sm:text-[15px] font-black text-emerald-600 leading-none mb-1">{t.liveQueue}</p>
-                  <p className="text-[8px] sm:text-[9.5px] font-black text-slate-400 uppercase tracking-widest text-center lg:text-left">{t.liveQueueTrack}</p>
-                </Link>
+                {(() => {
+                  let isQueueActive = false;
+                  let title = t.liveQueue;
+                  let subtitle = t.liveQueueTrack;
+
+                  if (isLead) {
+                    isQueueActive = true;
+                    title = "Serving #14";
+                    subtitle = "~15 min wait";
+                  } else {
+                    // For actual clinics, show the opening time if we don't have live active data
+                    // In a full implementation, we'd check current active tokens here.
+                    const openTime = todayTimings ? todayTimings[0].split("-")[0].trim() : "10:00 AM";
+                    title = `Opens at ${openTime}`;
+                    subtitle = "Live tracking active";
+                  }
+
+                  return (
+                    <Link
+                      href={`/status/${clinic.slug}?lang=${lang}`}
+                      className="group flex flex-col items-center lg:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md hover:-translate-y-1 relative"
+                    >
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100 mb-2 group-hover:scale-110 transition-transform relative">
+                        <Activity className="w-4 h-4 text-emerald-600" strokeWidth={2.5} />
+                        {isQueueActive && (
+                          <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm sm:text-[15px] font-black text-emerald-600 leading-none mb-1">{title}</p>
+                      <p className="text-[8px] sm:text-[9.5px] font-black text-slate-400 uppercase tracking-widest text-center lg:text-left">{subtitle}</p>
+                    </Link>
+                  );
+                })()}
               </div>
 
               {/* ─── Compact Location + Today’s Hours Strip ──────── */}
@@ -755,7 +778,11 @@ export default async function BookingPage({
                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
                  {lang === "hi" ? `${clinic.name} में आपका स्वागत है` : `Welcome to ${clinic.name}`}
                </h2>
-               <div className="prose prose-sm sm:prose-base text-slate-600 font-medium leading-relaxed">
+                <ExpandableText 
+                  themeColor={themeColor} 
+                  readMoreText={lang === "hi" ? "और पढ़ें" : "Read More"} 
+                  readLessText={lang === "hi" ? "कम दिखाएं" : "Read Less"}
+                >
                  {clinic.about ? (
                    <p>{clinic.about}</p>
                  ) : (
@@ -771,11 +798,11 @@ export default async function BookingPage({
                      </>
                    )
                  )}
-               </div>
-               {/* Bilingual mission quote */}
+                </ExpandableText>
+                {/* Bilingual mission quote */}
                <blockquote className="border-l-4 pl-4 py-2 mt-4 italic text-slate-700 font-semibold text-sm rounded-r-xl bg-slate-50/80 border-slate-300" style={{ borderColor: themeColor }}>
                  {lang === "hi"
-                   ? `"${clinic.name} में हमारी सोच है कि डॉ. ${stripDr(clinic.doctorName)} के प्रत्येक मरीज़ को पारदर्शी और दयालु देखभाल मिले।"`
+                   ? `"${clinic.name} में हमारी सोच है कि डॉ. ${stripDr(clinic.doctorName)} के प्रत्येक मरीज़ को पारदर्शी और दयालु देखभाल मिले。"`
                    : `"Our philosophy at ${clinic.name} is dedicated to transparent, compassionate care for every patient visiting Dr. ${stripDr(clinic.doctorName)}."`
                  }
                </blockquote>
@@ -816,7 +843,7 @@ export default async function BookingPage({
         {/* 10/10 Conditions & Tappable Expertise Cards (Point 18) */}
         {specialtyConfig.commonTreatments && specialtyConfig.commonTreatments.length > 0 && (
           <ScrollReveal delay={0.15}>
-            <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 border border-white/80 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)]">
+            <div className="py-2">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
@@ -1009,7 +1036,7 @@ export default async function BookingPage({
             </div>
 
             {/* FAQ */}
-            <div className="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] border border-white/80 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] p-6">
+            <div className="pt-4 border-t border-slate-200/60 mt-4">
               <h2 className="text-sm font-black text-slate-900 flex items-center gap-2 mb-4">
                 <HelpCircle className="w-4 h-4 text-slate-400" /> {lang === "hi" ? "अक्सर पूछे जाने वाले सवाल" : "Frequently Asked Questions"}
               </h2>

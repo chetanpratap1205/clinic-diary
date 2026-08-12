@@ -46,14 +46,14 @@ export function TerritoryChecker() {
         </div>
 
         <h2 className="text-3xl sm:text-5xl font-black text-[#0B132B] mb-4 tracking-tight">
-          Protect Your Clinic's Radius.<br />
+          Secure Your Area's Exclusive Presence.<br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00B7A8] via-emerald-600 to-[#00897B]">
-            Lock Your Area Before Local Competitors Do.
+            One Clinic Per PIN Code Area.
           </span>
         </h2>
 
         <p className="text-slate-600 text-base sm:text-lg max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-          To prevent local patient cannibalization, we limit Founding Licenses to <strong>1 private clinic per PIN code area</strong>. Check if your territory is still open.
+          To keep patient booking direct and localized, we license our digital front desk exclusively to <strong>one clinic per PIN code area</strong>. Check availability for your location.
         </p>
 
         {/* PIN Code Search Form */}
@@ -111,7 +111,7 @@ export function TerritoryChecker() {
                     Founding License Open in Your Area
                   </h3>
                   <p className="text-slate-600 text-xs sm:text-sm leading-relaxed mb-4 font-medium">
-                    Your area's 0% commission practice slot is currently unlocked. Lock your founding doctor rate today before a neighboring doctor claims it.
+                    Your area's exclusive slot is currently available. Register your clinic today to secure your digital front desk and rate-lock your founding rate.
                   </p>
                   <Link href="/signup">
                     <Button size="sm" className="bg-[#00B7A8] hover:bg-[#00998c] text-white font-bold rounded-xl px-5 h-10 text-xs shadow-md flex items-center gap-2">

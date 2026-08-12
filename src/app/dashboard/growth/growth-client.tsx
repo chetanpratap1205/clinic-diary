@@ -359,7 +359,7 @@ export function GrowthClient({ consultationFee, themeColor, requestedServices = 
                 <div className="w-10 h-10 rounded-full bg-blue-600 border-2 border-slate-900 flex items-center justify-center"><Star className="w-4 h-4 text-white fill-white" /></div>
               </div>
               <div className="text-sm font-medium text-slate-300 text-left leading-tight">
-                Trusted by <br/><span className="text-white font-bold">1,200+ Top Clinics</span>
+                Trusted by <br/><span className="text-white font-bold">Independent Clinics</span>
               </div>
             </div>
           </div>

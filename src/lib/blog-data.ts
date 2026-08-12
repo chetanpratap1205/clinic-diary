@@ -54,7 +54,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
       ## Why Do Indian Patients Skip Appointments?
 
-      Our research across 1,200+ clinics revealed three primary reasons:
+      Our research across clinics in India revealed three primary reasons:
 
       1. **Pure Forgetfulness**: Patients book 2-3 days in advance and simply forget the time.
       2. **Lack of Perceived Commitment**: Without a automated reminder, patients feel skipping an appointment has zero impact.

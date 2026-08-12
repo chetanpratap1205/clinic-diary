@@ -44,7 +44,7 @@ export function EnterpriseSecurityGrid() {
             <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 text-[#00B7A8] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
               <FileCheck className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-[#0B132B] mb-2">NABH & HIPAA Compliant</h3>
+            <h3 className="text-lg font-bold text-[#0B132B] mb-2">Secure Data Encryption</h3>
             <p className="text-slate-600 text-xs sm:text-sm leading-relaxed font-medium">
               End-to-end 256-bit AES encryption for all prescriptions, records, and billing data with automated daily multi-region cloud backups.
             </p>

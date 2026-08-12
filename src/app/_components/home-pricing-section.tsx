@@ -31,20 +31,10 @@ export function HomePricingSection() {
             The average clinic using Doctor Diary sees a <strong className="text-[#0B132B] font-bold">₹25,000 to ₹50,000</strong> increase in monthly revenue simply by eliminating no-shows and streamlining operations.
           </p>
 
-          {/* Founding License Scarcity Progress Counter */}
-          <div className="max-w-xl mx-auto bg-white border border-slate-200 p-4 sm:p-5 rounded-2xl shadow-lg text-left">
-            <div className="flex items-center justify-between text-xs font-bold text-slate-700 mb-2">
-              <span className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#00B7A8] animate-ping" />
-                <span className="text-[#0B132B] font-black">1,200+ / 1,500 Founding Doctor Licenses Claimed</span>
-              </span>
-              <span className="text-[#00B7A8] font-extrabold">80% Claimed</span>
-            </div>
-            <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200 p-0.5">
-              <div className="bg-gradient-to-r from-[#00B7A8] to-emerald-500 h-full w-[80%] rounded-full shadow-sm" />
-            </div>
-            <p className="text-[11px] text-slate-500 mt-2 text-center font-medium">
-              ⚡ <strong>Rate Lock Guarantee</strong>: Your founding price is locked for life. Monthly rates increase by 2x once 1,500 licenses are claimed.
+          {/* Founding License Rate Lock Guarantee */}
+          <div className="max-w-md mx-auto bg-[#F8FAFC] border border-emerald-100 p-4 rounded-2xl text-center">
+            <p className="text-xs text-slate-600 font-medium">
+              ⚡ <strong>Rate Lock Guarantee</strong>: Start your trial today to lock in your founding price for life.
             </p>
           </div>
         </div>
@@ -79,7 +69,7 @@ export function HomePricingSection() {
                 <span className="text-slate-500 text-sm font-semibold">/ 3 mo</span>
               </div>
               <div className="mb-6 inline-block bg-slate-100 text-slate-700 text-xs font-semibold px-3.5 py-1.5 rounded-xl border border-slate-200">
-                Less than ₹17/day for your clinic
+                Billed quarterly
               </div>
               <ul className="space-y-3.5 mb-8">
                 {[
@@ -123,7 +113,7 @@ export function HomePricingSection() {
               </div>
               
               <div className="mb-6 inline-flex items-center gap-2 bg-emerald-50 text-[#00B7A8] text-xs font-bold px-3.5 py-2 rounded-xl border border-emerald-200">
-                <span>☕</span> Less than ₹14/day. (Cheaper than chai)
+                ⭐ Save ₹997 compared to quarterly
               </div>
               
               <ul className="space-y-3.5 mb-8">
@@ -193,6 +183,15 @@ export function HomePricingSection() {
               Contact Sales Team
             </Button>
           </div>
+        </div>
+
+        {/* Static ROI Line Card */}
+        <div className="mt-16 max-w-2xl mx-auto bg-slate-50 border border-slate-200 rounded-[2rem] p-6 sm:p-8 text-center shadow-sm">
+          <p className="text-sm font-bold text-[#0B132B] mb-2 uppercase tracking-wider">The Economics of a Calmer Clinic</p>
+          <p className="text-slate-600 text-sm sm:text-base leading-relaxed font-medium">
+            For a doctor seeing 30 patients/day with an average ₹500 fee:<br />
+            Recovering just <strong className="text-slate-900 font-bold">2 no-shows per month</strong> pays back your Doctor Diary subscription. Everything else is pure practice growth.
+          </p>
         </div>
       </div>
     </section>

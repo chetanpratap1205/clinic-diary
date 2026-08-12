@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Watch 2-Min Product Demo | Doctor Diary",
     description:
-      "See how 1,200+ new-age doctors in India zero out patient no-shows and automate WhatsApp clinic growth.",
+      "See how new-age doctors in India zero out patient no-shows and automate WhatsApp clinic growth.",
     images: [`${BASE_URL}/api/og?title=2-Min%20Product%20Demo`],
   },
 };
