@@ -246,6 +246,15 @@ export function LeadDetailDrawer({
                   value={format(new Date(lead.followUpDate), "dd MMM yyyy")}
                 />
               )}
+              {lead.goLiveIntentAt && (
+                <div className="col-span-2">
+                  <InfoRow
+                    icon={Sparkles}
+                    label="Go Live Intent Expressed"
+                    value={format(new Date(lead.goLiveIntentAt), "dd MMM yyyy, h:mm a")}
+                  />
+                </div>
+              )}
               {lead.address && (
                 <div className="col-span-2">
                   <InfoRow icon={Building2} label="Address" value={lead.address} />

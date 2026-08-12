@@ -453,6 +453,7 @@ export const doctorLeads = pgTable("doctor_leads", {
   followUpDate: timestamp("follow_up_date"),
   lastContactedAt: timestamp("last_contacted_at"),
   demoScheduledAt: timestamp("demo_scheduled_at"),
+  goLiveIntentAt: timestamp("go_live_intent_at"), // Tracks when the doctor clicks 'Go Live' CTA
   convertedAt: timestamp("converted_at"),
   conversionAmount: integer("conversion_amount"), // subscription amount in paise at time of conversion
   commissionPaid: boolean("commission_paid").default(false),

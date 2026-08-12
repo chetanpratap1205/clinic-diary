@@ -46,30 +46,32 @@ export async function GET(
     // Create a truncated short name for mobile screens (typically ~12 chars max)
     const shortName = appName.length > 12 ? `${appName.substring(0, 11)}…` : appName;
 
-    // Use clinic logo if available, otherwise fallback to our standard icons
+    const defaultIcons = [
+      {
+        src: "/icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any maskable"
+      },
+      {
+        src: "/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any maskable"
+      }
+    ];
+
     const icons = clinic.logoUrl 
       ? [
           {
             src: clinic.logoUrl,
             sizes: "192x192 512x512",
-            type: "image/png", // PWA handles generic URLs well if served correctly
-            purpose: "any maskable"
-          }
-        ]
-      : [
-          {
-            src: "/icon-192.png",
-            sizes: "192x192",
             type: "image/png",
             purpose: "any maskable"
           },
-          {
-            src: "/icon-512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "any maskable"
-          }
-        ];
+          ...defaultIcons
+        ]
+      : defaultIcons;
 
     const manifest = {
       name: appName,

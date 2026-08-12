@@ -29,6 +29,7 @@ import {
   Trash2,
   Edit3,
   MapPin,
+  Rocket,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,6 +83,8 @@ interface LeadsClientProps {
     specialty?: string;
     city?: string;
     source?: string;
+    goLiveIntent?: string;
+    assignedEmployeeId?: string;
   };
   isAdmin?: boolean;
 }
@@ -436,6 +439,18 @@ export function LeadsClient({
           <span>Filter:</span>
         </div>
 
+        <button
+          onClick={() => setFilter("goLiveIntent", currentFilters.goLiveIntent === "true" ? "all" : "true")}
+          className={`h-8 px-3 rounded-md text-xs font-semibold flex items-center gap-1.5 border transition-all ${
+            currentFilters.goLiveIntent === "true" 
+              ? "bg-indigo-50 border-indigo-200 text-indigo-700" 
+              : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+          }`}
+        >
+          <Rocket className={`w-3.5 h-3.5 ${currentFilters.goLiveIntent === "true" ? "text-indigo-600" : "text-slate-400"}`} />
+          Go Live Requests
+        </button>
+
         <Select value={currentFilters.status || "all"} onValueChange={(v) => setFilter("status", v)}>
           <SelectTrigger className="h-8 text-xs w-full min-[540px]:w-36">
             <SelectValue placeholder="Status" />
@@ -469,6 +484,19 @@ export function LeadsClient({
             <SelectItem value="all">All Specialties</SelectItem>
             {SPECIALTIES.map((s) => (
               <SelectItem key={s} value={s}>{s}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={currentFilters.assignedEmployeeId || "all"} onValueChange={(v) => setFilter("assignedEmployeeId", v)}>
+          <SelectTrigger className="h-8 text-xs w-full min-[540px]:w-40">
+            <SelectValue placeholder="Assigned To" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Any Assignee</SelectItem>
+            <SelectItem value="unassigned">Unassigned</SelectItem>
+            {employeesList.map((e) => (
+              <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -555,14 +583,27 @@ export function LeadsClient({
                         onClick={() => setDetailDrawerLead(lead)}
                         className="text-left hover:text-teal-700 transition-colors truncate block w-full"
                       >
-                        <h3 className="font-bold text-slate-900 truncate" title={lead.doctorName}>
+                        <h3 className="font-bold text-slate-900 truncate flex items-center gap-2" title={lead.doctorName}>
                           {lead.doctorName}
+                          {lead.goLiveIntentAt && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 border border-indigo-200" title="This doctor clicked the 'Go Live' button on their preview page">
+                              <Rocket className="w-3 h-3" />
+                              Go Live Request
+                            </span>
+                          )}
                         </h3>
-                        {lead.clinicName && (
-                          <p className="text-xs font-medium text-slate-500 truncate" title={lead.clinicName}>
-                            {lead.clinicName}
-                          </p>
-                        )}
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {lead.clinicName && (
+                            <p className="text-xs font-medium text-slate-500 truncate" title={lead.clinicName}>
+                              {lead.clinicName}
+                            </p>
+                          )}
+                          {lead.assignedEmployeeId && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                              👤 {employeesList.find(e => e.id === lead.assignedEmployeeId)?.name?.split(" ")[0] || "Assigned"}
+                            </span>
+                          )}
+                        </div>
                       </button>
                     </div>
                   </div>
@@ -613,35 +654,34 @@ export function LeadsClient({
                 </div>
 
                 {/* Card Actions */}
-                <div className="p-2 border-t border-slate-100 bg-slate-50 grid grid-cols-4 gap-1.5">
-                  <Button
-                    onClick={() => setEditLead(lead)}
-                    variant="outline"
-                    size="sm"
-                    className="h-8 col-span-1 text-slate-600 border-slate-200 hover:bg-slate-200 p-0"
-                    title="Edit Lead"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                  </Button>
-                  
-                  <Button
-                    onClick={() => copyDemoUrl(lead)}
-                    variant="outline"
-                    size="sm"
-                    className="h-8 col-span-1 text-teal-700 border-teal-200 bg-teal-50 hover:bg-teal-100 p-0"
-                    title="Copy Demo Link"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                  </Button>
-
+                <div className="p-2 border-t border-slate-100 bg-slate-50 flex flex-col gap-1.5">
                   <Button
                     onClick={() => setWaDrawerLead(lead)}
                     size="sm"
-                    className="h-8 col-span-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs gap-1.5"
+                    className="h-9 w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm gap-1.5 shadow-sm"
                   >
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    WhatsApp
+                    <MessageCircle className="w-4 h-4" />
+                    Send WhatsApp Message
                   </Button>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <Button
+                      onClick={() => setEditLead(lead)}
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-slate-600 border-slate-200 hover:bg-slate-200 text-xs"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 mr-1" /> Edit Profile
+                    </Button>
+                    
+                    <Button
+                      onClick={() => copyDemoUrl(lead)}
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-teal-700 border-teal-200 bg-teal-50 hover:bg-teal-100 text-xs"
+                    >
+                      <Copy className="w-3.5 h-3.5 mr-1" /> Copy Link
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Admin Extra Actions (Convert / Delete) */}
@@ -756,6 +796,21 @@ export function LeadsClient({
           open={!!convertModalLead}
           onOpenChange={(open) => !open && setConvertModalLead(null)}
         />
+      )}
+
+      {/* Floating Bottom Bar for Employees (Mobile Only) */}
+      {!isAdmin && (
+        <div className="fixed bottom-4 left-4 right-4 sm:hidden bg-slate-900/95 backdrop-blur shadow-2xl border border-slate-800 rounded-2xl p-4 flex items-center justify-around z-40">
+          <div className="text-center">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">My Leads</p>
+            <p className="text-lg font-black text-white">{total}</p>
+          </div>
+          <div className="w-px h-8 bg-slate-700 mx-2"></div>
+          <div className="text-center">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Follow-ups</p>
+            <p className="text-lg font-black text-emerald-400">{stats.overdue || 0}</p>
+          </div>
+        </div>
       )}
     </div>
   );

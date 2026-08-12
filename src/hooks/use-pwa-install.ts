@@ -7,7 +7,7 @@ export interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
-export type Platform = "android" | "ios" | "desktop" | "installed" | "unknown";
+export type Platform = "android" | "android_manual" | "ios" | "desktop" | "installed" | "unknown";
 
 export function detectPlatform(): Platform {
   if (typeof window === "undefined") return "unknown";
@@ -15,10 +15,15 @@ export function detectPlatform(): Platform {
   // Already running as PWA
   if (window.matchMedia("(display-mode: standalone)").matches) return "installed";
 
-  // iOS detection (iPhone, iPad, iPod — Safari doesn't fire beforeinstallprompt)
   const ua = navigator.userAgent;
+
+  // iOS detection (iPhone, iPad, iPod — Safari doesn't fire beforeinstallprompt)
   const isIOS = /iPad|iPhone|iPod/.test(ua) && !(window as Window & { MSStream?: unknown }).MSStream;
   if (isIOS) return "ios";
+
+  // Android detection (if beforeinstallprompt doesn't fire, we'll fall back to android_manual)
+  const isAndroid = /android/i.test(ua);
+  if (isAndroid) return "android_manual";
 
   return "desktop"; // Will upgrade to "android" when beforeinstallprompt fires
 }

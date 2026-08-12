@@ -19,9 +19,11 @@ interface BottomActionBarProps {
     clinicType: string;
   };
   lang: Language;
+  isLead?: boolean;
+  leadTimings?: string;
 }
 
-export function BottomActionBar({ clinic, workingDays, closedDates, lexicon, lang }: BottomActionBarProps) {
+export function BottomActionBar({ clinic, workingDays, closedDates, lexicon, lang, isLead, leadTimings }: BottomActionBarProps) {
   const t = DICTIONARY[lang];
   const [isModalOpen, setIsModalOpen] = useState(false);
   const themeColor = clinic.themeColor ?? "#0ea5e9";
@@ -140,7 +142,7 @@ export function BottomActionBar({ clinic, workingDays, closedDates, lexicon, lan
                 
                 {/* Scrollable Form Content */}
                 <div className="overflow-y-auto overflow-x-hidden flex-1 w-full bg-white relative hide-scrollbar p-3 sm:p-5">
-                  <BookingClient clinic={clinic} workingDays={workingDays} closedDates={closedDates} lexicon={lexicon} lang={lang} />
+                  <BookingClient clinic={clinic} workingDays={workingDays} closedDates={closedDates} lexicon={lexicon} lang={lang} isLead={isLead} leadTimings={leadTimings} />
                 </div>
 
               </div>

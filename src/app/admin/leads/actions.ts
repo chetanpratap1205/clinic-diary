@@ -12,6 +12,7 @@ import {
   count,
   inArray,
   isNull,
+  isNotNull,
   lt,
 } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -66,6 +67,7 @@ export interface LeadFilters {
   source?: string;
   assignedManagerId?: string;
   assignedEmployeeId?: string;
+  goLiveIntent?: string;
   page?: number;
   pageSize?: number;
 }
@@ -102,6 +104,7 @@ export async function getLeads(filters: LeadFilters = {}) {
   if (source && source !== "all") conditions.push(eq(doctorLeads.source, source));
   if (assignedManagerId) conditions.push(eq(doctorLeads.assignedManagerId, assignedManagerId));
   if (assignedEmployeeId) conditions.push(eq(doctorLeads.assignedEmployeeId, assignedEmployeeId));
+  if (filters.goLiveIntent === "true") conditions.push(isNotNull(doctorLeads.goLiveIntentAt));
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
   const offset = (page - 1) * pageSize;
@@ -669,4 +672,57 @@ export async function bulkAssignLeads(leadIds: string[], employeeId: string | nu
     console.error("bulkAssignLeads error:", err);
     return { error: "Failed to bulk assign leads." };
   }
+}
+
+// ─── Get Team Performance Summary ──────────────────────────────────────────────
+export async function getTeamPerformanceSummary() {
+  const { employees } = await import("@/db/schema");
+  
+  const staff = await db
+    .select({
+      id: employees.id,
+      name: employees.name,
+      role: employees.role,
+      territoryCities: employees.territoryCities,
+      targetMonthlyLeads: employees.targetMonthlyLeads,
+      targetMonthlyConversions: employees.targetMonthlyConversions,
+    })
+    .from(employees)
+    .where(eq(employees.isActive, true))
+    .orderBy(employees.name);
+
+  // For each staff member, get their leads stats
+  const teamData = await Promise.all(staff.map(async (emp) => {
+    const leadRows = await db
+      .select({
+        status: doctorLeads.status,
+        hasIntent: isNotNull(doctorLeads.goLiveIntentAt),
+      })
+      .from(doctorLeads)
+      .where(eq(doctorLeads.assignedEmployeeId, emp.id));
+      
+    let assigned = leadRows.length;
+    let contacted = 0;
+    let demos = 0;
+    let converted = 0;
+    let goLiveIntents = 0;
+
+    for (const row of leadRows) {
+      if (row.status === "contacted") contacted++;
+      if (row.status === "demo_scheduled") demos++;
+      if (row.status === "converted") converted++;
+      if (row.hasIntent) goLiveIntents++;
+    }
+
+    return {
+      ...emp,
+      assigned,
+      contacted,
+      demos,
+      converted,
+      goLiveIntents,
+    };
+  }));
+
+  return teamData;
 }

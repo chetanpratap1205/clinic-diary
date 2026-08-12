@@ -116,3 +116,43 @@ export async function toggleEmployeeStatus(employeeId: string, currentActiveStat
     return { success: false, error: error.message || "An unexpected error occurred" };
   }
 }
+
+export async function updateEmployee(id: string, formData: FormData) {
+  try {
+    const admin = await getAuthenticatedEmployee();
+    if (!admin || admin.role !== "admin") {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const name = formData.get("name") as string;
+    const phone = formData.get("phone") as string;
+    const role = formData.get("role") as string;
+    const territoryCitiesRaw = (formData.get("territoryCities") as string) || "";
+    const targetMonthlyLeads = parseInt((formData.get("targetMonthlyLeads") as string) || "30", 10);
+    const targetMonthlyConversions = parseInt((formData.get("targetMonthlyConversions") as string) || "5", 10);
+
+    const territoryCities = territoryCitiesRaw
+      .split(",")
+      .map((c) => c.trim().toLowerCase())
+      .filter(Boolean);
+
+    await db
+      .update(employees)
+      .set({
+        name: name || undefined,
+        phone: phone || undefined,
+        role: role || undefined,
+        territoryCities,
+        targetMonthlyLeads,
+        targetMonthlyConversions,
+        updatedAt: new Date(),
+      })
+      .where(eq(employees.id, id));
+
+    revalidatePath("/admin/employees");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error updating employee:", error);
+    return { success: false, error: error.message || "An unexpected error occurred" };
+  }
+}

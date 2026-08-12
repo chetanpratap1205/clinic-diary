@@ -19,6 +19,7 @@ import { BottomActionBar } from "./bottom-action-bar";
 import { ClinicLogo } from "./clinic-logo";
 import { FAQAccordion } from "./faq-accordion";
 import { InstallAppSection } from "@/components/install-app-section";
+import { LeadFomoBanner } from "./lead-fomo-banner";
 import { ExpandableText } from "@/components/expandable-text";
 import Link from "next/link";
 import Image from "next/image";
@@ -39,6 +40,7 @@ import {
   Share2,
   CheckCircle2,
   Timer,
+  ChevronRight,
 } from "lucide-react";
 import type { Metadata } from "next";
 import { formatDoctorName } from "@/lib/utils";
@@ -652,8 +654,13 @@ export default async function BookingPage({
 
                   if (isLead) {
                     isQueueActive = true;
-                    title = "Serving #14";
-                    subtitle = "~15 min wait";
+                    let openTime = "10:00 AM";
+                    if (leadTimings) {
+                       const timeMatch = leadTimings.match(/\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)/i);
+                       if (timeMatch) openTime = timeMatch[0].toUpperCase();
+                    }
+                    title = `Queue from ${openTime}`;
+                    subtitle = lang === "hi" ? "लाइव टोकन ट्रैकिंग" : "Live Token Tracking";
                   } else {
                     // For actual clinics, show the opening time if we don't have live active data
                     // In a full implementation, we'd check current active tokens here.
@@ -756,6 +763,13 @@ export default async function BookingPage({
           </div>
         </div>
       </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          FOMO LEAD BANNER (Visible on all devices for leads)
+      ══════════════════════════════════════════════════════════════════════ */}
+      {isLead && (
+        <LeadFomoBanner clinicName={clinic.name} doctorName={stripDr(clinic.doctorName)} slug={slug} />
+      )}
 
 
       {/* ══════════════════════════════════════════════════════════════════════
@@ -1173,7 +1187,7 @@ export default async function BookingPage({
       {/* ══════════════════════════════════════════════════════════════════════
           BOTTOM ACTION BAR (Contains the Booking Modal Logic)
       ══════════════════════════════════════════════════════════════════════ */}
-      <BottomActionBar clinic={clinic} workingDays={workingDays} closedDates={closedDates} lexicon={lexicon} lang={lang} />
+      <BottomActionBar clinic={clinic} workingDays={workingDays} closedDates={closedDates} lexicon={lexicon} lang={lang} isLead={isLead} leadTimings={leadTimings ?? undefined} />
       
     </div>
   );

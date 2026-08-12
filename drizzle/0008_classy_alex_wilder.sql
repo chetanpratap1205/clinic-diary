@@ -1,0 +1,1 @@
+ALTER TABLE "doctor_leads" ADD COLUMN "go_live_intent_at" timestamp;

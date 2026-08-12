@@ -850,22 +850,6 @@ export function BookingClient({
   return (
     <div className="w-full" id="booking">
 
-      {/* Lead Preview Banner — only shown for marketing demo links */}
-      {isLead && (
-        <div className="mb-3 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200/70 px-4 py-3 flex items-start gap-3 shadow-sm">
-          <div className="mt-0.5 w-7 h-7 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center flex-shrink-0">
-            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-          </div>
-          <div>
-            <p className="text-xs font-black text-amber-900 leading-tight">
-              This page was prepared especially for <span className="text-amber-700">{clinic.name}</span>
-            </p>
-            <p className="text-[11px] text-amber-700/80 font-medium mt-0.5 leading-snug">
-              To activate your own dedicated booking page, contact Doctor Diary.
-            </p>
-          </div>
-        </div>
-      )}
 
       <div className="relative bg-white rounded-3xl overflow-hidden shadow-xs">
         {/* Sleek Progress Bar */}

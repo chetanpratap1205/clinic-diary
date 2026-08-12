@@ -45,7 +45,7 @@ export function HeroRedesign() {
               className="text-[26px] min-[375px]:text-[30px] sm:text-[44px] lg:text-[48px] xl:text-[54px] font-black text-[#0B132B] leading-[1.1] tracking-tight mb-3 sm:mb-4"
             >
               <span className="block">Your clinic,</span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#00B7A8] via-emerald-600 to-[#00897B]">
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#00B7A8] via-emerald-600 to-[#00897B] whitespace-nowrap">
                 exactly as you envisioned it.
               </span>
             </motion.h1>
@@ -73,7 +73,7 @@ export function HeroRedesign() {
                   className="relative overflow-hidden w-full sm:w-auto bg-[#00B7A8] hover:bg-[#00998c] text-white h-12 sm:h-13 px-8 text-sm sm:text-base font-bold rounded-full transition-all flex items-center justify-center gap-2 group shadow-[0_6px_20px_rgba(0,183,168,0.3)] hover:shadow-[0_10px_30px_rgba(0,183,168,0.45)] hover:-translate-y-0.5"
                 >
                   <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:animate-[shimmer_1.5s_infinite]" />
-                  <span className="relative z-10">See Your Clinic in Action</span>
+                  <span className="relative z-10">See Doctor Diary in Action</span>
                   <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform relative z-10" />
                 </Button>
               </Link>
@@ -100,7 +100,7 @@ export function HeroRedesign() {
                 <div className="bg-emerald-500/10 p-0.5 rounded-full text-emerald-600">
                   <Check className="w-3.5 h-3.5" strokeWidth={3} />
                 </div>
-                <span>Zero Patient Sharing</span>
+                <span>Your patients. Your clinic.</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="bg-emerald-500/10 p-0.5 rounded-full text-emerald-600">
@@ -112,33 +112,7 @@ export function HeroRedesign() {
                 <div className="bg-emerald-500/10 p-0.5 rounded-full text-emerald-600">
                   <Check className="w-3.5 h-3.5" strokeWidth={3} />
                 </div>
-                <span>5-Min Instant Setup</span>
-              </div>
-            </motion.div>
-
-            {/* Avatar Trust Pile */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="flex flex-col sm:flex-row items-center gap-3 pt-3 border-t border-slate-200/80 w-full justify-center lg:justify-start"
-            >
-              <div className="flex -space-x-2.5">
-                <Image src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=100&auto=format&fit=crop" alt="Doctor" width={32} height={32} unoptimized className="rounded-full border-2 border-white shadow-sm z-30 object-cover" />
-                <Image src="https://images.unsplash.com/photo-1594824436998-058b23c93e48?q=80&w=100&auto=format&fit=crop" alt="Doctor" width={32} height={32} unoptimized className="rounded-full border-2 border-white shadow-sm z-20 object-cover" />
-                <Image src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=100&auto=format&fit=crop" alt="Doctor" width={32} height={32} unoptimized className="rounded-full border-2 border-white shadow-sm z-10 object-cover" />
-                <Image src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=100&auto=format&fit=crop" alt="Doctor" width={32} height={32} unoptimized className="rounded-full border-2 border-white shadow-sm z-0 object-cover" />
-              </div>
-              <div className="text-left">
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3 h-3 text-amber-400 fill-amber-400" />
-                  ))}
-                  <span className="text-xs font-black text-[#0B132B] ml-1">4.9/5</span>
-                </div>
-                <div className="text-[11px] font-semibold text-slate-500">
-                  Trusted by <strong>independent clinics</strong> across India
-                </div>
+                <span>Quick Clinic Setup</span>
               </div>
             </motion.div>
           </div>
