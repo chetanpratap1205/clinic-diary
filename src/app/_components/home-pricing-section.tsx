@@ -28,7 +28,7 @@ export function HomePricingSection() {
             An Investment That <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00B7A8] via-emerald-600 to-[#00897B]">Pays For Itself.</span>
           </h2>
           <p className="text-slate-600 text-lg sm:text-xl leading-relaxed mb-8 font-medium">
-            The average clinic using Doctor Diary sees a <strong className="text-[#0B132B] font-bold">₹25,000 to ₹50,000</strong> increase in monthly revenue simply by eliminating no-shows and streamlining operations.
+            The average clinic using Doctor Diary sees a <strong className="text-[#0B132B] font-bold">₹50,000+</strong> increase in monthly revenue simply by eliminating no-shows and streamlining operations.
           </p>
 
           {/* Trust Badge */}

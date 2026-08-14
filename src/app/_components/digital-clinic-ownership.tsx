@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { Shield, Sparkles, MapPin, Clock, CreditCard, Star, CheckCircle } from "lucide-react";
 
 export function DigitalClinicOwnership() {
@@ -61,81 +62,28 @@ export function DigitalClinicOwnership() {
             </div>
           </div>
 
-          {/* Right Column: Premium Digital Clinic Profile Page Mockup */}
-          <div className="lg:col-span-6 flex justify-center">
+          {/* Right Column: Premium Digital Clinic Stack Mockup */}
+          <div className="lg:col-span-6 relative flex justify-center items-center h-[500px] sm:h-[600px] w-full">
+            {/* Background Image (Settings) */}
             <motion.div
-              variants={itemVariants}
-              className="w-full max-w-[420px] bg-white border border-slate-200 rounded-[2.5rem] p-6 sm:p-8 shadow-2xl relative overflow-hidden text-left"
+              initial={{ opacity: 0, x: 40, y: -20, rotate: 6 }}
+              whileInView={{ opacity: 0.7, x: 20, y: -10, rotate: 3 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="absolute right-[5%] sm:right-[15%] top-[5%] w-[55%] sm:w-[45%] aspect-[9/19] rounded-3xl overflow-hidden shadow-xl border-4 border-slate-200/50 bg-slate-100"
             >
-              {/* Decorative shimmer */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+              <Image src="/assets/settings.PNG" alt="App Settings" fill className="object-cover object-top" sizes="(max-width: 768px) 50vw, 30vw" quality={80} />
+            </motion.div>
 
-              {/* Profile Card Header */}
-              <div className="flex justify-between items-start gap-4 mb-6">
-                <div>
-                  <h3 className="text-2xl font-black text-[#0B132B]">Dr. Kavya Menon</h3>
-                  <p className="text-[#00B7A8] text-xs font-bold uppercase tracking-wider mt-0.5">
-                    General Physician · Family Medicine
-                  </p>
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <div className="flex gap-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                      ))}
-                    </div>
-                    <span className="text-xs font-black text-[#0B132B]">4.9</span>
-                    <span className="text-xs text-slate-500 font-semibold">(48 Verified Reviews)</span>
-                  </div>
-                </div>
-                <div className="w-16 h-16 rounded-full bg-[#00B7A8] flex items-center justify-center text-white font-black text-xl shadow-md shrink-0">
-                  KM
-                </div>
-              </div>
-
-              {/* Live Status Indicator */}
-              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center justify-between mb-6 shadow-sm">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
-                    Open Today
-                  </span>
-                </div>
-                <span className="text-xs font-black text-[#0B132B] bg-white border border-emerald-100 px-3 py-1 rounded-full shadow-inner">
-                  Serving Now: #12
-                </span>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="space-y-3 mb-6">
-                <button className="w-full h-12 bg-[#00B7A8] hover:bg-[#00998c] text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-md">
-                  Book Direct Appointment
-                </button>
-                <button className="w-full h-12 bg-slate-100 border border-slate-200 text-slate-700 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
-                  Track Live Queue
-                </button>
-              </div>
-
-              {/* Clinic Specs */}
-              <div className="space-y-4 pt-6 border-t border-slate-100 text-xs sm:text-sm font-semibold text-slate-600">
-                <div className="flex items-center gap-3">
-                  <MapPin className="w-4.5 h-4.5 text-[#00B7A8] shrink-0" />
-                  <span>Menon Clinic, 15, MG Road, Kozhikode</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Clock className="w-4.5 h-4.5 text-[#00B7A8] shrink-0" />
-                  <span>Mon–Sat: 9:00 AM – 1:00 PM, 5:00 PM – 9:00 PM</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <CreditCard className="w-4.5 h-4.5 text-[#00B7A8] shrink-0" />
-                  <span>₹400 Consultation Fee · Pay Directly at Clinic</span>
-                </div>
-              </div>
-
-              {/* Trust Tag */}
-              <div className="mt-8 pt-4 border-t border-slate-100 flex items-center justify-center gap-1.5 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
-                <CheckCircle className="w-3.5 h-3.5 text-slate-400" />
-                <span>Verified Direct Booking Page</span>
-              </div>
+            {/* Foreground Image (Booking App) */}
+            <motion.div
+              initial={{ opacity: 0, x: -40, y: 20, rotate: -6 }}
+              whileInView={{ opacity: 1, x: -20, y: 10, rotate: -2 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+              className="absolute left-[5%] sm:left-[15%] top-[10%] w-[60%] sm:w-[50%] aspect-[9/19] rounded-[2.5rem] bg-slate-900 border-[6px] border-slate-800 shadow-2xl overflow-hidden hover:rotate-0 hover:scale-[1.02] transition-all duration-500 z-10"
+            >
+              <Image src="/assets/booking_app.PNG" alt="Clinic Profile" fill className="object-cover object-top" sizes="(max-width: 768px) 60vw, 40vw" quality={95} />
             </motion.div>
           </div>
 

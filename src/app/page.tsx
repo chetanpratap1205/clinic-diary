@@ -25,7 +25,7 @@ import { InstallButton } from "@/components/pwa-provider";
 import { PremiumIcon } from "@/components/ui/premium-icon";
 import { SocialProofPopup } from "./_components/social-proof-popup";
 import { TheMirror } from "./_components/the-mirror";
-import { DigitalFrontDesk } from "./_components/digital-front-desk";
+import { ExperienceEngine } from "./_components/experience-engine";
 import { PatientJourneyTimeline } from "./_components/patient-journey-timeline";
 import { DoctorDashboard } from "./_components/doctor-dashboard";
 import { DigitalClinicOwnership } from "./_components/digital-clinic-ownership";
@@ -35,6 +35,7 @@ import { HeroRedesign } from "./_components/hero-redesign";
 import { HomeNav } from "./_components/home-nav";
 import { LeadMagnetSection } from "./_components/lead-magnet";
 import { HomePricingSection } from "./_components/home-pricing-section";
+import { HomeRoiCalculator } from "./_components/home-roi-calculator";
 import { TerritoryChecker } from "./_components/territory-checker";
 import { EnterpriseSecurityGrid } from "./_components/enterprise-security-grid";
 import { ZeroFrictionGuarantee } from "./_components/zero-friction-guarantee";
@@ -61,8 +62,8 @@ export default function HomePage() {
       {/* Section 4: Digital Clinic / Ownership */}
       <DigitalClinicOwnership />
 
-      {/* Section 5: Digital Front Desk Introduction */}
-      <DigitalFrontDesk />
+      {/* Section 5: Experience Engine (Hyper-Personalized Solution) */}
+      <ExperienceEngine />
 
       {/* Section 6: Patient Journey Timeline */}
       <PatientJourneyTimeline />
@@ -78,6 +79,9 @@ export default function HomePage() {
 
       {/* Enterprise Infrastructure & Security Grid */}
       <EnterpriseSecurityGrid />
+
+      {/* Pre-Pricing ROI Calculator */}
+      <HomeRoiCalculator />
 
       {/* Premium Pricing Tier */}
       <HomePricingSection />

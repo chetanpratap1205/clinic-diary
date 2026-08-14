@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -10,10 +11,13 @@ import {
   ChevronRight,
   Shield,
   Calendar,
-  Check
+  Check,
+  X
 } from "lucide-react";
 
 export function HeroRedesign() {
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+
   return (
     <section className="relative w-full bg-[#F8FAFC] overflow-hidden lg:h-[calc(100vh-10px)] lg:min-h-[600px] lg:max-h-[820px] flex flex-col justify-center pt-24 lg:pt-[100px] pb-6 lg:pb-8 group/section">
       {/* Background Studio Gradients & Grid Lines */}
@@ -88,15 +92,15 @@ export function HeroRedesign() {
                 </Button>
               </Link>
 
-              <Link href="/demo" className="w-full sm:w-auto">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full sm:w-auto bg-white/90 backdrop-blur-md border-slate-200 text-[#0B132B] hover:bg-white h-12 sm:h-13 px-7 text-sm sm:text-base font-bold rounded-full transition-all flex items-center justify-center gap-2 group shadow-sm hover:shadow-md"
-                >
-                  See How It Works →
-                </Button>
-              </Link>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setIsVideoModalOpen(true)}
+                className="w-full sm:w-auto bg-white/90 backdrop-blur-md border-slate-200 text-[#0B132B] hover:bg-white h-12 sm:h-13 px-7 text-sm sm:text-base font-bold rounded-full transition-all flex items-center justify-center gap-2 group shadow-sm hover:shadow-md"
+              >
+                <Play className="w-4 h-4 fill-current" />
+                See How It Works
+              </Button>
             </motion.div>
 
             {/* Micro Benefits Line */}
@@ -150,39 +154,39 @@ export function HeroRedesign() {
 
             {/* 2 Floating Frosted Glass Micro-Widgets */}
 
-            {/* Widget 1: Top Left - Direct Payments */}
+            {/* Widget 1: Bottom Left - Keep your Rx Pad */}
             <motion.div
               initial={{ opacity: 0, x: -15 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
-              className="absolute left-[0%] lg:left-[2%] top-[12%] lg:top-[20%] bg-white/95 backdrop-blur-xl border border-emerald-500/30 p-3.5 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.08)] z-30 max-w-[180px] sm:max-w-[200px]"
+              className="absolute left-0 sm:-left-4 lg:-left-8 bottom-0 sm:bottom-[10%] lg:bottom-[15%] bg-white/95 backdrop-blur-xl border border-slate-200 p-2 sm:p-3.5 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.08)] z-30 max-w-[140px] sm:max-w-[200px]"
             >
-              <div className="flex items-center gap-2 mb-1.5">
-                <div className="bg-emerald-100 rounded-full p-1.5 text-emerald-600">
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5">
+                <div className="bg-[#0B132B] rounded-full p-1 sm:p-1.5 text-white shrink-0">
+                  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                 </div>
-                <span className="text-[11px] font-extrabold text-[#0B132B] uppercase tracking-wider">Direct Payments</span>
+                <span className="text-[9px] sm:text-[11px] font-bold text-[#0B132B] uppercase tracking-wider">Keep your Rx Pad</span>
               </div>
-              <p className="text-[11px] font-semibold text-slate-600 leading-snug">
-                Patients pay at your desk, just like always.
+              <p className="text-[9px] sm:text-[11px] font-semibold text-slate-600 leading-snug">
+                No typing required. Write prescriptions as you do today.
               </p>
             </motion.div>
 
-            {/* Widget 2: Bottom Right - Keep your Rx Pad */}
+            {/* Widget 2: Top Right - Direct Payments */}
             <motion.div
               initial={{ opacity: 0, x: 15 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.7 }}
-              className="absolute right-[0%] lg:right-[2%] bottom-[15%] lg:bottom-[20%] bg-white/95 backdrop-blur-xl border border-slate-200 p-3.5 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.08)] z-30 max-w-[180px] sm:max-w-[200px]"
+              className="absolute right-0 sm:-right-4 lg:-right-8 top-0 sm:top-[10%] lg:top-[15%] bg-white/95 backdrop-blur-xl border border-emerald-500/30 p-2 sm:p-3.5 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.08)] z-30 max-w-[140px] sm:max-w-[200px]"
             >
-              <div className="flex items-center gap-2 mb-1.5">
-                <div className="bg-[#0B132B] rounded-full p-1.5 text-white">
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+              <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5">
+                <div className="bg-emerald-100 rounded-full p-1 sm:p-1.5 text-emerald-600 shrink-0">
+                  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
-                <span className="text-[11px] font-bold text-[#0B132B] uppercase tracking-wider">Keep your Rx Pad</span>
+                <span className="text-[9px] sm:text-[11px] font-extrabold text-[#0B132B] uppercase tracking-wider">Direct Payments</span>
               </div>
-              <p className="text-[11px] font-semibold text-slate-600 leading-snug">
-                No typing required. Write prescriptions as you do today.
+              <p className="text-[9px] sm:text-[11px] font-semibold text-slate-600 leading-snug">
+                Patients pay at your desk, just like always.
               </p>
             </motion.div>
 
@@ -192,6 +196,38 @@ export function HeroRedesign() {
         </div>
 
       </div>
+
+      {/* Video Modal */}
+      <AnimatePresence>
+        {isVideoModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+            >
+              <button
+                onClick={() => setIsVideoModalOpen(false)}
+                className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/80 text-white rounded-full backdrop-blur-md transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <video
+                src="/demo_video.mp4"
+                controls
+                autoPlay
+                className="w-full h-full object-cover"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

@@ -123,18 +123,25 @@ Transform your clinic with Doctor Diary: https://doctordiary.in/signup`;
                 </Button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row gap-3">
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSubmit(e as any);
+                      }
+                    }}
                     placeholder="Enter your clinic email..."
                     className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#0B132B] placeholder:text-slate-400 text-sm focus:outline-none focus:border-[#00B7A8] transition-colors font-medium"
                   />
                   <Button
-                    type="submit"
+                    type="button"
+                    onClick={handleSubmit as any}
                     disabled={loading}
                     className="bg-[#00B7A8] hover:bg-[#00998c] text-white font-bold h-12 px-6 rounded-xl flex items-center justify-center gap-2 shrink-0 shadow-md"
                   >
@@ -156,7 +163,7 @@ Transform your clinic with Doctor Diary: https://doctordiary.in/signup`;
                 <p className="text-[11px] text-slate-500 font-medium">
                   🔒 100% Free • No spam • Instant download access
                 </p>
-              </form>
+              </div>
             )}
           </div>
 

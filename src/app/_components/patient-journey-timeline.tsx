@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { Smartphone, CheckCircle, MessageSquare, Clock, Calendar, ArrowRight, Eye } from "lucide-react";
 
 export function PatientJourneyTimeline() {
@@ -134,126 +135,30 @@ export function PatientJourneyTimeline() {
               </div>
 
               {/* Dynamic Phone Content Frame */}
-              <div className="flex-1 py-4 px-2 overflow-y-auto relative flex flex-col justify-start">
+              <div className="flex-1 relative overflow-hidden flex flex-col justify-start rounded-b-3xl mt-1">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeStep}
-                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                    transition={{ duration: 0.3 }}
-                    className="w-full flex-1 flex flex-col justify-start"
+                    initial={{ opacity: 0, filter: "blur(4px)", scale: 1.02 }}
+                    animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
+                    exit={{ opacity: 0, filter: "blur(4px)", scale: 0.98 }}
+                    transition={{ duration: 0.4 }}
+                    className="absolute inset-0 w-full h-full"
                   >
-                    {activeStep === 0 && (
-                      <div className="space-y-4 text-left">
-                        {/* QR Scan Screen Mockup */}
-                        <div className="bg-white border border-slate-200 rounded-2xl p-4 text-slate-800 shadow-md">
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="w-8 h-8 rounded-full bg-[#00B7A8]" />
-                            <div>
-                              <p className="text-xs font-black text-[#0B132B]">Dr. Sharma's Clinic</p>
-                              <p className="text-[9px] text-slate-500 font-medium">General & Cardiology</p>
-                            </div>
-                          </div>
-                          <div className="space-y-2.5">
-                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
-                              <p className="font-bold text-slate-700">Scan at Counter</p>
-                              <p className="text-[10px] text-slate-500 mt-0.5">Please scan clinic QR to book or register instantly.</p>
-                            </div>
-                            <button className="w-full h-9 bg-[#00B7A8] hover:bg-[#00998c] text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm">
-                              <Calendar className="w-3.5 h-3.5" /> Book Priority Slot
-                            </button>
-                            <button className="w-full h-9 bg-slate-100 border border-slate-200 text-slate-700 rounded-lg font-semibold text-xs flex items-center justify-center gap-1.5">
-                              <Clock className="w-3.5 h-3.5" /> Track Live Queue
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeStep === 1 && (
-                      <div className="space-y-3 text-left">
-                        {/* WhatsApp Message Confirmation */}
-                        <div className="bg-[#E2F0D9] text-[#2F5597] text-[10px] font-semibold py-1 px-2.5 rounded-full w-fit mx-auto mb-2 shadow-sm">
-                          💬 WhatsApp Business
-                        </div>
-                        <div className="bg-[#DCF8C6] text-slate-800 border border-emerald-200/50 rounded-2xl rounded-tl-none p-3 shadow-md max-w-[90%] float-left relative text-xs">
-                          <p className="font-black text-[#00998c] mb-1">Dr. Sharma's Clinic</p>
-                          <p className="font-medium text-slate-700">
-                            Hi Priya, your appointment is **Confirmed** for today.
-                          </p>
-                          <div className="my-2 p-2 bg-white/70 rounded-lg border border-emerald-100">
-                            <p className="font-bold text-[#0B132B]">🎫 Token Number: #24</p>
-                            <p className="text-[10px] text-slate-600 mt-0.5">Now serving: #14 · Est. wait: ~45 min</p>
-                          </div>
-                          <p className="text-[9px] text-slate-500 text-right mt-1">8:32 AM ✓✓</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeStep === 2 && (
-                      <div className="space-y-4 text-left">
-                        {/* Live Queue tracking screen */}
-                        <div className="bg-white border border-slate-200 rounded-2xl p-4 text-slate-800 shadow-md">
-                          <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
-                            <p className="text-xs font-black text-[#0B132B]">Live Queue Tracker</p>
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                          </div>
-                          <div className="text-center py-2 bg-emerald-50 border border-emerald-100 rounded-xl mb-3">
-                            <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Now Serving</p>
-                            <p className="text-3xl font-black text-[#0B132B] mt-0.5">#18</p>
-                          </div>
-                          <div className="space-y-2 text-xs">
-                            <div className="flex justify-between font-semibold text-slate-600 p-2 bg-slate-50 rounded-lg">
-                              <span>Your Token:</span>
-                              <span className="font-bold text-[#0B132B]">#24</span>
-                            </div>
-                            <div className="flex justify-between font-semibold text-slate-600 p-2 bg-slate-50 rounded-lg">
-                              <span>Patients Ahead:</span>
-                              <span className="font-bold text-slate-800">5 Patients</span>
-                            </div>
-                            <div className="flex justify-between font-semibold text-slate-600 p-2 bg-slate-50 rounded-lg">
-                              <span>Estimated Turn:</span>
-                              <span className="font-bold text-emerald-600">~25 mins</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeStep === 3 && (
-                      <div className="space-y-4 text-left">
-                        {/* In consultation screen */}
-                        <div className="bg-gradient-to-br from-[#00B7A8]/90 to-emerald-700 text-white rounded-2xl p-5 text-center shadow-lg">
-                          <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 border border-white/10">
-                            <CheckCircle className="w-6 h-6 text-white" />
-                          </div>
-                          <h3 className="font-black text-lg">You're Checked In</h3>
-                          <p className="text-xs text-slate-100 mt-1 leading-relaxed">
-                            Priya has entered Dr. Sharma's consulting room. Zero lobby delay, zero confusion.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeStep === 4 && (
-                      <div className="space-y-3 text-left">
-                        {/* Follow up WhatsApp message */}
-                        <div className="bg-[#E2F0D9] text-[#2F5597] text-[10px] font-semibold py-1 px-2.5 rounded-full w-fit mx-auto mb-2 shadow-sm">
-                          💬 WhatsApp Business
-                        </div>
-                        <div className="bg-[#DCF8C6] text-slate-800 border border-emerald-200/50 rounded-2xl rounded-tl-none p-3 shadow-md max-w-[90%] float-left relative text-xs">
-                          <p className="font-black text-[#00998c] mb-1">Dr. Sharma's Clinic</p>
-                          <p className="font-medium text-slate-700">
-                            Thanks for your visit today. Dr. Sharma recommends a follow-up consultation in 2 weeks.
-                          </p>
-                          <button className="w-full mt-2.5 py-2 bg-white border border-[#00B7A8] text-[#00B7A8] rounded-lg font-bold text-[10px] flex items-center justify-center gap-1.5 shadow-sm">
-                            <Calendar className="w-3 h-3" /> Book Follow-up Slot
-                          </button>
-                          <p className="text-[9px] text-slate-500 text-right mt-1">11:05 AM ✓✓</p>
-                        </div>
-                      </div>
-                    )}
+                    <Image
+                      src={[
+                        "/assets/booking_app.PNG",
+                        "/assets/token.PNG",
+                        "/assets/live_queue.PNG",
+                        "/assets/tracking.PNG",
+                        "/assets/calender.PNG"
+                      ][activeStep]}
+                      alt={`Patient Journey Step ${activeStep + 1}`}
+                      fill
+                      className="object-cover object-top"
+                      sizes="(max-width: 768px) 100vw, 320px"
+                      quality={95}
+                    />
                   </motion.div>
                 </AnimatePresence>
               </div>
