@@ -33,15 +33,15 @@ export function RecordOfflinePaymentModal({ clinics }: RecordOfflinePaymentModal
 
   const [selectedClinicId, setSelectedClinicId] = useState("");
   const [planId, setPlanId] = useState("quarterly");
-  const [amountRupees, setAmountRupees] = useState("1499");
+  const [amountRupees, setAmountRupees] = useState("2999");
   const [paymentMethod, setPaymentMethod] = useState("bank_transfer");
   const [referenceNumber, setReferenceNumber] = useState("");
   const [notes, setNotes] = useState("");
 
   const handlePlanChange = (selectedPlan: string) => {
     setPlanId(selectedPlan);
-    if (selectedPlan === "quarterly") setAmountRupees("1499");
-    else if (selectedPlan === "yearly") setAmountRupees("4999");
+    if (selectedPlan === "quarterly") setAmountRupees("2999");
+    else if (selectedPlan === "yearly") setAmountRupees("9999");
     else if (selectedPlan === "monthly") setAmountRupees("499");
   };
 
@@ -156,7 +156,7 @@ export function RecordOfflinePaymentModal({ clinics }: RecordOfflinePaymentModal
                   value={amountRupees}
                   onChange={(e) => setAmountRupees(e.target.value)}
                   required
-                  placeholder="1499"
+                  placeholder="2999"
                   className="h-9 text-xs font-bold"
                 />
               </div>

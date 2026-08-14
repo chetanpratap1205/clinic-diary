@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Monitor, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Download, Monitor, X } from "lucide-react";
 import type { Language } from "@/lib/i18n";
 import { DICTIONARY } from "@/lib/i18n";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
+import { toast } from "sonner";
 
 interface InstallAppBannerProps {
   clinicName: string;
@@ -22,7 +23,6 @@ export function InstallAppBanner({
   const t = DICTIONARY[lang];
   const { platform, isInstalling, isInstalled, handleAndroidInstall } = usePWAInstall();
   const [isDismissed, setIsDismissed] = useState(false);
-  const [isExpandedIOS, setIsExpandedIOS] = useState(false);
 
   // If already installed, don't show the intrusive banner at the top
   if (isInstalled || platform === "unknown" || isDismissed) return null;
@@ -81,14 +81,23 @@ export function InstallAppBanner({
 
             {platform === "ios" && (
               <button
-                onClick={() => setIsExpandedIOS(!isExpandedIOS)}
+                onClick={() => {
+                  toast.success(
+                    lang === "hi" 
+                      ? "शेयर (Share) 📤 पर टैप करें और 'Add to Home Screen' ➕ चुनें" 
+                      : "Tap Share 📤 then 'Add to Home Screen' ➕ to install",
+                    {
+                      duration: 6000,
+                      position: "top-center",
+                    }
+                  );
+                }}
                 className="px-3 py-1.5 rounded-full text-white text-[11px] sm:text-xs font-black shadow-md active:scale-95 transition-all flex items-center gap-1.5"
                 style={{
                   background: `linear-gradient(135deg, ${themeColor}, ${themeColor}cc)`,
                 }}
               >
-                {t.installAndroidCta} {/* "Install App" generic text */}
-                {isExpandedIOS ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                {t.installAndroidCta}
               </button>
             )}
 
@@ -108,27 +117,6 @@ export function InstallAppBanner({
             </button>
           </div>
         </div>
-
-        {/* Expanded iOS Instructions Dropdown */}
-        {platform === "ios" && isExpandedIOS && (
-          <div className="mt-3 pt-3 border-t border-slate-100 animate-in slide-in-from-top-2 duration-300">
-            <div className="bg-slate-50 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-md bg-white border border-slate-200 flex items-center justify-center text-lg shadow-sm">📤</div>
-                <p className="text-[11px] sm:text-xs font-semibold text-slate-700">
-                  <span className="font-black text-slate-900">1.</span> {t.installIOSStep1Title}
-                </p>
-              </div>
-              <div className="hidden sm:block text-slate-300">→</div>
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-md bg-white border border-slate-200 flex items-center justify-center text-lg shadow-sm">➕</div>
-                <p className="text-[11px] sm:text-xs font-semibold text-slate-700">
-                  <span className="font-black text-slate-900">2.</span> {t.installIOSStep2Title}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

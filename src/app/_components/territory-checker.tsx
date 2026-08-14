@@ -46,14 +46,14 @@ export function TerritoryChecker() {
         </div>
 
         <h2 className="text-3xl sm:text-5xl font-black text-[#0B132B] mb-4 tracking-tight">
-          Secure Your Area's Exclusive Presence.<br />
+          🔒 Your Specialty. Your Area. Protected.<br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00B7A8] via-emerald-600 to-[#00897B]">
-            One Clinic Per PIN Code Area.
+            One [Specialty] Clinic per Local Area.
           </span>
         </h2>
 
         <p className="text-slate-600 text-base sm:text-lg max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-          To keep patient booking direct and localized, we license our digital front desk exclusively to <strong>one clinic per PIN code area</strong>. Check availability for your location.
+          We limit Doctor Diary to one participating clinic per specialty in a defined local area. Check availability for your location.
         </p>
 
         {/* PIN Code Search Form */}
@@ -63,7 +63,7 @@ export function TerritoryChecker() {
               <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#00B7A8]" />
               <input
                 type="text"
-                placeholder="Enter your 6-Digit PIN Code or City..."
+                placeholder="Enter your Specialty & Local Area..."
                 value={pinCode}
                 onChange={(e) => setPinCode(e.target.value)}
                 className="w-full h-14 pl-12 pr-4 bg-slate-50 text-[#0B132B] rounded-2xl border border-slate-200 focus:border-[#00B7A8] focus:bg-white focus:outline-none text-base font-semibold placeholder:text-slate-400 transition-all"
@@ -80,7 +80,7 @@ export function TerritoryChecker() {
               ) : (
                 <>
                   <Search className="w-4 h-4" />
-                  <span>Check Territory</span>
+                  <span>Check My Area</span>
                 </>
               )}
             </Button>
@@ -108,10 +108,10 @@ export function TerritoryChecker() {
                     <span className="text-xs font-bold text-slate-500">{result.locationName}</span>
                   </div>
                   <h3 className="text-lg font-bold text-[#0B132B] mb-2">
-                    Founding License Open in Your Area
+                    Area Exclusivity Slot Available
                   </h3>
                   <p className="text-slate-600 text-xs sm:text-sm leading-relaxed mb-4 font-medium">
-                    Your area's exclusive slot is currently available. Register your clinic today to secure your digital front desk and rate-lock your founding rate.
+                    Your specialty's exclusive slot is currently available. Register your clinic today to secure your digital front desk and lock out competitors in this local area.
                   </p>
                   <Link href="/signup">
                     <Button size="sm" className="bg-[#00B7A8] hover:bg-[#00998c] text-white font-bold rounded-xl px-5 h-10 text-xs shadow-md flex items-center gap-2">
@@ -124,6 +124,21 @@ export function TerritoryChecker() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Why Exclusivity Section */}
+        <div className="mt-16 text-left max-w-3xl mx-auto bg-white/50 backdrop-blur-sm border border-slate-200/60 p-6 sm:p-8 rounded-3xl shadow-sm">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-widest mb-4">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>The Philosophy</span>
+          </div>
+          <h3 className="text-xl sm:text-2xl font-black text-[#0B132B] mb-3 tracking-tight">Why do we limit access to one clinic per specialty?</h3>
+          <p className="text-slate-600 text-sm sm:text-base font-medium leading-relaxed mb-4">
+            Most software platforms want to sell to every single doctor in your city. They build directories that put your clinic right next to 10 of your competitors, forcing you to compete on price.
+          </p>
+          <p className="text-slate-600 text-sm sm:text-base font-medium leading-relaxed">
+            <strong className="text-[#0B132B]">We build monopolies, not marketplaces.</strong> By locking your local area, every patient searching for your specialty is driven exclusively to <i>your</i> clinic. If we sold our software to the doctor next door, it would dilute your value. That’s why we protect your territory. Your growth is our priority.
+          </p>
+        </div>
 
       </div>
     </section>

@@ -61,6 +61,18 @@ const Facebook = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const WhatsAppIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" className={className}>
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.487-1.761-1.659-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
+  </svg>
+);
+
+const SolidPhoneIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" className={className}>
+    <path d="M21.384 17.752a2.108 2.108 0 0 1-.522 3.359 7.543 7.543 0 0 1-5.476.642C8.2 20.535 4.5 16.836 2.8 11.75c-.655-1.956-.516-4.223.642-5.476a2.108 2.108 0 0 1 3.359-.522l3.358 3.359a2.108 2.108 0 0 1 0 2.981l-1.42 1.42a12.87 12.87 0 0 0 5.768 5.769l1.42-1.42a2.108 2.108 0 0 1 2.981 0l3.358 3.358Z" />
+  </svg>
+);
+
 const YouTube = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z" />
@@ -110,7 +122,7 @@ export async function generateMetadata({
       consultationFee: lead.consultationFee || 0,
       freeFollowupDays: 0,
       averageConsultationMinutes: 15,
-      themeColor: "#0ea5e9",
+      themeColor: "#0d9488",
       address: lead.address || null,
       billingAddress: null,
       state: lead.city || null,
@@ -209,7 +221,7 @@ export default async function BookingPage({
       consultationFee: lead.consultationFee || 0,
       freeFollowupDays: 0,
       averageConsultationMinutes: 15,
-      themeColor: "#0ea5e9",
+      themeColor: "#0d9488",
       address: lead.address || null,
       billingAddress: null,
       state: lead.city || null,
@@ -474,13 +486,13 @@ export default async function BookingPage({
           <div className="flex flex-col lg:flex-row items-center lg:items-start gap-10 lg:gap-12">
 
             {/* ─── LEFT: Doctor Portrait Card (Desktop Only) ───────────── */}
-            <div className="hidden lg:flex flex-col gap-4 w-[300px] xl:w-[320px] shrink-0">
-              {/* Portrait */}
-              <div
-                className="w-full aspect-[3/4] rounded-[2rem] overflow-hidden relative group shadow-2xl ring-1 ring-black/8 transition-all duration-500 hover:-translate-y-2"
-                style={{ boxShadow: `0 40px 80px -20px ${themeColor}40` }}
-              >
-                {isSafeImageUrl(clinic.heroImageUrl) ? (
+            {isSafeImageUrl(clinic.heroImageUrl) && (
+              <div className="hidden lg:flex flex-col gap-4 w-[300px] xl:w-[320px] shrink-0">
+                {/* Portrait */}
+                <div
+                  className="w-full aspect-[3/4] rounded-[2rem] overflow-hidden relative group shadow-2xl ring-1 ring-black/8 transition-all duration-500 hover:-translate-y-2"
+                  style={{ boxShadow: `0 40px 80px -20px ${themeColor}40` }}
+                >
                   <Image
                     src={clinic.heroImageUrl!}
                     alt={`${displayDoctorName} - ${specialtyConfig.displayName}`}
@@ -489,59 +501,52 @@ export default async function BookingPage({
                     className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
                     priority
                   />
-                ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-center text-white text-8xl font-black"
-                    style={{ background: `linear-gradient(145deg, ${themeColor}ee, ${themeColor}99)` }}
-                  >
-                    {stripDr(clinic.doctorName).charAt(0).toUpperCase()}
+                  {/* Shimmer effect on hover */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
+                  {/* Verified badge — tap to reveal explanation tooltip */}
+                  <div className="absolute top-4 right-4">
+                    <VerifiedBadge label={t.verifiedOfficial} tooltip={t.verifiedTooltip} variant="pill" />
                   </div>
-                )}
-                {/* Shimmer effect on hover */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
-                {/* Verified badge — tap to reveal explanation tooltip */}
-                <div className="absolute top-4 right-4">
-                  <VerifiedBadge label={t.verifiedOfficial} tooltip={t.verifiedTooltip} variant="pill" />
-                </div>
-                {/* Live status strip — only shows when clinic has hours scheduled for today */}
-                {todayTimings && (
-                  <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/70 via-black/30 to-transparent">
-                    <div className="flex items-center gap-2">
-                      <span className="relative flex h-2.5 w-2.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                      </span>
-                      <span className="text-[11px] font-black text-white uppercase tracking-widest">{t.openToday}</span>
-                      <span className="ml-auto text-[10px] font-bold text-white/70 bg-white/10 px-2 py-0.5 rounded-full">{todayTimings[0]}</span>
+                  {/* Live status strip — only shows when clinic has hours scheduled for today */}
+                  {todayTimings && (
+                    <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/70 via-black/30 to-transparent">
+                      <div className="flex items-center gap-2">
+                        <span className="relative flex h-2.5 w-2.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                        </span>
+                        <span className="text-[11px] font-black text-white uppercase tracking-widest">{t.openToday}</span>
+                        <span className="ml-auto text-[10px] font-bold text-white/70 bg-white/10 px-2 py-0.5 rounded-full">{todayTimings[0]}</span>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Clinic name badge below portrait */}
-              <div className="bg-white/90 backdrop-blur-xl rounded-2xl p-4 shadow-sm ring-1 ring-slate-200/60 flex items-center gap-3">
-                <div
-                  className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center text-white font-black text-sm"
-                  style={{ backgroundColor: themeColor }}
-                >
-                  {isSafeImageUrl(clinic.logoUrl) ? (
-                    <Image src={clinic.logoUrl!} alt={clinic.name} width={40} height={40} className="object-cover" />
-                  ) : (
-                    clinic.name.charAt(0).toUpperCase()
                   )}
                 </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-black text-slate-900 truncate">{clinic.name}</p>
-                  {clinic.address && <p className="text-[10px] text-slate-500 font-medium truncate mt-0.5">{clinic.address.split(",")[0]}</p>}
+
+                {/* Clinic name badge below portrait */}
+                <div className="bg-white/90 backdrop-blur-xl rounded-2xl p-4 shadow-sm ring-1 ring-slate-200/60 flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center text-white font-black text-sm"
+                    style={{ backgroundColor: themeColor }}
+                  >
+                    {isSafeImageUrl(clinic.logoUrl) ? (
+                      <Image src={clinic.logoUrl!} alt={clinic.name} width={40} height={40} className="w-full h-full object-cover" />
+                    ) : (
+                      clinic.name.charAt(0).toUpperCase()
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-black text-slate-900 truncate">{clinic.name}</p>
+                    {clinic.address && <p className="text-[10px] text-slate-500 font-medium truncate mt-0.5">{clinic.address.split(",")[0]}</p>}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* ─── CENTER: Hero Content ────────────────────────────────── */}
-            <div className="flex-1 w-full text-center lg:text-left space-y-6">
+            <div className={`flex-1 w-full text-center lg:text-left space-y-6 ${!isSafeImageUrl(clinic.heroImageUrl) ? "lg:flex lg:flex-col lg:items-center lg:text-center lg:py-6" : ""}`}>
 
-              {/* Mobile: Avatar + Name row */}
-              <div className="lg:hidden flex flex-col items-center space-y-4">
+              {/* Mobile (and Desktop Fallback): Avatar + Name row */}
+              <div className={`flex flex-col items-center space-y-4 ${isSafeImageUrl(clinic.heroImageUrl) ? "lg:hidden" : ""}`}>
                 {/* Clinic hero image (mobile full-width, if available) */}
                 {isSafeImageUrl(clinic.heroImageUrl) && (
                   <div className="relative w-full h-52 rounded-[2rem] overflow-hidden shadow-xl ring-1 ring-black/8">
@@ -568,65 +573,73 @@ export default async function BookingPage({
                   </div>
                 )}
 
-                {/* No hero image fallback (mobile) */}
+                {/* No hero image fallback (mobile + desktop) */}
                 {!isSafeImageUrl(clinic.heroImageUrl) && (
                   <>
                     {/* Avatar circle */}
                     <div className="relative">
                       <div
-                        className="w-24 h-24 rounded-full overflow-hidden shadow-[0_15px_40px_-10px_rgba(0,0,0,0.25)] ring-4 ring-white flex items-center justify-center text-white text-4xl font-black"
+                        className="w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden shadow-[0_15px_40px_-10px_rgba(0,0,0,0.25)] ring-4 ring-white flex items-center justify-center text-white text-4xl lg:text-5xl font-black"
                         style={{ backgroundColor: themeColor }}
                       >
                         {isSafeImageUrl(clinic.logoUrl) ? (
-                          <Image src={clinic.logoUrl!} alt={displayDoctorName} width={96} height={96} className="object-cover" />
+                          <Image src={clinic.logoUrl!} alt={displayDoctorName} width={128} height={128} className="w-full h-full object-cover" />
                         ) : (
                           stripDr(clinic.doctorName).charAt(0).toUpperCase()
                         )}
                       </div>
-                      <div className="absolute -bottom-1 -right-1">
+                      <div className="absolute -bottom-1 -right-1 rounded-full ring-2 ring-white">
                         <VerifiedBadge label={t.verifiedOfficial} tooltip={t.verifiedTooltip} variant="icon-only" />
                       </div>
                     </div>
-                    {/* Name + specialty (shown only when no hero image) */}
-                    <div className="space-y-1">
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-slate-200" style={{ color: themeColor }}>
-                        <Stethoscope className="w-3 h-3" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">{specialtyConfig.heroBadge}</span>
+                    {/* Name + specialty */}
+                    <div className="space-y-1 lg:space-y-3">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 lg:px-4 lg:py-1.5 rounded-full bg-white/90 border border-slate-200" style={{ color: themeColor }}>
+                        <Stethoscope className="w-3 h-3 lg:w-3.5 lg:h-3.5" />
+                        <span className="text-[10px] lg:text-[11px] font-black uppercase tracking-widest">{specialtyConfig.heroBadge}</span>
                       </div>
-                      <h1 id="hero-doctor-name" className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{displayDoctorName}</h1>
-                      <p className="text-xs text-slate-500 font-bold">
+                      <h1 id="hero-doctor-name" className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black text-slate-900 tracking-tight leading-tight">{displayDoctorName}</h1>
+                      <p className="text-xs lg:text-sm text-slate-500 font-bold">
                         {clinic.degree ? `${clinic.degree.replace(/ and /gi, ' · ')} · ${specialtyConfig.displayName}` : specialtyConfig.displayName}
+                      </p>
+                      <p className="hidden lg:block text-base text-slate-600 font-medium max-w-md mx-auto leading-relaxed mt-2">
+                        {lang === "hi"
+                          ? `${clinic.name} में ${specialtyConfig.displayName.toLowerCase()} के लिए विशेषज्ञ देखभाल। ऑनलाइन टोकन बुक करें और लाइव कतार ट्रैक करें।`
+                          : `Expert ${specialtyConfig.displayName.toLowerCase()} care at ${clinic.name}. Book your token online and track the live queue from home.`
+                        }
                       </p>
                     </div>
                   </>
                 )}
               </div>
 
-              {/* Desktop: Specialty badge + Name + Description */}
-              <div className="hidden lg:block space-y-4">
-                <div
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-widest border"
-                  style={{ color: themeColor, backgroundColor: `${themeColor}12`, borderColor: `${themeColor}30` }}
-                >
-                  <Stethoscope className="w-3.5 h-3.5" />
-                  {specialtyConfig.heroBadge}
+              {/* Desktop: Specialty badge + Name + Description (Only when hero image exists) */}
+              {isSafeImageUrl(clinic.heroImageUrl) && (
+                <div className="hidden lg:block space-y-4">
+                  <div
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-widest border"
+                    style={{ color: themeColor, backgroundColor: `${themeColor}12`, borderColor: `${themeColor}30` }}
+                  >
+                    <Stethoscope className="w-3.5 h-3.5" />
+                    {specialtyConfig.heroBadge}
+                  </div>
+                  <h1 id="hero-doctor-name" className="text-4xl xl:text-[3.5rem] font-black text-slate-900 tracking-tighter leading-[1.04]">
+                    {displayDoctorName}
+                  </h1>
+                  {clinic.degree && (
+                    <p className="text-sm text-slate-500 font-semibold">{clinic.degree.replace(/ and /gi, ' · ')} · {specialtyConfig.displayName}</p>
+                  )}
+                  <p className="text-base text-slate-600 font-medium max-w-md leading-relaxed">
+                    {lang === "hi"
+                      ? `${clinic.name} में ${specialtyConfig.displayName.toLowerCase()} के लिए विशेषज्ञ देखभाल। ऑनलाइन टोकन बुक करें और लाइव कतार ट्रैक करें।`
+                      : `Expert ${specialtyConfig.displayName.toLowerCase()} care at ${clinic.name}. Book your token online and track the live queue from home.`
+                    }
+                  </p>
                 </div>
-                <h1 id="hero-doctor-name" className="text-4xl xl:text-[3.5rem] font-black text-slate-900 tracking-tighter leading-[1.04]">
-                  {displayDoctorName}
-                </h1>
-                {clinic.degree && (
-                  <p className="text-sm text-slate-500 font-semibold">{clinic.degree.replace(/ and /gi, ' · ')} · {specialtyConfig.displayName}</p>
-                )}
-                <p className="text-base text-slate-600 font-medium max-w-md leading-relaxed">
-                  {lang === "hi"
-                    ? `${clinic.name} में ${specialtyConfig.displayName.toLowerCase()} के लिए विशेषज्ञ देखभाल। ऑनलाइन टोकन बुक करें और लाइव कतार ट्रैक करें।`
-                    : `Expert ${specialtyConfig.displayName.toLowerCase()} care at ${clinic.name}. Book your token online and track the live queue from home.`
-                  }
-                </p>
-              </div>
+              )}
 
               {/* ─── 3-Box Premium Bento Stats (3-col, 1 row) ─────────── */}
-              <div className="grid grid-cols-3 gap-2.5 sm:gap-3 w-full max-w-sm mx-auto lg:mx-0">
+              <div className={`grid grid-cols-3 gap-2.5 sm:gap-3 w-full max-w-sm md:max-w-md mx-auto ${!isSafeImageUrl(clinic.heroImageUrl) ? "lg:mx-auto" : "lg:mx-0"}`}>
 
                 {/* Box 1: Consultation Fee */}
                 <div className="group flex flex-col items-center lg:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md hover:-translate-y-1">
@@ -642,8 +655,10 @@ export default async function BookingPage({
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-indigo-50 border border-indigo-100 mb-2 group-hover:scale-110 transition-transform">
                     <ShieldCheck className="w-4 h-4 text-indigo-600" strokeWidth={2.5} />
                   </div>
-                  <p className="text-sm sm:text-[15px] font-black text-indigo-600 leading-none mb-1">₹0</p>
-                  <p className="text-[8px] sm:text-[9.5px] font-black text-slate-400 uppercase tracking-widest text-center lg:text-left">{lang === "hi" ? "ऑनलाइन बुकिंग" : "Online Booking"}</p>
+                  <p className="text-sm sm:text-[15px] font-black text-indigo-600 leading-none mb-1">
+                    ₹0 <span className="text-[10px] uppercase font-bold text-indigo-400">Fee</span>
+                  </p>
+                  <p className="text-[8px] sm:text-[9.5px] font-black text-slate-400 uppercase tracking-widest text-center lg:text-left">{lang === "hi" ? "क्लिनिक में भुगतान करें" : "Pay at clinic"}</p>
                 </div>
 
                 {/* Box 3: Live Queue */}
@@ -692,15 +707,19 @@ export default async function BookingPage({
 
               {/* ─── Compact Location + Today’s Hours Strip ──────── */}
               {(clinic.address || todayTimings) && (
-                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-4 gap-y-1.5 w-full max-w-sm mx-auto lg:mx-0">
+                <div className={`flex flex-wrap items-center justify-center lg:justify-start gap-x-4 gap-y-1.5 w-full max-w-sm md:max-w-md mx-auto ${!isSafeImageUrl(clinic.heroImageUrl) ? "lg:mx-auto lg:justify-center" : "lg:mx-0"}`}>
                   {todayTimings && (
-                    <span className="flex items-center gap-1.5 text-[11px] font-bold">
-                      <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
+                    <span className="flex items-start gap-1.5 text-[11px] font-bold">
+                      <span className="relative flex h-1.5 w-1.5 flex-shrink-0 mt-1">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                         <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                       </span>
-                      <span className="text-emerald-700 font-black">{t.openToday}</span>
-                      <span className="text-slate-500">{todayTimings.join(" · ")}</span>
+                      <span className="text-emerald-700 font-black flex-shrink-0">{t.openToday}:</span>
+                      <div className="flex flex-col text-slate-500 leading-tight">
+                        {todayTimings.map((time, i) => (
+                          <span key={i}>{time}</span>
+                        ))}
+                      </div>
                     </span>
                   )}
                   {clinic.address && (
@@ -712,28 +731,33 @@ export default async function BookingPage({
                       aria-label="Get directions to clinic"
                     >
                       <MapPin className="w-3 h-3 flex-shrink-0" style={{ color: themeColor }} />
-                      <span className="truncate max-w-[150px] sm:max-w-[200px]">{clinic.address.split(",")[0]}</span>
+                      <span className="truncate max-w-[200px] sm:max-w-[250px]">{lang === "hi" ? "दिशा-निर्देश" : "Directions"}</span>
                       {directionsUrl && <Navigation className="w-2.5 h-2.5 flex-shrink-0 opacity-60" />}
                     </a>
                   )}
                 </div>
               )}
 
-              {/* ─── Trust Badges Row ─────────────────────────────────── */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
-                <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-white/90 backdrop-blur-md border border-emerald-100 shadow-sm">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="text-[10px] font-black text-slate-800 uppercase tracking-wider">{t.payFeeAtClinic}</span>
-                </div>
+              {/* ─── Action Buttons Row ─────────────────────────────────── */}
+              <div className={`flex flex-wrap items-center justify-center lg:justify-start gap-2 ${!isSafeImageUrl(clinic.heroImageUrl) ? "lg:justify-center" : ""}`}>
+                {(clinic.phone) && (
+                  <a
+                    href={`tel:+91${String(clinic.phone).replace(/\D/g, "").slice(-10)}`}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white border border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-all font-bold text-[10px] uppercase tracking-wider active:scale-95 shadow-sm"
+                  >
+                    <SolidPhoneIcon className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>{lang === "hi" ? "कॉल करें" : "Call Clinic"}</span>
+                  </a>
+                )}
 
                 {(clinic.whatsappNumber || clinic.phone) && (
                   <a
                     href={`https://wa.me/91${String(clinic.whatsappNumber || clinic.phone).replace(/\D/g, "").slice(-10)}?text=${encodeURIComponent(`Hi ${clinic.name}, I would like to inquire about OPD consultation with ${displayDoctorName}.`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-transparent border border-emerald-300 text-emerald-700 hover:bg-[#25D366] hover:text-white hover:border-[#25D366] transition-all font-bold text-[10px] uppercase tracking-wider active:scale-95"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-[#25D366]/10 border border-[#25D366]/20 text-[#25D366] hover:bg-[#25D366] hover:text-white hover:border-[#25D366] transition-all font-bold text-[10px] uppercase tracking-wider active:scale-95 shadow-sm"
                   >
-                    <MessageCircle className="w-3 h-3" />
+                    <WhatsAppIcon className="w-3.5 h-3.5" />
                     <span>{t.chatOnWhatsapp}</span>
                   </a>
                 )}
@@ -990,7 +1014,7 @@ export default async function BookingPage({
                               href={`tel:+91${clinic.phone.replace(/\D/g, "").slice(-10)}`} 
                               className="inline-flex items-center justify-center gap-1.5 bg-slate-900 text-white px-3 py-2.5 rounded-2xl text-[11px] font-bold hover:bg-slate-800 transition-all shadow-md active:scale-95 text-center"
                             >
-                              <Phone className="w-3.5 h-3.5" /> {lang === "hi" ? "कॉल करें" : "Call Clinic"}
+                              <SolidPhoneIcon className="w-3.5 h-3.5" /> {lang === "hi" ? "कॉल करें" : "Call Clinic"}
                             </a>
                           )}
 
@@ -1001,7 +1025,7 @@ export default async function BookingPage({
                               rel="noopener noreferrer" 
                               className="inline-flex items-center justify-center gap-1.5 bg-[#25D366] text-white px-3 py-2.5 rounded-2xl text-[11px] font-bold hover:bg-[#1fba5a] transition-all shadow-md active:scale-95 text-center col-span-2 sm:col-span-1"
                             >
-                              <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+                              <WhatsAppIcon className="w-3.5 h-3.5" /> WhatsApp
                             </a>
                           )}
                         </div>
@@ -1027,7 +1051,7 @@ export default async function BookingPage({
                 <div className="pt-4 border-t border-slate-100 flex gap-3">
                   {clinic.whatsappNumber && (
                     <a href={`https://wa.me/${String(clinic.whatsappNumber).replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" aria-label="Contact on WhatsApp" className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[#25D366] hover:bg-emerald-50 transition-colors shadow-sm">
-                      <MessageCircle className="w-5 h-5" />
+                      <WhatsAppIcon className="w-5 h-5" />
                     </a>
                   )}
                   {clinic.instagramUrl && (

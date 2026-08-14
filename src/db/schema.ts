@@ -345,10 +345,10 @@ export const orders = pgTable("orders", {
   clinicId: uuid("clinic_id")
     .notNull()
     .references(() => clinics.id, { onDelete: "cascade" }),
-  amount: integer("amount").notNull(), // stored in rupees or paise (e.g. 1499 or 4999 or 0 for free trial)
+  amount: integer("amount").notNull(), // stored in rupees or paise (e.g. 2999 or 9999 or 0 for free trial)
   status: text("status").notNull().default("pending"), // pending, processing, shipped, delivered, cancelled
   paymentStatus: text("payment_status").notNull().default("paid"), // paid, free_trial, complimentary, pending
-  planType: text("plan_type"), // monthly_1499, yearly_4999, free_trial, custom
+  planType: text("plan_type"), // quarterly_2999, yearly_9999, free_trial, custom
   shippingAddress: text("shipping_address"),
   courierName: text("courier_name"), // bluedart, delhivery, dtdc, indiapost, porter, other
   trackingNumber: text("tracking_number"), // AWB tracking code

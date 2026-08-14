@@ -138,7 +138,11 @@ export async function getLeadStats(filters: LeadFilters = {}) {
     conditions.push(eq(doctorLeads.assignedManagerId, filters.assignedManagerId));
   }
   if (filters.assignedEmployeeId) {
-    conditions.push(eq(doctorLeads.assignedEmployeeId, filters.assignedEmployeeId));
+    if (filters.assignedEmployeeId === "unassigned") {
+      conditions.push(isNull(doctorLeads.assignedEmployeeId));
+    } else {
+      conditions.push(eq(doctorLeads.assignedEmployeeId, filters.assignedEmployeeId));
+    }
   }
   const where = conditions.length > 0 ? and(...conditions) : undefined;
 
@@ -178,7 +182,11 @@ export async function getLeadStats(filters: LeadFilters = {}) {
     overdueConditions.push(eq(doctorLeads.assignedManagerId, filters.assignedManagerId));
   }
   if (filters.assignedEmployeeId) {
-    overdueConditions.push(eq(doctorLeads.assignedEmployeeId, filters.assignedEmployeeId));
+    if (filters.assignedEmployeeId === "unassigned") {
+      overdueConditions.push(isNull(doctorLeads.assignedEmployeeId));
+    } else {
+      overdueConditions.push(eq(doctorLeads.assignedEmployeeId, filters.assignedEmployeeId));
+    }
   }
 
   const overdueRows = await db
@@ -527,7 +535,11 @@ export async function getLeadCities(filters: LeadFilters = {}) {
     conditions.push(eq(doctorLeads.assignedManagerId, filters.assignedManagerId));
   }
   if (filters.assignedEmployeeId) {
-    conditions.push(eq(doctorLeads.assignedEmployeeId, filters.assignedEmployeeId));
+    if (filters.assignedEmployeeId === "unassigned") {
+      conditions.push(isNull(doctorLeads.assignedEmployeeId));
+    } else {
+      conditions.push(eq(doctorLeads.assignedEmployeeId, filters.assignedEmployeeId));
+    }
   }
 
   const rows = await db

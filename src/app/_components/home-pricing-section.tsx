@@ -31,10 +31,10 @@ export function HomePricingSection() {
             The average clinic using Doctor Diary sees a <strong className="text-[#0B132B] font-bold">₹25,000 to ₹50,000</strong> increase in monthly revenue simply by eliminating no-shows and streamlining operations.
           </p>
 
-          {/* Founding License Rate Lock Guarantee */}
-          <div className="max-w-md mx-auto bg-[#F8FAFC] border border-emerald-100 p-4 rounded-2xl text-center">
-            <p className="text-xs text-slate-600 font-medium">
-              ⚡ <strong>Rate Lock Guarantee</strong>: Start your trial today to lock in your founding price for life.
+          {/* Trust Badge */}
+          <div className="max-w-md mx-auto bg-[#F8FAFC] border border-emerald-100 p-4 rounded-2xl text-center shadow-sm">
+            <p className="text-xs text-[#00B7A8] font-bold uppercase tracking-wider">
+              No Hidden Costs. No Fake Discounts. GST Included.
             </p>
           </div>
         </div>
@@ -62,10 +62,10 @@ export function HomePricingSection() {
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Starter</span>
                 <h3 className="text-2xl font-bold text-[#0B132B] mt-1">Quarterly</h3>
               </div>
-              <p className="text-sm text-slate-500 mb-6 min-h-[40px] font-medium">Perfect for getting started — lock in founding pricing before it increases.</p>
+              <p className="text-sm text-slate-500 mb-6 min-h-[40px] font-medium">Perfect for single clinics getting started. No hidden costs.</p>
               
               <div className="mb-4 flex items-baseline gap-2">
-                <span className="text-4xl font-black text-[#0B132B]">₹1,499</span>
+                <span className="text-4xl font-black text-[#0B132B]">₹2,999</span>
                 <span className="text-slate-500 text-sm font-semibold">/ 3 mo</span>
               </div>
               <div className="mb-6 inline-block bg-slate-100 text-slate-700 text-xs font-semibold px-3.5 py-1.5 rounded-xl border border-slate-200">
@@ -102,18 +102,18 @@ export function HomePricingSection() {
 
             <div>
               <div className="mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#00B7A8]">Founding License Lock</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#00B7A8]">Clean & Permanent</span>
                 <h3 className="text-3xl font-black text-[#0B132B] mt-1">Annual</h3>
               </div>
-              <p className="text-sm text-slate-600 mb-6 min-h-[40px] font-medium">Maximum ROI, plus your area exclusivity locked in as a founding clinic.</p>
+              <p className="text-sm text-slate-600 mb-6 min-h-[40px] font-medium">Clean, simple pricing forever. No discounts. GST Included.</p>
               
               <div className="mb-4 flex items-baseline gap-2">
-                <span className="text-5xl font-black text-[#0B132B] tracking-tight">₹4,999</span>
+                <span className="text-5xl font-black text-[#0B132B] tracking-tight">₹9,999</span>
                 <span className="text-slate-500 text-sm font-semibold">/ yr</span>
               </div>
               
               <div className="mb-6 inline-flex items-center gap-2 bg-emerald-50 text-[#00B7A8] text-xs font-bold px-3.5 py-2 rounded-xl border border-emerald-200">
-                ⭐ Save ₹997 compared to quarterly
+                ⭐ Save ₹1,997 compared to quarterly
               </div>
               
               <ul className="space-y-3.5 mb-8">

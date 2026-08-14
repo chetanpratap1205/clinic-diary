@@ -22,7 +22,7 @@ const growClinicServices: Omit<GrowthCardProps, 'onAction'>[] = [
     description: "Improve your Google visibility, rank higher in local searches, and help nearby patients discover your clinic.",
     icon: <Search className="text-blue-500" />,
     badge: { text: "Popular", variant: "default" },
-    price: 1499,
+    price: 2999,
     pricingPeriod: "month",
     stats: [
       { label: "Avg Profile Views", value: "+320%" },
@@ -64,7 +64,7 @@ const growClinicServices: Omit<GrowthCardProps, 'onAction'>[] = [
     description: "Launch targeted campaigns that bring appointment-ready patients to your clinic.",
     icon: <Target className="text-red-500" />,
     badge: { text: "High ROI", variant: "success" },
-    price: 4999,
+    price: 9999,
     pricingPeriod: "month",
     stats: [
       { label: "Avg Campaign ROI", value: "5.2x" },
@@ -109,7 +109,7 @@ const brandClinicServices: Omit<GrowthCardProps, 'onAction'>[] = [
     description: "Premium, minimal design visiting cards that leave a lasting impression.",
     icon: <CreditCard className="text-slate-400" />,
     badge: { text: "Available", variant: "outline" },
-    price: 1499,
+    price: 2999,
     pricingPeriod: "per 1000",
     features: ["350 GSM Matte Finish", "Spot UV Highlight", "Double-Sided Print"]
   },
@@ -200,7 +200,7 @@ const premiumTools: Omit<GrowthCardProps, 'onAction'>[] = [
     description: "Intelligent voice assistant to handle patient calls 24/7, book appointments, and answer FAQs.",
     icon: <Bot className="text-indigo-500" />,
     badge: { text: "Premium", variant: "premium" },
-    price: 4999,
+    price: 9999,
     pricingPeriod: "month",
     stats: [
       { label: "Missed Calls", value: "0%" },
@@ -353,15 +353,7 @@ export function GrowthClient({ consultationFee, themeColor, requestedServices = 
               Explore Solutions
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-            <div className="flex items-center gap-4 px-4 py-3 bg-slate-800/50 rounded-full border border-slate-700/50">
-              <div className="flex -space-x-3">
-                <div className="w-10 h-10 rounded-full bg-slate-700 border-2 border-slate-900 flex items-center justify-center font-bold text-xs text-white">4.9</div>
-                <div className="w-10 h-10 rounded-full bg-blue-600 border-2 border-slate-900 flex items-center justify-center"><Star className="w-4 h-4 text-white fill-white" /></div>
-              </div>
-              <div className="text-sm font-medium text-slate-300 text-left leading-tight">
-                Trusted by <br/><span className="text-white font-bold">Independent Clinics</span>
-              </div>
-            </div>
+
           </div>
         </div>
 

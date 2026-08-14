@@ -2,38 +2,38 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { HeartPulse, Droplets, Moon, Apple, Smile, ChevronRight, ChevronLeft } from "lucide-react";
+import { HeartPulse, ChevronRight, ChevronLeft, Sun, Eye, Brain, Activity, Bone } from "lucide-react";
 
 const TIPS = [
   {
-    icon: Droplets,
-    title: "Stay Hydrated",
-    color: "#0ea5e9", // sky
-    text: "Drinking enough water each day is crucial for many reasons: to regulate body temperature, keep joints lubricated, prevent infections, and deliver nutrients to cells. Aim for 8 glasses a day."
-  },
-  {
-    icon: Moon,
-    title: "Quality Sleep",
-    color: "#8b5cf6", // violet
-    text: "Good sleep is one of the pillars of health. Getting 7-8 hours of quality sleep improves brain performance, mood, and health. Try to maintain a consistent sleep schedule."
-  },
-  {
-    icon: Apple,
-    title: "Eat the Rainbow",
+    icon: Activity,
+    title: "The 30-30-30 Rule",
     color: "#ef4444", // red
-    text: "A diet rich in fruits and vegetables can lower blood pressure, reduce risk of heart disease and stroke, and prevent some types of cancer. Add color to your plate!"
+    text: "For better blood sugar control and weight management, try 30g of protein within 30 minutes of waking up, followed by 30 minutes of steady cardiovascular exercise."
   },
   {
-    icon: Smile,
-    title: "Manage Stress",
+    icon: Bone,
+    title: "Why Joints Crack",
+    color: "#0ea5e9", // sky
+    text: "Hearing a 'pop' when you bend your knees? It's usually just nitrogen gas bubbles escaping from synovial fluid. Unless it's accompanied by pain or swelling, it's completely normal."
+  },
+  {
+    icon: Sun,
+    title: "Hidden Vitamin D",
     color: "#f59e0b", // amber
-    text: "Chronic stress puts your health at risk. Practice deep breathing, meditation, or yoga. Taking just 5 minutes a day to close your eyes and focus on your breath can make a huge difference."
+    text: "Just 15 minutes of direct morning sunlight on your arms and face can provide your daily Vitamin D requirement, improving bone density, mood, and sleep quality."
   },
   {
-    icon: HeartPulse,
-    title: "Daily Movement",
+    icon: Eye,
+    title: "The 20-20-20 Rule",
     color: "#10b981", // emerald
-    text: "You don't need intense workouts to be healthy. Brisk walking, stretching, or gardening for 30 minutes a day boosts cardiovascular health and mental well-being."
+    text: "Prevent digital eye strain (a common cause of headaches): Every 20 minutes, look at something 20 feet away for 20 seconds. This relaxes the focusing muscles in your eyes."
+  },
+  {
+    icon: Brain,
+    title: "The Gut-Brain Link",
+    color: "#8b5cf6", // violet
+    text: "Over 90% of your body's serotonin (the 'happy hormone') is produced in your gut. A diet rich in fermented foods and fiber directly impacts your mood and cognitive focus."
   }
 ];
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Download, X, Smartphone } from "lucide-react";
 import { PWASplashScreen } from "./pwa-splash-screen";
+import { toast } from "sonner";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -192,7 +193,6 @@ export function PatientInstallButton({
     useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
-  const [showIOSModal, setShowIOSModal] = useState(false);
 
   useEffect(() => {
     if (window.matchMedia("(display-mode: standalone)").matches) {
@@ -215,7 +215,10 @@ export function PatientInstallButton({
 
   const handleInstall = async () => {
     if (isIOS) {
-      setShowIOSModal(true);
+      toast.success("Tap Share 📤 then 'Add to Home Screen' ➕ to install", {
+        duration: 6000,
+        position: "top-center"
+      });
       return;
     }
     if (!deferredPrompt) return;
@@ -264,84 +267,6 @@ export function PatientInstallButton({
           Install
         </div>
       </button>
-
-      {/* Premium iOS Instructions Bottom Sheet */}
-      {showIOSModal && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4">
-          <div 
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-            onClick={() => setShowIOSModal(false)}
-          />
-          <div className="relative bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden animate-slide-up">
-            {/* Handle bar for mobile */}
-            <div className="w-full flex justify-center pt-3 pb-1 sm:hidden">
-              <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
-            </div>
-
-            <div className="p-6 pt-4 sm:pt-6 space-y-6">
-              {/* App Icon Preview Area */}
-              <div className="flex flex-col items-center gap-3">
-                <div className="relative">
-                  {logoUrl ? (
-                    <img
-                      src={logoUrl}
-                      alt={clinicName}
-                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover shadow-lg border border-slate-100"
-                    />
-                  ) : (
-                    <div
-                      className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-2xl text-white shadow-lg font-black text-3xl"
-                      style={{ backgroundColor: themeColor }}
-                    >
-                      {clinicName.charAt(0)}
-                    </div>
-                  )}
-                  {/* Fake iOS notification badge just for premium feel */}
-                  <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full border-2 border-white" />
-                </div>
-                <div className="text-center">
-                  <h3 className="text-xl font-black text-slate-900 tracking-tight">{displayName}</h3>
-                  <p className="text-sm font-semibold text-slate-500 mt-0.5">Official Clinic App</p>
-                </div>
-              </div>
-
-              {/* Instructions */}
-              <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center flex-shrink-0 text-slate-600 text-lg border border-slate-200">
-                    <span className="mb-1">📤</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900">1. Tap Share</p>
-                    <p className="text-xs text-slate-500 font-medium leading-relaxed mt-0.5">Tap the share button in Safari's bottom menu bar.</p>
-                  </div>
-                </div>
-                
-                <div className="h-px bg-slate-200/60 w-full" />
-                
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center flex-shrink-0 text-slate-600 text-lg border border-slate-200">
-                    <span className="mb-0.5">➕</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900">2. Add to Home Screen</p>
-                    <p className="text-xs text-slate-500 font-medium leading-relaxed mt-0.5">Scroll down the menu and tap 'Add to Home Screen'.</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action */}
-              <button
-                onClick={() => setShowIOSModal(false)}
-                className="w-full py-4 rounded-xl text-white font-bold text-sm shadow-md active:scale-95 transition-transform"
-                style={{ backgroundColor: themeColor }}
-              >
-                I understand, let's do it
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

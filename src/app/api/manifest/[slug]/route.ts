@@ -35,7 +35,7 @@ export async function GET(
       
       clinic = {
         name: lead.name || `${lead.doctorName}'s Clinic`,
-        themeColor: "#0ea5e9",
+        themeColor: "#0d9488",
         logoUrl: lead.logoUrl || null,
       };
     }

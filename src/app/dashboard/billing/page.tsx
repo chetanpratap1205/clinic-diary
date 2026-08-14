@@ -90,19 +90,19 @@ export default async function BillingPage() {
         </div>
       </div>
 
-      {/* CFO / Finance Head Note */}
+      {/* Founder Note */}
       <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6 text-white shadow-lg relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-[60px] pointer-events-none" />
         <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-700 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-slate-600 shadow-inner z-10 overflow-hidden">
-          <img src="https://i.pravatar.cc/150?u=cfo" alt="Karan Sharma" className="w-full h-full object-cover" />
+          <img src="/chetan_profile_photo.png" alt="Chetan Pratap" className="w-full h-full object-cover" />
         </div>
         <div className="flex-1 text-center sm:text-left z-10">
-          <h3 className="text-sm font-bold text-teal-400 uppercase tracking-widest mb-2">A Note From Finance</h3>
+          <h3 className="text-sm font-bold text-teal-400 uppercase tracking-widest mb-2">A Note From The Founder</h3>
           <p className="text-slate-300 text-sm sm:text-base leading-relaxed italic mb-4">
-            &quot;We don&apos;t view Doctor Diary as a cost for your clinic, but as a growth investment. My team ensures our pricing model is fully transparent with zero hidden fees. If you aren&apos;t seeing a clear ROI in your first month, we want to know about it.&quot;
+            &quot;We don&apos;t view Doctor Diary as a cost for your clinic, but as a growth investment. I personally guarantee that our pricing model is fully transparent with zero hidden fees. If you aren&apos;t seeing a clear ROI in your first month, I want to hear about it directly.&quot;
           </p>
-          <div className="font-semibold text-white">Karan Sharma</div>
-          <div className="text-slate-400 text-xs uppercase tracking-wide">CFO, Doctor Diary</div>
+          <div className="font-semibold text-white">Chetan Pratap</div>
+          <div className="text-slate-400 text-xs uppercase tracking-wide">Founder, Doctor Diary</div>
         </div>
       </div>
       

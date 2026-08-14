@@ -43,7 +43,7 @@ export default async function BookingLayout({
       name: lead.clinicName || `${lead.doctorName}'s Clinic`,
       doctorName: lead.doctorName,
       logoUrl: lead.logoUrl || null,
-      themeColor: "#0ea5e9",
+      themeColor: "#0d9488",
       phone: lead.phone,
     } as any;
   }

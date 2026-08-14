@@ -143,7 +143,7 @@ export default async function EmployeeOverviewPage() {
             <tbody className="divide-y divide-slate-100">
               {recentLeads.slice(0, 6).map((lead) => {
                 const encodedMsg = encodeURIComponent(
-                  `Namaste ${formatDoctorName(lead.doctorName)}! I'm ${emp.name} from Doctor Diary platform. I noticed your clinic ${lead.clinicName || ""} in ${lead.city || ""}. Would love to share a quick 2-minute demo of our automated clinic diary system!`
+                  `Namaste ${formatDoctorName(lead.doctorName)}! I'm ${emp.name} from Doctor Diary platform. I noticed your clinic ${lead.clinicName || ""} in ${lead.city || ""}. Would love to share a quick 2-minute demo of our automated Doctor Diary system!`
                 );
                 const waUrl = `https://wa.me/91${lead.phone.replace(/[^0-9]/g, "")}?text=${encodedMsg}`;
 

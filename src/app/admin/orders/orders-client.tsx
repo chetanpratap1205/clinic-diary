@@ -104,7 +104,7 @@ export function OrdersClient({ orders, clinics = [], products = [] }: OrdersClie
   // Form state for Create Admin Order
   const [newOrderData, setNewOrderData] = useState({
     clinicId: "",
-    planOption: "free_trial", // free_trial, monthly_1499, yearly_4999, custom
+    planOption: "free_trial", // free_trial, quarterly_2999, yearly_9999, custom
     customAmount: 0,
     shippingAddress: "",
     courierName: "bluedart",
@@ -195,14 +195,14 @@ export function OrdersClient({ orders, clinics = [], products = [] }: OrdersClie
       finalAmount = 0;
       paymentStatus = "free_trial";
       planType = "free_trial";
-    } else if (newOrderData.planOption === "monthly_1499") {
-      finalAmount = 1499;
+    } else if (newOrderData.planOption === "quarterly_2999") {
+      finalAmount = 2999;
       paymentStatus = "paid";
-      planType = "monthly_1499";
-    } else if (newOrderData.planOption === "yearly_4999") {
-      finalAmount = 4999;
+      planType = "quarterly_2999";
+    } else if (newOrderData.planOption === "yearly_9999") {
+      finalAmount = 9999;
       paymentStatus = "paid";
-      planType = "yearly_4999";
+      planType = "yearly_9999";
     } else {
       finalAmount = newOrderData.customAmount || 0;
       paymentStatus = finalAmount === 0 ? "free_trial" : "paid";
@@ -265,18 +265,18 @@ export function OrdersClient({ orders, clinics = [], products = [] }: OrdersClie
       );
     }
 
-    if (amount === 1499 || planType === "monthly_1499") {
+    if (amount === 2999 || planType === "quarterly_2999") {
       return (
         <div>
           <span className="font-extrabold text-slate-900 text-sm">₹1,499</span>
           <span className="text-[10px] font-semibold bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200 block w-fit mt-0.5">
-            Monthly Subscription
+            Quarterly Subscription
           </span>
         </div>
       );
     }
 
-    if (amount === 4999 || planType === "yearly_4999") {
+    if (amount === 9999 || planType === "yearly_9999") {
       return (
         <div>
           <span className="font-extrabold text-slate-900 text-sm">₹4,999</span>
@@ -558,8 +558,8 @@ export function OrdersClient({ orders, clinics = [], products = [] }: OrdersClie
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="free_trial">🎁 14-Day Free Trial (₹0 Complimentary)</SelectItem>
-                  <SelectItem value="monthly_1499">💳 Monthly Subscription (₹1,499 / month)</SelectItem>
-                  <SelectItem value="yearly_4999">👑 Annual Subscription (₹4,999 / year)</SelectItem>
+                  <SelectItem value="quarterly_2999">💳 Quarterly Subscription (₹1,499 / month)</SelectItem>
+                  <SelectItem value="yearly_9999">👑 Annual Subscription (₹4,999 / year)</SelectItem>
                   <SelectItem value="custom">💵 Custom Amount</SelectItem>
                 </SelectContent>
               </Select>

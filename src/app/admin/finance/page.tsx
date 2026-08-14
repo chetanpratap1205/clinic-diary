@@ -25,8 +25,8 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 const PRICING = {
-  quarterly: 1499, // Base price in INR per quarter (approx 500/mo)
-  yearly: 4999,    // Base price in INR per year (approx 416/mo)
+  quarterly: 2999, // Base price in INR per quarter (approx 500/mo)
+  yearly: 9999,    // Base price in INR per year (approx 416/mo)
 };
 
 export default async function FinanceDashboardPage() {

@@ -2,11 +2,11 @@ export const PRICING_PLANS = {
   quarterly: {
     id: "quarterly",
     name: "Quarterly",
-    price: "₹1,499",
-    basePrice: 1499,
+    price: "₹2,999",
+    basePrice: 2999,
     duration: "per 3 months",
     shortDuration: "/ 3 months",
-    description: "Perfect for single clinics getting started.",
+    description: "Perfect for single clinics getting started. No hidden costs.",
     features: [
       "14-Day Unlimited Free Trial",
       "Unlimited Patients & Appointments",
@@ -19,11 +19,11 @@ export const PRICING_PLANS = {
   yearly: {
     id: "yearly",
     name: "Annual",
-    price: "₹4,999",
-    basePrice: 4999,
+    price: "₹9,999",
+    basePrice: 9999,
     duration: "per year",
     shortDuration: "/ 12 months",
-    description: "Maximum ROI for established doctor practices.",
+    description: "Clean, simple pricing forever. No discounts. GST Included.",
     features: [
       "14-Day Unlimited Free Trial",
       "Everything in Quarterly",

@@ -70,7 +70,7 @@ export default function LoginPage() {
         return;
       }
 
-      toast.success("Welcome to Clinic Diary!");
+      toast.success("Welcome to Doctor Diary!");
       window.location.href = redirectPath;
     } catch {
       toast.error("An unexpected error occurred. Please try again.");

@@ -117,14 +117,6 @@ export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
         <p className="text-slate-600 text-base max-w-2xl mx-auto">
           GST Invoice Provided. Cancel or upgrade anytime with zero hidden fees.
         </p>
-        <div className="pt-4 flex items-center justify-center gap-2 text-sm font-semibold text-slate-700">
-          <div className="flex -space-x-2">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-slate-200" />
-            ))}
-          </div>
-          Trusted by 500+ clinics across India
-        </div>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto items-stretch">
@@ -173,14 +165,14 @@ export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
                 
                 <div className="mb-6 flex items-baseline gap-2">
                   <span className={`text-4xl font-black tracking-tight ${plan.popular || isEnterprise ? "text-white" : "text-slate-900"}`}>
-                    {isEnterprise ? plan.price : `₹${Math.round(plan.basePrice * 1.18).toLocaleString()}`}
+                    {isEnterprise ? plan.price : `₹${plan.basePrice.toLocaleString()}`}
                   </span>
                   <span className={`text-xs font-semibold ${plan.popular || isEnterprise ? "text-slate-400" : "text-slate-500"}`}>
                     {plan.duration}
                   </span>
                 </div>
                 {!isEnterprise ? (
-                  <p className={`text-xs -mt-4 mb-6 ${plan.popular ? "text-slate-400" : "text-slate-400"}`}>incl. 18% GST (₹{plan.basePrice.toLocaleString()} base)</p>
+                  <p className={`text-xs -mt-4 mb-6 ${plan.popular ? "text-slate-400" : "text-slate-400"}`}>incl. 18% GST (₹{Math.round(plan.basePrice / 1.18).toLocaleString()} base)</p>
                 ) : (
                   <p className="text-xs -mt-4 mb-6 text-teal-400 font-semibold">Custom SLAs & Setup</p>
                 )}
@@ -276,17 +268,17 @@ export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
               
               <div className="flex justify-between items-center text-sm text-slate-600">
                 <span>Base Price</span>
-                <span>₹{checkoutPlan.basePrice.toLocaleString()}</span>
+                <span>₹{(checkoutPlan.basePrice / 1.18).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between items-center text-sm text-slate-600">
                 <span>GST (18%)</span>
-                <span>₹{(checkoutPlan.basePrice * 0.18).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span>₹{(checkoutPlan.basePrice - (checkoutPlan.basePrice / 1.18)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               
               <div className="flex justify-between items-center pt-4 border-t border-slate-100">
                 <span className="font-bold text-slate-900">Total Amount</span>
                 <span className="font-bold text-xl text-slate-900">
-                  ₹{(checkoutPlan.basePrice * 1.18).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ₹{checkoutPlan.basePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
             </div>

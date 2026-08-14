@@ -7,8 +7,8 @@ import { eq, and, sql } from "drizzle-orm";
 
 
 const PLANS = {
-  quarterly: { amount: Math.round(1499 * 1.18 * 100), name: "Quarterly" },
-  yearly: { amount: Math.round(4999 * 1.18 * 100), name: "Annual" },
+  quarterly: { amount: Math.round(2999 * 100), name: "Quarterly" },
+  yearly: { amount: Math.round(9999 * 100), name: "Annual" },
 };
 
 const verifyRazorpaySignature = (
