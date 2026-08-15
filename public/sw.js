@@ -1,8 +1,8 @@
 // Auto-versioned cache: update BUILD_TIME on each deploy
 // In production, inject the build timestamp via CI/CD or use a build hash
-const BUILD_TIME = "2026-08-05";
-const CACHE_NAME = `doctor-diary-v3-${BUILD_TIME}`;
-const STATIC_CACHE = `doctor-diary-static-v3-${BUILD_TIME}`;
+const BUILD_TIME = "2026-08-15-1605";
+const CACHE_NAME = `doctor-diary-v4-${BUILD_TIME}`;
+const STATIC_CACHE = `doctor-diary-static-v4-${BUILD_TIME}`;
 
 const STATIC_ASSETS = [
   "/",

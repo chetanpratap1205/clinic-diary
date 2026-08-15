@@ -131,7 +131,7 @@ export async function GET(
     return NextResponse.json(manifest, {
       headers: {
         "Content-Type": "application/manifest+json",
-        "Cache-Control": "public, max-age=3600, s-maxage=3600",
+        "Cache-Control": "public, max-age=60, s-maxage=60, stale-while-revalidate=300",
         "Access-Control-Allow-Origin": "*",
       },
     });
