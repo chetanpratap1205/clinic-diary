@@ -56,11 +56,11 @@ export function HeroRedesign() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="text-[26px] min-[375px]:text-[30px] sm:text-[44px] lg:text-[48px] xl:text-[54px] font-black text-[#0B132B] leading-[1.1] tracking-tight mb-3 sm:mb-4"
+              className="text-[28px] min-[375px]:text-[32px] sm:text-[40px] md:text-[44px] lg:text-[48px] xl:text-[52px] font-black text-[#0B132B] leading-[1.1] sm:leading-[1.1] tracking-tight mb-4 sm:mb-5"
             >
-              <span className="block">Clinic Management Software</span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#00B7A8] via-emerald-600 to-[#00897B]">
-                for Doctors.
+              <span className="block mb-1 sm:mb-2">Your patients already trust you.</span>
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#00B7A8] via-emerald-600 to-[#00897B] leading-tight">
+                Now give your clinic the system it deserves.
               </span>
             </motion.h1>
 
@@ -69,7 +69,7 @@ export function HeroRedesign() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="text-sm sm:text-base text-slate-600 mb-5 max-w-lg leading-relaxed font-medium"
+              className="text-sm sm:text-base text-slate-600 mb-6 max-w-xl leading-relaxed font-medium"
             >
               Manage appointments, walk-ins, patients and follow-ups in one simple system — let patients book you 24×7 through your own clinic page or scan your QR at the clinic, while you keep your own Rx pad, your patients and 100% of your consultation fees.
             </motion.p>

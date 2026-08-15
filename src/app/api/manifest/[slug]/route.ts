@@ -44,7 +44,7 @@ export async function GET(
     const appName = clinic.name || "Clinic App";
     
     // Create a truncated short name for mobile screens (typically ~12 chars max)
-    const shortName = appName.length > 12 ? `${appName.substring(0, 11)}…` : appName;
+    const shortName = appName.length > 12 ? `${appName.substring(0, 11)}...` : appName;
 
     // Detect MIME type hint for dynamic icon if logoUrl is provided
     let dynamicIconType = "image/png";

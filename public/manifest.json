@@ -10,7 +10,7 @@
   "background_color": "#f8fafc",
   "categories": ["medical", "health", "productivity"],
   "lang": "en-IN",
-  "scope": "/",
+  "scope": "/dashboard",
   "icons": [
     {
       "src": "/icon-192.png",

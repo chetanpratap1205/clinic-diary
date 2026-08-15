@@ -113,22 +113,23 @@ export function PWAProvider() {
     };
   }, []);
 
-  const handleInstall = async () => {
+  const handleInstall = () => {
     const promptEvent = deferredPrompt || window.__pwaDeferredPrompt;
     if (!promptEvent) return;
-    try {
-      await promptEvent.prompt();
-      const { outcome } = await promptEvent.userChoice;
-      if (outcome === "accepted") {
+    
+    promptEvent.prompt().then(() => {
+      return promptEvent.userChoice;
+    }).then((choiceResult) => {
+      if (choiceResult.outcome === "accepted") {
         setIsInstalled(true);
         setShowBanner(false);
       }
-    } catch (err) {
+    }).catch((err) => {
       console.warn("PWA install error:", err);
-    } finally {
+    }).finally(() => {
       window.__pwaDeferredPrompt = null;
       setDeferredPrompt(null);
-    }
+    });
   };
 
   const handleDismiss = () => {
@@ -246,19 +247,20 @@ export function InstallButton({ className = "" }: { className?: string }) {
 
   if (isInstalled || !deferredPrompt) return null;
 
-  const handleInstall = async () => {
+  const handleInstall = () => {
     const promptEvent = deferredPrompt || window.__pwaDeferredPrompt;
     if (!promptEvent) return;
-    try {
-      await promptEvent.prompt();
-      const { outcome } = await promptEvent.userChoice;
-      if (outcome === "accepted") setIsInstalled(true);
-    } catch (err) {
+    
+    promptEvent.prompt().then(() => {
+      return promptEvent.userChoice;
+    }).then((choiceResult) => {
+      if (choiceResult.outcome === "accepted") setIsInstalled(true);
+    }).catch((err) => {
       console.warn("Install error:", err);
-    } finally {
+    }).finally(() => {
       window.__pwaDeferredPrompt = null;
       setDeferredPrompt(null);
-    }
+    });
   };
 
   return (
@@ -346,7 +348,7 @@ export function PatientInstallButton({
 
   if (isInstalled || (!deferredPrompt && !isIOS)) return null;
 
-  const handleInstall = async () => {
+  const handleInstall = () => {
     if (isIOS) {
       toast.success("Tap Share 📤 then 'Add to Home Screen' ➕ to install", {
         duration: 6000,
@@ -356,16 +358,17 @@ export function PatientInstallButton({
     }
     const promptEvent = deferredPrompt || window.__pwaDeferredPrompt;
     if (!promptEvent) return;
-    try {
-      await promptEvent.prompt();
-      const { outcome } = await promptEvent.userChoice;
-      if (outcome === "accepted") setIsInstalled(true);
-    } catch (err) {
+    
+    promptEvent.prompt().then(() => {
+      return promptEvent.userChoice;
+    }).then((choiceResult) => {
+      if (choiceResult.outcome === "accepted") setIsInstalled(true);
+    }).catch((err) => {
       console.warn("Patient PWA install error:", err);
-    } finally {
+    }).finally(() => {
       window.__pwaDeferredPrompt = null;
       setDeferredPrompt(null);
-    }
+    });
   };
 
   const displayName = clinicName.length > 18 ? `${clinicName.slice(0, 16)}...` : clinicName;
