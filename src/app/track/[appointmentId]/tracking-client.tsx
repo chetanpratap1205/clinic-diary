@@ -24,6 +24,7 @@ import {
   CalendarPlus,
   Share2
 } from "lucide-react";
+import { InstallAppBanner } from "@/components/install-app-banner";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Appointment, Clinic } from "@/db/schema";
 import Link from "next/link";
@@ -330,7 +331,7 @@ export function TrackingClient({
   return (
     <>
       <div className="space-y-6">
-        {/* ──── Hero Header ──── */}
+      {/* ──── Hero Header ──── */}
         <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="text-center pt-2">
           <div className="relative inline-flex mb-4">
             <div className="w-[72px] h-[72px] rounded-2xl shadow-lg flex items-center justify-center text-white text-3xl font-black" style={{ backgroundColor: themeColor }}>

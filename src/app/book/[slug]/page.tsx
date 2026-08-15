@@ -19,6 +19,7 @@ import { BottomActionBar } from "./bottom-action-bar";
 import { ClinicLogo } from "./clinic-logo";
 import { FAQAccordion } from "./faq-accordion";
 import { InstallAppSection } from "@/components/install-app-section";
+import { InstallAppBanner } from "@/components/install-app-banner";
 import { LeadFomoBanner } from "./lead-fomo-banner";
 import { ExpandableText } from "@/components/expandable-text";
 import Link from "next/link";
@@ -788,13 +789,6 @@ export default async function BookingPage({
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          FOMO LEAD BANNER (Visible on all devices for leads)
-      ══════════════════════════════════════════════════════════════════════ */}
-      {isLead && (
-        <LeadFomoBanner clinicName={clinic.name} doctorName={stripDr(clinic.doctorName)} slug={slug} />
-      )}
-
 
       {/* ══════════════════════════════════════════════════════════════════════
           MAIN CONTENT (About, Treatments, Location, Reviews, FAQ)
@@ -1158,6 +1152,17 @@ export default async function BookingPage({
           </div>
 
         </div>
+
+        {/* ══════════════════════════════════════════════════════════════════════
+            FOMO LEAD BANNER (Visible on all devices for leads)
+        ══════════════════════════════════════════════════════════════════════ */}
+        {isLead && (
+          <ScrollReveal delay={0.4}>
+            <div className="mt-12">
+              <LeadFomoBanner clinicName={clinic.name} doctorName={stripDr(clinic.doctorName)} slug={slug} />
+            </div>
+          </ScrollReveal>
+        )}
 
         {/* Enterprise Footer */}
         <footer className="pt-12 pb-6 border-t border-slate-200/60 mt-12 animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both" style={{ animationDelay: '500ms' }}>

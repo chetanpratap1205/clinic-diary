@@ -19,12 +19,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Doctor Diary — Digital Front Desk for Independent Clinics in India",
+  title: "Clinic Management Software for Doctors | Doctor Diary",
   description:
-    "Doctor Diary gives independent clinics booking, live queue, WhatsApp, and follow-ups — all under your clinic's name. No marketplace.",
+    "The #1 clinic management software for doctors in India. Manage appointments, walk-ins, and follow-ups securely under your own brand.",
   keywords: [
-    "digital front desk for clinics",
+    "clinic management software for doctors",
     "clinic management software India",
+    "practice management software",
     "doctor appointment software India",
     "WhatsApp appointment reminder clinic",
     "online appointment booking for doctors India",
@@ -47,9 +48,9 @@ export const metadata: Metadata = {
     apple: [{ url: "/icon-192.png", sizes: "192x192" }],
   },
   openGraph: {
-    title: "Doctor Diary — Digital Front Desk for Independent Clinics in India",
+    title: "Clinic Management Software for Doctors | Doctor Diary",
     description:
-      "Doctor Diary gives independent clinics booking, live queue, WhatsApp, and follow-ups — all under your clinic's name. No marketplace.",
+      "The #1 clinic management software for doctors in India. Manage appointments, walk-ins, and follow-ups securely under your own brand.",
     siteName: "Doctor Diary",
     type: "website",
     url: BASE_URL,
@@ -58,15 +59,15 @@ export const metadata: Metadata = {
         url: `/api/og`,
         width: 1200,
         height: 630,
-        alt: "Doctor Diary — Digital Front Desk for Independent Clinics in India",
+        alt: "Clinic Management Software for Doctors | Doctor Diary",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Doctor Diary — Digital Front Desk for Independent Clinics in India",
+    title: "Clinic Management Software for Doctors | Doctor Diary",
     description:
-      "Doctor Diary gives independent clinics booking, live queue, WhatsApp, and follow-ups — all under your clinic's name. No marketplace.",
+      "The #1 clinic management software for doctors in India. Manage appointments, walk-ins, and follow-ups securely under your own brand.",
     images: [`/api/og`],
   },
 };
@@ -81,6 +82,24 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={cn(inter.variable, outfit.variable, "font-sans", geist.variable)}>
       <head>
+        {/* Early PWA install prompt global capture — executes before ANY client bundle */}
+        <script
+          id="pwa-early-capture"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.__pwaDeferredPrompt = null;
+              window.addEventListener('beforeinstallprompt', function(e) {
+                e.preventDefault();
+                window.__pwaDeferredPrompt = e;
+                window.dispatchEvent(new CustomEvent('pwa-prompt-ready', { detail: e }));
+              });
+              window.addEventListener('appinstalled', function() {
+                window.__pwaDeferredPrompt = null;
+                window.dispatchEvent(new CustomEvent('pwa-installed'));
+              });
+            `,
+          }}
+        />
         {/* Google tag (gtag.js) */}
         <Script
           async

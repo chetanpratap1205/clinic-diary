@@ -36,8 +36,8 @@ export function DoctorDashboard() {
     },
     {
       time: "During Consult",
-      title: "One-Tap Patient History",
-      desc: "Tap once to see previous consult details, allergies, and Rx history. Take clinical notes without changing how you write prescriptions.",
+      title: "Keep Your Rx Pad",
+      desc: "Tap once to see previous consult details, allergies, and Rx history. Write prescriptions by hand exactly as you do today—zero forced typing.",
       icon: <FileText className="w-5 h-5 text-purple-500" />
     },
     {
@@ -107,12 +107,12 @@ export function DoctorDashboard() {
               </div>
               
               {/* Real Dashboard Image */}
-              <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-inner border border-white/10 bg-slate-950">
+              <div className="relative w-full aspect-video rounded-b-xl overflow-hidden shadow-inner border-t border-white/10 bg-slate-950">
                 <Image 
                   src="/assets/Dashboard.png" 
                   alt="Doctor Diary Comprehensive Dashboard"
                   fill
-                  className="object-cover object-top"
+                  className="object-contain object-top"
                   sizes="(max-width: 768px) 100vw, 50vw"
                   quality={95}
                 />

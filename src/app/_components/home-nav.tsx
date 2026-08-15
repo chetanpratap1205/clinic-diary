@@ -38,8 +38,8 @@ export function HomeNav() {
         )}
       >
         {/* Logo Section */}
-        <div className="flex items-center gap-2.5 sm:gap-3 flex-1 justify-start">
-          <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden bg-white shadow-sm flex items-center justify-center shrink-0 border border-slate-200">
+        <Link href="/" className="flex items-center gap-2.5 sm:gap-3 flex-1 justify-start group cursor-pointer transition-transform hover:scale-[1.02]">
+          <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden bg-white shadow-sm group-hover:shadow-md flex items-center justify-center shrink-0 border border-slate-200 transition-all">
             <Image
               src="/icon-192.png"
               alt="Doctor Diary Icon"
@@ -48,14 +48,14 @@ export function HomeNav() {
             />
           </div>
           <div className="flex flex-col justify-center">
-            <span className="font-black text-[#0B132B] text-lg sm:text-xl leading-none tracking-tight">
+            <span className="font-black text-[#0B132B] text-lg sm:text-xl leading-none tracking-tight group-hover:text-[#00B7A8] transition-colors">
               Doctor Diary
             </span>
-            <span className="font-bold text-[#00B7A8] text-[9px] sm:text-[10px] uppercase tracking-widest leading-none mt-1 hidden sm:block">
+            <span className="font-bold text-[#00B7A8] text-[9px] sm:text-[10px] uppercase tracking-widest leading-none mt-1 hidden sm:block opacity-90 group-hover:opacity-100 transition-opacity">
               by NatureXpress
             </span>
           </div>
-        </div>
+        </Link>
 
         {/* Desktop Links */}
         <div className="hidden md:flex items-center justify-center gap-8 px-4">

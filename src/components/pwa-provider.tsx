@@ -1,15 +1,42 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, X, Smartphone } from "lucide-react";
+import { Download, X } from "lucide-react";
 import { PWASplashScreen } from "./pwa-splash-screen";
 import { toast } from "sonner";
 
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+// ─── Reliable Service Worker Registration Helper ─────────────────────────────
+export function registerServiceWorker() {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+
+  const register = () => {
+    navigator.serviceWorker
+      .register("/sw.js", { scope: "/" })
+      .catch((err) => console.warn("SW registration failed:", err));
+  };
+
+  if (document.readyState === "complete") {
+    register();
+  } else {
+    window.addEventListener("load", register, { once: true });
+  }
 }
 
+// ─── Early Window-Level Event Capture ─────────────────────────────────────────
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeinstallprompt", (e: Event) => {
+    e.preventDefault();
+    window.__pwaDeferredPrompt = e as BeforeInstallPromptEvent;
+    window.dispatchEvent(new CustomEvent("pwa-prompt-ready", { detail: e as BeforeInstallPromptEvent }));
+  });
+
+  window.addEventListener("appinstalled", () => {
+    window.__pwaDeferredPrompt = null;
+    window.dispatchEvent(new CustomEvent("pwa-installed"));
+  });
+}
+
+// ─── Root PWA Provider Component ─────────────────────────────────────────────
 export function PWAProvider() {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
@@ -17,62 +44,91 @@ export function PWAProvider() {
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
-    // Register service worker
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker
-          .register("/sw.js", { scope: "/" })
-          .catch((err) => console.warn("SW registration failed:", err));
-      });
-    }
+    // 1. Register service worker reliably
+    registerServiceWorker();
 
-    // Check if already installed as PWA
-    if (window.matchMedia("(display-mode: standalone)").matches) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+    // 2. Check if already running in standalone mode
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as unknown as { standalone?: boolean }).standalone === true;
+
+    if (isStandalone) {
       setIsInstalled(true);
       return;
     }
 
-    // Listen for install prompt
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      
-      // Check if user dismissed it recently
+    const checkAndTriggerBanner = (prompt: BeforeInstallPromptEvent) => {
+      setDeferredPrompt(prompt);
+
+      // Check if user dismissed it recently (< 3 days)
       const lastDismissed = localStorage.getItem("pwa_install_dismissed");
       if (lastDismissed) {
         const dismissedAt = parseInt(lastDismissed, 10);
         const daysSince = (Date.now() - dismissedAt) / (1000 * 60 * 60 * 24);
-        if (daysSince < 3) return; // Hide for 3 days if dismissed
+        if (daysSince < 3) return;
       }
-      
-      // Show install banner after 8 seconds of usage (patients book in ~60s; 45s was too late)
+
+      // Show install banner after 8 seconds
       setTimeout(() => setShowBanner(true), 8000);
     };
 
-    window.addEventListener("beforeinstallprompt", handler);
+    // 3. Pick up prompt if already captured early at window level
+    if (window.__pwaDeferredPrompt) {
+      checkAndTriggerBanner(window.__pwaDeferredPrompt);
+    }
 
-    // Listen for successful install
-    window.addEventListener("appinstalled", () => {
+    // 4. Event listeners for prompt ready & app installed
+    const promptHandler = (e: Event) => {
+      e.preventDefault();
+      const promptEvent = e as BeforeInstallPromptEvent;
+      window.__pwaDeferredPrompt = promptEvent;
+      checkAndTriggerBanner(promptEvent);
+    };
+
+    const promptReadyHandler = (e: Event) => {
+      const customEvent = e as CustomEvent<BeforeInstallPromptEvent | undefined>;
+      const prompt = customEvent.detail || window.__pwaDeferredPrompt;
+      if (prompt) {
+        checkAndTriggerBanner(prompt);
+      }
+    };
+
+    const installedHandler = () => {
       setIsInstalled(true);
       setShowBanner(false);
       setDeferredPrompt(null);
-    });
+      window.__pwaDeferredPrompt = null;
+    };
+
+    window.addEventListener("beforeinstallprompt", promptHandler);
+    window.addEventListener("pwa-prompt-ready", promptReadyHandler);
+    window.addEventListener("appinstalled", installedHandler);
+    window.addEventListener("pwa-installed", installedHandler);
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("beforeinstallprompt", promptHandler);
+      window.removeEventListener("pwa-prompt-ready", promptReadyHandler);
+      window.removeEventListener("appinstalled", installedHandler);
+      window.removeEventListener("pwa-installed", installedHandler);
     };
   }, []);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === "accepted") {
-      setIsInstalled(true);
-      setShowBanner(false);
+    const promptEvent = deferredPrompt || window.__pwaDeferredPrompt;
+    if (!promptEvent) return;
+    try {
+      await promptEvent.prompt();
+      const { outcome } = await promptEvent.userChoice;
+      if (outcome === "accepted") {
+        setIsInstalled(true);
+        setShowBanner(false);
+      }
+    } catch (err) {
+      console.warn("PWA install error:", err);
+    } finally {
+      window.__pwaDeferredPrompt = null;
+      setDeferredPrompt(null);
     }
-    setDeferredPrompt(null);
   };
 
   const handleDismiss = () => {
@@ -134,35 +190,75 @@ export function PWAProvider() {
   );
 }
 
-// Standalone install button for use in nav/pages
+// ─── Standalone Install Button (Doctor Portal / General) ───────────────────────
 export function InstallButton({ className = "" }: { className?: string }) {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
-    if (window.matchMedia("(display-mode: standalone)").matches) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as unknown as { standalone?: boolean }).standalone === true;
+
+    if (isStandalone) {
       setIsInstalled(true);
       return;
     }
+
+    if (window.__pwaDeferredPrompt) {
+      setDeferredPrompt(window.__pwaDeferredPrompt);
+    }
+
     const handler = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      const promptEvent = e as BeforeInstallPromptEvent;
+      window.__pwaDeferredPrompt = promptEvent;
+      setDeferredPrompt(promptEvent);
     };
+
+    const promptReadyHandler = (e: Event) => {
+      const customEvent = e as CustomEvent<BeforeInstallPromptEvent | undefined>;
+      const prompt = customEvent.detail || window.__pwaDeferredPrompt;
+      if (prompt) {
+        setDeferredPrompt(prompt);
+      }
+    };
+
+    const installedHandler = () => {
+      setIsInstalled(true);
+      setDeferredPrompt(null);
+      window.__pwaDeferredPrompt = null;
+    };
+
     window.addEventListener("beforeinstallprompt", handler);
-    window.addEventListener("appinstalled", () => setIsInstalled(true));
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    window.addEventListener("pwa-prompt-ready", promptReadyHandler);
+    window.addEventListener("appinstalled", installedHandler);
+    window.addEventListener("pwa-installed", installedHandler);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("pwa-prompt-ready", promptReadyHandler);
+      window.removeEventListener("appinstalled", installedHandler);
+      window.removeEventListener("pwa-installed", installedHandler);
+    };
   }, []);
 
   if (isInstalled || !deferredPrompt) return null;
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === "accepted") setIsInstalled(true);
-    setDeferredPrompt(null);
+    const promptEvent = deferredPrompt || window.__pwaDeferredPrompt;
+    if (!promptEvent) return;
+    try {
+      await promptEvent.prompt();
+      const { outcome } = await promptEvent.userChoice;
+      if (outcome === "accepted") setIsInstalled(true);
+    } catch (err) {
+      console.warn("Install error:", err);
+    } finally {
+      window.__pwaDeferredPrompt = null;
+      setDeferredPrompt(null);
+    }
   };
 
   return (
@@ -177,7 +273,7 @@ export function InstallButton({ className = "" }: { className?: string }) {
   );
 }
 
-// Subtle, patient-facing install button specifically for clinic booking pages
+// ─── Patient Clinic Install Button ────────────────────────────────────────────
 export function PatientInstallButton({
   clinicName,
   logoUrl,
@@ -195,20 +291,57 @@ export function PatientInstallButton({
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    if (window.matchMedia("(display-mode: standalone)").matches) {
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as unknown as { standalone?: boolean }).standalone === true;
+
+    if (isStandalone) {
       setIsInstalled(true);
       return;
     }
-    const iosCheck = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+
+    const ua = navigator.userAgent;
+    const iosCheck =
+      (/iPad|iPhone|iPod/.test(ua) && !(window as Window & { MSStream?: unknown }).MSStream) ||
+      (typeof navigator !== "undefined" && navigator.maxTouchPoints > 1 && /Macintosh/.test(ua));
     setIsIOS(iosCheck);
+
+    if (window.__pwaDeferredPrompt) {
+      setDeferredPrompt(window.__pwaDeferredPrompt);
+    }
 
     const handler = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      const promptEvent = e as BeforeInstallPromptEvent;
+      window.__pwaDeferredPrompt = promptEvent;
+      setDeferredPrompt(promptEvent);
     };
+
+    const promptReadyHandler = (e: Event) => {
+      const customEvent = e as CustomEvent<BeforeInstallPromptEvent | undefined>;
+      const prompt = customEvent.detail || window.__pwaDeferredPrompt;
+      if (prompt) {
+        setDeferredPrompt(prompt);
+      }
+    };
+
+    const installedHandler = () => {
+      setIsInstalled(true);
+      setDeferredPrompt(null);
+      window.__pwaDeferredPrompt = null;
+    };
+
     window.addEventListener("beforeinstallprompt", handler);
-    window.addEventListener("appinstalled", () => setIsInstalled(true));
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    window.addEventListener("pwa-prompt-ready", promptReadyHandler);
+    window.addEventListener("appinstalled", installedHandler);
+    window.addEventListener("pwa-installed", installedHandler);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("pwa-prompt-ready", promptReadyHandler);
+      window.removeEventListener("appinstalled", installedHandler);
+      window.removeEventListener("pwa-installed", installedHandler);
+    };
   }, []);
 
   if (isInstalled || (!deferredPrompt && !isIOS)) return null;
@@ -217,15 +350,22 @@ export function PatientInstallButton({
     if (isIOS) {
       toast.success("Tap Share 📤 then 'Add to Home Screen' ➕ to install", {
         duration: 6000,
-        position: "top-center"
+        position: "top-center",
       });
       return;
     }
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === "accepted") setIsInstalled(true);
-    setDeferredPrompt(null);
+    const promptEvent = deferredPrompt || window.__pwaDeferredPrompt;
+    if (!promptEvent) return;
+    try {
+      await promptEvent.prompt();
+      const { outcome } = await promptEvent.userChoice;
+      if (outcome === "accepted") setIsInstalled(true);
+    } catch (err) {
+      console.warn("Patient PWA install error:", err);
+    } finally {
+      window.__pwaDeferredPrompt = null;
+      setDeferredPrompt(null);
+    }
   };
 
   const displayName = clinicName.length > 18 ? `${clinicName.slice(0, 16)}...` : clinicName;
@@ -270,4 +410,3 @@ export function PatientInstallButton({
     </>
   );
 }
-

@@ -57,11 +57,21 @@ export function InstallAppSection({
       );
     } else if (platform === "android") {
       handleAndroidInstall();
+    } else if (platform === "desktop") {
+      toast.info(
+        lang === "hi" 
+          ? "एड्रेस बार (URL) में दिख रहे 'Install' (↓) आइकन पर क्लिक करके ऐप डाउनलोड करें।" 
+          : "Click the Install icon (↓) in your browser's address bar to download.",
+        {
+          duration: 6000,
+          position: "top-center",
+        }
+      );
     } else {
       toast.info(
         lang === "hi" 
-          ? "ऐप इंस्टॉल करने के लिए कृपया अपने मोबाइल पर क्रोम (Chrome) या सफारी (Safari) ब्राउज़र का उपयोग करें।" 
-          : "Please open this page in Chrome (Android) or Safari (iOS) on your mobile device to install the app.",
+          ? "इंस्टॉल प्रॉम्प्ट उपलब्ध नहीं है। कृपया सफारी या क्रोम का उपयोग करें और सुनिश्चित करें कि आप 'Private' या 'Incognito' मोड में नहीं हैं।" 
+          : "Install prompt not available. Ensure you're not in Incognito/Private mode, or try using Chrome/Safari.",
         {
           duration: 5000,
           position: "top-center",

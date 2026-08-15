@@ -3,21 +3,38 @@ import { appointments, clinics } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { TrackingClient } from "./tracking-client";
+import type { Metadata } from "next";
 
-export async function generateMetadata({ params }: { params: Promise<{ appointmentId: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ appointmentId: string }>;
+}): Promise<Metadata> {
   const { appointmentId } = await params;
   if (appointmentId.startsWith("demo-")) {
-    return { title: "Live Tracking | Demo Patient" };
+    const slug = appointmentId.replace("demo-", "");
+    return {
+      title: "Live Tracking | Demo Patient",
+      manifest: `/api/manifest/${slug}`,
+    };
   }
   try {
-    const appt = await db
-      .select({ patientName: appointments.patientName })
+    const [result] = await db
+      .select({
+        patientName: appointments.patientName,
+        clinicSlug: clinics.slug,
+        clinicName: clinics.name,
+      })
       .from(appointments)
+      .leftJoin(clinics, eq(appointments.clinicId, clinics.id))
       .where(eq(appointments.id, appointmentId))
       .limit(1);
 
-    if (appt.length === 0) return { title: "Not Found" };
-    return { title: `Live Tracking | ${appt[0].patientName}` };
+    if (!result) return { title: "Not Found" };
+    return {
+      title: `Live Tracking | ${result.patientName}${result.clinicName ? ` - ${result.clinicName}` : ""}`,
+      manifest: result.clinicSlug ? `/api/manifest/${result.clinicSlug}` : undefined,
+    };
   } catch {
     return { title: "Invalid Tracking Link" };
   }

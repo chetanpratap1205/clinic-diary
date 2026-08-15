@@ -25,6 +25,7 @@ export async function generateMetadata({
   return {
     title: `Check Status | ${clinic.name}`,
     description: `Check your live queue status at ${clinic.name}.`,
+    manifest: `/api/manifest/${slug}`,
   };
 }
 

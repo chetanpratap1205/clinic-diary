@@ -74,6 +74,7 @@ export function HomePricingSection() {
               <ul className="space-y-3.5 mb-8">
                 {[
                   "14-Day Unlimited Free Trial",
+                  "0% Commission on Payments",
                   "Unlimited Patients & Appointments",
                   "Free Premium Starter Kit",
                   "Smart WhatsApp & SMS Ready",

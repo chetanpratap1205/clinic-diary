@@ -1,8 +1,44 @@
 import type { ReactNode } from "react";
+import type { Metadata } from "next";
 import { db } from "@/db";
 import { appointments, clinics } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { notFound } from "next/navigation";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ appointmentId: string }>;
+}): Promise<Metadata> {
+  const { appointmentId } = await params;
+
+  if (appointmentId.startsWith("demo-")) {
+    const slug = appointmentId.replace("demo-", "");
+    return {
+      manifest: `/api/manifest/${slug}`,
+    };
+  }
+
+  try {
+    const [result] = await db
+      .select({
+        clinicSlug: clinics.slug,
+      })
+      .from(appointments)
+      .leftJoin(clinics, eq(appointments.clinicId, clinics.id))
+      .where(eq(appointments.id, appointmentId))
+      .limit(1);
+
+    if (result?.clinicSlug) {
+      return {
+        manifest: `/api/manifest/${result.clinicSlug}`,
+      };
+    }
+  } catch {
+    // If invalid UUID or DB error, fall back gracefully
+  }
+
+  return {};
+}
 
 export default async function TrackingLayout({
   children,
@@ -16,21 +52,18 @@ export default async function TrackingLayout({
   // Quick validation to get the theme color safely
   let themeColor = "#0ea5e9";
   try {
-    const appt = await db
-      .select({ clinicId: appointments.clinicId })
-      .from(appointments)
-      .where(eq(appointments.id, appointmentId))
-      .limit(1);
-
-    if (appt.length > 0) {
-      const clinic = await db
+    if (appointmentId.startsWith("demo-")) {
+      themeColor = "#0ea5e9";
+    } else {
+      const [result] = await db
         .select({ themeColor: clinics.themeColor })
-        .from(clinics)
-        .where(eq(clinics.id, appt[0].clinicId))
+        .from(appointments)
+        .leftJoin(clinics, eq(appointments.clinicId, clinics.id))
+        .where(eq(appointments.id, appointmentId))
         .limit(1);
-      
-      if (clinic.length > 0 && clinic[0].themeColor) {
-        themeColor = clinic[0].themeColor;
+
+      if (result?.themeColor) {
+        themeColor = result.themeColor;
       }
     }
   } catch (e) {

@@ -19,7 +19,7 @@ export function LeadFomoBanner({ clinicName, doctorName, slug }: { clinicName: s
     await expressLeadInterest(slug);
     
     // Redirect instantly to WhatsApp (Founder's specific number)
-    const waUrl = "https://wa.me/918077170715?text=" + encodeURIComponent(`Hi Doctor Diary, I am ${doctorName}. I want to claim ${clinicName} and see what I can get.`);
+    const waUrl = "https://wa.me/918077170715?text=" + encodeURIComponent(`Hi Doctor Diary, I am ${doctorName}. I want to claim the free QR Kit and booking page for ${clinicName}. Let's talk.`);
     window.location.href = waUrl;
   };
 
@@ -31,83 +31,56 @@ export function LeadFomoBanner({ clinicName, doctorName, slug }: { clinicName: s
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-400/20 rounded-full blur-[100px] pointer-events-none -translate-y-1/2 translate-x-1/3" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-teal-400/20 rounded-full blur-[80px] pointer-events-none translate-y-1/3 -translate-x-1/4" />
         
-        <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8 justify-between">
+        <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 justify-between">
           
-          <div className="flex-1 text-center lg:text-left space-y-5">
-            {/* Top Label */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-black tracking-widest uppercase shadow-sm">
-                <Sparkles className="w-3.5 h-3.5" />
-                Exclusive Preview For {doctorName}
-              </div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/50 text-slate-300 text-[10px] font-bold tracking-widest uppercase shadow-sm">
-                <Lock className="w-3 h-3 text-slate-400" /> Hidden from patients
-              </div>
+          <div className="flex-1 text-center md:text-left space-y-4">
+            <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
+               <img src="/icon-192.png" alt="Doctor Diary" className="w-8 h-8 rounded-lg shadow-md" />
+               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white text-[10px] font-black tracking-widest uppercase shadow-sm">
+                 <Lock className="w-3 h-3" /> Private Preview
+               </div>
             </div>
 
-            {/* Headline */}
-            <h3 className="text-2xl sm:text-4xl font-black text-white leading-[1.15] tracking-tight drop-shadow-sm">
-              Your clinic deserves more than <br className="hidden xl:block" /> a simple booking link.
+            <h3 className="text-3xl sm:text-4xl font-black text-white leading-tight tracking-tight drop-shadow-sm">
+              Claim this booking page &<br className="hidden lg:block" /> your free Smart QR Kit.
             </h3>
 
-            {/* Territorial Exclusivity FOMO */}
-            <p className="text-slate-300 text-sm sm:text-base font-medium leading-relaxed max-w-2xl mx-auto lg:mx-0">
-              Get booked online <strong className="text-white">24/7/365</strong> while effortlessly managing your scheduled offline walk-ins. We're onboarding select clinics in your area. Don't let another clinic claim the local advantage first. 
-            </p>
-
-            {/* B2B USPs Flex Pills */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 pt-2">
-               <div className="flex items-center gap-1.5 bg-teal-950/50 border border-teal-700/50 px-3 py-1.5 rounded-xl text-xs font-bold text-teal-50 backdrop-blur-sm">
-                 <Users className="w-3.5 h-3.5 text-blue-300" /> Walk-in + Online Bookings
-               </div>
-               <div className="flex items-center gap-1.5 bg-teal-950/50 border border-teal-700/50 px-3 py-1.5 rounded-xl text-xs font-bold text-teal-50 backdrop-blur-sm">
-                 <Edit3 className="w-3.5 h-3.5 text-amber-300" /> Keep your classic Rx Pad
-               </div>
-               <div className="flex items-center gap-1.5 bg-teal-950/50 border border-teal-700/50 px-3 py-1.5 rounded-xl text-xs font-bold text-teal-50 backdrop-blur-sm">
-                 <Settings className="w-3.5 h-3.5 text-sky-300" /> Fully Editable (Photo, Fee, Timings)
-               </div>
-               <div className="flex items-center gap-1.5 bg-teal-950/50 border border-teal-700/50 px-3 py-1.5 rounded-xl text-xs font-bold text-teal-50 backdrop-blur-sm">
-                 <QrCode className="w-3.5 h-3.5 text-purple-300" /> QR Standees
-               </div>
-               <div className="flex items-center gap-1.5 bg-teal-950/50 border border-teal-700/50 px-3 py-1.5 rounded-xl text-xs font-bold text-teal-50 backdrop-blur-sm">
-                 <MapPin className="w-3.5 h-3.5 text-emerald-300" /> Google Maps Boost
-               </div>
-               <div className="flex items-center gap-1.5 bg-teal-950/50 border border-teal-700/50 px-3 py-1.5 rounded-xl text-xs font-bold text-teal-50 backdrop-blur-sm">
-                 <Camera className="w-3.5 h-3.5 text-pink-400" /> Insta Integration
-               </div>
+            <div className="mt-6 space-y-4 max-w-xl mx-auto md:mx-0 text-left">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 bg-teal-800/50 p-2 rounded-xl border border-teal-700/50 shrink-0"><MapPin className="w-4 h-4 text-emerald-400" /></div>
+                <p className="text-teal-50 text-sm leading-relaxed font-medium"><strong className="text-white">Grow Everywhere:</strong> Place this link on Google Maps, social media, and share it with your existing patients.</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 bg-teal-800/50 p-2 rounded-xl border border-teal-700/50 shrink-0"><QrCode className="w-4 h-4 text-emerald-400" /></div>
+                <p className="text-teal-50 text-sm leading-relaxed font-medium"><strong className="text-white">Free QR Standees:</strong> Display inside and outside your clinic. Walk-in and online patients book 24x7 based strictly on your timings.</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 bg-teal-800/50 p-2 rounded-xl border border-teal-700/50 shrink-0"><Settings className="w-4 h-4 text-emerald-400" /></div>
+                <p className="text-teal-50 text-sm leading-relaxed font-medium"><strong className="text-white">100% Customizable:</strong> Your profile, your timings, your consultation fees—you control absolutely everything.</p>
+              </div>
             </div>
           </div>
 
-          {/* Action Area */}
-          <div className="flex-shrink-0 w-full lg:w-[360px] flex flex-col items-center gap-4 bg-teal-950/60 p-6 rounded-3xl border border-teal-600/30 backdrop-blur-md relative overflow-hidden shadow-2xl">
-             
-             <div className="absolute top-0 right-0 w-32 h-32 bg-[#25D366]/10 blur-[40px] pointer-events-none" />
-
-             <h4 className="text-lg font-black text-white text-center leading-tight">
-               See what <span className="text-[#25D366]">{clinicName}</span> could get.
-             </h4>
-             
+          <div className="flex-shrink-0 w-full md:w-auto flex flex-col items-center gap-3">
              <button 
                onClick={handleInterest}
                disabled={isLoading}
-               className="group relative flex items-center justify-center gap-2.5 w-full py-4 px-6 bg-[#25D366] text-teal-950 rounded-2xl font-black text-[15px] shadow-[0_0_30px_-5px_rgba(37,211,102,0.4)] hover:bg-[#22c35e] hover:shadow-[0_0_40px_-5px_rgba(37,211,102,0.6)] active:scale-[0.98] transition-all duration-300 disabled:opacity-80"
+               className="group relative flex items-center justify-center gap-3 w-full md:w-64 py-4 px-6 bg-[#25D366] text-white rounded-2xl font-black text-[16px] shadow-[0_8px_30px_rgba(37,211,102,0.3)] hover:bg-[#22c35e] hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 disabled:opacity-80"
              >
                {isLoading ? (
                  <>
-                   <span className="w-5 h-5 border-2 border-teal-950/40 border-t-teal-950 rounded-full animate-spin" />
+                   <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                    Connecting...
                  </>
                ) : (
                  <>
-                   <WhatsAppIcon className="w-5 h-5" />
-                   WhatsApp Founder
-                   <MoveRight className="w-4 h-4 group-hover:translate-x-1 transition-transform opacity-70" />
+                   <WhatsAppIcon className="w-6 h-6 shrink-0" />
+                   <span>Claim QR Kit & Talk to Expert</span>
                  </>
                )}
              </button>
-
-             <p className="text-[11px] text-teal-100/70 font-medium text-center px-4 leading-relaxed">
-               Skip the queue. Chat directly with the founder to claim your local advantage.
+             <p className="text-xs text-teal-200/60 font-semibold text-center">
+               Connect directly with our team.
              </p>
           </div>
 

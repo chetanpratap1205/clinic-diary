@@ -46,43 +46,85 @@ export async function GET(
     // Create a truncated short name for mobile screens (typically ~12 chars max)
     const shortName = appName.length > 12 ? `${appName.substring(0, 11)}…` : appName;
 
-    const defaultIcons = [
+    // Detect MIME type hint for dynamic icon if logoUrl is provided
+    let dynamicIconType = "image/png";
+    if (clinic.logoUrl) {
+      const lower = clinic.logoUrl.toLowerCase();
+      if (lower.endsWith(".svg")) dynamicIconType = "image/svg+xml";
+      else if (lower.endsWith(".webp")) dynamicIconType = "image/webp";
+      else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) dynamicIconType = "image/jpeg";
+    } else {
+      dynamicIconType = "image/svg+xml";
+    }
+
+    // Standard-compliant icons array with separate "any" and "maskable" purposes
+    const icons = [
+      // Dynamic clinic icons via same-origin proxy
+      {
+        src: `/api/manifest/${slug}/icon?size=192`,
+        sizes: "192x192",
+        type: dynamicIconType,
+        purpose: "any",
+      },
+      {
+        src: `/api/manifest/${slug}/icon?size=192`,
+        sizes: "192x192",
+        type: dynamicIconType,
+        purpose: "maskable",
+      },
+      {
+        src: `/api/manifest/${slug}/icon?size=512`,
+        sizes: "512x512",
+        type: dynamicIconType,
+        purpose: "any",
+      },
+      {
+        src: `/api/manifest/${slug}/icon?size=512`,
+        sizes: "512x512",
+        type: dynamicIconType,
+        purpose: "maskable",
+      },
+      // Static PNG fallbacks
       {
         src: "/icon-192.png",
         sizes: "192x192",
         type: "image/png",
-        purpose: "any maskable"
+        purpose: "any",
+      },
+      {
+        src: "/icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable",
       },
       {
         src: "/icon-512.png",
         sizes: "512x512",
         type: "image/png",
-        purpose: "any maskable"
-      }
+        purpose: "any",
+      },
+      {
+        src: "/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
     ];
 
-    const icons = clinic.logoUrl 
-      ? [
-          {
-            src: clinic.logoUrl,
-            sizes: "192x192 512x512",
-            type: "image/png",
-            purpose: "any maskable"
-          },
-          ...defaultIcons
-        ]
-      : defaultIcons;
-
     const manifest = {
+      id: `/book/${slug}`,
       name: appName,
       short_name: shortName,
-      description: `Official booking app for ${appName}`,
+      description: `Official booking and live queue tracking app for ${appName}`,
       start_url: `/book/${slug}?utm_source=pwa`,
-      scope: `/book/${slug}`,
-      id: `/book/${slug}`,
+      scope: `/`,
       display: "standalone",
-      background_color: "#f8fafc", // slate-50
+      orientation: "portrait-primary",
+      background_color: "#f8fafc",
       theme_color: themeColor,
+      categories: ["medical", "health", "productivity"],
+      lang: "en-IN",
+      prefer_related_applications: false,
       icons,
     };
 
@@ -90,6 +132,7 @@ export async function GET(
       headers: {
         "Content-Type": "application/manifest+json",
         "Cache-Control": "public, max-age=3600, s-maxage=3600",
+        "Access-Control-Allow-Origin": "*",
       },
     });
   } catch (error) {

@@ -73,7 +73,7 @@ export function DigitalFrontDesk() {
             <Layers className="w-4 h-4" /> Introducing Your Operating Layer
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-[#0B132B] mb-6 tracking-tight leading-[1.1]">
-            Meet your clinic's digital front desk.
+            Your complete Clinic Management Software.
           </h2>
           <p className="text-slate-600 text-lg sm:text-xl font-medium leading-relaxed">
             Everything your receptionist does manually — done automatically, under your clinic's name.<br className="hidden sm:inline" />
