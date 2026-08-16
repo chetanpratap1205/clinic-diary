@@ -8,6 +8,8 @@ import { ChevronLeft, Search, Activity, HeartPulse } from "lucide-react";
 import type { Metadata } from "next";
 import { DICTIONARY, Language } from "@/lib/i18n";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export async function generateMetadata({
   params,
 }: {

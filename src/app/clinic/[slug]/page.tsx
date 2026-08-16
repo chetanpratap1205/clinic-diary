@@ -11,6 +11,10 @@ import {
 } from "@/db/schema";
 import { eq, desc, avg, count } from "drizzle-orm";
 import { notFound } from "next/navigation";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { getSpecialtyConfig } from "@/lib/specialty-taxonomy";
 import { DICTIONARY, Language } from "@/lib/i18n";
 import { ScrollReveal } from "@/components/scroll-reveal";

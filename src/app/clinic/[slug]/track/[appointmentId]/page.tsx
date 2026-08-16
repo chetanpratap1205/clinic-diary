@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import { TrackingClient } from "./tracking-client";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export async function generateMetadata({
   params,
 }: {
