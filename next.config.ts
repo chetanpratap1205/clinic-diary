@@ -43,6 +43,11 @@ const nextConfig: NextConfig = {
         source: '/partner',
         destination: 'https://partner.naturexpress.in/',
         permanent: true,
+      },
+      {
+        source: '/book/:slug',
+        destination: '/clinic/:slug',
+        permanent: true,
       }
     ];
   },

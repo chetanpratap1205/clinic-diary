@@ -142,7 +142,7 @@ export default async function DashboardPage() {
     
   const bookingUrl = `${
     process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in"
-  }/book/${clinicData?.slug}`;
+  }/clinic/${clinicData?.slug}`;
 
   const nameStr = authUser.name || "Doctor";
   const displayName = formatDoctorName(nameStr.split(" ")[0]);

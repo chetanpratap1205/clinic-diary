@@ -231,7 +231,7 @@ export function PatientsClient({
                      <span>Call</span>
                    </a>
                    <a 
-                     href={`https://wa.me/91${patient.phone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hi ${patient.name}, this is a message from ${clinic.name}. You can book your next appointment using our online portal: ${(process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in")}/book/${clinic.slug}`)}`}
+                     href={`https://wa.me/91${patient.phone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hi ${patient.name}, this is a message from ${clinic.name}. You can book your next appointment using our online portal: ${(process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in")}/clinic/${clinic.slug}`)}`}
                      target="_blank" rel="noopener noreferrer"
                      className="flex-1 flex items-center justify-center gap-1 p-1.5 rounded-xl text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition-colors font-bold text-[11px]"
                      onClick={(e) => e.stopPropagation()}

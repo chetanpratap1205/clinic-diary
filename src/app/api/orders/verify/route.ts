@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     const items = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
     for (const item of items) {
       const sourceTrackingStr = `paid_marketing_${item.id.split('-')[0]}`;
-      const fullUrl = `https://doctor.naturexpress.in/book/${slug}?source=${sourceTrackingStr}`;
+      const fullUrl = `https://doctor.naturexpress.in/clinic/${slug}?source=${sourceTrackingStr}`;
       
       await db
         .update(orderItems)

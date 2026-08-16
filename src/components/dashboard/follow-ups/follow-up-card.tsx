@@ -69,7 +69,7 @@ export function FollowUpCard({ followUp, variant, clinic }: FollowUpCardProps) {
   };
 
   const origin = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in");
-  const bookingLink = `${origin}/book/${clinic.slug}`;
+  const bookingLink = `${origin}/clinic/${clinic.slug}`;
   const formattedDueDate = format(new Date(followUp.dueDate), "dd MMM yyyy");
   const doctorName = clinic.doctorName || "Doctor";
 

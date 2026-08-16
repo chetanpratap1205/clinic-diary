@@ -46,7 +46,7 @@ export default async function DoctorProfilePage(props: {
       .where(eq(clinics.id, doc.claimedClinicId))
       .limit(1);
     if (activeClinic) {
-      redirect(`/book/${activeClinic.slug}`);
+      redirect(`/clinic/${activeClinic.slug}`);
     }
   }
 

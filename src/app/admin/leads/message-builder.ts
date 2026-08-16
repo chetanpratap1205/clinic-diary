@@ -80,7 +80,7 @@ export function generateLeadDemoUrl(lead: {
     console.warn("generateLeadDemoUrl: lead.clinicSlug is missing, returning base url");
     return `${baseUrl}/demo`;
   }
-  return `${baseUrl}/book/${lead.clinicSlug}`;
+  return `${baseUrl}/clinic/${lead.clinicSlug}`;
 }
 
 // ─── Step / Category Helpers ──────────────────────────────────────────────────

@@ -2,7 +2,7 @@ import { db } from "@/db";
 import { clinics } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import { TrackWidget } from "@/app/book/[slug]/track-widget";
+import { TrackWidget } from "@/app/clinic/[slug]/track-widget";
 import Link from "next/link";
 import { ChevronLeft, Search, Activity, HeartPulse } from "lucide-react";
 import type { Metadata } from "next";
@@ -64,7 +64,7 @@ export default async function StatusPage({
       {/* Back Link */}
       <div className="w-full max-w-md mb-8">
         <Link 
-          href={`/book/${slug}?lang=${lang}`}
+          href={`/clinic/${slug}?lang=${lang}`}
           className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors"
         >
           <ChevronLeft className="w-4 h-4" /> {t.backToBooking}

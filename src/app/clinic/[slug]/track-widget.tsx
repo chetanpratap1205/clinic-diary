@@ -33,7 +33,7 @@ export function TrackWidget({
     if (res.error) {
       toast.error(res.error);
     } else if (res.appointmentId) {
-      router.push(`/track/${res.appointmentId}?lang=${lang}`);
+      router.push(`/clinic/${slug}/track/${res.appointmentId}?lang=${lang}`);
     }
   };
 

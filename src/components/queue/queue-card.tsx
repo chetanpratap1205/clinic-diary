@@ -220,7 +220,7 @@ export const QueueCard = ({
                       "dd MMM yyyy"
                     )}\n\n📄 *View & Download your Official E-Receipt here:*\n${window.location.origin}/receipt/${
                       appt.id
-                    }\n\n📅 *Need a Follow-up?*\nBook your next visit online instantly:\n${window.location.origin}/book/${
+                    }\n\n📅 *Need a Follow-up?*\nBook your next visit online instantly:\n${window.location.origin}/clinic/${
                       clinic.slug
                     }\n\nWishing you a speedy recovery! 🌿`;
                     const formattedPhone = formatWhatsAppPhone(appt.patientPhone);

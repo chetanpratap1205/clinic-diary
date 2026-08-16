@@ -123,7 +123,7 @@ export function ConsultationClient({
         <div className="w-full max-w-sm space-y-3">
           <button
             onClick={() => {
-              const text = `*INVOICE & VISIT SUMMARY* 🏥\n\nDear ${patient.name},\nThank you for visiting *${clinic.name}* (${formatDoctorName(clinic.doctorName)}). We hope you had a comfortable experience!\n\n*Payment Received:* ₹${feeCollected}\n*Date:* ${format(new Date(), "dd MMM yyyy")}\n\n📄 *View & Download your Official E-Receipt here:*\n${window.location.origin}/receipt/${appointment.id}\n\n📅 *Need a Follow-up?*\nBook your next visit online instantly:\n${window.location.origin}/book/${clinic.slug}\n\nWishing you a speedy recovery! 🌿`;
+              const text = `*INVOICE & VISIT SUMMARY* 🏥\n\nDear ${patient.name},\nThank you for visiting *${clinic.name}* (${formatDoctorName(clinic.doctorName)}). We hope you had a comfortable experience!\n\n*Payment Received:* ₹${feeCollected}\n*Date:* ${format(new Date(), "dd MMM yyyy")}\n\n📄 *View & Download your Official E-Receipt here:*\n${window.location.origin}/receipt/${appointment.id}\n\n📅 *Need a Follow-up?*\nBook your next visit online instantly:\n${window.location.origin}/clinic/${clinic.slug}\n\nWishing you a speedy recovery! 🌿`;
               const formattedPhone = formatWhatsAppPhone(patient.phone);
               const url = formattedPhone 
                 ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(text)}`

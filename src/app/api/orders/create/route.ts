@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
         shippingAddress,
       }).returning({ id: orders.id });
 
-      const trackingUrl = `https://doctor.naturexpress.in/book/clinic-slug?source=free_kit_${newOrder.id.split('-')[0]}`; // Example generation
+      const trackingUrl = `https://doctor.naturexpress.in/clinic/clinic-slug?source=free_kit_${newOrder.id.split('-')[0]}`; // Example generation
 
       await db.insert(orderItems).values({
         orderId: newOrder.id,

@@ -69,7 +69,7 @@ export async function GET(
     }).catch(err => console.error("[QR Scan Analytics Log Error]", err));
 
     // ✅ Everything good — redirect to booking page
-    let finalUrl = `${baseUrl}/book/${clinic.slug}`;
+    let finalUrl = `${baseUrl}/clinic/${clinic.slug}`;
     if (src) {
       finalUrl += `?source=qr_${src}`;
     }

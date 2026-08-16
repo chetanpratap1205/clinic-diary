@@ -163,7 +163,7 @@ export async function generateMetadata({
     fee: clinic.consultationFee ? String(clinic.consultationFee) : "",
     location: cityOrLocality,
   });
-  const canonicalUrl = `${BASE_URL}/book/${slug}`;
+  const canonicalUrl = `${BASE_URL}/clinic/${slug}`;
   const titleText = `${displayDoctorName} | ${specialtyConfig.displayName}${locationTag} | ${clinic.name}`;
   const descText = `Book a free appointment with ${displayDoctorName} (${specialtyConfig.displayName}) at ${clinic.name}${locationTag}. Instant OPD token & live queue position tracking on mobile.`;
 
@@ -370,11 +370,11 @@ export default async function BookingPage({
     "@graph": [
       {
         "@type": ["MedicalClinic", "LocalBusiness"],
-        "@id": `${BASE_URL}/book/${slug}#clinic`,
+        "@id": `${BASE_URL}/clinic/${slug}#clinic`,
         "name": clinic.name,
         "medicalSpecialty": specialtyConfig.displayName,
         "telephone": clinic.phone ? `+91${clinic.phone.replace(/\D/g, "").slice(-10)}` : undefined,
-        "url": `${BASE_URL}/book/${slug}`,
+        "url": `${BASE_URL}/clinic/${slug}`,
         "image": safeLogoUrl || `${BASE_URL}/og-image.png`,
         "priceRange": clinic.consultationFee ? formattedFee : "Free Consultation",
         "hasMap": directionsUrl || undefined,
@@ -430,18 +430,18 @@ export default async function BookingPage({
       },
       {
         "@type": "Physician",
-        "@id": `${BASE_URL}/book/${slug}#doctor`,
+        "@id": `${BASE_URL}/clinic/${slug}#doctor`,
         "name": displayDoctorName,
         "jobTitle": specialtyConfig.heroBadge,
         "honorificSuffix": clinic.degree || undefined,
         "medicalSpecialty": specialtyConfig.displayName,
         "worksFor": {
-          "@id": `${BASE_URL}/book/${slug}#clinic`
+          "@id": `${BASE_URL}/clinic/${slug}#clinic`
         }
       },
       {
         "@type": "FAQPage",
-        "@id": `${BASE_URL}/book/${slug}#faq`,
+        "@id": `${BASE_URL}/clinic/${slug}#faq`,
         "mainEntity": faqItems.map(faq => ({
           "@type": "Question",
           "name": faq.question,
@@ -978,7 +978,7 @@ export default async function BookingPage({
                 <h2 className="text-sm font-black text-slate-900 flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-slate-400" /> {t.locationContact}
                 </h2>
-                <a href={`https://wa.me/?text=${encodeURIComponent(`Book an appointment with ${clinic.name}: ${BASE_URL}/book/${slug}`)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full text-[10px] font-bold hover:bg-emerald-100 transition-colors active:scale-95" aria-label="Share Clinic Link on WhatsApp">
+                <a href={`https://wa.me/?text=${encodeURIComponent(`Book an appointment with ${clinic.name}: ${BASE_URL}/clinic/${slug}`)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full text-[10px] font-bold hover:bg-emerald-100 transition-colors active:scale-95" aria-label="Share Clinic Link on WhatsApp">
                   <Share2 className="w-3 h-3" /> {lang === "hi" ? "शेयर" : "Share"}
                 </a>
               </div>

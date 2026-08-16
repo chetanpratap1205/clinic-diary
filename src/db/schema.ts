@@ -572,7 +572,7 @@ export const marketingCampaigns = pgTable("marketing_campaigns", {
   clicks: integer("clicks").notNull().default(0),
   signups: integer("signups").notNull().default(0),
   targetClicks: integer("target_clicks").default(0),
-  destinationUrl: text("destination_url"), // Optional custom redirect URL e.g. /signup or /book/dr-xxx
+  destinationUrl: text("destination_url"), // Optional custom redirect URL e.g. /signup or /clinic/dr-xxx
   utmSource: text("utm_source"),
   utmMedium: text("utm_medium"),
   utmCampaign: text("utm_campaign"),

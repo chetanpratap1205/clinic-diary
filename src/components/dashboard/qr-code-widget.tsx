@@ -42,7 +42,7 @@ export function QrCodeWidget({ clinicId, clinicName, slug, themeColor }: QrCodeW
       });
   }, [clinicId]);
 
-  const bookingUrl = `${origin}/book/${slug}`;
+  const bookingUrl = `${origin}/clinic/${slug}`;
 
   const handleDownload = (code: string, usageType: string) => {
     const canvas = document.getElementById(`qr-canvas-${code}`) as HTMLCanvasElement;

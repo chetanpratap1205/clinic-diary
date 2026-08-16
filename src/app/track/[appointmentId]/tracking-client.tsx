@@ -733,7 +733,7 @@ export function TrackingClient({
         <AnimatePresence>
           {(isCompleted || isCancelled) && (
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }} transition={{ delay: 0.5, type: "spring", stiffness: 300, damping: 25 }}>
-              <Link href={`/book/${clinic.slug}`} className="flex items-center justify-between gap-4 w-full rounded-3xl border border-slate-200 bg-white p-5 hover:border-slate-300 hover:shadow-md transition-all duration-200 group active:scale-[0.98]">
+              <Link href={`/clinic/${clinic.slug}`} className="flex items-center justify-between gap-4 w-full rounded-3xl border border-slate-200 bg-white p-5 hover:border-slate-300 hover:shadow-md transition-all duration-200 group active:scale-[0.98]">
                 <div>
                   <p className="text-[15px] font-black text-slate-800 group-hover:text-slate-900">{isCompleted ? t.bookNextVisit : t.bookNewAppointment}</p>
                   <p className="text-xs font-semibold text-slate-500 mt-1">{t.withDr(doctorFirstName, clinic.name)}</p>

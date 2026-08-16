@@ -733,7 +733,7 @@ export function MarketingClient({ campaigns, scanTrends = [] }: MarketingClientP
             <div className="space-y-1.5">
               <Label className="text-xs font-bold text-slate-700">Destination Redirect Path (Optional)</Label>
               <Input
-                placeholder="Default: / (or /signup, /book/dr-madhurirani)"
+                placeholder="Default: / (or /signup, /clinic/dr-madhurirani)"
                 value={formData.destinationUrl}
                 onChange={(e) => setFormData({ ...formData, destinationUrl: e.target.value })}
                 className="text-sm font-mono"

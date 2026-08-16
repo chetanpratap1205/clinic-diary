@@ -101,12 +101,12 @@ export default async function SettingsPage() {
               <input
                 type="text"
                 readOnly
-                value={`https://doctor.naturexpress.in/book/${clinic.slug}`}
+                value={`https://doctor.naturexpress.in/clinic/${clinic.slug}`}
                 className="bg-transparent text-sm font-semibold text-slate-700 w-full focus:outline-none"
               />
             </div>
             <a
-              href={`/book/${clinic.slug}`}
+              href={`/clinic/${clinic.slug}`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center justify-center gap-2 px-5 py-3 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors"

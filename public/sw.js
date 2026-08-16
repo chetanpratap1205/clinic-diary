@@ -1,6 +1,6 @@
 // Auto-versioned cache: update BUILD_TIME on each deploy
 // In production, inject the build timestamp via CI/CD or use a build hash
-const BUILD_TIME = "2026-08-15-1605";
+const BUILD_TIME = "2026-08-16-1300";
 const CACHE_NAME = `doctor-diary-v4-${BUILD_TIME}`;
 const STATIC_CACHE = `doctor-diary-static-v4-${BUILD_TIME}`;
 
@@ -74,26 +74,39 @@ self.addEventListener("fetch", (event) => {
               headers: { "Content-Type": "text/plain" },
             });
           }
-          return caches.match(request);
+          return caches.match(request, { ignoreSearch: true });
         })
     );
     return;
   }
 
-  // Cache-first for public booking pages
-  if (url.pathname.startsWith("/book/")) {
+  // Network-first for public booking pages (Crucial for live availability & avoiding cross-clinic stale state)
+  if (url.pathname.startsWith("/clinic/")) {
     event.respondWith(
-      caches.match(request).then((cached) => {
-        // Always try to update the cache in the background (stale-while-revalidate)
-        const fetchPromise = fetch(request).then((response) => {
+      fetch(request)
+        .then((response) => {
           if (response.ok) {
             const cloned = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned));
           }
           return response;
-        });
-        return cached || fetchPromise;
-      })
+        })
+        .catch(async (error) => {
+          // 1. Try cache fallback
+          const cached = await caches.match(request, { ignoreSearch: true });
+          if (cached) return cached;
+          
+          // 2. Offline fallback (Required for PWA installability)
+          if (request.mode === "navigate") {
+            const offlinePage = await caches.match("/offline");
+            if (offlinePage) return offlinePage;
+            return caches.match("/") || new Response("Offline — Please check your connection.", {
+              status: 503,
+              headers: { "Content-Type": "text/plain" },
+            });
+          }
+          throw error;
+        })
     );
     return;
   }

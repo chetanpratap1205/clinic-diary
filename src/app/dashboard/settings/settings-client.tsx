@@ -156,7 +156,7 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
     setOrigin(window.location.origin);
   }, []);
 
-  const bookingUrl = `${origin}/book/${slug}`;
+  const bookingUrl = `${origin}/clinic/${slug}`;
 
   const {
     register,

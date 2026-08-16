@@ -319,7 +319,7 @@ export function BookingClient({
 
   const shareWA = () => {
     if (!successData) return;
-    const referralUrl = `${window.location.origin}/book/${clinic.slug}`;
+    const referralUrl = `${window.location.origin}/clinic/${clinic.slug}`;
     const msg = `My OPD appointment at ${clinic.name} is confirmed for ${successData.date} at ${successData.time}.\n\nTrack live queue 👉 ${window.location.origin}/track/${successData.appointmentId}\n\nBook your appointment online at ${clinic.name} here: ${referralUrl}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   };
@@ -423,7 +423,7 @@ export function BookingClient({
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
-                onClick={() => router.push(`/track/${successData.appointmentId}?lang=${lang}`)}
+                onClick={() => router.push(`/clinic/${clinic.slug}/track/${successData.appointmentId}?lang=${lang}`)}
                 className="w-full py-4 rounded-2xl font-black text-sm shadow-xl transition-all flex items-center justify-center gap-2 group relative overflow-hidden"
                 style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}dd)`, color: textColor, boxShadow: `0 12px 30px -8px ${themeColor}60` }}
               >

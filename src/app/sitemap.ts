@@ -14,7 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .from(clinics);
 
     clinicEntries = allClinics.map((clinic) => ({
-      url: `${baseUrl}/book/${clinic.slug}`,
+      url: `${baseUrl}/clinic/${clinic.slug}`,
       lastModified: clinic.createdAt,
       changeFrequency: "weekly",
       priority: 0.8,

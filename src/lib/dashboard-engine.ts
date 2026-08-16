@@ -35,7 +35,7 @@ export function getDashboardInsight(state: ClinicState): InsightBanner {
     clinicSlug,
   } = state;
 
-  const bookingUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in"}/book/${clinicSlug}`;
+  const bookingUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in"}/clinic/${clinicSlug}`;
 
   // Rule 1: Highest Priority - Retention / Subscription expiring soon
   if (isSubscriptionActive && subscriptionDaysLeft !== null && subscriptionDaysLeft <= 5 && subscriptionDaysLeft >= 0) {

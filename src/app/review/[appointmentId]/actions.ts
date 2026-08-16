@@ -49,7 +49,7 @@ export async function submitReview(
 
     // Revalidate the clinic booking page
     revalidatePath(`/book`);
-    // Ideally we revalidate `/book/[slug]` but we don't have the slug directly here. 
+    // Ideally we revalidate `/clinic/[slug]` but we don't have the slug directly here. 
     // `revalidatePath('/book', 'layout')` will clear all nested routes under /book
     revalidatePath('/book', 'layout');
 

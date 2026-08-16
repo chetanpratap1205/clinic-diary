@@ -175,7 +175,7 @@ export default async function ReceiptPage(props: { params: Promise<{ id: string 
 
         {/* CTA / Next Steps (Hidden on Print) */}
         <div className="mt-8 print:hidden">
-          <Link href={`/book/${clinic.slug}`} className="block w-full">
+          <Link href={`/clinic/${clinic.slug}`} className="block w-full">
             <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between hover:border-slate-300 hover:shadow-md transition-all group active:scale-[0.98]">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
