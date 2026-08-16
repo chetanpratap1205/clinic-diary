@@ -139,10 +139,8 @@ export function TrackingClient({
   const [showBanner, setShowBanner] = useState(true);
   const [now, setNow] = useState(new Date());
 
-  // Verification State
-  const [isVerified, setIsVerified] = useState(false);
-  const [phoneInput, setPhoneInput] = useState("");
-  const [verifyError, setVerifyError] = useState("");
+  // Verification State (removed as per user request)
+
 
   const appointment = allAppts.find((a) => a.id === initialAppointment.id) || initialAppointment;
 
@@ -252,81 +250,8 @@ export function TrackingClient({
   const queuePosition = myIndex >= 0 ? myIndex : 0;
   const estimatedWaitMins = waitMins;
 
-  const handleVerify = (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanInput = phoneInput.replace(/\D/g, '');
-    const cleanTarget = (appointment.patientPhone || "").replace(/\D/g, '');
-    
-    // We check if the last 10 digits match to account for country codes or extra formatting
-    if (cleanInput.length >= 10 && cleanTarget.length >= 10) {
-      if (cleanInput.slice(-10) === cleanTarget.slice(-10)) {
-         setIsVerified(true);
-         setVerifyError("");
-         return;
-      }
-    }
-    // Fallback if they entered something else, just do direct match
-    if (cleanInput === cleanTarget) {
-         setIsVerified(true);
-         setVerifyError("");
-         return;
-    }
-    setVerifyError("Incorrect mobile number. Please try again.");
-  };
+  // Verification removed as per user request
 
-  if (!isVerified) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex flex-col pt-12 pb-24 px-4 sm:px-6 relative overflow-hidden">
-        <div className="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-slate-100 to-transparent pointer-events-none" />
-        <div className="max-w-md mx-auto w-full relative z-10 space-y-6">
-          <div className="flex flex-col items-center justify-center space-y-4 mb-8">
-             <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center overflow-hidden ring-1 ring-slate-900/5">
-               {clinic.logoUrl && clinic.logoUrl !== "" ? (
-                 <img src={clinic.logoUrl} alt={clinic.name} className="w-full h-full object-cover" />
-               ) : (
-                 <span className="text-2xl font-black text-slate-800">{clinic.name.charAt(0)}</span>
-               )}
-             </div>
-             <div className="text-center">
-               <h1 className="text-xl font-black text-slate-900 tracking-tight">{clinic.name}</h1>
-               <p className="text-xs text-slate-500 font-medium">Live Token Tracking</p>
-             </div>
-          </div>
-
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-             <div className="mb-5 text-center">
-               <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
-                 <Phone className="w-5 h-5 text-slate-400" />
-               </div>
-               <h2 className="text-lg font-black text-slate-800">Verify Identity</h2>
-               <p className="text-xs text-slate-500 mt-1 px-4 leading-relaxed">Enter your registered mobile number to securely view your live queue status.</p>
-             </div>
-
-             <form onSubmit={handleVerify} className="space-y-4">
-               <div>
-                 <input
-                   type="tel"
-                   value={phoneInput}
-                   onChange={(e) => { setPhoneInput(e.target.value); setVerifyError(""); }}
-                   placeholder="Enter mobile number"
-                   className="w-full h-14 rounded-2xl bg-slate-50 border border-slate-200 px-5 text-sm font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-center tracking-wide"
-                   autoFocus
-                 />
-                 {verifyError && <p className="text-xs text-red-500 font-bold mt-2 text-center text-balance">{verifyError}</p>}
-               </div>
-               <button type="submit" className="w-full h-14 rounded-2xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 active:scale-95 transition-all shadow-md">
-                 Unlock Live Status
-               </button>
-             </form>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <WellnessFeed themeColor={themeColor} />
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>
