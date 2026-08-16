@@ -49,8 +49,8 @@ async function main() {
     assert.equal(dashboardLayout.includes("manifest:"), false, "Dashboard layout should not override manifest");
   });
 
-  await runTest("Patient Booking Layout (/book/[slug]/layout.tsx) generates dynamic clinic manifest", async () => {
-    const bookingLayoutMod = await import("../src/app/book/[slug]/layout");
+  await runTest("Patient Booking Layout (/clinic/[slug]/layout.tsx) generates dynamic clinic manifest", async () => {
+    const bookingLayoutMod = await import("../src/app/clinic/[slug]/layout");
     assert.ok(typeof bookingLayoutMod.generateMetadata === "function", "generateMetadata must be exported");
     
     const testSlug = "apollo-dental-delhi";
@@ -60,8 +60,8 @@ async function main() {
     assert.equal(meta.manifest, `/api/manifest/${testSlug}`, "Booking layout must link /api/manifest/[slug]");
   });
 
-  await runTest("Patient Booking Page (/book/[slug]/page.tsx) generates dynamic clinic manifest", () => {
-    const bookingPageContent = fs.readFileSync("src/app/book/[slug]/page.tsx", "utf-8");
+  await runTest("Patient Booking Page (/clinic/[slug]/page.tsx) generates dynamic clinic manifest", () => {
+    const bookingPageContent = fs.readFileSync("src/app/clinic/[slug]/page.tsx", "utf-8");
     assert.ok(
       bookingPageContent.includes("manifest: `/api/manifest/${slug}`"),
       "Booking page metadata must include dynamic manifest link"
@@ -155,9 +155,9 @@ async function main() {
     assert.ok(response.headers.get("Cache-Control")?.includes("max-age=3600"));
 
     const json = await response.json();
-    assert.equal(json.id, "/book/demo-ayurveda-care", "id must be /book/[slug]");
-    assert.equal(json.start_url, "/book/demo-ayurveda-care?utm_source=pwa", "start_url must be /book/[slug]?utm_source=pwa");
-    assert.equal(json.scope, "/book/demo-ayurveda-care", "scope must be /book/[slug]");
+    assert.equal(json.id, "/clinic/demo-ayurveda-care", "id must be /clinic/[slug]");
+    assert.equal(json.start_url, "/clinic/demo-ayurveda-care?utm_source=pwa", "start_url must be /clinic/[slug]?utm_source=pwa");
+    assert.equal(json.scope, "/clinic/demo-ayurveda-care", "scope must be /clinic/[slug]");
     assert.equal(json.display, "standalone", "display must be standalone");
     assert.equal(json.orientation, "portrait-primary", "orientation must be portrait-primary");
     assert.deepEqual(json.categories, ["medical", "health", "productivity"]);
@@ -287,17 +287,17 @@ async function main() {
     // 1. App ID isolation
     assert.notEqual(doctorManifest.id, patientManifest.id, "Doctor and Patient app IDs must be distinct");
     assert.equal(doctorManifest.id, "doctor-diary-app", "Doctor app ID must be doctor-diary-app");
-    assert.equal(patientManifest.id, "/book/demo-ayurveda-care", "Patient app ID must be scoped to /book/[slug]");
+    assert.equal(patientManifest.id, "/clinic/demo-ayurveda-care", "Patient app ID must be scoped to /clinic/[slug]");
 
     // 2. Scope isolation
     assert.notEqual(doctorManifest.scope, patientManifest.scope, "Doctor and Patient scopes must be distinct");
     assert.equal(doctorManifest.scope, "/", "Doctor scope is root");
-    assert.equal(patientManifest.scope, "/book/demo-ayurveda-care", "Patient scope is strictly /book/[slug]");
+    assert.equal(patientManifest.scope, "/clinic/demo-ayurveda-care", "Patient scope is strictly /clinic/[slug]");
 
     // 3. Start URL isolation
     assert.notEqual(doctorManifest.start_url, patientManifest.start_url, "Start URLs must be distinct");
     assert.equal(doctorManifest.start_url, "/dashboard", "Doctor start_url is /dashboard");
-    assert.equal(patientManifest.start_url, "/book/demo-ayurveda-care?utm_source=pwa", "Patient start_url has utm_source=pwa");
+    assert.equal(patientManifest.start_url, "/clinic/demo-ayurveda-care?utm_source=pwa", "Patient start_url has utm_source=pwa");
 
     // 4. Verification that patient PWA scope cannot capture doctor routes
     const patientScope = patientManifest.scope;

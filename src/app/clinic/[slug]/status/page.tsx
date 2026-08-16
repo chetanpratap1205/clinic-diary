@@ -84,7 +84,7 @@ export default async function StatusPage({
             {t.enterMobileToTrack(clinic.name)}
           </p>
 
-          <TrackWidget clinicId={clinic.id} themeColor={themeColor} lang={lang} />
+          <TrackWidget clinicId={clinic.id} themeColor={themeColor} slug={slug} lang={lang} />
         </div>
         
         {/* Footer info */}

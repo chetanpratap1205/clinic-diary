@@ -10,10 +10,12 @@ import { DICTIONARY, Language } from "@/lib/i18n";
 export function TrackWidget({
   clinicId,
   themeColor,
+  slug,
   lang = "en",
 }: {
   clinicId: string;
   themeColor: string;
+  slug: string;
   lang?: Language;
 }) {
   const t = DICTIONARY[lang];
