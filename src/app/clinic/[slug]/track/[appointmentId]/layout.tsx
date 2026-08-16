@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ appointmentId: string }>;
+  params: Promise<{ slug: string; appointmentId: string }>;
 }): Promise<Metadata> {
   const { appointmentId } = await params;
 
@@ -45,7 +45,7 @@ export default async function TrackingLayout({
   params,
 }: {
   children: ReactNode;
-  params: Promise<{ appointmentId: string }>;
+  params: Promise<{ slug: string; appointmentId: string }>;
 }) {
   const { appointmentId } = await params;
   

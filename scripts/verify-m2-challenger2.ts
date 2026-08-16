@@ -68,32 +68,32 @@ async function main() {
     );
   });
 
-  await runTest("Patient Tracking Layout (/track/[appointmentId]/layout.tsx) handles demo-* links", async () => {
-    const trackingLayoutMod = await import("../src/app/track/[appointmentId]/layout");
+  await runTest("Patient Tracking Layout (/clinic/[slug]/track/[appointmentId]/layout.tsx) handles demo-* links", async () => {
+    const trackingLayoutMod = await import("../src/app/clinic/[slug]/track/[appointmentId]/layout");
     assert.ok(typeof trackingLayoutMod.generateMetadata === "function", "generateMetadata must be exported");
 
     const demoMeta = await trackingLayoutMod.generateMetadata({
-      params: Promise.resolve({ appointmentId: "demo-ayurveda-care" }),
+      params: Promise.resolve({ slug: "ayurveda-care", appointmentId: "demo-ayurveda-care" }),
     });
     assert.equal(demoMeta.manifest, "/api/manifest/ayurveda-care", "Demo link must extract clinic slug and link manifest");
   });
 
-  await runTest("Patient Tracking Layout (/track/[appointmentId]/layout.tsx) gracefully handles non-existent/invalid IDs", async () => {
-    const trackingLayoutMod = await import("../src/app/track/[appointmentId]/layout");
+  await runTest("Patient Tracking Layout (/clinic/[slug]/track/[appointmentId]/layout.tsx) gracefully handles non-existent/invalid IDs", async () => {
+    const trackingLayoutMod = await import("../src/app/clinic/[slug]/track/[appointmentId]/layout");
     
     // Invalid UUID / missing appointment should not throw, returns empty object
     const result = await trackingLayoutMod.generateMetadata({
-      params: Promise.resolve({ appointmentId: "00000000-0000-0000-0000-000000000000" }),
+      params: Promise.resolve({ slug: "ayurveda-care", appointmentId: "00000000-0000-0000-0000-000000000000" }),
     });
     assert.deepEqual(result, {}, "Invalid tracking ID must return {} gracefully");
   });
 
-  await runTest("Patient Tracking Page (/track/[appointmentId]/page.tsx) handles demo-* links", async () => {
-    const trackingPageMod = await import("../src/app/track/[appointmentId]/page");
+  await runTest("Patient Tracking Page (/clinic/[slug]/track/[appointmentId]/page.tsx) handles demo-* links", async () => {
+    const trackingPageMod = await import("../src/app/clinic/[slug]/track/[appointmentId]/page");
     assert.ok(typeof trackingPageMod.generateMetadata === "function", "generateMetadata must be exported");
 
     const demoMeta = await trackingPageMod.generateMetadata({
-      params: Promise.resolve({ appointmentId: "demo-max-hospital" }),
+      params: Promise.resolve({ slug: "max-hospital", appointmentId: "demo-max-hospital" }),
     });
     assert.equal(demoMeta.manifest, "/api/manifest/max-hospital", "Demo link must link manifest in page metadata");
     assert.equal(demoMeta.title, "Live Tracking | Demo Patient", "Demo link must return live tracking title");

@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ appointmentId: string }>;
+  params: Promise<{ slug: string; appointmentId: string }>;
 }): Promise<Metadata> {
   const { appointmentId } = await params;
   if (appointmentId.startsWith("demo-")) {
@@ -40,7 +40,7 @@ export async function generateMetadata({
   }
 }
 
-export default async function TrackingPage({ params, searchParams }: { params: Promise<{ appointmentId: string }>; searchParams?: Promise<{ [key: string]: string | string[] | undefined }> }) {
+export default async function TrackingPage({ params, searchParams }: { params: Promise<{ slug: string; appointmentId: string }>; searchParams?: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const { appointmentId } = await params;
   const sp = await searchParams;
   const lang = sp?.lang === "hi" ? "hi" : "en";
