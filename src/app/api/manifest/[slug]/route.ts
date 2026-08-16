@@ -117,7 +117,7 @@ export async function GET(
       short_name: shortName,
       description: `Official booking and live queue tracking app for ${appName}`,
       start_url: `/clinic/${slug}?utm_source=pwa`,
-      scope: `/clinic/${slug}/`,
+      scope: `/clinic/${slug}`,
       display: "standalone",
       orientation: "portrait-primary",
       background_color: "#f8fafc",
