@@ -615,9 +615,9 @@ export default async function BookingPage({
                     </div>
                     {/* Name + specialty */}
                     <div className="space-y-1 lg:space-y-3">
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1 lg:px-4 lg:py-1.5 rounded-full bg-white/90 border border-slate-200" style={{ color: themeColor }}>
-                        <Stethoscope className="w-3 h-3 lg:w-3.5 lg:h-3.5" />
-                        <span className="text-[10px] lg:text-[11px] font-black uppercase tracking-widest">{specialtyConfig.heroBadge}</span>
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 lg:px-4 lg:py-1.5 rounded-full bg-slate-100/90 border border-slate-200/80 text-[#065f56]">
+                        <Stethoscope className="w-3.5 h-3.5" />
+                        <span className="text-xs font-black uppercase tracking-widest">{specialtyConfig.heroBadge}</span>
                       </div>
                       <h1 id="hero-doctor-name" className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black text-slate-900 tracking-tight leading-tight">{displayDoctorName}</h1>
                       <p className="text-xs lg:text-sm text-slate-500 font-bold">
@@ -638,8 +638,7 @@ export default async function BookingPage({
               {isSafeImageUrl(clinic.heroImageUrl) && (
                 <div className="hidden lg:block space-y-4">
                   <div
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-widest border"
-                    style={{ color: themeColor, backgroundColor: `${themeColor}12`, borderColor: `${themeColor}30` }}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest border border-[#065f56]/30 text-[#065f56] bg-teal-50/80"
                   >
                     <Stethoscope className="w-3.5 h-3.5" />
                     {specialtyConfig.heroBadge}
@@ -1037,9 +1036,9 @@ export default async function BookingPage({
                               href={`https://wa.me/91${clinic.whatsappNumber.replace(/\D/g, "").slice(-10)}?text=${encodeURIComponent(`Hi ${clinic.name}, I have a question about booking an appointment.`)}`} 
                               target="_blank" 
                               rel="noopener noreferrer" 
-                              className="inline-flex items-center justify-center gap-1.5 bg-[#25D366] text-white px-3 py-2.5 rounded-2xl text-[11px] font-bold hover:bg-[#1fba5a] transition-all shadow-md active:scale-95 text-center col-span-2 sm:col-span-1"
+                              className="inline-flex items-center justify-center gap-1.5 bg-[#25D366] text-slate-950 px-3.5 py-2.5 rounded-2xl text-xs font-black hover:bg-[#1fba5a] transition-all shadow-md active:scale-95 text-center col-span-2 sm:col-span-1"
                             >
-                              <WhatsAppIcon className="w-3.5 h-3.5" /> WhatsApp
+                              <WhatsAppIcon className="w-4 h-4 text-slate-950" /> WhatsApp
                             </a>
                           )}
                         </div>

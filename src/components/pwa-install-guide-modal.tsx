@@ -9,6 +9,7 @@ import {
   ArrowDown,
   CheckCircle2,
   Copy,
+  Download,
   ExternalLink,
   Menu,
   PlusSquare,
@@ -162,6 +163,40 @@ export function PWAInstallGuideModal({
             </div>
 
             <div className="space-y-3.5 my-2 text-left overflow-y-auto pr-0.5">
+              {typeof window !== "undefined" && Boolean(window.__pwaDeferredPrompt) && (
+                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
+                  <p className="text-xs font-bold text-emerald-950">
+                    {isHindi ? "1-Tap Install Ready!" : "1-Tap Install Available!"}
+                  </p>
+                  <p className="text-[11px] text-emerald-800 mt-0.5">
+                    {isHindi
+                      ? "Direct Chrome prompt se app 1 tap me install karein."
+                      : "Install this clinic app with 1 tap via the browser prompt."}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (typeof window !== "undefined" && window.__pwaDeferredPrompt) {
+                        const prompt = window.__pwaDeferredPrompt;
+                        try {
+                          await prompt.prompt();
+                          const choice = await prompt.userChoice;
+                          if (choice.outcome === "accepted") {
+                            onClose();
+                          }
+                        } catch (e) {
+                          console.warn("Native prompt error:", e);
+                        }
+                      }
+                    }}
+                    className="mt-2.5 w-full py-2.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-all"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>{isHindi ? "1-Tap App Install Karein" : "Install App in 1 Tap"}</span>
+                  </button>
+                </div>
+              )}
+
               {isIOSInApp && (
                 <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/60">
                   <p className="text-xs font-bold text-amber-900">

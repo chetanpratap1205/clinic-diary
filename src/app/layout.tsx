@@ -93,6 +93,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 window.__pwaDeferredPrompt = e;
                 window.dispatchEvent(new CustomEvent('pwa-prompt-ready', { detail: e }));
               });
+              window.__pwaTriggerInstall = function() {
+                if (window.__pwaDeferredPrompt && typeof window.__pwaDeferredPrompt.prompt === 'function') {
+                  window.__pwaDeferredPrompt.prompt();
+                  return window.__pwaDeferredPrompt.userChoice;
+                }
+                return Promise.resolve(null);
+              };
               window.addEventListener('appinstalled', function() {
                 window.__pwaDeferredPrompt = null;
                 window.dispatchEvent(new CustomEvent('pwa-installed'));

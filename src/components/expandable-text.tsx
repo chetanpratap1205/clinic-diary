@@ -25,8 +25,7 @@ export function ExpandableText({
       </div>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-1 text-sm font-bold transition-opacity hover:opacity-80 active:scale-95"
-        style={{ color: themeColor }}
+        className="flex items-center gap-1 text-sm font-extrabold transition-opacity hover:opacity-80 active:scale-95 text-[#0f766e]"
         aria-expanded={isExpanded}
       >
         {isExpanded ? (

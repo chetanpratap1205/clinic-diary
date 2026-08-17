@@ -3,14 +3,14 @@
   "name": "Doctor Diary — by NatureXpress",
   "short_name": "Doctor Diary",
   "description": "Modern doctor appointment management platform — fast, premium, no patient signup required.",
-  "start_url": "/dashboard",
+  "start_url": "/?utm_source=pwa",
   "display": "standalone",
   "orientation": "portrait-primary",
   "theme_color": "#0f766e",
   "background_color": "#f8fafc",
-  "categories": ["medical", "health", "productivity"],
+  "categories": ["medical", "health", "productivity", "utilities"],
   "lang": "en-IN",
-  "scope": "/dashboard",
+  "scope": "/",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -19,48 +19,43 @@
       "purpose": "any"
     },
     {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
     }
   ],
   "shortcuts": [
     {
       "name": "Today's Appointments",
-      "url": "/dashboard",
+      "url": "/dashboard?utm_source=pwa_shortcut",
       "description": "View today's appointments"
     },
     {
       "name": "Calendar",
-      "url": "/dashboard/calendar",
+      "url": "/dashboard/calendar?utm_source=pwa_shortcut",
       "description": "View full calendar"
     },
     {
       "name": "Settings",
-      "url": "/dashboard/settings",
+      "url": "/dashboard/settings?utm_source=pwa_shortcut",
       "description": "Manage clinic settings"
     }
   ],
   "screenshots": [
     {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
+      "src": "/assets/booking_app.PNG",
+      "sizes": "392x696",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Doctor Diary dashboard on mobile"
+      "label": "Doctor Diary booking flow on mobile"
+    },
+    {
+      "src": "/assets/Dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Doctor Diary practice management dashboard"
     }
   ],
   "prefer_related_applications": false

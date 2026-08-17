@@ -117,9 +117,12 @@ export function InstallAppSection({
         </div>
 
         <button
+          id="pwa-install-section-button"
           type="button"
           onClick={triggerInstall}
-          disabled={isInstalling || platform === "unknown"}
+          disabled={isInstalling}
+          aria-label={ctaLabel}
+          data-pwa-install="true"
           className="w-full sm:w-auto mx-auto flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-2xl text-white font-black text-sm shadow-lg active:scale-[0.98] transition-all duration-150 disabled:opacity-70 cursor-pointer"
           style={{
             background: `linear-gradient(135deg, ${themeColor}, ${themeColor}cc)`,

@@ -78,8 +78,26 @@ export async function GET(
 
     const themeColor = sanitizeThemeColor(clinic.themeColor);
     const clinicInitials = getInitials(clinic.name);
+    const url = new URL(request.url);
+    const isMaskable = url.searchParams.get("purpose") === "maskable";
 
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 512 512" role="img" aria-label="${clinicInitials} clinic app icon">
+    const svg = isMaskable
+      ? `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 512 512" role="img" aria-label="${clinicInitials} clinic app maskable icon">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="${themeColor}" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+  </defs>
+  {/* Full bleed rectangle for safe-zone masking */}
+  <rect width="512" height="512" fill="url(#bg)" />
+  <g transform="translate(64, 64) scale(0.75)">
+    <circle cx="256" cy="256" r="172" fill="white" fill-opacity="0.16" />
+    <path d="M256 138v236M138 256h236" stroke="white" stroke-width="38" stroke-linecap="round" />
+    <text x="256" y="436" text-anchor="middle" fill="white" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="44" letter-spacing="2">${clinicInitials}</text>
+  </g>
+</svg>`
+      : `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 512 512" role="img" aria-label="${clinicInitials} clinic app icon">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="${themeColor}" />

@@ -5,8 +5,29 @@ import { eq } from "drizzle-orm";
 
 export const revalidate = 3600;
 
-function compactShortName(name: string) {
-  return name.length > 12 ? `${name.substring(0, 11)}...` : name;
+function compactShortName(name: string, doctorName?: string | null) {
+  if (doctorName) {
+    const drClean = doctorName.replace(/^dr\.?\s*/i, "").trim();
+    const parts = drClean.split(/\s+/);
+    const lastName = parts[parts.length - 1];
+    if (lastName && `Dr. ${lastName}`.length <= 12) {
+      return `Dr. ${lastName}`;
+    }
+  }
+
+  let cleaned = name
+    .replace(/^dr\.?\s*/i, "Dr. ")
+    .replace(/\s*(Skin|Laser|Hair|Heart|Dental|Eye|Care|Clinic|Hospital|Center|Centre|Pvt|Ltd|PRACTICE)\b/gi, "")
+    .trim();
+
+  if (cleaned.length <= 12) return cleaned;
+
+  const words = cleaned.split(/\s+/);
+  if (words.length > 1 && words[0].length <= 12) {
+    return words[0];
+  }
+
+  return cleaned.substring(0, 12).trim();
 }
 
 export async function GET(
@@ -19,6 +40,7 @@ export async function GET(
     let [clinic] = await db
       .select({
         name: clinics.name,
+        doctorName: clinics.doctorName,
         themeColor: clinics.themeColor,
       })
       .from(clinics)
@@ -42,12 +64,14 @@ export async function GET(
 
       clinic = {
         name: lead.name || `${lead.doctorName}'s Clinic`,
+        doctorName: lead.doctorName,
         themeColor: "#0d9488",
       };
     }
 
     const themeColor = clinic.themeColor || "#0ea5e9";
     const appName = clinic.name || "Clinic App";
+    const appShortName = compactShortName(appName, clinic.doctorName);
 
     const icons = [
       {
@@ -57,32 +81,14 @@ export async function GET(
         purpose: "any",
       },
       {
-        src: "/icon-192.png",
-        sizes: "192x192",
-        type: "image/png",
-        purpose: "maskable",
-      },
-      {
         src: "/icon-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "any",
-      },
-      {
-        src: "/icon-512.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "maskable",
       },
       {
         src: `/api/manifest/${slug}/icon?size=192`,
         sizes: "192x192",
-        type: "image/svg+xml",
-        purpose: "any",
-      },
-      {
-        src: `/api/manifest/${slug}/icon?size=384`,
-        sizes: "384x384",
         type: "image/svg+xml",
         purpose: "any",
       },
@@ -92,12 +98,24 @@ export async function GET(
         type: "image/svg+xml",
         purpose: "any",
       },
+      {
+        src: `/api/manifest/${slug}/icon?size=192&purpose=maskable`,
+        sizes: "192x192",
+        type: "image/svg+xml",
+        purpose: "maskable",
+      },
+      {
+        src: `/api/manifest/${slug}/icon?size=512&purpose=maskable`,
+        sizes: "512x512",
+        type: "image/svg+xml",
+        purpose: "maskable",
+      },
     ];
 
     const manifest = {
       id: `/clinic/${slug}`,
       name: appName,
-      short_name: compactShortName(appName),
+      short_name: appShortName,
       description: `Official instant appointment booking and real-time live queue tracking app for ${appName}.`,
       start_url: `/clinic/${slug}?utm_source=pwa`,
       scope: `/clinic/${slug}`,
@@ -140,6 +158,13 @@ export async function GET(
           type: "image/png",
           form_factor: "narrow",
           label: `Live queue position tracker for ${appName}`,
+        },
+        {
+          src: "/assets/Dashboard.png",
+          sizes: "1280x720",
+          type: "image/png",
+          form_factor: "wide",
+          label: `Official OPD schedule and patient app for ${appName}`,
         },
       ],
     };

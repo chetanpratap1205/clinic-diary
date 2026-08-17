@@ -65,16 +65,16 @@ export function LeadFomoBanner({ clinicName, doctorName, slug }: { clinicName: s
              <button 
                onClick={handleInterest}
                disabled={isLoading}
-               className="group relative flex items-center justify-center gap-3 w-full md:w-64 py-4 px-6 bg-[#25D366] text-white rounded-2xl font-black text-[16px] shadow-[0_8px_30px_rgba(37,211,102,0.3)] hover:bg-[#22c35e] hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 disabled:opacity-80"
+               className="group relative flex items-center justify-center gap-3 w-full md:w-64 py-4 px-6 bg-[#25D366] text-slate-950 rounded-2xl font-black text-[16px] shadow-[0_8px_30px_rgba(37,211,102,0.3)] hover:bg-[#22c35e] hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 disabled:opacity-80"
              >
                {isLoading ? (
                  <>
-                   <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                   <span className="w-5 h-5 border-2 border-slate-950/40 border-t-slate-950 rounded-full animate-spin" />
                    Connecting...
                  </>
                ) : (
                  <>
-                   <WhatsAppIcon className="w-6 h-6 shrink-0" />
+                   <WhatsAppIcon className="w-6 h-6 shrink-0 text-slate-950" />
                    <span>Claim QR Kit & Talk to Expert</span>
                  </>
                )}

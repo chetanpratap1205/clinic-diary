@@ -22,6 +22,10 @@ interface Window {
    * Early-captured PWA install prompt event stored globally before React hydration.
    */
   __pwaDeferredPrompt?: BeforeInstallPromptEvent | null;
+  /**
+   * Global PWA trigger helper function.
+   */
+  __pwaTriggerInstall?: () => Promise<{ outcome: "accepted" | "dismissed"; platform?: string } | null>;
 }
 
 interface WindowEventMap {

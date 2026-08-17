@@ -108,12 +108,20 @@ export function usePWAInstall() {
     setIsInstalling(true);
 
     try {
-      await prompt.prompt();
-      const { outcome } = await prompt.userChoice;
-
-      if (outcome === "accepted") {
-        setIsInstalled(true);
-        setPlatform("installed");
+      const activePrompt = prompt || (typeof window !== "undefined" ? window.__pwaDeferredPrompt : null);
+      if (activePrompt && typeof activePrompt.prompt === "function") {
+        await activePrompt.prompt();
+        const choice = await activePrompt.userChoice;
+        if (choice && choice.outcome === "accepted") {
+          setIsInstalled(true);
+          setPlatform("installed");
+        }
+      } else if (typeof window !== "undefined" && window.__pwaTriggerInstall) {
+        const choice = await window.__pwaTriggerInstall();
+        if (choice && choice.outcome === "accepted") {
+          setIsInstalled(true);
+          setPlatform("installed");
+        }
       }
     } catch (err) {
       console.error("[usePWAInstall] Failed to trigger native PWA prompt:", err);
@@ -140,23 +148,41 @@ export function usePWAInstall() {
           return;
         }
 
-        const existingPrompt = getCapturedPrompt();
+        const checkPrompt = () => {
+          const existing = getCapturedPrompt();
+          if (existing) return existing;
+          return null;
+        };
+
+        const existingPrompt = checkPrompt();
         if (existingPrompt) {
           resolve(existingPrompt);
           return;
         }
 
+        const interval = window.setInterval(() => {
+          const found = checkPrompt();
+          if (found) {
+            window.clearInterval(interval);
+            window.clearTimeout(timer);
+            window.removeEventListener("pwa-prompt-ready", handlePromptReady);
+            resolve(found);
+          }
+        }, 100);
+
         const handlePromptReady = (e: Event) => {
+          window.clearInterval(interval);
           window.clearTimeout(timer);
           window.removeEventListener("pwa-prompt-ready", handlePromptReady);
           const customEvent = e as CustomEvent<BeforeInstallPromptEvent | undefined>;
-          resolve(customEvent.detail || getCapturedPrompt());
+          resolve(customEvent.detail || checkPrompt());
         };
 
         const timer = window.setTimeout(() => {
+          window.clearInterval(interval);
           window.removeEventListener("pwa-prompt-ready", handlePromptReady);
-          resolve(null);
-        }, 800);
+          resolve(checkPrompt());
+        }, 2500);
 
         window.addEventListener("pwa-prompt-ready", handlePromptReady, { once: true });
       });
@@ -181,6 +207,6 @@ export function usePWAInstall() {
     handleAndroidInstall: triggerInstall,
     triggerInstall,
     deferredPrompt,
-    canNativeInstall: Boolean(deferredPrompt || getCapturedPrompt()),
+    canNativeInstall: Boolean(deferredPrompt || (typeof window !== "undefined" && window.__pwaDeferredPrompt)),
   };
 }
