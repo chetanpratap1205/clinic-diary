@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Download, X } from "lucide-react";
 import { PWASplashScreen } from "./pwa-splash-screen";
 import { toast } from "sonner";
+import { usePWAInstall } from "@/hooks/use-pwa-install";
 
 // ─── Reliable Service Worker Registration Helper ─────────────────────────────
 export function registerServiceWorker() {
@@ -287,88 +288,34 @@ export function PatientInstallButton({
   themeColor?: string;
   className?: string;
 }) {
-  const [deferredPrompt, setDeferredPrompt] =
-    useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
+  const { platform, isInstalling, isInstalled, handleAndroidInstall } = usePWAInstall();
 
-  useEffect(() => {
-    const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      (navigator as unknown as { standalone?: boolean }).standalone === true;
+  if (isInstalled || platform === "unknown") return null;
 
-    if (isStandalone) {
-      setIsInstalled(true);
-      return;
-    }
-
-    const ua = navigator.userAgent;
-    const iosCheck =
-      (/iPad|iPhone|iPod/.test(ua) && !(window as Window & { MSStream?: unknown }).MSStream) ||
-      (typeof navigator !== "undefined" && navigator.maxTouchPoints > 1 && /Macintosh/.test(ua));
-    setIsIOS(iosCheck);
-
-    if (window.__pwaDeferredPrompt) {
-      setDeferredPrompt(window.__pwaDeferredPrompt);
-    }
-
-    const handler = (e: Event) => {
-      e.preventDefault();
-      const promptEvent = e as BeforeInstallPromptEvent;
-      window.__pwaDeferredPrompt = promptEvent;
-      setDeferredPrompt(promptEvent);
-    };
-
-    const promptReadyHandler = (e: Event) => {
-      const customEvent = e as CustomEvent<BeforeInstallPromptEvent | undefined>;
-      const prompt = customEvent.detail || window.__pwaDeferredPrompt;
-      if (prompt) {
-        setDeferredPrompt(prompt);
-      }
-    };
-
-    const installedHandler = () => {
-      setIsInstalled(true);
-      setDeferredPrompt(null);
-      window.__pwaDeferredPrompt = null;
-    };
-
-    window.addEventListener("beforeinstallprompt", handler);
-    window.addEventListener("pwa-prompt-ready", promptReadyHandler);
-    window.addEventListener("appinstalled", installedHandler);
-    window.addEventListener("pwa-installed", installedHandler);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handler);
-      window.removeEventListener("pwa-prompt-ready", promptReadyHandler);
-      window.removeEventListener("appinstalled", installedHandler);
-      window.removeEventListener("pwa-installed", installedHandler);
-    };
-  }, []);
-
-  if (isInstalled || (!deferredPrompt && !isIOS)) return null;
-
-  const handleInstall = () => {
-    if (isIOS) {
+  const handleInstallClick = () => {
+    if (platform === "ios") {
       toast.success("Tap Share 📤 then 'Add to Home Screen' ➕ to install", {
         duration: 6000,
         position: "top-center",
       });
-      return;
+    } else if (platform === "android_manual") {
+      toast.success("Tap Menu (⋮) then 'Install app' 📱 to install", {
+        duration: 6000,
+        position: "top-center",
+      });
+    } else if (platform === "android") {
+      handleAndroidInstall();
+    } else if (platform === "desktop") {
+      toast.info("Click the Install icon (↓) in your browser's address bar to download.", {
+        duration: 6000,
+        position: "top-center",
+      });
+    } else {
+      toast.info("Install prompt not available. Ensure you're not in Incognito/Private mode.", {
+        duration: 5000,
+        position: "top-center",
+      });
     }
-    const promptEvent = deferredPrompt || window.__pwaDeferredPrompt;
-    if (!promptEvent) return;
-    
-    promptEvent.prompt().then(() => {
-      return promptEvent.userChoice;
-    }).then((choiceResult) => {
-      if (choiceResult.outcome === "accepted") setIsInstalled(true);
-    }).catch((err) => {
-      console.warn("Patient PWA install error:", err);
-    }).finally(() => {
-      window.__pwaDeferredPrompt = null;
-      setDeferredPrompt(null);
-    });
   };
 
   const displayName = clinicName.length > 18 ? `${clinicName.slice(0, 16)}...` : clinicName;
@@ -376,8 +323,9 @@ export function PatientInstallButton({
   return (
     <>
       <button
-        onClick={handleInstall}
-        className={`group relative flex items-center gap-2.5 overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-md px-3.5 py-2 text-xs font-bold text-slate-800 shadow-md transition-all hover:border-slate-300 hover:bg-white hover:shadow-lg active:scale-95 ${className}`}
+        onClick={handleInstallClick}
+        disabled={isInstalling}
+        className={`group relative flex items-center gap-2.5 overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-md px-3.5 py-2 text-xs font-bold text-slate-800 shadow-md transition-all hover:border-slate-300 hover:bg-white hover:shadow-lg active:scale-95 disabled:opacity-70 ${className}`}
         title={`Install ${clinicName} App (< 1MB)`}
       >
         <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-slate-100/50 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
@@ -406,8 +354,12 @@ export function PatientInstallButton({
           className="relative ml-1 flex h-6 px-2.5 items-center justify-center rounded-xl text-white text-[11px] font-extrabold shadow-sm transition-transform group-hover:scale-105"
           style={{ backgroundColor: themeColor }}
         >
-          <Download className="h-3 w-3 mr-1" />
-          Install
+          {isInstalling ? (
+            <span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin mr-1" />
+          ) : (
+            <Download className="h-3 w-3 mr-1" />
+          )}
+          {isInstalling ? "..." : "Install"}
         </div>
       </button>
     </>

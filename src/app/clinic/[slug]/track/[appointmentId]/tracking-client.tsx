@@ -139,7 +139,6 @@ export function TrackingClient({
   const [showBanner, setShowBanner] = useState(true);
   const [now, setNow] = useState(new Date());
 
-  // Verification State (removed as per user request)
 
 
   const appointment = allAppts.find((a) => a.id === initialAppointment.id) || initialAppointment;
@@ -250,7 +249,6 @@ export function TrackingClient({
   const queuePosition = myIndex >= 0 ? myIndex : 0;
   const estimatedWaitMins = waitMins;
 
-  // Verification removed as per user request
 
 
   return (
