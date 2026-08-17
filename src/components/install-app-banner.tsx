@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Download, Sparkles, X } from "lucide-react";
 import type { Language } from "@/lib/i18n";
-import { DICTIONARY } from "@/lib/i18n";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
 import { PWAInstallGuideModal } from "@/components/pwa-install-guide-modal";
 
@@ -20,7 +20,6 @@ export function InstallAppBanner({
   themeColor = "#0ea5e9",
   lang = "en",
 }: InstallAppBannerProps) {
-  const t = DICTIONARY[lang];
   const {
     platform,
     isInstalling,
@@ -28,10 +27,11 @@ export function InstallAppBanner({
     triggerInstall,
     isGuideOpen,
     closeGuide,
+    canNativeInstall,
   } = usePWAInstall();
   const [isDismissed, setIsDismissed] = useState(false);
+  const isHindi = lang === "hi";
 
-  // If already installed or dismissed, don't show
   if (isInstalled || platform === "unknown" || isDismissed) {
     return (
       <PWAInstallGuideModal
@@ -46,15 +46,12 @@ export function InstallAppBanner({
     );
   }
 
-  const isHindi = lang === "hi";
-
   return (
     <>
       <div
         className="w-full bg-white/95 backdrop-blur-md border-b shadow-xs relative z-30 transition-all duration-300"
         style={{ borderColor: `${themeColor}25` }}
       >
-        {/* Top Accent Line */}
         <div
           className="h-[2px] w-full"
           style={{
@@ -64,16 +61,18 @@ export function InstallAppBanner({
 
         <div className="max-w-6xl mx-auto px-3.5 sm:px-6 py-2 sm:py-2.5">
           <div className="flex items-center justify-between gap-2.5">
-            {/* Left: App Icon & Text */}
             <div className="flex items-center gap-2.5 min-w-0 flex-1">
               <div
                 className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden shrink-0 shadow-2xs ring-1 ring-black/5 flex items-center justify-center text-white font-extrabold text-xs sm:text-sm"
                 style={{ backgroundColor: logoUrl ? "white" : themeColor }}
               >
                 {logoUrl ? (
-                  <img
+                  <Image
                     src={logoUrl}
                     alt={clinicName}
+                    width={36}
+                    height={36}
+                    unoptimized
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -97,13 +96,16 @@ export function InstallAppBanner({
                 <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold truncate flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                   {isHindi
-                    ? "तुरंत एक्सेस और लाइव कतार ट्रैकिंग के लिए इंस्टॉल करें"
-                    : "Instant access & live token tracking"}
+                    ? canNativeInstall
+                      ? "One-tap install ready"
+                      : "Home screen steps available"
+                    : canNativeInstall
+                    ? "One-tap install ready"
+                    : "Home screen steps available"}
                 </p>
               </div>
             </div>
 
-            {/* Right: Install Button & Dismiss */}
             <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
@@ -121,12 +123,10 @@ export function InstallAppBanner({
                 )}
                 <span>
                   {isInstalling
-                    ? isHindi
-                      ? "लोड हो रहा है..."
-                      : "Opening..."
-                    : isHindi
-                    ? "इंस्टॉल ऐप"
-                    : "Install App"}
+                    ? "Opening..."
+                    : canNativeInstall
+                    ? "Install App"
+                    : "Steps"}
                 </span>
               </button>
 
@@ -143,7 +143,6 @@ export function InstallAppBanner({
         </div>
       </div>
 
-      {/* Visual Guide Modal for iOS / in-app / desktop / manual fallback */}
       <PWAInstallGuideModal
         isOpen={isGuideOpen}
         onClose={closeGuide}

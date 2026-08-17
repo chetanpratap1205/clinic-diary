@@ -64,8 +64,8 @@ export async function generateMetadata({
       ],
       apple: [
         {
-          url: `/api/manifest/${slug}/icon?size=180`,
-          sizes: "180x180",
+          url: "/icon-192.png",
+          sizes: "192x192",
           type: "image/png",
         },
       ],

@@ -49,7 +49,12 @@ export function PatientHeaderActions({ themeColor, clinicName }: PatientHeaderAc
         aria-label="Toggle language between Hindi and English"
         className="inline-flex items-center gap-1 text-[11px] font-extrabold px-3 py-1.5 rounded-full transition-all hover:bg-slate-100 active:scale-95 border border-slate-200/80 bg-white text-slate-700 shadow-2xs"
       >
-        {currentLang === "en" ? "हिंदी में देखें" : "See in English"}
+        <span className="hidden min-[380px]:inline">
+          {currentLang === "en" ? "हिंदी में देखें" : "See in English"}
+        </span>
+        <span className="min-[380px]:hidden">
+          {currentLang === "en" ? "हिंदी" : "EN"}
+        </span>
       </button>
     </>
   );

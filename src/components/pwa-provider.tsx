@@ -1,13 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Download, X } from "lucide-react";
 import { PWASplashScreen } from "./pwa-splash-screen";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
 import { PWAInstallGuideModal } from "@/components/pwa-install-guide-modal";
 
-// ─── Reliable Service Worker Registration Helper ─────────────────────────────
+function isStandaloneMode() {
+  if (typeof window === "undefined") return false;
+
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (navigator as unknown as { standalone?: boolean }).standalone === true
+  );
+}
+
+function getCapturedPrompt() {
+  if (typeof window === "undefined") return null;
+  return window.__pwaDeferredPrompt || null;
+}
+
+function clearCapturedPrompt() {
+  if (typeof window === "undefined") return;
+  window.__pwaDeferredPrompt = null;
+  window.dispatchEvent(new CustomEvent("pwa-prompt-consumed"));
+}
+
 export function registerServiceWorker() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
@@ -24,50 +44,23 @@ export function registerServiceWorker() {
   }
 }
 
-// ─── Early Window-Level Event Capture ─────────────────────────────────────────
-if (typeof window !== "undefined") {
-  window.addEventListener("beforeinstallprompt", (e: Event) => {
-    e.preventDefault();
-    window.__pwaDeferredPrompt = e as BeforeInstallPromptEvent;
-    window.dispatchEvent(
-      new CustomEvent("pwa-prompt-ready", {
-        detail: e as BeforeInstallPromptEvent,
-      })
-    );
-  });
-
-  window.addEventListener("appinstalled", () => {
-    window.__pwaDeferredPrompt = null;
-    window.dispatchEvent(new CustomEvent("pwa-installed"));
-  });
-}
-
-// ─── Root PWA Provider Component ─────────────────────────────────────────────
 export function PWAProvider() {
   const pathname = usePathname();
   const [deferredPrompt, setDeferredPrompt] =
-    useState<BeforeInstallPromptEvent | null>(null);
+    useState<BeforeInstallPromptEvent | null>(() => getCapturedPrompt());
   const [showBanner, setShowBanner] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(() => isStandaloneMode());
 
   useEffect(() => {
-    // 1. Register service worker reliably
     registerServiceWorker();
 
-    // 2. Check if already running in standalone mode
-    const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      (navigator as unknown as { standalone?: boolean }).standalone === true;
-
-    if (isStandalone) {
-      setIsInstalled(true);
+    if (isInstalled) {
       return;
     }
 
     const checkAndTriggerBanner = (prompt: BeforeInstallPromptEvent) => {
       setDeferredPrompt(prompt);
 
-      // Check if user dismissed it recently (< 3 days)
       const lastDismissed = localStorage.getItem("pwa_install_dismissed");
       if (lastDismissed) {
         const dismissedAt = parseInt(lastDismissed, 10);
@@ -75,26 +68,17 @@ export function PWAProvider() {
         if (daysSince < 3) return;
       }
 
-      // Show install banner after 5 seconds on dashboard/root
-      setTimeout(() => setShowBanner(true), 5000);
+      window.setTimeout(() => setShowBanner(true), 5000);
     };
 
-    // 3. Pick up prompt if already captured early at window level
-    if (window.__pwaDeferredPrompt) {
-      checkAndTriggerBanner(window.__pwaDeferredPrompt);
+    const existingPrompt = getCapturedPrompt();
+    if (existingPrompt) {
+      checkAndTriggerBanner(existingPrompt);
     }
-
-    // 4. Event listeners for prompt ready & app installed
-    const promptHandler = (e: Event) => {
-      e.preventDefault();
-      const promptEvent = e as BeforeInstallPromptEvent;
-      window.__pwaDeferredPrompt = promptEvent;
-      checkAndTriggerBanner(promptEvent);
-    };
 
     const promptReadyHandler = (e: Event) => {
       const customEvent = e as CustomEvent<BeforeInstallPromptEvent | undefined>;
-      const prompt = customEvent.detail || window.__pwaDeferredPrompt;
+      const prompt = customEvent.detail || getCapturedPrompt();
       if (prompt) {
         checkAndTriggerBanner(prompt);
       }
@@ -104,31 +88,34 @@ export function PWAProvider() {
       setIsInstalled(true);
       setShowBanner(false);
       setDeferredPrompt(null);
-      window.__pwaDeferredPrompt = null;
+      clearCapturedPrompt();
     };
 
-    window.addEventListener("beforeinstallprompt", promptHandler);
+    const promptConsumedHandler = () => {
+      setShowBanner(false);
+      setDeferredPrompt(null);
+    };
+
     window.addEventListener("pwa-prompt-ready", promptReadyHandler);
     window.addEventListener("appinstalled", installedHandler);
     window.addEventListener("pwa-installed", installedHandler);
+    window.addEventListener("pwa-prompt-consumed", promptConsumedHandler);
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", promptHandler);
       window.removeEventListener("pwa-prompt-ready", promptReadyHandler);
       window.removeEventListener("appinstalled", installedHandler);
       window.removeEventListener("pwa-installed", installedHandler);
+      window.removeEventListener("pwa-prompt-consumed", promptConsumedHandler);
     };
-  }, []);
+  }, [isInstalled]);
 
   const handleInstall = () => {
-    const promptEvent = deferredPrompt || window.__pwaDeferredPrompt;
+    const promptEvent = deferredPrompt || getCapturedPrompt();
     if (!promptEvent) return;
 
     promptEvent
       .prompt()
-      .then(() => {
-        return promptEvent.userChoice;
-      })
+      .then(() => promptEvent.userChoice)
       .then((choiceResult) => {
         if (choiceResult.outcome === "accepted") {
           setIsInstalled(true);
@@ -139,8 +126,8 @@ export function PWAProvider() {
         console.warn("PWA install error:", err);
       })
       .finally(() => {
-        window.__pwaDeferredPrompt = null;
         setDeferredPrompt(null);
+        clearCapturedPrompt();
       });
   };
 
@@ -149,7 +136,6 @@ export function PWAProvider() {
     setShowBanner(false);
   };
 
-  // Suppress generic root banner on clinic pages (which have their own clinic-branded install)
   const isClinicRoute = pathname?.startsWith("/clinic/");
 
   return (
@@ -162,13 +148,14 @@ export function PWAProvider() {
           aria-label="Install Doctor Diary app"
         >
           <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl shadow-slate-900/15 overflow-hidden">
-            {/* Gradient top bar */}
             <div className="h-1 bg-gradient-to-r from-teal-500 to-indigo-500" />
             <div className="p-4 flex items-start gap-3">
               <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0 shadow-md border border-slate-200">
-                <img
+                <Image
                   src="/icon-192.png"
                   alt="Doctor Diary"
+                  width={44}
+                  height={44}
                   className="w-full h-full object-contain"
                 />
               </div>
@@ -177,7 +164,7 @@ export function PWAProvider() {
                   Install Doctor Diary
                 </p>
                 <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                  Add to your device for instant access & real-time updates.
+                  Add to your device for instant access and real-time updates.
                 </p>
               </div>
               <button
@@ -213,36 +200,19 @@ export function PWAProvider() {
   );
 }
 
-// ─── Standalone Install Button (Doctor Portal / General) ───────────────────────
 export function InstallButton({ className = "" }: { className?: string }) {
   const [deferredPrompt, setDeferredPrompt] =
-    useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
+    useState<BeforeInstallPromptEvent | null>(() => getCapturedPrompt());
+  const [isInstalled, setIsInstalled] = useState(() => isStandaloneMode());
 
   useEffect(() => {
-    const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      (navigator as unknown as { standalone?: boolean }).standalone === true;
-
-    if (isStandalone) {
-      setIsInstalled(true);
+    if (isInstalled) {
       return;
     }
 
-    if (window.__pwaDeferredPrompt) {
-      setDeferredPrompt(window.__pwaDeferredPrompt);
-    }
-
-    const handler = (e: Event) => {
-      e.preventDefault();
-      const promptEvent = e as BeforeInstallPromptEvent;
-      window.__pwaDeferredPrompt = promptEvent;
-      setDeferredPrompt(promptEvent);
-    };
-
     const promptReadyHandler = (e: Event) => {
       const customEvent = e as CustomEvent<BeforeInstallPromptEvent | undefined>;
-      const prompt = customEvent.detail || window.__pwaDeferredPrompt;
+      const prompt = customEvent.detail || getCapturedPrompt();
       if (prompt) {
         setDeferredPrompt(prompt);
       }
@@ -251,33 +221,35 @@ export function InstallButton({ className = "" }: { className?: string }) {
     const installedHandler = () => {
       setIsInstalled(true);
       setDeferredPrompt(null);
-      window.__pwaDeferredPrompt = null;
+      clearCapturedPrompt();
     };
 
-    window.addEventListener("beforeinstallprompt", handler);
+    const promptConsumedHandler = () => {
+      setDeferredPrompt(null);
+    };
+
     window.addEventListener("pwa-prompt-ready", promptReadyHandler);
     window.addEventListener("appinstalled", installedHandler);
     window.addEventListener("pwa-installed", installedHandler);
+    window.addEventListener("pwa-prompt-consumed", promptConsumedHandler);
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handler);
       window.removeEventListener("pwa-prompt-ready", promptReadyHandler);
       window.removeEventListener("appinstalled", installedHandler);
       window.removeEventListener("pwa-installed", installedHandler);
+      window.removeEventListener("pwa-prompt-consumed", promptConsumedHandler);
     };
-  }, []);
+  }, [isInstalled]);
 
   if (isInstalled || !deferredPrompt) return null;
 
   const handleInstall = () => {
-    const promptEvent = deferredPrompt || window.__pwaDeferredPrompt;
+    const promptEvent = deferredPrompt || getCapturedPrompt();
     if (!promptEvent) return;
 
     promptEvent
       .prompt()
-      .then(() => {
-        return promptEvent.userChoice;
-      })
+      .then(() => promptEvent.userChoice)
       .then((choiceResult) => {
         if (choiceResult.outcome === "accepted") setIsInstalled(true);
       })
@@ -285,8 +257,8 @@ export function InstallButton({ className = "" }: { className?: string }) {
         console.warn("Install error:", err);
       })
       .finally(() => {
-        window.__pwaDeferredPrompt = null;
         setDeferredPrompt(null);
+        clearCapturedPrompt();
       });
   };
 
@@ -303,7 +275,6 @@ export function InstallButton({ className = "" }: { className?: string }) {
   );
 }
 
-// ─── Patient Clinic Install Button ────────────────────────────────────────────
 export function PatientInstallButton({
   clinicName,
   logoUrl,
@@ -322,6 +293,7 @@ export function PatientInstallButton({
     triggerInstall,
     isGuideOpen,
     closeGuide,
+    canNativeInstall,
   } = usePWAInstall();
 
   if (isInstalled || platform === "unknown") return null;
@@ -335,15 +307,18 @@ export function PatientInstallButton({
         type="button"
         onClick={triggerInstall}
         disabled={isInstalling}
-        className={`group relative flex items-center gap-2.5 overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-md px-3.5 py-2 text-xs font-bold text-slate-800 shadow-xs transition-all hover:border-slate-300 hover:bg-white hover:shadow-md active:scale-95 disabled:opacity-70 cursor-pointer ${className}`}
-        title={`Install ${clinicName} App (< 1MB)`}
+        className={`group relative flex items-center gap-2.5 overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-md px-3.5 py-2 text-xs font-bold text-slate-800 shadow-xs transition-all hover:border-slate-300 hover:bg-white hover:shadow-md active:scale-95 disabled:opacity-70 cursor-pointer max-[360px]:gap-1.5 max-[360px]:px-2 ${className}`}
+        title={`${canNativeInstall ? "Install" : "Add"} ${clinicName} App`}
       >
         <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-slate-100/50 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
 
         {logoUrl ? (
-          <img
+          <Image
             src={logoUrl}
             alt={clinicName}
+            width={24}
+            height={24}
+            unoptimized
             className="h-6 w-6 rounded-lg object-cover ring-1 ring-slate-900/10 shadow-2xs shrink-0"
           />
         ) : (
@@ -355,7 +330,7 @@ export function PatientInstallButton({
           </div>
         )}
 
-        <div className="relative flex flex-col items-start leading-tight text-left">
+        <div className="relative flex flex-col items-start leading-tight text-left max-[360px]:hidden">
           <span className="text-[9px] uppercase font-extrabold tracking-wider text-slate-400">
             Official App
           </span>
@@ -373,11 +348,10 @@ export function PatientInstallButton({
           ) : (
             <Download className="h-3 w-3 mr-1" />
           )}
-          <span>{isInstalling ? "..." : "Install"}</span>
+          <span>{isInstalling ? "..." : canNativeInstall ? "Install" : "Guide"}</span>
         </div>
       </button>
 
-      {/* Guide Modal for iOS / in-app / desktop */}
       <PWAInstallGuideModal
         isOpen={isGuideOpen}
         onClose={closeGuide}

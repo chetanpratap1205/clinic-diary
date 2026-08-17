@@ -1,9 +1,22 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Share, PlusSquare, ExternalLink, CheckCircle2, ArrowDown } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowDown,
+  CheckCircle2,
+  Copy,
+  ExternalLink,
+  Menu,
+  PlusSquare,
+  Share,
+  X,
+} from "lucide-react";
 import type { Language } from "@/lib/i18n";
+import type { DevicePlatform } from "@/hooks/use-pwa-install";
 
 interface PWAInstallGuideModalProps {
   isOpen: boolean;
@@ -11,8 +24,40 @@ interface PWAInstallGuideModalProps {
   clinicName: string;
   logoUrl?: string | null;
   themeColor?: string;
-  platform: "ios" | "in_app" | "desktop" | "android_manual" | string;
+  platform: DevicePlatform | string;
   lang?: Language;
+}
+
+function Step({
+  number,
+  title,
+  body,
+  icon,
+  themeColor,
+}: {
+  number: number;
+  title: string;
+  body: string;
+  icon?: ReactNode;
+  themeColor: string;
+}) {
+  return (
+    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-3.5">
+      <div
+        className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-extrabold text-xs shrink-0 shadow-xs"
+        style={{ backgroundColor: themeColor }}
+      >
+        {number}
+      </div>
+      <div className="flex-1 text-xs">
+        <p className="font-bold text-slate-900 flex items-center gap-1.5">
+          <span>{title}</span>
+          {icon}
+        </p>
+        <p className="text-slate-500 mt-0.5">{body}</p>
+      </div>
+    </div>
+  );
 }
 
 export function PWAInstallGuideModal({
@@ -24,23 +69,32 @@ export function PWAInstallGuideModal({
   platform,
   lang,
 }: PWAInstallGuideModalProps) {
-  let activeLang = lang;
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const searchParams = useSearchParams();
-    if (!activeLang) {
-      activeLang = searchParams?.get("lang") === "hi" ? "hi" : "en";
-    }
-  } catch {
-    if (!activeLang) activeLang = "en";
-  }
+  const [mounted, setMounted] = useState(false);
+  const searchParams = useSearchParams();
+  const activeLang = lang || (searchParams?.get("lang") === "hi" ? "hi" : "en");
   const isHindi = activeLang === "hi";
+  const isIOS = platform === "ios" || platform === "ios_in_app";
+  const isIOSInApp = platform === "ios_in_app";
+  const isAndroidInApp = platform === "android_in_app";
+  const isInApp = platform === "in_app";
+  const isAndroidManual = platform === "android";
+  const isDesktop = platform === "desktop";
 
-  return (
+  const copyCurrentLink = async () => {
+    if (typeof window === "undefined" || !navigator.clipboard) return;
+    await navigator.clipboard.writeText(window.location.href);
+  };
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -49,7 +103,6 @@ export function PWAInstallGuideModal({
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
           />
 
-          {/* Modal Card / Bottom Sheet */}
           <motion.div
             initial={{ opacity: 0, y: 60, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -57,16 +110,13 @@ export function PWAInstallGuideModal({
             transition={{ type: "spring", damping: 26, stiffness: 300 }}
             className="relative w-full max-w-md bg-white rounded-t-[2.5rem] sm:rounded-3xl border border-slate-100 shadow-2xl overflow-hidden z-10 p-6 sm:p-7 max-h-[90vh] flex flex-col"
           >
-            {/* Top Brand Stripe */}
             <div
               className="absolute top-0 inset-x-0 h-1.5"
               style={{ backgroundColor: themeColor }}
             />
 
-            {/* Mobile Drag Indicator */}
             <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden" />
 
-            {/* Header: Clinic Icon + App Title + Close */}
             <div className="flex items-center justify-between gap-3 mb-5">
               <div className="flex items-center gap-3 min-w-0">
                 <div
@@ -74,7 +124,14 @@ export function PWAInstallGuideModal({
                   style={{ backgroundColor: logoUrl ? "white" : themeColor }}
                 >
                   {logoUrl ? (
-                    <img src={logoUrl} alt={clinicName} className="w-full h-full object-cover" />
+                    <Image
+                      src={logoUrl}
+                      alt={clinicName}
+                      width={44}
+                      height={44}
+                      unoptimized
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <span>{clinicName.charAt(0).toUpperCase()}</span>
                   )}
@@ -85,7 +142,11 @@ export function PWAInstallGuideModal({
                   </h3>
                   <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-semibold mt-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    <span>{isHindi ? "आधिकारिक क्लिनिक वेब ऐप" : "Official Web App · Free (< 1MB)"}</span>
+                    <span>
+                      {isHindi
+                        ? "Official clinic web app, free"
+                        : "Official Web App, Free"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -100,83 +161,80 @@ export function PWAInstallGuideModal({
               </button>
             </div>
 
-            {/* Step-by-Step Instructions based on platform */}
-            <div className="space-y-3.5 my-2 text-left">
-              {platform === "ios" && (
+            <div className="space-y-3.5 my-2 text-left overflow-y-auto pr-0.5">
+              {isIOSInApp && (
+                <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/60">
+                  <p className="text-xs font-bold text-amber-900">
+                    {isHindi
+                      ? "iPhone par pehle Safari me kholen"
+                      : "On iPhone, open this page in Safari first"}
+                  </p>
+                  <p className="text-[11px] text-amber-700 mt-1">
+                    {isHindi
+                      ? "WhatsApp, Instagram, ya Facebook browser se app add nahi hota. Menu me Open in Safari chune, phir neeche ke steps follow karein."
+                      : "WhatsApp, Instagram, and Facebook browsers cannot add the app directly. Use their menu to open this page in Safari, then follow the steps below."}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={copyCurrentLink}
+                    className="mt-3 w-full py-2.5 px-4 rounded-xl text-white text-xs font-bold shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-all"
+                    style={{ backgroundColor: themeColor }}
+                  >
+                    <Copy className="w-4 h-4" />
+                    <span>{isHindi ? "Link copy karein" : "Copy Link"}</span>
+                  </button>
+                </div>
+              )}
+
+              {isIOS && (
                 <>
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-3.5">
-                    <div
-                      className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-extrabold text-xs shrink-0 shadow-xs"
-                      style={{ backgroundColor: themeColor }}
-                    >
-                      1
-                    </div>
-                    <div className="flex-1 text-xs">
-                      <p className="font-bold text-slate-900 flex items-center gap-1.5">
-                        <span>{isHindi ? "शेयर आइकन पर टैप करें" : "Tap the Share button"}</span>
-                        <Share className="w-4 h-4 text-sky-600 inline" />
-                      </p>
-                      <p className="text-slate-500 mt-0.5">
-                        {isHindi
-                          ? "सफारी (Safari) ब्राउज़र के नीचे बार में 📤 शेयर आइकन पर क्लिक करें।"
-                          : "Look for the Share icon in Safari's bottom toolbar (or top on iPad)."}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-3.5">
-                    <div
-                      className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-extrabold text-xs shrink-0 shadow-xs"
-                      style={{ backgroundColor: themeColor }}
-                    >
-                      2
-                    </div>
-                    <div className="flex-1 text-xs">
-                      <p className="font-bold text-slate-900 flex items-center gap-1.5">
-                        <span>{isHindi ? "'Add to Home Screen' चुनें" : "Select 'Add to Home Screen'"}</span>
-                        <PlusSquare className="w-4 h-4 text-slate-700 inline" />
-                      </p>
-                      <p className="text-slate-500 mt-0.5">
-                        {isHindi
-                          ? "नीचे स्क्रॉल करें और 'Add to Home Screen' ➕ विकल्प पर टैप करें।"
-                          : "Scroll down the share sheet and tap the 'Add to Home Screen' option."}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-3.5">
-                    <div
-                      className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-extrabold text-xs shrink-0 shadow-xs"
-                      style={{ backgroundColor: themeColor }}
-                    >
-                      3
-                    </div>
-                    <div className="flex-1 text-xs">
-                      <p className="font-bold text-slate-900">
-                        {isHindi ? "ऊपर 'Add' पर टैप करें" : "Tap 'Add' in Top-Right"}
-                      </p>
-                      <p className="text-slate-500 mt-0.5">
-                        {isHindi
-                          ? "ऐप आपके iPhone/iPad की होम स्क्रीन पर 1-टैप एक्सेस के लिए जुड़ जाएगा।"
-                          : "The official app icon will appear instantly on your home screen."}
-                      </p>
-                    </div>
-                  </div>
+                  <Step
+                    number={1}
+                    title={isHindi ? "Safari me Share button tap karein" : "Tap the Share button in Safari"}
+                    body={
+                      isHindi
+                        ? "Safari toolbar me Share icon dekhein. iPhone par ye aksar bottom bar me hota hai."
+                        : "Look for the Share icon in Safari's toolbar. On iPhone it is usually in the bottom bar."
+                    }
+                    icon={<Share className="w-4 h-4 text-sky-600 inline" />}
+                    themeColor={themeColor}
+                  />
+                  <Step
+                    number={2}
+                    title={isHindi ? "Add to Home Screen chunein" : "Select Add to Home Screen"}
+                    body={
+                      isHindi
+                        ? "Share sheet me neeche scroll karein aur Add to Home Screen option tap karein."
+                        : "Scroll the share sheet and tap the Add to Home Screen option."
+                    }
+                    icon={<PlusSquare className="w-4 h-4 text-slate-700 inline" />}
+                    themeColor={themeColor}
+                  />
+                  <Step
+                    number={3}
+                    title={isHindi ? "Top-right Add tap karein" : "Tap Add in the top-right"}
+                    body={
+                      isHindi
+                        ? "Clinic app icon turant home screen par aa jayega."
+                        : "The clinic app icon will appear on your home screen."
+                    }
+                    themeColor={themeColor}
+                  />
                 </>
               )}
 
-              {platform === "in_app" && (
+              {isAndroidInApp && (
                 <>
-                  <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/60 mb-2">
+                  <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/60">
                     <p className="text-xs font-bold text-amber-900">
                       {isHindi
-                        ? "व्हाट्सएप / इंस्टाग्राम इन-ऐप ब्राउज़र में हैं?"
-                        : "Opened from WhatsApp, Instagram, or Facebook?"}
+                        ? "Chrome me kholkar one-tap install karein"
+                        : "Open in Chrome for one-tap install"}
                     </p>
                     <p className="text-[11px] text-amber-700 mt-1">
                       {isHindi
-                        ? "1-टैप में ऐप इंस्टॉल करने के लिए नीचे दिए गए बटन पर टैप करके क्रोम (Chrome) में खोलें:"
-                        : "To enable 1-tap native installation, open this page in Google Chrome:"}
+                        ? "In-app browser native install prompt nahi dikhata. Chrome me kholne ke baad Install button dobara tap karein."
+                        : "In-app browsers do not show the native install prompt. Open in Chrome, then tap Install again."}
                     </p>
 
                     <button
@@ -184,70 +242,78 @@ export function PWAInstallGuideModal({
                       onClick={() => {
                         if (typeof window === "undefined") return;
                         const url = window.location.href.replace(/^https?:\/\//, "");
-                        const intentUrl = `intent://${url}#Intent;scheme=https;package=com.android.chrome;end;`;
-                        window.location.href = intentUrl;
+                        window.location.href = `intent://${url}#Intent;scheme=https;package=com.android.chrome;end;`;
                       }}
                       className="mt-3 w-full py-2.5 px-4 rounded-xl text-white text-xs font-bold shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-all"
                       style={{ backgroundColor: themeColor }}
                     >
                       <ExternalLink className="w-4 h-4" />
-                      <span>{isHindi ? "क्रोम (Chrome) में खोलें" : "Open in Google Chrome"}</span>
+                      <span>{isHindi ? "Chrome me kholen" : "Open in Google Chrome"}</span>
                     </button>
                   </div>
-
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-3.5">
-                    <div
-                      className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-extrabold text-xs shrink-0 shadow-xs"
-                      style={{ backgroundColor: themeColor }}
-                    >
-                      1
-                    </div>
-                    <div className="flex-1 text-xs">
-                      <p className="font-bold text-slate-900">
-                        {isHindi ? "या ऊपरी कोने में 3 डॉट्स (⋮) दबाएं" : "Or tap the 3 dots (⋮ or ⋯) menu"}
-                      </p>
-                      <p className="text-slate-500 mt-0.5">
-                        {isHindi
-                          ? "स्क्रीन के ऊपर दाएं कोने में मेनू पर टैप करके 'Open in Chrome' चुनें।"
-                          : "Located in the top right corner of your screen -> select 'Open in Chrome'."}
-                      </p>
-                    </div>
-                  </div>
+                  <Step
+                    number={1}
+                    title={isHindi ? "Ya menu se Open in Chrome chunein" : "Or use the menu to open in Chrome"}
+                    body={
+                      isHindi
+                        ? "Screen ke top-right menu me Open in Chrome option chunein."
+                        : "Use the top-right menu and choose Open in Chrome."
+                    }
+                    icon={<Menu className="w-4 h-4 text-slate-700 inline" />}
+                    themeColor={themeColor}
+                  />
                 </>
               )}
 
-              {(platform === "desktop" || platform === "android_manual") && (
-                <>
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-3.5">
-                    <div
-                      className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-extrabold text-xs shrink-0 shadow-xs"
-                      style={{ backgroundColor: themeColor }}
-                    >
-                      1
-                    </div>
-                    <div className="flex-1 text-xs">
-                      <p className="font-bold text-slate-900 flex items-center gap-1.5">
-                        <span>{isHindi ? "ब्राउज़र मेनू या एड्रेस बार देखें" : "Check Address Bar or Menu (⋮)"}</span>
-                        <ArrowDown className="w-3.5 h-3.5 text-slate-600 inline" />
-                      </p>
-                      <p className="text-slate-500 mt-0.5">
-                        {isHindi
-                          ? "एड्रेस बार में 'Install' (↓) आइकन दबाएं या मेनू (⋮) से 'Install app' / 'Add to Home Screen' चुनें।"
-                          : "Click the Install (↓) icon in the URL bar, or click browser menu (⋮) → 'Install app'."}
-                      </p>
-                    </div>
-                  </div>
+              {isInApp && (
+                <Step
+                  number={1}
+                  title={isHindi ? "System browser me kholen" : "Open in your system browser"}
+                  body={
+                    isHindi
+                      ? "Is browser ka menu kholkar Safari ya Chrome me open karein, phir app add karein."
+                      : "Use this browser's menu to open the page in Safari or Chrome, then add the app from there."
+                  }
+                  icon={<ExternalLink className="w-4 h-4 text-slate-700 inline" />}
+                  themeColor={themeColor}
+                />
+              )}
 
+              {(isAndroidManual || isDesktop) && (
+                <>
+                  <Step
+                    number={1}
+                    title={
+                      isAndroidManual
+                        ? isHindi
+                          ? "Chrome menu kholen"
+                          : "Open the Chrome menu"
+                        : isHindi
+                          ? "Address bar ya menu check karein"
+                          : "Check the address bar or menu"
+                    }
+                    body={
+                      isAndroidManual
+                        ? isHindi
+                          ? "Agar native prompt nahi dikha, Chrome ke three-dot menu se Install app ya Add to Home Screen chunein."
+                          : "If the native prompt did not appear, use Chrome's three-dot menu and choose Install app or Add to Home Screen."
+                        : isHindi
+                          ? "Address bar ke install icon ya browser menu se Install app chunein."
+                          : "Use the install icon in the address bar, or choose Install app from the browser menu."
+                    }
+                    icon={<ArrowDown className="w-3.5 h-3.5 text-slate-600 inline" />}
+                    themeColor={themeColor}
+                  />
                   <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-100 flex items-start gap-3.5">
                     <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                     <div className="text-xs">
                       <p className="font-bold text-emerald-900">
-                        {isHindi ? "बिना प्ले स्टोर के तुरंत तैयार" : "Fast, Lightweight & Safe"}
+                        {isHindi ? "Fast aur lightweight" : "Fast and lightweight"}
                       </p>
                       <p className="text-emerald-700 mt-0.5">
                         {isHindi
-                          ? "यह ऐप सिर्फ < 1MB लेता है और हमेशा लाइव टोकन अपडेट दिखाता है।"
-                          : "Takes < 1MB storage, zero login needed, and gives real-time token alerts."}
+                          ? "App home screen se khulega aur live token updates ke liye ready rahega."
+                          : "The app opens from the home screen and stays ready for live token updates."}
                       </p>
                     </div>
                   </div>
@@ -255,7 +321,6 @@ export function PWAInstallGuideModal({
               )}
             </div>
 
-            {/* Bottom Got It Button */}
             <div className="mt-4 pt-3 border-t border-slate-100">
               <button
                 type="button"
@@ -263,12 +328,13 @@ export function PWAInstallGuideModal({
                 className="w-full py-3 px-5 rounded-2xl text-white font-bold text-sm shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
                 style={{ backgroundColor: themeColor }}
               >
-                <span>{isHindi ? "समझ गया · ठीक है" : "Got It"}</span>
+                <span>{isHindi ? "Samajh gaya" : "Got It"}</span>
               </button>
             </div>
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

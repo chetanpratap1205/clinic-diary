@@ -6,17 +6,18 @@ const STATIC_CACHE = `doctor-diary-static-v4-${BUILD_TIME}`;
 
 const STATIC_ASSETS = [
   "/",
-  "/manifest.json",
   "/icon-192.png",
   "/icon-512.png",
   "/offline",
 ];
 
-// Install: cache static assets
+// Install: cache static assets safely
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
+      return cache.addAll(STATIC_ASSETS).catch((err) => {
+        console.warn("[SW] Cache addAll warning:", err);
+      });
     })
   );
   self.skipWaiting();

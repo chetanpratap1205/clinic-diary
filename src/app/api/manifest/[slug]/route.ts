@@ -5,19 +5,21 @@ import { eq } from "drizzle-orm";
 
 export const revalidate = 3600;
 
+function compactShortName(name: string) {
+  return name.length > 12 ? `${name.substring(0, 11)}...` : name;
+}
+
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const { slug } = await params;
 
-    // Fetch clinic by slug
     let [clinic] = await db
       .select({
         name: clinics.name,
         themeColor: clinics.themeColor,
-        logoUrl: clinics.logoUrl,
       })
       .from(clinics)
       .where(eq(clinics.slug, slug))
@@ -29,7 +31,6 @@ export async function GET(
         .select({
           name: doctorLeads.clinicName,
           doctorName: doctorLeads.doctorName,
-          logoUrl: doctorLeads.logoUrl,
         })
         .from(doctorLeads)
         .where(eq(doctorLeads.clinicSlug, slug))
@@ -42,73 +43,53 @@ export async function GET(
       clinic = {
         name: lead.name || `${lead.doctorName}'s Clinic`,
         themeColor: "#0d9488",
-        logoUrl: lead.logoUrl || null,
       };
     }
 
     const themeColor = clinic.themeColor || "#0ea5e9";
     const appName = clinic.name || "Clinic App";
 
-    // Create a clean short name for mobile home screen (12 chars max)
-    const shortName =
-      appName.length > 12 ? `${appName.substring(0, 11)}…` : appName;
-
-    // Detect MIME type hint for dynamic icon if logoUrl is provided
-    let dynamicIconType = "image/png";
-    if (clinic.logoUrl) {
-      const lower = clinic.logoUrl.toLowerCase();
-      if (lower.endsWith(".svg")) dynamicIconType = "image/svg+xml";
-      else if (lower.endsWith(".webp")) dynamicIconType = "image/webp";
-      else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg"))
-        dynamicIconType = "image/jpeg";
-    } else {
-      dynamicIconType = "image/svg+xml";
-    }
-
-    // Standard-compliant icons array with separate "any" and "maskable" purposes
     const icons = [
-      // Dynamic clinic icons via same-origin proxy (purpose: any)
+      {
+        src: "/icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable",
+      },
+      {
+        src: "/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
       {
         src: `/api/manifest/${slug}/icon?size=192`,
         sizes: "192x192",
-        type: dynamicIconType,
+        type: "image/svg+xml",
         purpose: "any",
       },
       {
         src: `/api/manifest/${slug}/icon?size=384`,
         sizes: "384x384",
-        type: dynamicIconType,
+        type: "image/svg+xml",
         purpose: "any",
       },
       {
         src: `/api/manifest/${slug}/icon?size=512`,
         sizes: "512x512",
-        type: dynamicIconType,
-        purpose: "any",
-      },
-      // High-resolution raster PNG icons for adaptive launcher maskable support
-      {
-        src: "/icon-192.png",
-        sizes: "192x192",
-        type: "image/png",
-        purpose: "maskable",
-      },
-      {
-        src: "/icon-192.png",
-        sizes: "192x192",
-        type: "image/png",
-        purpose: "any",
-      },
-      {
-        src: "/icon-512.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "maskable",
-      },
-      {
-        src: "/icon-512.png",
-        sizes: "512x512",
-        type: "image/png",
+        type: "image/svg+xml",
         purpose: "any",
       },
     ];
@@ -116,12 +97,12 @@ export async function GET(
     const manifest = {
       id: `/clinic/${slug}`,
       name: appName,
-      short_name: shortName,
+      short_name: compactShortName(appName),
       description: `Official instant appointment booking and real-time live queue tracking app for ${appName}.`,
       start_url: `/clinic/${slug}?utm_source=pwa`,
       scope: `/clinic/${slug}`,
       display: "standalone",
-      display_override: ["window-controls-overlay", "standalone", "minimal-ui"],
+      display_override: ["standalone", "minimal-ui"],
       orientation: "portrait-primary",
       background_color: "#f8fafc",
       theme_color: themeColor,
@@ -166,9 +147,7 @@ export async function GET(
     return NextResponse.json(manifest, {
       headers: {
         "Content-Type": "application/manifest+json",
-        "Cache-Control":
-          "public, max-age=60, s-maxage=60, stale-while-revalidate=300",
-        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=3600",
       },
     });
   } catch (error) {

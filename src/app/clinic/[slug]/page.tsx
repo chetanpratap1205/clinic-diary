@@ -187,8 +187,8 @@ export async function generateMetadata({
       ],
       apple: [
         {
-          url: `/api/manifest/${slug}/icon?size=180`,
-          sizes: "180x180",
+          url: "/icon-192.png",
+          sizes: "192x192",
           type: "image/png",
         },
       ],
@@ -1150,7 +1150,7 @@ export default async function BookingPage({
                         {clinicReviews.map((review) => (
                           <div key={review.id} className="snap-center shrink-0 w-[260px] bg-white border border-slate-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-transform rounded-2xl p-5 flex flex-col justify-between cursor-default">
                             {review.comment ? (
-                              <p className="text-[13px] text-slate-600 font-medium leading-relaxed mb-4 line-clamp-4">"{review.comment}"</p>
+                              <p className="text-[13px] text-slate-600 font-medium leading-relaxed mb-4 line-clamp-4">&quot;{review.comment}&quot;</p>
                             ) : (
                               <p className="text-[13px] text-slate-400 font-medium italic mb-4">{t.leftPositiveRating}</p>
                             )}

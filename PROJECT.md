@@ -4,7 +4,7 @@
 - **Framework**: Next.js (App Router, React 19 SSR + Client components)
 - **Portals**:
   1. **Doctor Diary Portal**: Doctor-facing dashboard (`/dashboard`, `/login`, etc.) using static `public/manifest.json` (`id: "doctor-diary-app"`, `start_url: "/dashboard"`, `scope: "/"`).
-  2. **Patient Clinic Portal**: Individual clinic booking and tracking pages (`/book/[slug]`, `/track/[appointmentId]`) using dynamic manifests (`/api/manifest/[slug]`, `id: "/book/[slug]"`, `start_url: "/book/[slug]?utm_source=pwa"`, `scope: "/book/[slug]"`).
+  2. **Patient Clinic Portal**: Individual clinic booking and tracking pages (`/clinic/[slug]`, `/clinic/[slug]/track/[appointmentId]`) using dynamic manifests (`/api/manifest/[slug]`, `id: "/clinic/[slug]"`, `start_url: "/clinic/[slug]?utm_source=pwa"`, `scope: "/clinic/[slug]"`).
 - **Service Worker Architecture**: Shared `public/sw.js` with root scope (`scope: "/"`), providing network-first strategies for dynamic routes, stale-while-revalidate for patient pages, static asset caching, and web push notifications.
 
 ## Feature Inventory

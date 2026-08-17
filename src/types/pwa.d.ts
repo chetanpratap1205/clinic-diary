@@ -29,6 +29,7 @@ interface WindowEventMap {
   "pwa-prompt-ready": CustomEvent<BeforeInstallPromptEvent | undefined>;
   appinstalled: Event;
   "pwa-installed": CustomEvent<void>;
+  "pwa-prompt-consumed": CustomEvent<void>;
 }
 
 interface Navigator {

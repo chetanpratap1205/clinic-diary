@@ -1,0 +1,198 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e4]:
+    - navigation [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - img "Chetan Clinic" [ref=e11]
+          - paragraph: Chetan Clinic
+        - generic [ref=e12]:
+          - button "Toggle language between Hindi and English" [ref=e13] [cursor=pointer]: हिंदी में देखें
+          - button "Chetan Clinic Official App Chetan Clinic Guide" [ref=e14] [cursor=pointer]:
+            - img "Chetan Clinic" [ref=e16]
+            - generic [ref=e17]:
+              - generic [ref=e18]: Official App
+              - generic [ref=e19]: Chetan Clinic
+            - generic [ref=e20]: Guide
+    - main [ref=e25]:
+      - generic [ref=e26]:
+        - region [ref=e27]:
+          - generic [ref=e36]:
+            - generic [ref=e38]:
+              - img "Dr. Chetan - Senior Cardiologist Specialist" [ref=e39]
+              - generic [ref=e41]:
+                - generic [ref=e42]:
+                  - generic [ref=e43]: 🩺 Senior Cardiologist Specialist
+                  - heading "Dr. Chetan" [level=1] [ref=e49]
+                - button "Verified Doctor — tap to learn more" [ref=e51] [cursor=pointer]:
+                  - generic [ref=e55]: Verified
+            - generic [ref=e56]:
+              - generic [ref=e57]:
+                - paragraph [ref=e62]: ₹1,500
+                - paragraph [ref=e63]: Consult Fee
+              - generic [ref=e64]:
+                - paragraph [ref=e69]: ₹0 Fee
+                - paragraph [ref=e70]: Pay at clinic
+              - link [ref=e71] [cursor=pointer]:
+                - /url: /clinic/nature-express/status?lang=en
+                - paragraph [ref=e75]: Opens at 9:00 AM
+                - paragraph [ref=e76]: Live tracking active
+            - generic [ref=e77]:
+              - generic [ref=e78]:
+                - generic [ref=e82]: "Today::"
+                - generic [ref=e83]: 9:00 AM - 5:00 PM
+              - link "Get directions to clinic" [ref=e85] [cursor=pointer]:
+                - /url: https://www.google.com/maps/dir/?api=1&destination=Chetan%20Clinic%2C%20Vijaynagar%20indore
+                - generic [ref=e89]: Directions
+            - generic [ref=e92]:
+              - link "Call Clinic" [ref=e93] [cursor=pointer]:
+                - /url: tel:+919876543210
+              - link "Chat on WhatsApp" [ref=e97] [cursor=pointer]:
+                - /url: https://wa.me/919876543210?text=Hi%20Chetan%20Clinic%2C%20I%20would%20like%20to%20inquire%20about%20OPD%20consultation%20with%20Dr.%20Chetan.
+        - main [ref=e101]:
+          - generic [ref=e103]:
+            - generic [ref=e104]:
+              - generic [ref=e105]: About the Practice
+              - heading "Welcome to Chetan Clinic" [level=2] [ref=e110]
+              - generic [ref=e111]:
+                - paragraph [ref=e113]: Welcome to Chetan Clinic, a premium healthcare destination in Vijaynagar indore . Led by Chetan, a highly trusted expert in Senior Cardiologist, we are committed to revolutionizing your healthcare experience. We understand that your time is valuable. That's why we've implemented a state-of-the-art digital booking system with transparent live queues, ensuring zero waiting room anxiety. Whether you need routine consultations or specialized treatments, our patient-first approach guarantees personalized, compassionate care from the moment you book. Experience modern healthcare without the hassle—book your appointment today.
+                - button "Read More" [ref=e114] [cursor=pointer]
+              - blockquote [ref=e117]: "\"Our philosophy at Chetan Clinic is dedicated to transparent, compassionate care for every patient visiting Dr. Chetan.\""
+            - generic [ref=e119]:
+              - generic [ref=e120]: Operating Schedule
+              - generic [ref=e125]:
+                - generic [ref=e126]:
+                  - generic [ref=e127]: "Mon:"
+                  - generic [ref=e128]: 9:00 AM - 5:00 PM
+                - generic [ref=e130]:
+                  - generic [ref=e131]: "Tue:"
+                  - generic [ref=e132]: 9:00 AM - 5:00 PM
+                - generic [ref=e134]:
+                  - generic [ref=e135]: "Wed:"
+                  - generic [ref=e136]: 9:00 AM - 5:00 PM
+                - generic [ref=e138]:
+                  - generic [ref=e139]: "Thu:"
+                  - generic [ref=e140]: 9:00 AM - 5:00 PM
+                - generic [ref=e142]:
+                  - generic [ref=e143]: "Fri:"
+                  - generic [ref=e144]: 9:00 AM - 5:00 PM
+              - generic [ref=e146]:
+                - generic [ref=e147]: Live Queue Active
+                - text: Book Free Online
+          - generic [ref=e150]:
+            - generic [ref=e152]:
+              - heading "Conditions We Treat" [level=2] [ref=e153]
+              - paragraph [ref=e154]: Common conditions treated at Chetan Clinic
+            - generic [ref=e155]:
+              - link "Senior Cardiologist OPD Consultation Book →" [ref=e156] [cursor=pointer]:
+                - /url: "#booking"
+                - generic [ref=e157]: Senior Cardiologist OPD Consultation
+                - generic [ref=e163]: Book →
+              - link "Specialized Senior Cardiologist Evaluation Book →" [ref=e164] [cursor=pointer]:
+                - /url: "#booking"
+                - generic [ref=e165]: Specialized Senior Cardiologist Evaluation
+                - generic [ref=e171]: Book →
+              - link "Preventive Health Care Book →" [ref=e172] [cursor=pointer]:
+                - /url: "#booking"
+                - generic [ref=e173]: Preventive Health Care
+                - generic [ref=e179]: Book →
+          - generic [ref=e181]:
+            - generic [ref=e182]:
+              - heading "Why Choose Our Clinic" [level=2] [ref=e183]
+              - paragraph [ref=e184]: World-class healthcare built around your comfort.
+            - generic [ref=e185]:
+              - generic [ref=e191]:
+                - heading "Book in 20 Seconds" [level=3] [ref=e192]
+                - paragraph [ref=e193]: Select date, time, and enter your name & number. Instant confirmation.
+              - generic [ref=e198]:
+                - heading "See Your Queue Live" [level=3] [ref=e199]
+                - paragraph [ref=e200]: Track your real-time turn from home. Arrive when the doctor is ready.
+              - generic [ref=e206]:
+                - heading "Zero Booking Fee" [level=3] [ref=e207]
+                - paragraph [ref=e208]: 100% free to book. Pay the consultation fee directly at the clinic.
+          - generic [ref=e210]:
+            - img "Chetan Clinic" [ref=e214]
+            - generic [ref=e215]: Official Clinic Web App
+            - heading "Add Chetan Clinic App" [level=2] [ref=e220]
+            - paragraph [ref=e221]: Add this clinic app to your home screen with the best steps for this device.
+            - generic [ref=e222]:
+              - generic [ref=e223]: Fast booking
+              - generic [ref=e227]: Live queue tracker
+              - generic [ref=e231]: No Play Store
+            - button "Show Install Steps" [ref=e236] [cursor=pointer]
+          - generic [ref=e242]:
+            - generic [ref=e243]:
+              - generic [ref=e244]:
+                - heading "Location & Contact" [level=2] [ref=e245]
+                - link "Share Clinic Link on WhatsApp" [ref=e249] [cursor=pointer]:
+                  - /url: https://wa.me/?text=Book%20an%20appointment%20with%20Chetan%20Clinic%3A%20https%3A%2F%2Fdoctor.naturexpress.in%2Fclinic%2Fnature-express
+                  - text: Share
+              - generic [ref=e260]:
+                - paragraph [ref=e261]: Vijaynagar indore
+                - generic [ref=e263]:
+                  - link "Navigate via Google Maps" [ref=e264] [cursor=pointer]:
+                    - /url: https://www.google.com/maps/dir/?api=1&destination=Chetan%20Clinic%2C%20Vijaynagar%20indore
+                    - text: Navigate
+                  - link "Call Clinic" [ref=e268] [cursor=pointer]:
+                    - /url: tel:+919876543210
+              - link "9876543210" [ref=e276] [cursor=pointer]:
+                - /url: tel:9876543210
+            - generic [ref=e277]:
+              - heading "Frequently Asked Questions" [level=2] [ref=e278]
+              - generic [ref=e282]:
+                - generic [ref=e283]:
+                  - button "How do I book an appointment with Dr. Chetan?" [expanded] [ref=e284] [cursor=pointer]
+                  - generic [ref=e292]: Select your preferred date and time slot in the booking box, enter your name and mobile number, and your live OPD token is generated instantly — zero online booking fee.
+                - generic [ref=e294]:
+                  - button "Is online booking free? What is the consultation fee?" [ref=e295] [cursor=pointer]
+                  - generic: Booking online via Doctor Diary is completely FREE. You pay the consultation fee of ₹1,500 directly at Chetan Clinic during your visit.
+                - generic [ref=e303]:
+                  - button "How do I track my queue position?" [ref=e304] [cursor=pointer]
+                  - generic: After booking, you will receive a tracking link. Click "Live Status" to check your real-time queue turn from home.
+          - generic [ref=e312]:
+            - generic [ref=e313]:
+              - generic [ref=e314]:
+                - generic [ref=e315]:
+                  - img "Chetan Clinic" [ref=e318]
+                  - generic [ref=e319]: Chetan Clinic
+                - paragraph [ref=e320]: Delivering world-class senior cardiologist specialist care with a commitment to clinical excellence, complete transparency, and paramount patient comfort.
+              - generic [ref=e321]:
+                - heading "Quick Links" [level=4] [ref=e322]
+                - list [ref=e323]:
+                  - listitem [ref=e324]:
+                    - link "Book Appointment" [ref=e325] [cursor=pointer]:
+                      - /url: "#booking"
+                  - listitem [ref=e326]:
+                    - link "Get Directions" [ref=e327] [cursor=pointer]:
+                      - /url: https://www.google.com/maps/dir/?api=1&destination=Chetan%20Clinic%2C%20Vijaynagar%20indore
+                  - listitem [ref=e328]:
+                    - link "Call Clinic" [ref=e329] [cursor=pointer]:
+                      - /url: tel:9876543210
+              - generic [ref=e330]:
+                - heading "Legal & Privacy" [level=4] [ref=e331]
+                - list [ref=e332]:
+                  - listitem [ref=e333]:
+                    - link "Patient Privacy Policy" [ref=e334] [cursor=pointer]:
+                      - /url: /privacy
+                  - listitem [ref=e335]:
+                    - link "Terms of Service" [ref=e336] [cursor=pointer]:
+                      - /url: /terms
+                  - listitem [ref=e337]:
+                    - link "Refund & Cancellation" [ref=e338] [cursor=pointer]:
+                      - /url: /refund
+              - generic [ref=e339]:
+                - heading "Powered By" [level=4] [ref=e340]
+                - paragraph [ref=e341]: Doctor Diary SaaS Platform. India's most advanced patient queue and clinic management system.
+                - generic [ref=e342]: DPDP Act Compliant
+            - paragraph [ref=e345]: © 2026 Chetan Clinic. All rights reserved.
+        - generic [ref=e346]:
+          - link "Live Status" [ref=e347] [cursor=pointer]:
+            - /url: /clinic/nature-express/status?lang=en
+            - generic [ref=e351]: Live Queue
+          - button "Book Free Appointment" [ref=e354] [cursor=pointer]:
+            - generic [ref=e360]:
+              - generic [ref=e361]: Book Appointment
+              - generic [ref=e362]: Pay at Clinic · Free Token
+  - region "Notifications alt+T"
+  - alert [ref=e363]

@@ -1,49 +1,52 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
+import {
+  detectDevicePlatformFromSignals,
+  type DevicePlatform,
+} from "@/lib/pwa-platform";
 
-export type Platform =
-  | "android"
-  | "android_manual"
-  | "ios"
-  | "in_app"
-  | "desktop"
-  | "installed"
-  | "unknown";
+export type { DevicePlatform } from "@/lib/pwa-platform";
 
-export function detectPlatform(): Platform {
+export type PromptStatus = "IDLE" | "CAPTURED" | "INSTALLED";
+
+export function detectPlatform(): DevicePlatform {
   if (typeof window === "undefined") return "unknown";
 
-  // Already running as PWA (standalone display mode or iOS standalone)
-  const isStandalone =
+  return detectDevicePlatformFromSignals({
+    userAgent: navigator.userAgent || "",
+    maxTouchPoints: navigator.maxTouchPoints || 0,
+    isStandalone: isStandaloneMode(),
+  });
+}
+
+function isStandaloneMode() {
+  if (typeof window === "undefined") return false;
+
+  return (
     window.matchMedia("(display-mode: standalone)").matches ||
-    (navigator as Navigator & { standalone?: boolean }).standalone === true;
-  if (isStandalone) return "installed";
-
-  const ua = navigator.userAgent || "";
-
-  // In-app browsers (WhatsApp, Instagram, FB, LinkedIn, Twitter/X, Telegram, WeChat, etc.)
-  const isInApp = /(FBAN|FBAV|Instagram|WhatsApp|Line|Twitter|Telegram|Snapchat|MicroMessenger|GSA|musical_ly)/i.test(
-    ua
+    (navigator as Navigator & { standalone?: boolean }).standalone === true
   );
-  if (isInApp) return "in_app";
+}
 
-  // iOS detection (iPhone, iPad, iPod — Safari doesn't fire beforeinstallprompt)
-  // Supports iPadOS 13+ which reports Macintosh with touch points
-  const isIOS =
-    (/iPad|iPhone|iPod/.test(ua) && !(window as Window & { MSStream?: unknown }).MSStream) ||
-    (typeof navigator !== "undefined" && navigator.maxTouchPoints > 1 && /Macintosh/.test(ua));
-  if (isIOS) return "ios";
+function getCapturedPrompt() {
+  if (typeof window === "undefined") return null;
+  return window.__pwaDeferredPrompt || null;
+}
 
-  // Android detection
-  const isAndroid = /android/i.test(ua);
-  if (isAndroid) return "android_manual";
+function clearCapturedPrompt() {
+  if (typeof window === "undefined") return;
 
-  return "desktop";
+  window.__pwaDeferredPrompt = null;
+  window.dispatchEvent(new CustomEvent("pwa-prompt-consumed"));
+}
+
+function canWaitForNativePrompt(platform: DevicePlatform) {
+  return platform === "android" || platform === "desktop";
 }
 
 export function usePWAInstall() {
-  const [platform, setPlatform] = useState<Platform>("unknown");
+  const [platform, setPlatform] = useState<DevicePlatform>("unknown");
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalling, setIsInstalling] = useState(false);
@@ -51,145 +54,122 @@ export function usePWAInstall() {
   const [isGuideOpen, setIsGuideOpen] = useState(false);
 
   useEffect(() => {
-    // 1. Initial platform detection
     const detected = detectPlatform();
-    setPlatform(detected);
+    const alreadyInstalled = detected === "installed";
 
-    if (detected === "installed") {
-      setIsInstalled(true);
+    setPlatform(detected);
+    setIsInstalled(alreadyInstalled);
+
+    if (alreadyInstalled) {
       return;
     }
 
-    // 2. Check if prompt was already captured globally before component mount
-    if (typeof window !== "undefined" && window.__pwaDeferredPrompt) {
-      setDeferredPrompt(window.__pwaDeferredPrompt);
-      if (detected !== "ios" && detected !== "in_app") {
-        setPlatform("android");
-      }
+    const existingPrompt = getCapturedPrompt();
+    if (existingPrompt) {
+      setDeferredPrompt(existingPrompt);
     }
 
-    // 3. Native 'beforeinstallprompt' listener
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      const promptEvent = e as BeforeInstallPromptEvent;
-      window.__pwaDeferredPrompt = promptEvent;
-      setDeferredPrompt(promptEvent);
-      setPlatform((prev) =>
-        prev === "ios" || prev === "in_app" || prev === "installed" ? prev : "android"
-      );
-    };
-
-    // 4. Custom 'pwa-prompt-ready' listener (dispatched when captured globally)
-    const handleCustomPromptReady = (e: Event) => {
+    const handlePromptReady = (e: Event) => {
       const customEvent = e as CustomEvent<BeforeInstallPromptEvent | undefined>;
       const promptEvent =
         customEvent.detail || (window.__pwaDeferredPrompt as BeforeInstallPromptEvent | null);
+
       if (promptEvent) {
         setDeferredPrompt(promptEvent);
-        setPlatform((prev) =>
-          prev === "ios" || prev === "in_app" || prev === "installed" ? prev : "android"
-        );
       }
     };
 
-    // 5. 'appinstalled' / 'pwa-installed' listener
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setDeferredPrompt(null);
-      if (typeof window !== "undefined") {
-        window.__pwaDeferredPrompt = null;
-      }
       setPlatform("installed");
       setIsGuideOpen(false);
+      clearCapturedPrompt();
     };
 
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    window.addEventListener("pwa-prompt-ready", handleCustomPromptReady);
+    const handlePromptConsumed = () => {
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener("pwa-prompt-ready", handlePromptReady);
     window.addEventListener("appinstalled", handleAppInstalled);
     window.addEventListener("pwa-installed", handleAppInstalled);
+    window.addEventListener("pwa-prompt-consumed", handlePromptConsumed);
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-      window.removeEventListener("pwa-prompt-ready", handleCustomPromptReady);
+      window.removeEventListener("pwa-prompt-ready", handlePromptReady);
       window.removeEventListener("appinstalled", handleAppInstalled);
       window.removeEventListener("pwa-installed", handleAppInstalled);
+      window.removeEventListener("pwa-prompt-consumed", handlePromptConsumed);
     };
   }, []);
 
-  const triggerInstall = useCallback(async () => {
-    // Check state first, then window object
-    let prompt =
-      deferredPrompt ||
-      (typeof window !== "undefined" ? window.__pwaDeferredPrompt : null);
+  const runNativePrompt = useCallback(async (prompt: BeforeInstallPromptEvent) => {
+    setIsInstalling(true);
 
-    // If native prompt is available, execute immediately (1-TAP!)
-    if (prompt) {
-      setIsInstalling(true);
-      try {
-        await prompt.prompt();
-        const { outcome } = await prompt.userChoice;
-        if (outcome === "accepted") {
-          setIsInstalled(true);
-          setPlatform("installed");
-          if (typeof window !== "undefined") {
-            window.__pwaDeferredPrompt = null;
-          }
-        }
-      } catch (err) {
-        console.error("[usePWAInstall] Failed to prompt PWA install:", err);
-      } finally {
-        setIsInstalling(false);
-        setDeferredPrompt(null);
-        if (typeof window !== "undefined") {
-          window.__pwaDeferredPrompt = null;
-        }
+    try {
+      await prompt.prompt();
+      const { outcome } = await prompt.userChoice;
+
+      if (outcome === "accepted") {
+        setIsInstalled(true);
+        setPlatform("installed");
       }
+    } catch (err) {
+      console.error("[usePWAInstall] Failed to trigger native PWA prompt:", err);
+    } finally {
+      setIsInstalling(false);
+      setDeferredPrompt(null);
+      clearCapturedPrompt();
+    }
+  }, []);
+
+  const triggerInstall = useCallback(async () => {
+    const prompt = deferredPrompt || getCapturedPrompt();
+
+    if (prompt) {
+      await runNativePrompt(prompt);
       return;
     }
 
-    // On Android/Desktop Chromium: Wait up to 600ms in case beforeinstallprompt is in-flight
-    if (typeof window !== "undefined" && (platform === "android" || platform === "android_manual" || platform === "desktop")) {
+    if (canWaitForNativePrompt(platform)) {
       setIsInstalling(true);
       const promptArrived = await new Promise<BeforeInstallPromptEvent | null>((resolve) => {
-        const timer = setTimeout(() => resolve(null), 600);
-        const handler = (e: Event) => {
-          clearTimeout(timer);
-          window.removeEventListener("pwa-prompt-ready", handler);
-          resolve(window.__pwaDeferredPrompt || null);
-        };
-        window.addEventListener("pwa-prompt-ready", handler, { once: true });
-        
-        // Re-check window immediately
-        if (window.__pwaDeferredPrompt) {
-          clearTimeout(timer);
-          window.removeEventListener("pwa-prompt-ready", handler);
-          resolve(window.__pwaDeferredPrompt || null);
+        if (typeof window === "undefined") {
+          resolve(null);
+          return;
         }
+
+        const existingPrompt = getCapturedPrompt();
+        if (existingPrompt) {
+          resolve(existingPrompt);
+          return;
+        }
+
+        const handlePromptReady = (e: Event) => {
+          window.clearTimeout(timer);
+          window.removeEventListener("pwa-prompt-ready", handlePromptReady);
+          const customEvent = e as CustomEvent<BeforeInstallPromptEvent | undefined>;
+          resolve(customEvent.detail || getCapturedPrompt());
+        };
+
+        const timer = window.setTimeout(() => {
+          window.removeEventListener("pwa-prompt-ready", handlePromptReady);
+          resolve(null);
+        }, 800);
+
+        window.addEventListener("pwa-prompt-ready", handlePromptReady, { once: true });
       });
       setIsInstalling(false);
 
       if (promptArrived) {
-        try {
-          await promptArrived.prompt();
-          const { outcome } = await promptArrived.userChoice;
-          if (outcome === "accepted") {
-            setIsInstalled(true);
-            setPlatform("installed");
-            window.__pwaDeferredPrompt = null;
-          }
-        } catch (err) {
-          console.error("[usePWAInstall] Deferred prompt execution error:", err);
-        } finally {
-          setDeferredPrompt(null);
-          window.__pwaDeferredPrompt = null;
-        }
+        await runNativePrompt(promptArrived);
         return;
       }
     }
 
-    // Fallback for iOS, in-app browsers, or browsers with disabled prompts
     setIsGuideOpen(true);
-  }, [deferredPrompt, platform]);
+  }, [deferredPrompt, platform, runNativePrompt]);
 
   return {
     platform,
@@ -201,9 +181,6 @@ export function usePWAInstall() {
     handleAndroidInstall: triggerInstall,
     triggerInstall,
     deferredPrompt,
-    canInstall: Boolean(
-      deferredPrompt ||
-        (typeof window !== "undefined" && window.__pwaDeferredPrompt)
-    ),
+    canNativeInstall: Boolean(deferredPrompt || getCapturedPrompt()),
   };
 }
