@@ -691,7 +691,7 @@ export default async function BookingPage({
 
                   return (
                     <Link
-                      href={`/status/${clinic.slug}?lang=${lang}`}
+                      href={`/clinic/${clinic.slug}/status?lang=${lang}`}
                       className="group flex flex-col items-center lg:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md hover:-translate-y-1 relative"
                     >
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100 mb-2 group-hover:scale-110 transition-transform relative">

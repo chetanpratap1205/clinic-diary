@@ -48,6 +48,11 @@ const nextConfig: NextConfig = {
         source: '/book/:slug',
         destination: '/clinic/:slug',
         permanent: true,
+      },
+      {
+        source: '/status/:slug',
+        destination: '/clinic/:slug/status',
+        permanent: true,
       }
     ];
   },

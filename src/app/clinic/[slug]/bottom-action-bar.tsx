@@ -46,7 +46,7 @@ export function BottomActionBar({ clinic, workingDays, closedDates, lexicon, lan
         >
           {/* Live Status Widget Button */}
           <Link
-            href={`/status/${clinic.slug}?lang=${lang}`}
+            href={`/clinic/${clinic.slug}/status?lang=${lang}`}
             className="flex-shrink-0 w-[28%] max-w-[120px] h-14 rounded-full flex flex-col items-center justify-center gap-0.5 transition-all relative overflow-hidden group cursor-pointer hover:scale-[1.03] active:scale-[0.95]"
             style={{ 
               backgroundColor: `${themeColor}10`, 
