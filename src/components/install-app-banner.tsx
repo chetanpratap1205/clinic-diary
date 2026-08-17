@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Download, Sparkles, X } from "lucide-react";
+import { Smartphone, Sparkles, X } from "lucide-react";
 import type { Language } from "@/lib/i18n";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
 import { PWAInstallGuideModal } from "@/components/pwa-install-guide-modal";
@@ -119,14 +119,12 @@ export function InstallAppBanner({
                 {isInstalling ? (
                   <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <Download className="w-3.5 h-3.5 shrink-0" />
+                  <Smartphone className="w-3.5 h-3.5 shrink-0" />
                 )}
                 <span>
                   {isInstalling
                     ? "Opening..."
-                    : canNativeInstall
-                    ? "Install App"
-                    : "Steps"}
+                    : "Install App"}
                 </span>
               </button>
 

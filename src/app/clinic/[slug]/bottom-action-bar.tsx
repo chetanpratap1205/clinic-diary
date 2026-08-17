@@ -52,7 +52,6 @@ export function BottomActionBar({ clinic, workingDays, closedDates, lexicon, lan
               backgroundColor: `${themeColor}10`, 
               color: themeColor 
             }}
-            aria-label={t.liveQueue || "LIVE QUEUE"}
           >
             <div className="flex items-center gap-1.5 opacity-80">
               <Activity className="w-4 h-4" strokeWidth={2.5} />
@@ -75,7 +74,6 @@ export function BottomActionBar({ clinic, workingDays, closedDates, lexicon, lan
                 background: `linear-gradient(135deg, ${themeColor}, ${themeColor}e6)`, 
                 boxShadow: `0 15px 35px -5px ${themeColor}80` 
               }}
-              aria-label={`${t.bookAppointment} - ${lang === "hi" ? "क्लिनिक में भुगतान · मुफ्त टोकन" : "Pay at Clinic · Free Token"}`}
             >
               {/* Soft Ambient Pulse Ring */}
               <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

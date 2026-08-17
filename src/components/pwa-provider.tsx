@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Download, X } from "lucide-react";
+import { Download, Smartphone, X } from "lucide-react";
 import { PWASplashScreen } from "./pwa-splash-screen";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
 import { PWAInstallGuideModal } from "@/components/pwa-install-guide-modal";
@@ -346,9 +346,9 @@ export function PatientInstallButton({
           {isInstalling ? (
             <span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin mr-1" />
           ) : (
-            <Download className="h-3 w-3 mr-1" />
+            <Smartphone className="h-3 w-3 mr-1" />
           )}
-          <span>{isInstalling ? "..." : canNativeInstall ? "Install" : "Guide"}</span>
+          <span>{isInstalling ? "..." : "Install"}</span>
         </div>
       </button>
 

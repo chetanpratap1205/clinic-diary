@@ -44,8 +44,8 @@ export function InstallAppSection({
       ? "Clinic App Install Karein"
       : "Install Clinic App"
     : isHindi
-      ? "Install Steps Dekhein"
-      : "Show Install Steps";
+      ? "Clinic App Add Karein"
+      : "Add Clinic App";
 
   if (isInstalled) {
     return (
@@ -133,7 +133,7 @@ export function InstallAppSection({
             </>
           ) : (
             <>
-              <Download className="w-4 h-4" />
+              <Smartphone className="w-4 h-4" />
               <span>{ctaLabel}</span>
             </>
           )}
