@@ -331,7 +331,7 @@ export function PatientInstallButton({
         )}
 
         <div className="relative flex flex-col items-start leading-tight text-left max-[360px]:hidden">
-          <span className="text-[9px] uppercase font-extrabold tracking-wider text-slate-400">
+          <span className="text-[9px] uppercase font-extrabold tracking-wider text-slate-700">
             Official App
           </span>
           <span className="truncate max-w-[120px] sm:max-w-none">

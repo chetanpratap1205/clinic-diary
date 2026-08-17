@@ -665,21 +665,21 @@ export default async function BookingPage({
                 {/* Box 1: Consultation Fee */}
                 <div className="group flex flex-col items-center lg:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md hover:-translate-y-1">
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100 mb-2 group-hover:scale-110 transition-transform">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" strokeWidth={2.5} />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-800" strokeWidth={2.5} />
                   </div>
-                  <p className="text-sm sm:text-[15px] font-black text-emerald-600 leading-none mb-1">{formattedFee}</p>
-                  <p className="text-[8px] sm:text-[9.5px] font-black text-slate-400 uppercase tracking-widest text-center lg:text-left">{t.consultFee}</p>
+                  <p className="text-sm sm:text-[15px] font-black text-emerald-800 leading-none mb-1">{formattedFee}</p>
+                  <p className="text-[8px] sm:text-[9.5px] font-black text-slate-700 uppercase tracking-widest text-center lg:text-left">{t.consultFee}</p>
                 </div>
 
                 {/* Box 2: Zero Booking Fee */}
                 <div className="group flex flex-col items-center lg:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md hover:-translate-y-1">
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-indigo-50 border border-indigo-100 mb-2 group-hover:scale-110 transition-transform">
-                    <ShieldCheck className="w-4 h-4 text-indigo-600" strokeWidth={2.5} />
+                    <ShieldCheck className="w-4 h-4 text-indigo-800" strokeWidth={2.5} />
                   </div>
-                  <p className="text-sm sm:text-[15px] font-black text-indigo-600 leading-none mb-1">
-                    ₹0 <span className="text-[10px] uppercase font-bold text-indigo-400">Fee</span>
+                  <p className="text-sm sm:text-[15px] font-black text-indigo-900 leading-none mb-1">
+                    ₹0 <span className="text-[10px] uppercase font-bold text-indigo-800">Fee</span>
                   </p>
-                  <p className="text-[8px] sm:text-[9.5px] font-black text-slate-400 uppercase tracking-widest text-center lg:text-left">{lang === "hi" ? "क्लिनिक में भुगतान करें" : "Pay at clinic"}</p>
+                  <p className="text-[8px] sm:text-[9.5px] font-black text-slate-700 uppercase tracking-widest text-center lg:text-left">{lang === "hi" ? "क्लिनिक में भुगतान करें" : "Pay at clinic"}</p>
                 </div>
 
                 {/* Box 3: Live Queue */}
@@ -711,7 +711,7 @@ export default async function BookingPage({
                       className="group flex flex-col items-center lg:items-start p-3 sm:p-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/90 shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md hover:-translate-y-1 relative"
                     >
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100 mb-2 group-hover:scale-110 transition-transform relative">
-                        <Activity className="w-4 h-4 text-emerald-600" strokeWidth={2.5} />
+                        <Activity className="w-4 h-4 text-emerald-800" strokeWidth={2.5} />
                         {isQueueActive && (
                           <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -719,8 +719,8 @@ export default async function BookingPage({
                           </span>
                         )}
                       </div>
-                      <p className="text-sm sm:text-[15px] font-black text-emerald-600 leading-none mb-1">{title}</p>
-                      <p className="text-[8px] sm:text-[9.5px] font-black text-slate-400 uppercase tracking-widest text-center lg:text-left">{subtitle}</p>
+                      <p className="text-sm sm:text-[15px] font-black text-emerald-800 leading-none mb-1">{title}</p>
+                      <p className="text-[8px] sm:text-[9.5px] font-black text-slate-700 uppercase tracking-widest text-center lg:text-left">{subtitle}</p>
                     </Link>
                   );
                 })()}
@@ -735,8 +735,8 @@ export default async function BookingPage({
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                         <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                       </span>
-                      <span className="text-emerald-700 font-black flex-shrink-0">{t.openToday}:</span>
-                      <div className="flex flex-col text-slate-500 leading-tight">
+                      <span className="text-emerald-800 font-black flex-shrink-0">{t.openToday}:</span>
+                      <div className="flex flex-col text-slate-600 leading-tight">
                         {todayTimings.map((time, i) => (
                           <span key={i}>{time}</span>
                         ))}
@@ -748,7 +748,7 @@ export default async function BookingPage({
                       href={directionsUrl || "#"}
                       target={directionsUrl ? "_blank" : undefined}
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-slate-800 transition-colors active:scale-95 group/loc"
+                      className="flex items-center gap-1 text-[11px] font-bold text-slate-700 hover:text-slate-900 transition-colors active:scale-95 group/loc"
                       aria-label="Get directions to clinic"
                     >
                       <MapPin className="w-3 h-3 flex-shrink-0" style={{ color: themeColor }} />
@@ -764,9 +764,9 @@ export default async function BookingPage({
                 {(clinic.phone) && (
                   <a
                     href={`tel:+91${String(clinic.phone).replace(/\D/g, "").slice(-10)}`}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white border border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-all font-bold text-[10px] uppercase tracking-wider active:scale-95 shadow-sm"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white border border-slate-200 text-slate-800 hover:border-slate-300 hover:bg-slate-50 transition-all font-bold text-[10px] uppercase tracking-wider active:scale-95 shadow-sm"
                   >
-                    <SolidPhoneIcon className="w-3.5 h-3.5 text-emerald-600" />
+                    <SolidPhoneIcon className="w-3.5 h-3.5 text-emerald-800" />
                     <span>{lang === "hi" ? "कॉल करें" : "Call Clinic"}</span>
                   </a>
                 )}
@@ -776,9 +776,9 @@ export default async function BookingPage({
                     href={`https://wa.me/91${String(clinic.whatsappNumber || clinic.phone).replace(/\D/g, "").slice(-10)}?text=${encodeURIComponent(`Hi ${clinic.name}, I would like to inquire about OPD consultation with ${displayDoctorName}.`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-[#25D366]/10 border border-[#25D366]/20 text-[#25D366] hover:bg-[#25D366] hover:text-white hover:border-[#25D366] transition-all font-bold text-[10px] uppercase tracking-wider active:scale-95 shadow-sm"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all font-bold text-[10px] uppercase tracking-wider active:scale-95 shadow-sm"
                   >
-                    <WhatsAppIcon className="w-3.5 h-3.5" />
+                    <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-800" />
                     <span>{t.chatOnWhatsapp}</span>
                   </a>
                 )}
@@ -998,8 +998,8 @@ export default async function BookingPage({
                 <h2 className="text-sm font-black text-slate-900 flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-slate-400" /> {t.locationContact}
                 </h2>
-                <a href={`https://wa.me/?text=${encodeURIComponent(`Book an appointment with ${clinic.name}: ${BASE_URL}/clinic/${slug}`)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full text-[10px] font-bold hover:bg-emerald-100 transition-colors active:scale-95" aria-label="Share Clinic Link on WhatsApp">
-                  <Share2 className="w-3 h-3" /> {lang === "hi" ? "शेयर" : "Share"}
+                <a href={`https://wa.me/?text=${encodeURIComponent(`Book an appointment with ${clinic.name}: ${BASE_URL}/clinic/${slug}`)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 bg-emerald-100 text-emerald-900 px-3 py-1.5 rounded-full text-[10px] font-extrabold hover:bg-emerald-200 transition-colors active:scale-95" aria-label="Share Clinic Link on WhatsApp">
+                  <Share2 className="w-3 h-3 text-emerald-800" /> {lang === "hi" ? "शेयर" : "Share"}
                 </a>
               </div>
               
@@ -1017,10 +1017,10 @@ export default async function BookingPage({
                             href={directionsUrl} 
                             target="_blank" 
                             rel="noopener noreferrer" 
-                            className="inline-flex items-center justify-center gap-1.5 bg-[#4285F4] text-white px-3 py-2.5 rounded-2xl text-[11px] font-bold hover:bg-[#3367D6] transition-all shadow-md active:scale-95 text-center"
+                            className="inline-flex items-center justify-center gap-1.5 bg-[#1557BF] text-white px-3 py-2.5 rounded-2xl text-[11px] font-extrabold hover:bg-[#11469c] transition-all shadow-md active:scale-95 text-center"
                             aria-label="Navigate via Google Maps"
                           >
-                            <MapPin className="w-3.5 h-3.5" /> {lang === "hi" ? "रास्ता" : "Navigate"}
+                            <MapPin className="w-3.5 h-3.5 text-white" /> {lang === "hi" ? "रास्ता" : "Navigate"}
                           </a>
 
                           {clinic.phone && (
@@ -1194,7 +1194,7 @@ export default async function BookingPage({
                 </div>
                 <span className="font-bold text-slate-800 text-sm tracking-tight line-clamp-1">{clinic.name}</span>
               </div>
-              <p className="text-xs text-slate-500 leading-relaxed font-medium">
+              <p className="text-xs text-slate-600 leading-relaxed font-medium">
                 {lang === "hi"
                   ? `${clinic.name} में ${specialtyConfig.displayName.toLowerCase()} की विश्व स्तरीय देखभाल — नैदानिक उत्कृष्टता, पारदर्शिता और रोगी आराम के प्रति प्रतिबद्ध।`
                   : `Delivering world-class ${specialtyConfig.displayName.toLowerCase()} care with a commitment to clinical excellence, complete transparency, and paramount patient comfort.`
@@ -1202,31 +1202,31 @@ export default async function BookingPage({
               </p>
             </div>
             <div className="space-y-4">
-              <h4 className="font-black text-slate-800 text-sm uppercase tracking-wider">{t.quickLinks}</h4>
-              <ul className="space-y-2 text-xs font-medium text-slate-500">
+              <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider">{t.quickLinks}</h3>
+              <ul className="space-y-2 text-xs font-medium text-slate-600">
                 <li><a href="#booking" className="hover:text-slate-900 transition-colors">{t.bookAppointment}</a></li>
                 {clinic.address && <li><a href={directionsUrl || "#"} target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 transition-colors">{t.getDirections}</a></li>}
                 {clinic.phone && <li><a href={`tel:${clinic.phone}`} className="hover:text-slate-900 transition-colors">{t.callClinic}</a></li>}
               </ul>
             </div>
             <div className="space-y-4">
-              <h4 className="font-black text-slate-800 text-sm uppercase tracking-wider">{t.legalPrivacy}</h4>
-              <ul className="space-y-2 text-xs font-medium text-slate-500">
+              <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider">{t.legalPrivacy}</h3>
+              <ul className="space-y-2 text-xs font-medium text-slate-600">
                 <li><Link href="/privacy" target="_blank" className="hover:text-slate-900 transition-colors">{t.privacyPolicy}</Link></li>
                 <li><Link href="/terms" target="_blank" className="hover:text-slate-900 transition-colors">{t.termsOfService}</Link></li>
                 <li><Link href="/refund" target="_blank" className="hover:text-slate-900 transition-colors">{lang === "hi" ? "रिफंड और रद्दीकरण" : "Refund & Cancellation"}</Link></li>
               </ul>
             </div>
             <div className="space-y-4">
-              <h4 className="font-black text-slate-800 text-sm uppercase tracking-wider">{t.poweredBy}</h4>
-              <p className="text-xs text-slate-500 leading-relaxed font-medium">{t.poweredBySub}</p>
-              <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
+              <h3 className="font-black text-slate-900 text-sm uppercase tracking-wider">{t.poweredBy}</h3>
+              <p className="text-xs text-slate-600 leading-relaxed font-medium">{t.poweredBySub}</p>
+              <div className="flex items-center gap-2 text-[10px] font-bold text-slate-700">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> {t.compliant}
               </div>
             </div>
           </div>
           <div className="text-center space-y-2 border-t border-slate-100 pt-6">
-            <p className="text-[10px] font-bold text-slate-400">
+            <p className="text-[10px] font-bold text-slate-700">
               © {new Date().getFullYear()} {clinic.name}. {t.allRightsReserved}
             </p>
           </div>
