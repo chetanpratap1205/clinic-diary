@@ -3,7 +3,6 @@ import { clinics } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { TrackWidget } from "@/app/clinic/[slug]/track-widget";
-import { PatientInstallButton } from "@/components/pwa-provider";
 import Link from "next/link";
 import { ChevronLeft, Search, Activity, HeartPulse } from "lucide-react";
 import type { Metadata } from "next";
@@ -64,7 +63,7 @@ export default async function StatusPage({
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center p-4 sm:p-6 lg:p-8">
-      {/* Header with Back Link and Install Button */}
+      {/* Header with Back Link */}
       <div className="w-full max-w-md mb-8 flex items-center justify-between">
         <Link 
           href={`/clinic/${slug}?lang=${lang}`}
@@ -72,11 +71,6 @@ export default async function StatusPage({
         >
           <ChevronLeft className="w-4 h-4" /> {t.backToBooking}
         </Link>
-        <PatientInstallButton
-          clinicName={clinic.name}
-          logoUrl={clinic.logoUrl}
-          themeColor={themeColor}
-        />
       </div>
 
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden relative">

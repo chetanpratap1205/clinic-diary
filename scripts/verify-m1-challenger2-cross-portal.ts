@@ -229,7 +229,7 @@ async function runSuite() {
 
     const formatName = (name: string) => (name.length > 18 ? `${name.slice(0, 16)}...` : name);
 
-    assert.equal(formatName(longName), "Dr. Rajesh Shar...", "Long clinic names must truncate with ellipsis");
+    assert.equal(formatName(longName), "Dr. Rajesh Sharm...", "Long clinic names must truncate with ellipsis");
     assert.equal(formatName(shortName), "City Clinic", "Short clinic names remain intact");
   });
 

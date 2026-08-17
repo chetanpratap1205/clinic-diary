@@ -23,7 +23,6 @@ import { BottomActionBar } from "./bottom-action-bar";
 import { ClinicLogo } from "./clinic-logo";
 import { FAQAccordion } from "./faq-accordion";
 import { InstallAppSection } from "@/components/install-app-section";
-import { InstallAppBanner } from "@/components/install-app-banner";
 import { LeadFomoBanner } from "./lead-fomo-banner";
 import { ExpandableText } from "@/components/expandable-text";
 import Link from "next/link";
@@ -482,14 +481,6 @@ export default async function BookingPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
-      />
-
-      {/* Top Mobile/Desktop Install App Banner */}
-      <InstallAppBanner
-        clinicName={clinic.name}
-        logoUrl={safeLogoUrl}
-        themeColor={themeColor}
-        lang={lang}
       />
 
       {/* ══════════════════════════════════════════════════════════════════════

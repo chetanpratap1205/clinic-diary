@@ -117,10 +117,12 @@ export function usePWAInstall() {
   }, []);
 
   const triggerInstall = useCallback(async () => {
-    const prompt =
+    // Check state first, then window object
+    let prompt =
       deferredPrompt ||
       (typeof window !== "undefined" ? window.__pwaDeferredPrompt : null);
 
+    // If native prompt is available, execute immediately (1-TAP!)
     if (prompt) {
       setIsInstalling(true);
       try {
@@ -142,11 +144,52 @@ export function usePWAInstall() {
           window.__pwaDeferredPrompt = null;
         }
       }
-    } else {
-      // If no native prompt event is available (iOS, in-app browser, desktop, manual fallback)
-      setIsGuideOpen(true);
+      return;
     }
-  }, [deferredPrompt]);
+
+    // On Android/Desktop Chromium: Wait up to 600ms in case beforeinstallprompt is in-flight
+    if (typeof window !== "undefined" && (platform === "android" || platform === "android_manual" || platform === "desktop")) {
+      setIsInstalling(true);
+      const promptArrived = await new Promise<BeforeInstallPromptEvent | null>((resolve) => {
+        const timer = setTimeout(() => resolve(null), 600);
+        const handler = (e: Event) => {
+          clearTimeout(timer);
+          window.removeEventListener("pwa-prompt-ready", handler);
+          resolve(window.__pwaDeferredPrompt || null);
+        };
+        window.addEventListener("pwa-prompt-ready", handler, { once: true });
+        
+        // Re-check window immediately
+        if (window.__pwaDeferredPrompt) {
+          clearTimeout(timer);
+          window.removeEventListener("pwa-prompt-ready", handler);
+          resolve(window.__pwaDeferredPrompt || null);
+        }
+      });
+      setIsInstalling(false);
+
+      if (promptArrived) {
+        try {
+          await promptArrived.prompt();
+          const { outcome } = await promptArrived.userChoice;
+          if (outcome === "accepted") {
+            setIsInstalled(true);
+            setPlatform("installed");
+            window.__pwaDeferredPrompt = null;
+          }
+        } catch (err) {
+          console.error("[usePWAInstall] Deferred prompt execution error:", err);
+        } finally {
+          setDeferredPrompt(null);
+          window.__pwaDeferredPrompt = null;
+        }
+        return;
+      }
+    }
+
+    // Fallback for iOS, in-app browsers, or browsers with disabled prompts
+    setIsGuideOpen(true);
+  }, [deferredPrompt, platform]);
 
   return {
     platform,

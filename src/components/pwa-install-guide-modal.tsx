@@ -175,9 +175,24 @@ export function PWAInstallGuideModal({
                     </p>
                     <p className="text-[11px] text-amber-700 mt-1">
                       {isHindi
-                        ? "ऐप डाउनलोड करने के लिए इसे क्रोम या सफारी में खोलें:"
-                        : "To install as a native app, open this page in Chrome or Safari:"}
+                        ? "1-टैप में ऐप इंस्टॉल करने के लिए नीचे दिए गए बटन पर टैप करके क्रोम (Chrome) में खोलें:"
+                        : "To enable 1-tap native installation, open this page in Google Chrome:"}
                     </p>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (typeof window === "undefined") return;
+                        const url = window.location.href.replace(/^https?:\/\//, "");
+                        const intentUrl = `intent://${url}#Intent;scheme=https;package=com.android.chrome;end;`;
+                        window.location.href = intentUrl;
+                      }}
+                      className="mt-3 w-full py-2.5 px-4 rounded-xl text-white text-xs font-bold shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-all"
+                      style={{ backgroundColor: themeColor }}
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      <span>{isHindi ? "क्रोम (Chrome) में खोलें" : "Open in Google Chrome"}</span>
+                    </button>
                   </div>
 
                   <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-3.5">
@@ -189,32 +204,12 @@ export function PWAInstallGuideModal({
                     </div>
                     <div className="flex-1 text-xs">
                       <p className="font-bold text-slate-900">
-                        {isHindi ? "ऊपरी कोने में 3 डॉट्स (⋮) दबाएं" : "Tap the 3 dots (⋮ or ⋯) menu"}
+                        {isHindi ? "या ऊपरी कोने में 3 डॉट्स (⋮) दबाएं" : "Or tap the 3 dots (⋮ or ⋯) menu"}
                       </p>
                       <p className="text-slate-500 mt-0.5">
                         {isHindi
-                          ? "स्क्रीन के ऊपर दाएं कोने में मेनू पर टैप करें।"
-                          : "Located in the top right corner of your screen."}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-3.5">
-                    <div
-                      className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-extrabold text-xs shrink-0 shadow-xs"
-                      style={{ backgroundColor: themeColor }}
-                    >
-                      2
-                    </div>
-                    <div className="flex-1 text-xs">
-                      <p className="font-bold text-slate-900 flex items-center gap-1.5">
-                        <span>{isHindi ? "'Open in Chrome / Safari' चुनें" : "Tap 'Open in Chrome / Safari'"}</span>
-                        <ExternalLink className="w-3.5 h-3.5 text-slate-600 inline" />
-                      </p>
-                      <p className="text-slate-500 mt-0.5">
-                        {isHindi
-                          ? "इसके बाद आपको 1-टैप में ऐप इंस्टॉल करने का विकल्प मिल जाएगा।"
-                          : "This enables instant 1-tap installation directly onto your device."}
+                          ? "स्क्रीन के ऊपर दाएं कोने में मेनू पर टैप करके 'Open in Chrome' चुनें।"
+                          : "Located in the top right corner of your screen -> select 'Open in Chrome'."}
                       </p>
                     </div>
                   </div>

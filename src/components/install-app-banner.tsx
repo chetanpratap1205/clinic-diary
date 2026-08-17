@@ -97,8 +97,8 @@ export function InstallAppBanner({
                 <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold truncate flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                   {isHindi
-                    ? "1-टैप बुकिंग और लाइव कतार ट्रैकिंग के लिए इंस्टॉल करें"
-                    : "1-tap booking & live token tracking"}
+                    ? "तुरंत एक्सेस और लाइव कतार ट्रैकिंग के लिए इंस्टॉल करें"
+                    : "Instant access & live token tracking"}
                 </p>
               </div>
             </div>

@@ -606,7 +606,7 @@ export function TrackingClient({
             <div className="space-y-0.5 pr-2">
               <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400">Official Clinic App</span>
               <p className="text-xs sm:text-sm font-black tracking-tight">{clinic.name}</p>
-              <p className="text-[10.5px] text-slate-300 font-medium">Download app for 1-tap booking & live tracking.</p>
+              <p className="text-[10.5px] text-slate-300 font-medium">Download app for instant access & live tracking.</p>
             </div>
             <PatientInstallButton
               clinicName={clinic.name}
