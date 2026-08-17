@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Download, X } from "lucide-react";
 import { PWASplashScreen } from "./pwa-splash-screen";
-import { toast } from "sonner";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
+import { PWAInstallGuideModal } from "@/components/pwa-install-guide-modal";
 
 // ─── Reliable Service Worker Registration Helper ─────────────────────────────
 export function registerServiceWorker() {
@@ -28,7 +29,11 @@ if (typeof window !== "undefined") {
   window.addEventListener("beforeinstallprompt", (e: Event) => {
     e.preventDefault();
     window.__pwaDeferredPrompt = e as BeforeInstallPromptEvent;
-    window.dispatchEvent(new CustomEvent("pwa-prompt-ready", { detail: e as BeforeInstallPromptEvent }));
+    window.dispatchEvent(
+      new CustomEvent("pwa-prompt-ready", {
+        detail: e as BeforeInstallPromptEvent,
+      })
+    );
   });
 
   window.addEventListener("appinstalled", () => {
@@ -39,6 +44,7 @@ if (typeof window !== "undefined") {
 
 // ─── Root PWA Provider Component ─────────────────────────────────────────────
 export function PWAProvider() {
+  const pathname = usePathname();
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [showBanner, setShowBanner] = useState(false);
@@ -69,8 +75,8 @@ export function PWAProvider() {
         if (daysSince < 3) return;
       }
 
-      // Show install banner after 8 seconds
-      setTimeout(() => setShowBanner(true), 8000);
+      // Show install banner after 5 seconds on dashboard/root
+      setTimeout(() => setShowBanner(true), 5000);
     };
 
     // 3. Pick up prompt if already captured early at window level
@@ -117,20 +123,25 @@ export function PWAProvider() {
   const handleInstall = () => {
     const promptEvent = deferredPrompt || window.__pwaDeferredPrompt;
     if (!promptEvent) return;
-    
-    promptEvent.prompt().then(() => {
-      return promptEvent.userChoice;
-    }).then((choiceResult) => {
-      if (choiceResult.outcome === "accepted") {
-        setIsInstalled(true);
-        setShowBanner(false);
-      }
-    }).catch((err) => {
-      console.warn("PWA install error:", err);
-    }).finally(() => {
-      window.__pwaDeferredPrompt = null;
-      setDeferredPrompt(null);
-    });
+
+    promptEvent
+      .prompt()
+      .then(() => {
+        return promptEvent.userChoice;
+      })
+      .then((choiceResult) => {
+        if (choiceResult.outcome === "accepted") {
+          setIsInstalled(true);
+          setShowBanner(false);
+        }
+      })
+      .catch((err) => {
+        console.warn("PWA install error:", err);
+      })
+      .finally(() => {
+        window.__pwaDeferredPrompt = null;
+        setDeferredPrompt(null);
+      });
   };
 
   const handleDismiss = () => {
@@ -138,10 +149,13 @@ export function PWAProvider() {
     setShowBanner(false);
   };
 
+  // Suppress generic root banner on clinic pages (which have their own clinic-branded install)
+  const isClinicRoute = pathname?.startsWith("/clinic/");
+
   return (
     <>
       <PWASplashScreen />
-      {!isInstalled && showBanner && deferredPrompt && (
+      {!isInstalled && showBanner && deferredPrompt && !isClinicRoute && (
         <div
           className="fixed bottom-20 left-4 right-4 sm:bottom-6 sm:left-auto sm:right-6 sm:w-[340px] z-50 animate-slide-up"
           role="dialog"
@@ -151,20 +165,25 @@ export function PWAProvider() {
             {/* Gradient top bar */}
             <div className="h-1 bg-gradient-to-r from-teal-500 to-indigo-500" />
             <div className="p-4 flex items-start gap-3">
-              <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 shadow-md border border-slate-200">
-                <img src="/icon-192.png" alt="Doctor Diary" className="w-full h-full object-contain" />
+              <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0 shadow-md border border-slate-200">
+                <img
+                  src="/icon-192.png"
+                  alt="Doctor Diary"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-slate-900 text-sm">
-                  Install Clinic App
+                  Install Doctor Diary
                 </p>
                 <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                  Add to your phone for 1-tap booking, live turn tracking & prescriptions.
+                  Add to your device for instant access & real-time updates.
                 </p>
               </div>
               <button
+                type="button"
                 onClick={handleDismiss}
-                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0 -mt-0.5 -mr-0.5"
+                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors shrink-0 -mt-0.5 -mr-0.5 cursor-pointer"
                 aria-label="Dismiss"
               >
                 <X className="w-4 h-4" />
@@ -172,14 +191,16 @@ export function PWAProvider() {
             </div>
             <div className="px-4 pb-4 flex gap-2">
               <button
+                type="button"
                 onClick={handleDismiss}
-                className="flex-1 h-9 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+                className="flex-1 h-9 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 Not now
               </button>
               <button
+                type="button"
                 onClick={handleInstall}
-                className="flex-1 h-9 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm shadow-teal-700/20"
+                className="flex-1 h-9 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
                 Install Free
@@ -251,23 +272,29 @@ export function InstallButton({ className = "" }: { className?: string }) {
   const handleInstall = () => {
     const promptEvent = deferredPrompt || window.__pwaDeferredPrompt;
     if (!promptEvent) return;
-    
-    promptEvent.prompt().then(() => {
-      return promptEvent.userChoice;
-    }).then((choiceResult) => {
-      if (choiceResult.outcome === "accepted") setIsInstalled(true);
-    }).catch((err) => {
-      console.warn("Install error:", err);
-    }).finally(() => {
-      window.__pwaDeferredPrompt = null;
-      setDeferredPrompt(null);
-    });
+
+    promptEvent
+      .prompt()
+      .then(() => {
+        return promptEvent.userChoice;
+      })
+      .then((choiceResult) => {
+        if (choiceResult.outcome === "accepted") setIsInstalled(true);
+      })
+      .catch((err) => {
+        console.warn("Install error:", err);
+      })
+      .finally(() => {
+        window.__pwaDeferredPrompt = null;
+        setDeferredPrompt(null);
+      });
   };
 
   return (
     <button
+      type="button"
       onClick={handleInstall}
-      className={`flex items-center gap-1.5 text-sm font-medium text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 border border-teal-200/60 px-3 py-1.5 rounded-lg transition-all ${className}`}
+      className={`flex items-center gap-1.5 text-sm font-medium text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 border border-teal-200/60 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${className}`}
     >
       <Download className="w-3.5 h-3.5" />
       <span className="hidden sm:inline">Install App</span>
@@ -288,78 +315,57 @@ export function PatientInstallButton({
   themeColor?: string;
   className?: string;
 }) {
-  const { platform, isInstalling, isInstalled, handleAndroidInstall } = usePWAInstall();
+  const {
+    platform,
+    isInstalling,
+    isInstalled,
+    triggerInstall,
+    isGuideOpen,
+    closeGuide,
+  } = usePWAInstall();
 
   if (isInstalled || platform === "unknown") return null;
 
-  const handleInstallClick = () => {
-    if (platform === "ios") {
-      toast.success("Tap Share 📤 then 'Add to Home Screen' ➕ to install", {
-        duration: 6000,
-        position: "top-center",
-      });
-    } else if (platform === "android_manual") {
-      const isWebView = /FBAN|FBAV|Instagram|WhatsApp|Line|Snapchat|WebView|wv/i.test(navigator.userAgent);
-      if (isWebView) {
-        toast.info("Open this link in Chrome to install the app.", {
-          duration: 6000,
-          position: "top-center",
-        });
-      } else {
-        toast.info("Preparing 1-tap installer... Please wait a moment and tap again.", {
-          duration: 4000,
-          position: "top-center",
-        });
-      }
-    } else if (platform === "android") {
-      handleAndroidInstall();
-    } else if (platform === "desktop") {
-      toast.info("Click the Install icon (↓) in your browser's address bar to download.", {
-        duration: 6000,
-        position: "top-center",
-      });
-    } else {
-      toast.info("Install prompt not available. Ensure you're not in Incognito/Private mode.", {
-        duration: 5000,
-        position: "top-center",
-      });
-    }
-  };
-
-  const displayName = clinicName.length > 18 ? `${clinicName.slice(0, 16)}...` : clinicName;
+  const displayName =
+    clinicName.length > 18 ? `${clinicName.slice(0, 16)}...` : clinicName;
 
   return (
     <>
       <button
-        onClick={handleInstallClick}
+        type="button"
+        onClick={triggerInstall}
         disabled={isInstalling}
-        className={`group relative flex items-center gap-2.5 overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-md px-3.5 py-2 text-xs font-bold text-slate-800 shadow-md transition-all hover:border-slate-300 hover:bg-white hover:shadow-lg active:scale-95 disabled:opacity-70 ${className}`}
+        className={`group relative flex items-center gap-2.5 overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-md px-3.5 py-2 text-xs font-bold text-slate-800 shadow-xs transition-all hover:border-slate-300 hover:bg-white hover:shadow-md active:scale-95 disabled:opacity-70 cursor-pointer ${className}`}
         title={`Install ${clinicName} App (< 1MB)`}
       >
         <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-slate-100/50 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
-        
+
         {logoUrl ? (
           <img
             src={logoUrl}
             alt={clinicName}
-            className="h-6 w-6 rounded-lg object-cover ring-1 ring-slate-900/10 shadow-sm"
+            className="h-6 w-6 rounded-lg object-cover ring-1 ring-slate-900/10 shadow-2xs shrink-0"
           />
         ) : (
           <div
-            className="relative flex h-6 w-6 items-center justify-center rounded-lg text-white shadow-sm font-black text-[10px]"
+            className="relative flex h-6 w-6 items-center justify-center rounded-lg text-white shadow-2xs font-black text-[10px] shrink-0"
             style={{ backgroundColor: themeColor }}
           >
             {clinicName.charAt(0)}
           </div>
         )}
 
-        <div className="relative flex flex-col items-start leading-tight">
-          <span className="text-[9px] uppercase font-extrabold tracking-wider text-slate-400">Official App</span>
-          <span className="truncate max-w-[120px] sm:max-w-none">{displayName}</span>
+        <div className="relative flex flex-col items-start leading-tight text-left">
+          <span className="text-[9px] uppercase font-extrabold tracking-wider text-slate-400">
+            Official App
+          </span>
+          <span className="truncate max-w-[120px] sm:max-w-none">
+            {displayName}
+          </span>
         </div>
 
         <div
-          className="relative ml-1 flex h-6 px-2.5 items-center justify-center rounded-xl text-white text-[11px] font-extrabold shadow-sm transition-transform group-hover:scale-105"
+          className="relative ml-1 flex h-6 px-2.5 items-center justify-center rounded-xl text-white text-[11px] font-extrabold shadow-2xs transition-transform group-hover:scale-105"
           style={{ backgroundColor: themeColor }}
         >
           {isInstalling ? (
@@ -367,9 +373,19 @@ export function PatientInstallButton({
           ) : (
             <Download className="h-3 w-3 mr-1" />
           )}
-          {isInstalling ? "..." : "Install"}
+          <span>{isInstalling ? "..." : "Install"}</span>
         </div>
       </button>
+
+      {/* Guide Modal for iOS / in-app / desktop */}
+      <PWAInstallGuideModal
+        isOpen={isGuideOpen}
+        onClose={closeGuide}
+        clinicName={clinicName}
+        logoUrl={logoUrl}
+        themeColor={themeColor}
+        platform={platform}
+      />
     </>
   );
 }

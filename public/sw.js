@@ -57,8 +57,12 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Cache successful _next static assets
-          if (response.ok && url.pathname.startsWith("/_next/static/")) {
+          // Cache successful _next static assets or dynamic manifest/icon requests
+          if (
+            response.ok &&
+            (url.pathname.startsWith("/_next/static/") ||
+              url.pathname.startsWith("/api/manifest/"))
+          ) {
             const cloned = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned));
           }

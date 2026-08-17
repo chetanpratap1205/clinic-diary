@@ -1,123 +1,158 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Monitor, X } from "lucide-react";
+import { Download, Sparkles, X } from "lucide-react";
 import type { Language } from "@/lib/i18n";
 import { DICTIONARY } from "@/lib/i18n";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
-import { toast } from "sonner";
+import { PWAInstallGuideModal } from "@/components/pwa-install-guide-modal";
 
 interface InstallAppBannerProps {
   clinicName: string;
   logoUrl?: string | null;
   themeColor?: string;
-  lang: Language;
+  lang?: Language;
 }
 
 export function InstallAppBanner({
   clinicName,
   logoUrl,
   themeColor = "#0ea5e9",
-  lang,
+  lang = "en",
 }: InstallAppBannerProps) {
   const t = DICTIONARY[lang];
-  const { platform, isInstalling, isInstalled, handleAndroidInstall } = usePWAInstall();
+  const {
+    platform,
+    isInstalling,
+    isInstalled,
+    triggerInstall,
+    isGuideOpen,
+    closeGuide,
+  } = usePWAInstall();
   const [isDismissed, setIsDismissed] = useState(false);
 
-  // If already installed, don't show the intrusive banner at the top
-  if (isInstalled || platform === "unknown" || isDismissed) return null;
+  // If already installed or dismissed, don't show
+  if (isInstalled || platform === "unknown" || isDismissed) {
+    return (
+      <PWAInstallGuideModal
+        isOpen={isGuideOpen}
+        onClose={closeGuide}
+        clinicName={clinicName}
+        logoUrl={logoUrl}
+        themeColor={themeColor}
+        platform={platform}
+        lang={lang}
+      />
+    );
+  }
+
+  const isHindi = lang === "hi";
 
   return (
-    <div 
-      className="w-full bg-white border-b shadow-sm sticky top-0 z-[100] animate-in slide-in-from-top-4 duration-500"
-      style={{ borderColor: `${themeColor}20` }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3">
-        <div className="flex items-center justify-between gap-3">
-          
-          {/* Left: App Icon & Text */}
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div 
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex-shrink-0 shadow-sm ring-1 ring-black/5 flex items-center justify-center text-white font-bold text-lg"
-              style={{ backgroundColor: logoUrl ? "transparent" : themeColor }}
-            >
-              {logoUrl ? (
-                <img src={logoUrl} alt={clinicName} className="w-full h-full object-cover" />
-              ) : (
-                <span>{clinicName.charAt(0).toUpperCase()}</span>
-              )}
-            </div>
-            
-            <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm font-black text-slate-900 truncate">
-                {clinicName} App
-              </p>
-              <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold truncate flex items-center gap-1">
-                <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                {lang === "hi" ? "तेज़ बुकिंग के लिए इंस्टॉल करें" : "Install for faster booking"}
-              </p>
-            </div>
-          </div>
+    <>
+      <div
+        className="w-full bg-white/95 backdrop-blur-md border-b shadow-xs relative z-30 transition-all duration-300"
+        style={{ borderColor: `${themeColor}25` }}
+      >
+        {/* Top Accent Line */}
+        <div
+          className="h-[2px] w-full"
+          style={{
+            background: `linear-gradient(90deg, ${themeColor}, ${themeColor}60)`,
+          }}
+        />
 
-          {/* Right: Install Action & Dismiss */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {platform === "android" && (
+        <div className="max-w-6xl mx-auto px-3.5 sm:px-6 py-2 sm:py-2.5">
+          <div className="flex items-center justify-between gap-2.5">
+            {/* Left: App Icon & Text */}
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <div
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden shrink-0 shadow-2xs ring-1 ring-black/5 flex items-center justify-center text-white font-extrabold text-xs sm:text-sm"
+                style={{ backgroundColor: logoUrl ? "white" : themeColor }}
+              >
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt={clinicName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span>{clinicName.charAt(0).toUpperCase()}</span>
+                )}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs sm:text-sm font-black text-slate-900 truncate">
+                    {clinicName} App
+                  </p>
+                  <span
+                    className="hidden xs:inline-flex items-center gap-0.5 text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-wider text-white"
+                    style={{ backgroundColor: themeColor }}
+                  >
+                    <Sparkles className="w-2.5 h-2.5" />
+                    Free
+                  </span>
+                </div>
+                <p className="text-[10px] sm:text-[11px] text-slate-500 font-semibold truncate flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  {isHindi
+                    ? "1-टैप बुकिंग और लाइव कतार ट्रैकिंग के लिए इंस्टॉल करें"
+                    : "1-tap booking & live token tracking"}
+                </p>
+              </div>
+            </div>
+
+            {/* Right: Install Button & Dismiss */}
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
-                onClick={handleAndroidInstall}
+                type="button"
+                onClick={triggerInstall}
                 disabled={isInstalling}
-                className="px-4 py-1.5 rounded-full text-white text-[11px] sm:text-xs font-black shadow-md active:scale-95 transition-all disabled:opacity-70 flex items-center gap-1.5"
+                className="px-3.5 sm:px-4 py-1.5 rounded-full text-white text-[11px] sm:text-xs font-black shadow-xs active:scale-95 transition-all disabled:opacity-70 flex items-center gap-1.5 cursor-pointer hover:opacity-95"
                 style={{
-                  background: `linear-gradient(135deg, ${themeColor}, ${themeColor}cc)`,
+                  background: `linear-gradient(135deg, ${themeColor}, ${themeColor}e6)`,
                 }}
               >
                 {isInstalling ? (
                   <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <Download className="w-3.5 h-3.5" />
+                  <Download className="w-3.5 h-3.5 shrink-0" />
                 )}
-                {t.installAndroidCta}
+                <span>
+                  {isInstalling
+                    ? isHindi
+                      ? "लोड हो रहा है..."
+                      : "Opening..."
+                    : isHindi
+                    ? "इंस्टॉल ऐप"
+                    : "Install App"}
+                </span>
               </button>
-            )}
 
-            {platform === "ios" && (
               <button
-                onClick={() => {
-                  toast.success(
-                    lang === "hi" 
-                      ? "शेयर (Share) 📤 पर टैप करें और 'Add to Home Screen' ➕ चुनें" 
-                      : "Tap Share 📤 then 'Add to Home Screen' ➕ to install",
-                    {
-                      duration: 6000,
-                      position: "top-center",
-                    }
-                  );
-                }}
-                className="px-3 py-1.5 rounded-full text-white text-[11px] sm:text-xs font-black shadow-md active:scale-95 transition-all flex items-center gap-1.5"
-                style={{
-                  background: `linear-gradient(135deg, ${themeColor}, ${themeColor}cc)`,
-                }}
+                type="button"
+                onClick={() => setIsDismissed(true)}
+                className="w-7 h-7 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                aria-label="Dismiss banner"
               >
-                {t.installAndroidCta}
+                <X className="w-3.5 h-3.5" />
               </button>
-            )}
-
-            {platform === "desktop" && (
-              <div className="px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 text-[11px] font-bold flex items-center gap-1.5">
-                <Monitor className="w-3 h-3" />
-                {lang === "hi" ? "डेस्कटॉप ऐप" : "Desktop App"}
-              </div>
-            )}
-
-            <button
-              onClick={() => setIsDismissed(true)}
-              className="w-7 h-7 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors ml-1"
-              aria-label="Dismiss banner"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Visual Guide Modal for iOS / in-app / desktop / manual fallback */}
+      <PWAInstallGuideModal
+        isOpen={isGuideOpen}
+        onClose={closeGuide}
+        clinicName={clinicName}
+        logoUrl={logoUrl}
+        themeColor={themeColor}
+        platform={platform}
+        lang={lang}
+      />
+    </>
   );
 }

@@ -2,252 +2,483 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
+import {
+  MapPin,
+  Search,
+  QrCode,
+  Clock,
+  Utensils,
+  CheckCircle2,
+  Sparkles,
+  ArrowRight,
+  Smartphone,
+  Users,
+  Sun,
+  Moon,
+  Calendar,
+  TrendingUp,
+  MessageCircle,
+  Heart,
+  Zap,
+  ShieldCheck
+} from "lucide-react";
+
+function InstagramIcon({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+      <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+    </svg>
+  );
+}
 
 export function PatientJourneyTimeline() {
-  const [activeStep, setActiveStep] = useState(0);
+  const [selectedChannel, setSelectedChannel] = useState<number>(0);
+  const [activeTab, setActiveTab] = useState<"day" | "night">("day");
+  const [activeMonth, setActiveMonth] = useState<number>(3); // 1, 2, or 3 months
 
-  const steps = [
+  // 4 Patient Discovery & Entry Channels
+  const channels = [
     {
-      time: "8:30 AM",
-      title: "Walk-in & Online seamlessly merge",
-      desc: "Priya (walk-in) scans the QR code at your desk. Rahul (online) books from home via your Google profile. Both join the exact same smart queue.",
-      tag: "Unified Queue",
-      badge: "No app needed",
-      phoneImg: "/assets/token.PNG",
-      dashboardFocus: false,
-      showWhatsApp: false
+      id: "maps",
+      title: "Google Maps",
+      subtitle: "Local Search & Directions",
+      icon: MapPin,
+      color: "from-blue-500 to-emerald-400",
+      accentBg: "bg-blue-500/10 border-blue-500/30 text-blue-400",
+      iconBg: "bg-blue-500/20 text-blue-400",
+      patient: {
+        name: "Priya Sharma",
+        location: "Found on Google Maps (2 km away)",
+        action: "Clicked 'Book Live Token' on your Google Profile",
+        token: "#12",
+        time: "10:15 AM Slot",
+        avatar: "👩‍💼"
+      },
+      desc: "Patients searching 'Cardiologist near me' or opening your Google Maps listing tap 'Book Token' directly without opening any app."
     },
     {
-      time: "8:32 AM",
-      title: "Instant confirmation on WhatsApp",
-      desc: "Both patients get a WhatsApp message with their queue number and estimated waiting time immediately. No phone calls to the receptionist.",
-      tag: "WhatsApp Confirmed",
-      badge: "You are #24",
-      phoneImg: "/assets/token.PNG",
-      dashboardFocus: false,
-      showWhatsApp: true
+      id: "insta",
+      title: "Instagram & Social",
+      subtitle: "Link in Bio & Stories",
+      icon: InstagramIcon,
+      color: "from-pink-500 via-purple-500 to-amber-400",
+      accentBg: "bg-pink-500/10 border-pink-500/30 text-pink-400",
+      iconBg: "bg-pink-500/20 text-pink-400",
+      patient: {
+        name: "Rohan Mehta",
+        location: "Via Instagram Link in Bio",
+        action: "Reserved token from story post in 1 tap",
+        token: "#13",
+        time: "10:30 AM Slot",
+        avatar: "👨‍💻"
+      },
+      desc: "Followers or patients coming from your social posts click the link in bio to check live queue status & reserve a confirmed slot instantly."
     },
     {
-      time: "10:15 AM",
-      title: "Live queue tracking from home",
-      desc: "Priya tracks the queue on her phone. She sees the doctor is serving #18 and her turn is in 25 minutes. She leaves home now.",
-      tag: "Live Queue",
-      badge: "Now serving #18",
-      phoneImg: "/assets/live_queue.PNG",
-      dashboardFocus: false,
-      showWhatsApp: false
+      id: "seo",
+      title: "Google Search (SEO)",
+      subtitle: "24/7 Web Discovery",
+      icon: Search,
+      color: "from-amber-400 to-orange-500",
+      accentBg: "bg-amber-500/10 border-amber-500/30 text-amber-400",
+      iconBg: "bg-amber-500/20 text-amber-400",
+      patient: {
+        name: "Ananya Roy",
+        location: "Searched website at 11:30 PM",
+        action: "Booked tomorrow's morning OPD slot late at night",
+        token: "#14",
+        time: "10:45 AM Slot",
+        avatar: "👩‍⚕️"
+      },
+      desc: "When patients search late at night with health anxiety, your website books them into your schedule automatically — even while you sleep."
     },
     {
-      time: "10:40 AM",
-      title: "Consultation right on time",
-      desc: "She walks into the clinic and gets called in. Zero waiting room anxiety, zero receptionist arguments, zero queue jumping.",
-      tag: "On-Time Consult",
-      badge: "Zero Waiting",
-      phoneImg: "/assets/live_queue.PNG",
-      dashboardFocus: true, // Highlights the clinic dashboard running perfectly
-      showWhatsApp: false
-    },
-    {
-      time: "11:05 AM",
-      title: "Automated care follow-up",
-      desc: "After leaving, Priya receives an automated follow-up. The message contains a direct booking link to schedule her next visit.",
-      tag: "Auto Follow-up",
-      badge: "Continue Care",
-      phoneImg: "/assets/tracking.PNG",
-      dashboardFocus: false,
-      showWhatsApp: false
+      id: "qr",
+      title: "Walk-in QR Code",
+      subtitle: "Open Desk & After-Hours Door QR",
+      icon: QrCode,
+      color: "from-emerald-400 to-teal-500",
+      accentBg: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
+      iconBg: "bg-emerald-500/20 text-emerald-400",
+      patient: {
+        name: "Vikram Patel",
+        location: activeTab === "day" ? "Scanned Front Desk QR" : "Scanned Night Door QR at 10 PM",
+        action: activeTab === "day" ? "Got instant WhatsApp token #15" : "Locked tomorrow's morning #1 token while clinic is closed",
+        token: "#15",
+        time: activeTab === "day" ? "11:00 AM Slot" : "Tomorrow 09:30 AM",
+        avatar: "👨‍💼"
+      },
+      desc: activeTab === "day" 
+        ? "Walk-in patients scan your desk QR code, get a digital token on WhatsApp, and wait comfortably nearby without receptionist arguments."
+        : "When your clinic is closed at night, patients scan the QR poster on your door/shutter to book tomorrow's morning slots automatically."
     }
   ];
 
+  // Auto rotate selected channel every 5s if user hasn't manually clicked recently
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSelectedChannel((prev) => (prev + 1) % channels.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [channels.length]);
+
+  const currentChannel = channels[selectedChannel];
+
   return (
-    <section className="py-24 px-4 sm:px-6 bg-[#040D21] text-white relative overflow-hidden">
-      {/* Premium Glow decorations */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#00B7A8]/10 rounded-full blur-[140px] pointer-events-none z-0" />
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
+    <section className="py-20 lg:py-28 px-4 sm:px-6 bg-[#040D21] text-white relative overflow-hidden selection:bg-[#00B7A8]/30 selection:text-[#00B7A8]">
+      {/* High performance subtle ambient glow backdrops */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-[#00B7A8]/10 rounded-full blur-[130px] pointer-events-none z-0" />
+      <div className="absolute bottom-10 right-0 w-[450px] h-[450px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         
-        {/* Header */}
-        <div className="text-center mb-16 max-w-3xl mx-auto">
-          <span className="text-[#00B7A8] font-bold text-xs uppercase tracking-widest bg-[#00B7A8]/10 px-4 py-1.5 rounded-full border border-[#00B7A8]/20 shadow-inner">
-            Signature Feature
-          </span>
-          <h2 className="text-3xl sm:text-5xl font-black text-white mt-4 mb-6 tracking-tight">
-            No more "Doctor, mera number kab aayega?"
+        {/* Section Header */}
+        <div className="text-center mb-14 max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-2 text-[#00B7A8] font-bold text-xs uppercase tracking-widest bg-[#00B7A8]/10 px-4 py-1.5 rounded-full border border-[#00B7A8]/20 shadow-inner mb-4">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Signature Feature • 24/7 Patient Acquisition & Queue Engine</span>
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+            No More <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">"Doctor, Mera Number Kab Aayega?"</span>
           </h2>
-          <p className="text-slate-300 text-lg sm:text-xl font-medium leading-relaxed">
-            Walk-ins and online bookings merged into one smart queue. Show patients a clinic experience that matches the tier of your medical expertise.
+          <p className="text-slate-300 text-base sm:text-lg font-medium leading-relaxed mt-4">
+            Offline walk-ins & 24/7 online channels flow into one smart queue — automatically matching your doctor consulting schedule & break times.
           </p>
         </div>
 
-        {/* 2-Column Story Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-start">
-          
-          {/* Left Column: Interactive Story Steps */}
-          <div className="lg:col-span-6 xl:col-span-5 space-y-4">
-            {steps.map((step, idx) => {
-              const isActive = activeStep === idx;
+        {/* 4-Channel Traffic Hub Showcase */}
+        <div className="mb-16">
+          <div className="text-center mb-6">
+            <span className="text-xs font-extrabold uppercase tracking-widest text-slate-400">
+              4 Channels • 1 Unified Smart Queue System
+            </span>
+          </div>
+
+          {/* Channels Selector Tabs */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto">
+            {channels.map((ch, idx) => {
+              const IconComp = ch.icon;
+              const isSelected = selectedChannel === idx;
               return (
-                <div
-                  key={idx}
-                  onClick={() => setActiveStep(idx)}
+                <button
+                  key={ch.id}
+                  onClick={() => setSelectedChannel(idx)}
                   className={`
-                    cursor-pointer p-6 rounded-2xl border transition-all duration-300 text-left relative overflow-hidden group
-                    ${isActive 
-                      ? "bg-white/10 border-[#00B7A8] shadow-[0_10px_30px_rgba(0,183,168,0.15)] scale-[1.02] z-10" 
-                      : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20"
+                    relative p-4 rounded-2xl border text-left transition-all duration-300 group flex flex-col justify-between overflow-hidden
+                    ${isSelected 
+                      ? "bg-white/10 border-[#00B7A8] shadow-[0_0_25px_rgba(0,183,168,0.2)] scale-[1.02] z-10" 
+                      : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20"
                     }
                   `}
                 >
-                  {/* Glowing active indicator line */}
-                  {isActive && (
-                    <motion.div 
-                      layoutId="active-step-indicator"
-                      className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#00B7A8] shadow-[0_0_15px_rgba(0,183,168,0.8)]" 
+                  {isSelected && (
+                    <motion.div
+                      layoutId="channel-tab-active"
+                      className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#00B7A8] to-cyan-400"
                     />
                   )}
-
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                    <div className="flex items-center gap-3">
-                      <span className={`text-xs font-black px-2.5 py-1 rounded-md uppercase tracking-wider transition-colors ${isActive ? "bg-[#00B7A8] text-white" : "bg-white/10 text-slate-300 group-hover:bg-white/20"}`}>
-                        {step.time}
-                      </span>
-                      <span className="text-xs font-bold text-slate-400">
-                        {step.tag}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${ch.iconBg} font-bold`}>
+                        <IconComp className="w-5 h-5" />
+                      </div>
+                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${ch.accentBg}`}>
+                        24/7 Channel
                       </span>
                     </div>
-                    <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border transition-colors ${isActive ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400" : "bg-white/5 border-white/10 text-slate-500"}`}>
-                      {step.badge}
-                    </span>
+                    <h3 className={`font-bold text-sm sm:text-base mb-1 ${isSelected ? "text-white" : "text-slate-300"}`}>
+                      {ch.title}
+                    </h3>
+                    <p className="text-xs text-slate-400 font-medium line-clamp-1">
+                      {ch.subtitle}
+                    </p>
                   </div>
 
-                  <h3 className={`text-lg sm:text-xl font-bold mb-2 transition-colors ${isActive ? "text-white" : "text-slate-300"}`}>
-                    {step.title}
-                  </h3>
-                  <p className={`text-sm sm:text-base font-medium leading-relaxed transition-colors ${isActive ? "text-slate-200" : "text-slate-500"}`}>
-                    {step.desc}
-                  </p>
-                </div>
+                  <div className="mt-4 pt-2 border-t border-white/5 flex items-center justify-between text-xs text-slate-400 font-semibold group-hover:text-white transition-colors">
+                    <span>See Flow</span>
+                    <ArrowRight className={`w-3.5 h-3.5 transition-transform ${isSelected ? "translate-x-1 text-[#00B7A8]" : ""}`} />
+                  </div>
+                </button>
               );
             })}
           </div>
+        </div>
 
-          {/* Right Column: Masterclass Layered Diorama */}
-          <div className="lg:col-span-6 xl:col-span-7 lg:sticky lg:top-24 h-[500px] sm:h-[600px] flex items-center justify-center relative perspective-1000">
-            
-            {/* BACKGROUND LAYER: The Clinic's Dashboard */}
-            <motion.div 
-              className="absolute w-[95%] sm:w-[85%] right-0 top-8 sm:top-12 bg-slate-900 rounded-xl sm:rounded-2xl border border-slate-700 overflow-hidden shadow-2xl"
-              initial={false}
-              animate={{ 
-                scale: steps[activeStep].dashboardFocus ? 1.05 : 0.9,
-                opacity: steps[activeStep].dashboardFocus ? 1 : 0.4,
-                x: steps[activeStep].dashboardFocus ? "-10%" : "5%",
-                y: steps[activeStep].dashboardFocus ? "5%" : "-5%",
-                rotateY: steps[activeStep].dashboardFocus ? -5 : -15,
-                filter: steps[activeStep].dashboardFocus ? "blur(0px)" : "blur(4px)"
-              }}
-              transition={{ duration: 0.8, type: "spring", bounce: 0.2 }}
-              style={{ transformStyle: "preserve-3d" }}
-            >
-              {/* Mac Window Controls */}
-              <div className="h-6 sm:h-8 bg-slate-800/80 border-b border-slate-700 flex items-center px-3 sm:px-4 gap-1.5 sm:gap-2 backdrop-blur-sm">
-                <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-red-400/80" />
-                <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-amber-400/80" />
-                <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-green-400/80" />
-              </div>
-              <div className="relative aspect-video w-full bg-slate-950">
-                <Image 
-                  src="/assets/Dashboard.png" 
-                  alt="Doctor Diary Dashboard" 
-                  fill 
-                  className="object-cover object-left-top"
-                  quality={90}
-                />
-                {/* Glow overlay when focused */}
-                <div className={`absolute inset-0 bg-[#00B7A8]/5 transition-opacity duration-1000 ${steps[activeStep].dashboardFocus ? "opacity-100" : "opacity-0"}`} />
-              </div>
-            </motion.div>
+        {/* Dynamic Storyteller Box: Incoming Channel -> Unified Queue -> Doctor Schedule */}
+        <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 lg:p-10 backdrop-blur-xl shadow-2xl relative mb-16 overflow-hidden">
+          
+          {/* Subtle grid lines background */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
 
-            {/* FOREGROUND LAYER: The Patient's Phone */}
-            <motion.div 
-              className="absolute left-4 sm:left-12 bottom-12 sm:bottom-16 w-[180px] sm:w-[240px] bg-slate-950 border-[6px] sm:border-[8px] border-slate-800 rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden"
-              initial={false}
-              animate={{ 
-                scale: steps[activeStep].dashboardFocus ? 0.8 : 1.05,
-                opacity: steps[activeStep].dashboardFocus ? 0.3 : 1,
-                x: steps[activeStep].dashboardFocus ? "-15%" : "0%",
-                y: steps[activeStep].dashboardFocus ? "10%" : "0%",
-                rotateY: steps[activeStep].dashboardFocus ? 15 : 5,
-                filter: steps[activeStep].showWhatsApp ? "blur(2px) brightness(0.6)" : "blur(0px) brightness(1)"
-              }}
-              transition={{ duration: 0.8, type: "spring", bounce: 0.2 }}
-              style={{ transformStyle: "preserve-3d", aspectRatio: "9/19" }}
-            >
-              {/* Dynamic Screen Content */}
-              <div className="flex-1 relative bg-slate-900 w-full h-full">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={steps[activeStep].phoneImg}
-                    initial={{ opacity: 0, scale: 1.1 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="absolute inset-0"
-                  >
-                    <Image
-                      src={steps[activeStep].phoneImg}
-                      alt="Patient Mobile View"
-                      fill
-                      className="object-cover object-top"
-                      quality={95}
-                    />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </motion.div>
-
-            {/* MAGIC LAYER: Floating WhatsApp Notification (Step 2) */}
-            <AnimatePresence>
-              {steps[activeStep].showWhatsApp && (
-                <motion.div
-                  initial={{ opacity: 0, y: 50, scale: 0.9, rotateX: 20 }}
-                  animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
-                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                  transition={{ duration: 0.6, type: "spring", bounce: 0.4 }}
-                  className="absolute z-50 bottom-32 sm:bottom-40 left-8 sm:left-24 bg-white/95 backdrop-blur-xl rounded-2xl p-4 sm:p-5 shadow-2xl w-[260px] sm:w-[320px] border border-white/20"
+          {/* Walk-in QR Day / Night toggle if QR channel is active */}
+          {currentChannel.id === "qr" && (
+            <div className="flex justify-end mb-4 relative z-20">
+              <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1">
+                <button
+                  onClick={() => setActiveTab("day")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    activeTab === "day"
+                      ? "bg-[#00B7A8] text-white shadow-md"
+                      : "text-slate-400 hover:text-white"
+                  }`}
                 >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-500 rounded-full flex items-center justify-center shrink-0 shadow-md">
-                      {/* Simple WhatsApp-like icon */}
-                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.571-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="text-xs sm:text-sm font-bold text-slate-800">Doctor Diary</div>
-                      <div className="text-[10px] sm:text-xs text-green-600 font-semibold">Just now</div>
-                    </div>
-                  </div>
-                  <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                    <p className="text-xs sm:text-sm text-slate-700 font-medium">
-                      Hi Priya, your appointment is confirmed! Your queue number is <strong className="text-black bg-yellow-200 px-1 rounded">#24</strong>. We will notify you when it's your turn.
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  <Sun className="w-3.5 h-3.5" />
+                  <span>Clinic Open (Desk QR)</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("night")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    activeTab === "night"
+                      ? "bg-indigo-600 text-white shadow-md"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <Moon className="w-3.5 h-3.5" />
+                  <span>Clinic Closed (Door QR)</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
             
+            {/* Left Box: Incoming Patient Entry */}
+            <div className="lg:col-span-5 bg-slate-950/90 rounded-2xl p-6 border border-slate-800 shadow-xl flex flex-col justify-between h-full">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{currentChannel.patient.avatar}</span>
+                    <div>
+                      <h4 className="font-bold text-white text-base sm:text-lg">
+                        {currentChannel.patient.name}
+                      </h4>
+                      <span className="text-xs text-[#00B7A8] font-semibold flex items-center gap-1">
+                        <Zap className="w-3 h-3" /> {currentChannel.patient.location}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="bg-[#00B7A8]/20 text-[#00B7A8] border border-[#00B7A8]/40 font-black text-xs px-3 py-1 rounded-full">
+                    Token {currentChannel.patient.token}
+                  </span>
+                </div>
+
+                <div className="bg-slate-900/90 rounded-xl p-4 border border-slate-800 mb-4">
+                  <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
+                    "{currentChannel.patient.action}"
+                  </p>
+                </div>
+
+                <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                  {currentChannel.desc}
+                </p>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-bold">
+                <span className="flex items-center gap-1.5 text-emerald-400">
+                  <CheckCircle2 className="w-4 h-4" /> Auto-allocated Slot
+                </span>
+                <span className="text-white bg-slate-800 px-2.5 py-1 rounded-md">
+                  {currentChannel.patient.time}
+                </span>
+              </div>
+            </div>
+
+            {/* Middle Connecting Arrow / Engine Icon */}
+            <div className="lg:col-span-2 flex flex-col items-center justify-center gap-2 text-center py-2">
+              <div className="w-12 h-12 rounded-full bg-[#00B7A8]/20 border border-[#00B7A8]/40 flex items-center justify-center text-[#00B7A8] shadow-[0_0_20px_rgba(0,183,168,0.3)] animate-pulse">
+                <ArrowRight className="w-6 h-6 rotate-90 lg:rotate-0" />
+              </div>
+              <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                Doctor Schedule Engine
+              </span>
+            </div>
+
+            {/* Right Box: Doctor's Protected Schedule & WhatsApp Token */}
+            <div className="lg:col-span-5 bg-slate-950/90 rounded-2xl p-6 border border-slate-800 shadow-xl">
+              
+              {/* Doctor Schedule Visual */}
+              <div className="mb-5">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-[#00B7A8]" /> Doctor's Master Schedule
+                  </span>
+                  <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded">
+                    Protected OPD
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                    <span className="text-slate-300 font-semibold">Morning OPD (10:00 AM - 1:30 PM)</span>
+                    <span className="text-emerald-400 font-bold text-[11px]">Filling Smoothly</span>
+                  </div>
+
+                  {/* Protected Lunch Buffer - Key Indian Doctor Request */}
+                  <div className="flex items-center justify-between text-xs bg-amber-500/10 p-2.5 rounded-lg border border-amber-500/30 text-amber-300">
+                    <span className="font-bold flex items-center gap-1.5">
+                      <Utensils className="w-3.5 h-3.5" /> 1:30 PM - 2:30 PM: Lunch Break
+                    </span>
+                    <span className="font-black text-[10px] uppercase bg-amber-500/20 border border-amber-500/40 px-2 py-0.5 rounded text-amber-400">
+                      0 Queue Overflow
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                    <span className="text-slate-300 font-semibold">Evening OPD (5:00 PM - 8:30 PM)</span>
+                    <span className="text-cyan-400 font-bold text-[11px]">Protected Pacing</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Simulated Live WhatsApp Confirmation */}
+              <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-xl p-4 relative overflow-hidden">
+                <div className="flex items-center gap-2.5 mb-2">
+                  <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-white text-xs shadow">
+                    <MessageCircle className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-xs font-bold text-emerald-400">
+                    Automated WhatsApp Message Sent
+                  </span>
+                </div>
+                <p className="text-xs text-slate-200 font-medium leading-relaxed">
+                  "Namaste {currentChannel.patient.name}! Your token <strong className="text-emerald-300 bg-emerald-900/60 px-1 rounded">{currentChannel.patient.token}</strong> is confirmed for {currentChannel.patient.time}. Current serving #10. Estimated turn at {currentChannel.patient.time}."
+                </p>
+              </div>
+
+            </div>
+
           </div>
         </div>
 
-        {/* Section CTA */}
-        <div className="mt-16 text-center">
-          <p className="text-slate-400 text-base font-medium">
-            That's a clinic patients remember. And return to.
-          </p>
-        </div>
+          {/* Enterprise Doctor Peace of Mind Banner */}
+          <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-[#0A1A3B] border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+            
+            <div className="absolute top-0 right-0 w-80 h-80 bg-[#00B7A8]/10 rounded-full blur-[90px] pointer-events-none" />
+
+            <div className="max-w-4xl mx-auto text-center mb-10 relative z-10">
+              <span className="text-[#00B7A8] font-extrabold text-xs uppercase tracking-widest bg-[#00B7A8]/10 px-4 py-1.5 rounded-full border border-[#00B7A8]/20 inline-block mb-3">
+                ENTERPRISE PRACTICE PROTECTION • DESIGNED FOR DOCTORS
+              </span>
+              <h3 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+                You dedicate your expertise to healing patients. <br className="hidden sm:inline" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-300 to-cyan-400">
+                  We protect your time, schedule, and peace of mind.
+                </span>
+              </h3>
+              <p className="text-slate-300 text-sm sm:text-base font-medium mt-3 leading-relaxed max-w-2xl mx-auto">
+                No more cold, delayed meals, receptionist strain, or late-night OPD overruns. In 60–90 days, your practice transitions into a seamless, predictable clockwork system.
+              </p>
+            </div>
+
+            {/* Before vs After (60-90 Days Transformation) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 relative z-10">
+              
+              {/* The Unmanaged Practice */}
+              <div className="bg-slate-950/80 rounded-2xl p-6 border border-red-500/20 relative">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-8 h-8 rounded-full bg-red-500/20 text-red-400 font-bold flex items-center justify-center text-xs border border-red-500/30">
+                    ✕
+                  </span>
+                  <h4 className="font-bold text-white text-base">Unmanaged Queue Friction</h4>
+                </div>
+                <ul className="space-y-3 text-xs sm:text-sm text-slate-300">
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-400 font-bold mt-0.5">•</span>
+                    <span>Meal schedules delayed to 4:30 PM due to unscheduled walk-in rushes overflowing waiting areas.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-400 font-bold mt-0.5">•</span>
+                    <span>Front desk desk overwhelmed by continuous patient inquiry calls regarding queue status.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-400 font-bold mt-0.5">•</span>
+                    <span>Overcrowded waiting rooms creating patient anxiety and impacting clinical experience.</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* The Enterprise Standard */}
+              <div className="bg-slate-950/80 rounded-2xl p-6 border border-emerald-500/30 relative">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-xs border border-emerald-500/40">
+                    ✓
+                  </span>
+                  <h4 className="font-bold text-white text-base">Enterprise Doctor Diary System</h4>
+                </div>
+                <ul className="space-y-3 text-xs sm:text-sm text-slate-300">
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold mt-0.5">•</span>
+                    <span>Protected 1:30 PM lunch buffers & predictable evening OPD closures on schedule.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold mt-0.5">•</span>
+                    <span>95%+ of patients track real-time queue tokens via automated WhatsApp updates.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold mt-0.5">•</span>
+                    <span>A calm, dignified waiting environment matching the premium tier of your medical practice.</span>
+                  </li>
+                </ul>
+              </div>
+
+            </div>
+
+            {/* 3-Month Adoption Timeline Selector */}
+            <div className="bg-slate-950/90 rounded-2xl p-6 border border-slate-800 relative z-10 max-w-4xl mx-auto">
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                <span className="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+                  <TrendingUp className="w-4 h-4 text-[#00B7A8]" /> Enterprise Adoption Timeline
+                </span>
+                <div className="flex gap-2">
+                  {[1, 2, 3].map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => setActiveMonth(m)}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                        activeMonth === m
+                          ? "bg-[#00B7A8] text-white shadow-md"
+                          : "bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
+                      }`}
+                    >
+                      Month {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-slate-900 rounded-xl p-4 border border-slate-800 text-xs sm:text-sm text-slate-200">
+                {activeMonth === 1 && (
+                  <p className="leading-relaxed">
+                    <strong className="text-[#00B7A8]">Month 1 (40% Adoption):</strong> Reception introduces digital QR tokens. Walk-in patients scan & immediately appreciate real-time WhatsApp queue tracking.
+                  </p>
+                )}
+                {activeMonth === 2 && (
+                  <p className="leading-relaxed">
+                    <strong className="text-[#00B7A8]">Month 2 (75% Adoption):</strong> Returning patients pre-check live queue status from home via Google Maps or WhatsApp before traveling. Waiting area density drops significantly.
+                  </p>
+                )}
+                {activeMonth === 3 && (
+                  <p className="leading-relaxed">
+                    <strong className="text-[#00B7A8]">Month 3 (95%+ Frictionless System):</strong> Patients in your area rely on your automated token schedule. Your OPD operates with high efficiency, protected breaks, and total peace of mind.
+                  </p>
+                )}
+              </div>
+
+              {/* Enterprise Trust & Faith Motto */}
+              <div className="mt-6 pt-4 border-t border-slate-800/80 text-center flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm">
+                <span className="text-slate-300 font-semibold flex items-center gap-2">
+                  <ShieldCheck className="w-4.5 h-4.5 text-[#00B7A8] shrink-0" />
+                  "Dedicated to your clinical excellence. Engineered to safeguard your practice's time & dignity."
+                </span>
+                <span className="bg-[#00B7A8]/10 text-[#00B7A8] border border-[#00B7A8]/30 px-3 py-1 rounded-full font-bold text-xs shrink-0">
+                  Clinical Care First • Operational Trust Always
+                </span>
+              </div>
+            </div>
+
+          </div>
 
       </div>
     </section>

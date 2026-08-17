@@ -17,8 +17,59 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  let [clinic] = await db
+    .select({
+      name: clinics.name,
+      themeColor: clinics.themeColor,
+      logoUrl: clinics.logoUrl,
+    })
+    .from(clinics)
+    .where(eq(clinics.slug, slug))
+    .limit(1);
+
+  if (!clinic) {
+    const { doctorLeads } = await import("@/db/schema");
+    const [lead] = await db
+      .select({
+        name: doctorLeads.clinicName,
+        doctorName: doctorLeads.doctorName,
+        logoUrl: doctorLeads.logoUrl,
+      })
+      .from(doctorLeads)
+      .where(eq(doctorLeads.clinicSlug, slug))
+      .limit(1);
+
+    if (lead) {
+      clinic = {
+        name: lead.name || `${lead.doctorName}'s Clinic`,
+        themeColor: "#0d9488",
+        logoUrl: lead.logoUrl || null,
+      };
+    }
+  }
+
+  const appName = clinic?.name || "Doctor Diary Clinic";
+
   return {
     manifest: `/api/manifest/${slug}`,
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: appName,
+    },
+    icons: {
+      icon: [
+        { url: `/api/manifest/${slug}/icon?size=192`, sizes: "192x192" },
+        { url: `/api/manifest/${slug}/icon?size=512`, sizes: "512x512" },
+      ],
+      apple: [
+        {
+          url: `/api/manifest/${slug}/icon?size=180`,
+          sizes: "180x180",
+          type: "image/png",
+        },
+      ],
+    },
   };
 }
 

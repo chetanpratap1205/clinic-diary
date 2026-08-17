@@ -176,6 +176,24 @@ export async function generateMetadata({
     description: descText,
     alternates: { canonical: canonicalUrl },
     manifest: `/api/manifest/${slug}`,
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: clinic.name,
+    },
+    icons: {
+      icon: [
+        { url: `/api/manifest/${slug}/icon?size=192`, sizes: "192x192" },
+        { url: `/api/manifest/${slug}/icon?size=512`, sizes: "512x512" },
+      ],
+      apple: [
+        {
+          url: `/api/manifest/${slug}/icon?size=180`,
+          sizes: "180x180",
+          type: "image/png",
+        },
+      ],
+    },
     openGraph: {
       title: titleText,
       description: descText,
@@ -465,7 +483,14 @@ export default async function BookingPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
       />
-      
+
+      {/* Top Mobile/Desktop Install App Banner */}
+      <InstallAppBanner
+        clinicName={clinic.name}
+        logoUrl={safeLogoUrl}
+        themeColor={themeColor}
+        lang={lang}
+      />
 
       {/* ══════════════════════════════════════════════════════════════════════
           PREMIUM HERO SECTION — WOW First Impression
