@@ -299,10 +299,18 @@ export function PatientInstallButton({
         position: "top-center",
       });
     } else if (platform === "android_manual") {
-      toast.success("Tap Menu (⋮) then 'Install app' 📱 to install", {
-        duration: 6000,
-        position: "top-center",
-      });
+      const isWebView = /FBAN|FBAV|Instagram|WhatsApp|Line|Snapchat|WebView|wv/i.test(navigator.userAgent);
+      if (isWebView) {
+        toast.info("Open this link in Chrome to install the app.", {
+          duration: 6000,
+          position: "top-center",
+        });
+      } else {
+        toast.info("Preparing 1-tap installer... Please wait a moment and tap again.", {
+          duration: 4000,
+          position: "top-center",
+        });
+      }
     } else if (platform === "android") {
       handleAndroidInstall();
     } else if (platform === "desktop") {
