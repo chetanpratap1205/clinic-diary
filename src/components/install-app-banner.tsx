@@ -32,7 +32,7 @@ export function InstallAppBanner({
   const [isDismissed, setIsDismissed] = useState(false);
   const isHindi = lang === "hi";
 
-  if (isInstalled || platform === "unknown" || isDismissed) {
+  if (isInstalled || platform === "unknown" || isDismissed || !canNativeInstall) {
     return (
       <PWAInstallGuideModal
         isOpen={isGuideOpen}

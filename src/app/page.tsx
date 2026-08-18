@@ -21,7 +21,6 @@ import {
   X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { InstallButton } from "@/components/pwa-provider";
 import { PremiumIcon } from "@/components/ui/premium-icon";
 import { SocialProofPopup } from "./_components/social-proof-popup";
 import { TheMirror } from "./_components/the-mirror";

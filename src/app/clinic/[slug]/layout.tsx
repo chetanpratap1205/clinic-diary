@@ -7,7 +7,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Phone } from "lucide-react";
 import { ClinicLogo } from "./clinic-logo";
-import { PatientInstallButton } from "@/components/pwa-provider";
 
 import { PatientHeaderActions } from "@/components/patient-header-actions";
 
@@ -118,7 +117,6 @@ export default async function BookingLayout({
 
           <div className="flex items-center gap-2 flex-shrink-0">
             <PatientHeaderActions themeColor={themeColor} clinicName={clinic.name} />
-            <PatientInstallButton clinicName={clinic.name} logoUrl={clinic.logoUrl} themeColor={themeColor} className="flex" />
             {clinic.phone && (
               <a
                 href={`tel:+91${clinic.phone.replace(/\D/g, "").slice(-10)}`}

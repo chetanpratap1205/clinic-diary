@@ -35,6 +35,7 @@ import { TicTacToe } from "./tic-tac-toe";
 import { WellnessFeed } from "./wellness-feed";
 import { DICTIONARY, Language } from "@/lib/i18n";
 import { PatientInstallButton } from "@/components/pwa-provider";
+import { usePWAInstall } from "@/hooks/use-pwa-install";
 import { soundEngine } from "@/lib/sound";
 import { PushOptIn } from "@/components/push-opt-in";
 import { formatDoctorName } from "@/lib/utils";
@@ -138,6 +139,7 @@ export function TrackingClient({
   const [isPending, startTransition] = useTransition();
   const [showBanner, setShowBanner] = useState(true);
   const [now, setNow] = useState(new Date());
+  const { canNativeInstall } = usePWAInstall();
 
 
 
@@ -597,25 +599,29 @@ export function TrackingClient({
         </AnimatePresence>
 
         {/* ──── Notification + App Install Banner ──── */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="mb-4 space-y-3">
-          {/* 1. Turn Alerts Card (High-converting opt-in) */}
-          <PushOptIn appointmentId={appointment.id} clinicId={clinic.id} variant="card" />
+        {!isCancelled && !isCompleted && (
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="mb-4 space-y-3">
+            {/* 1. Turn Alerts Card (High-converting opt-in) */}
+            <PushOptIn appointmentId={appointment.id} clinicId={clinic.id} variant="card" />
 
-          {/* 2. Official Clinic App Banner */}
-          <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-4 sm:p-5 text-white shadow-xl flex items-center justify-between gap-3 border border-slate-700/50">
-            <div className="space-y-0.5 pr-2">
-              <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400">Official Clinic App</span>
-              <p className="text-xs sm:text-sm font-black tracking-tight">{clinic.name}</p>
-              <p className="text-[10.5px] text-slate-300 font-medium">Download app for instant access & live tracking.</p>
-            </div>
-            <PatientInstallButton
-              clinicName={clinic.name}
-              logoUrl={clinic.logoUrl}
-              themeColor={clinic.themeColor || "#0ea5e9"}
-              className="border-0 shadow-lg shrink-0"
-            />
-          </div>
-        </motion.div>
+            {/* 2. Official Clinic App Banner */}
+            {canNativeInstall && (
+              <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-4 sm:p-5 text-white shadow-xl flex items-center justify-between gap-3 border border-slate-700/50">
+                <div className="space-y-0.5 pr-2">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400">Official Clinic App</span>
+                  <p className="text-xs sm:text-sm font-black tracking-tight">{clinic.name}</p>
+                  <p className="text-[10.5px] text-slate-300 font-medium">Download app for instant access & live tracking.</p>
+                </div>
+                <PatientInstallButton
+                  clinicName={clinic.name}
+                  logoUrl={clinic.logoUrl}
+                  themeColor={clinic.themeColor || "#0ea5e9"}
+                  className="border-0 shadow-lg shrink-0"
+                />
+              </div>
+            )}
+          </motion.div>
+        )}
 
         {/* ──── Action Buttons (Call, Directions & Zero-Cost WhatsApp Ticket Share) ──── */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="grid grid-cols-3 gap-3">

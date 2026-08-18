@@ -69,6 +69,31 @@ export function usePWAInstall() {
       setDeferredPrompt(existingPrompt);
     }
 
+    const updateDiagnostics = (fields: Record<string, unknown>) => {
+      if (typeof window === "undefined") return;
+      const diagWin = window as Window & { __PWA_DIAGNOSTICS__?: Record<string, unknown> };
+      diagWin.__PWA_DIAGNOSTICS__ = {
+        ...(diagWin.__PWA_DIAGNOSTICS__ || {}),
+        ...fields,
+      };
+    };
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      const promptEvent = e as BeforeInstallPromptEvent;
+      console.log("[PWA] 🔥 BEFOREINSTALLPROMPT FIRED", promptEvent);
+      if (typeof window !== "undefined") {
+        window.__pwaDeferredPrompt = promptEvent;
+      }
+      updateDiagnostics({
+        beforeInstallPromptFired: true,
+        beforeInstallPromptAt: new Date().toISOString(),
+        promptAvailable: true,
+        hasPromptCaptured: true,
+      });
+      setDeferredPrompt(promptEvent);
+    };
+
     const handlePromptReady = (e: Event) => {
       const customEvent = e as CustomEvent<BeforeInstallPromptEvent | undefined>;
       const promptEvent =
@@ -76,27 +101,37 @@ export function usePWAInstall() {
 
       if (promptEvent) {
         setDeferredPrompt(promptEvent);
+        updateDiagnostics({ promptAvailable: true, hasPromptCaptured: true });
       }
     };
 
     const handleAppInstalled = () => {
+      console.log("[PWA] 🔥 APPINSTALLED FIRED");
       setIsInstalled(true);
       setDeferredPrompt(null);
       setPlatform("installed");
       setIsGuideOpen(false);
       clearCapturedPrompt();
+      updateDiagnostics({
+        appInstalled: true,
+        appInstalledAt: new Date().toISOString(),
+        promptAvailable: false,
+      });
     };
 
     const handlePromptConsumed = () => {
       setDeferredPrompt(null);
+      updateDiagnostics({ promptAvailable: false });
     };
 
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     window.addEventListener("pwa-prompt-ready", handlePromptReady);
     window.addEventListener("appinstalled", handleAppInstalled);
     window.addEventListener("pwa-installed", handleAppInstalled);
     window.addEventListener("pwa-prompt-consumed", handlePromptConsumed);
 
     return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
       window.removeEventListener("pwa-prompt-ready", handlePromptReady);
       window.removeEventListener("appinstalled", handleAppInstalled);
       window.removeEventListener("pwa-installed", handleAppInstalled);
@@ -106,12 +141,28 @@ export function usePWAInstall() {
 
   const runNativePrompt = useCallback(async (prompt: BeforeInstallPromptEvent) => {
     setIsInstalling(true);
+    if (typeof window !== "undefined") {
+      const diagWin = window as Window & { __PWA_DIAGNOSTICS__?: Record<string, unknown> };
+      diagWin.__PWA_DIAGNOSTICS__ = {
+        ...(diagWin.__PWA_DIAGNOSTICS__ || {}),
+        promptCalled: true,
+        promptCalledAt: new Date().toISOString(),
+      };
+    }
 
     try {
       const activePrompt = prompt || (typeof window !== "undefined" ? window.__pwaDeferredPrompt : null);
       if (activePrompt && typeof activePrompt.prompt === "function") {
         await activePrompt.prompt();
         const choice = await activePrompt.userChoice;
+        if (typeof window !== "undefined") {
+          const diagWin = window as Window & { __PWA_DIAGNOSTICS__?: Record<string, unknown> };
+          diagWin.__PWA_DIAGNOSTICS__ = {
+            ...(diagWin.__PWA_DIAGNOSTICS__ || {}),
+            userChoice: choice?.outcome || "unknown",
+            userChoiceAt: new Date().toISOString(),
+          };
+        }
         if (choice && choice.outcome === "accepted") {
           setIsInstalled(true);
           setPlatform("installed");
@@ -149,9 +200,7 @@ export function usePWAInstall() {
         }
 
         const checkPrompt = () => {
-          const existing = getCapturedPrompt();
-          if (existing) return existing;
-          return null;
+          return deferredPrompt || getCapturedPrompt();
         };
 
         const existingPrompt = checkPrompt();
@@ -160,31 +209,44 @@ export function usePWAInstall() {
           return;
         }
 
+        const nativeListener = (e: Event) => {
+          e.preventDefault();
+          cleanup();
+          const p = e as BeforeInstallPromptEvent;
+          window.__pwaDeferredPrompt = p;
+          setDeferredPrompt(p);
+          resolve(p);
+        };
+
+        const customListener = (e: Event) => {
+          cleanup();
+          const customEvent = e as CustomEvent<BeforeInstallPromptEvent | undefined>;
+          const p = customEvent.detail || checkPrompt();
+          resolve(p);
+        };
+
         const interval = window.setInterval(() => {
           const found = checkPrompt();
           if (found) {
-            window.clearInterval(interval);
-            window.clearTimeout(timer);
-            window.removeEventListener("pwa-prompt-ready", handlePromptReady);
+            cleanup();
             resolve(found);
           }
         }, 100);
 
-        const handlePromptReady = (e: Event) => {
+        const timer = window.setTimeout(() => {
+          cleanup();
+          resolve(checkPrompt());
+        }, 1500);
+
+        const cleanup = () => {
           window.clearInterval(interval);
           window.clearTimeout(timer);
-          window.removeEventListener("pwa-prompt-ready", handlePromptReady);
-          const customEvent = e as CustomEvent<BeforeInstallPromptEvent | undefined>;
-          resolve(customEvent.detail || checkPrompt());
+          window.removeEventListener("beforeinstallprompt", nativeListener);
+          window.removeEventListener("pwa-prompt-ready", customListener);
         };
 
-        const timer = window.setTimeout(() => {
-          window.clearInterval(interval);
-          window.removeEventListener("pwa-prompt-ready", handlePromptReady);
-          resolve(checkPrompt());
-        }, 2500);
-
-        window.addEventListener("pwa-prompt-ready", handlePromptReady, { once: true });
+        window.addEventListener("beforeinstallprompt", nativeListener, { once: true });
+        window.addEventListener("pwa-prompt-ready", customListener, { once: true });
       });
       setIsInstalling(false);
 

@@ -8,25 +8,7 @@ import { PWASplashScreen } from "./pwa-splash-screen";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
 import { PWAInstallGuideModal } from "@/components/pwa-install-guide-modal";
 
-function isStandaloneMode() {
-  if (typeof window === "undefined") return false;
 
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (navigator as unknown as { standalone?: boolean }).standalone === true
-  );
-}
-
-function getCapturedPrompt() {
-  if (typeof window === "undefined") return null;
-  return window.__pwaDeferredPrompt || null;
-}
-
-function clearCapturedPrompt() {
-  if (typeof window === "undefined") return;
-  window.__pwaDeferredPrompt = null;
-  window.dispatchEvent(new CustomEvent("pwa-prompt-consumed"));
-}
 
 export function registerServiceWorker() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
@@ -37,99 +19,36 @@ export function registerServiceWorker() {
       .catch((err) => console.warn("SW registration failed:", err));
   };
 
-  if (document.readyState === "complete") {
+  if (document.readyState !== "loading") {
     register();
   } else {
+    window.addEventListener("DOMContentLoaded", register, { once: true });
     window.addEventListener("load", register, { once: true });
   }
 }
 
 export function PWAProvider() {
   const pathname = usePathname();
-  const [deferredPrompt, setDeferredPrompt] =
-    useState<BeforeInstallPromptEvent | null>(() => getCapturedPrompt());
+  const { isInstalled, deferredPrompt, triggerInstall } = usePWAInstall();
   const [showBanner, setShowBanner] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(() => isStandaloneMode());
 
   useEffect(() => {
     registerServiceWorker();
 
-    if (isInstalled) {
+    if (isInstalled || !deferredPrompt) {
       return;
     }
 
-    const checkAndTriggerBanner = (prompt: BeforeInstallPromptEvent) => {
-      setDeferredPrompt(prompt);
-
-      const lastDismissed = localStorage.getItem("pwa_install_dismissed");
-      if (lastDismissed) {
-        const dismissedAt = parseInt(lastDismissed, 10);
-        const daysSince = (Date.now() - dismissedAt) / (1000 * 60 * 60 * 24);
-        if (daysSince < 3) return;
-      }
-
-      window.setTimeout(() => setShowBanner(true), 5000);
-    };
-
-    const existingPrompt = getCapturedPrompt();
-    if (existingPrompt) {
-      checkAndTriggerBanner(existingPrompt);
+    const lastDismissed = localStorage.getItem("pwa_install_dismissed");
+    if (lastDismissed) {
+      const dismissedAt = parseInt(lastDismissed, 10);
+      const daysSince = (Date.now() - dismissedAt) / (1000 * 60 * 60 * 24);
+      if (daysSince < 3) return;
     }
 
-    const promptReadyHandler = (e: Event) => {
-      const customEvent = e as CustomEvent<BeforeInstallPromptEvent | undefined>;
-      const prompt = customEvent.detail || getCapturedPrompt();
-      if (prompt) {
-        checkAndTriggerBanner(prompt);
-      }
-    };
-
-    const installedHandler = () => {
-      setIsInstalled(true);
-      setShowBanner(false);
-      setDeferredPrompt(null);
-      clearCapturedPrompt();
-    };
-
-    const promptConsumedHandler = () => {
-      setShowBanner(false);
-      setDeferredPrompt(null);
-    };
-
-    window.addEventListener("pwa-prompt-ready", promptReadyHandler);
-    window.addEventListener("appinstalled", installedHandler);
-    window.addEventListener("pwa-installed", installedHandler);
-    window.addEventListener("pwa-prompt-consumed", promptConsumedHandler);
-
-    return () => {
-      window.removeEventListener("pwa-prompt-ready", promptReadyHandler);
-      window.removeEventListener("appinstalled", installedHandler);
-      window.removeEventListener("pwa-installed", installedHandler);
-      window.removeEventListener("pwa-prompt-consumed", promptConsumedHandler);
-    };
-  }, [isInstalled]);
-
-  const handleInstall = () => {
-    const promptEvent = deferredPrompt || getCapturedPrompt();
-    if (!promptEvent) return;
-
-    promptEvent
-      .prompt()
-      .then(() => promptEvent.userChoice)
-      .then((choiceResult) => {
-        if (choiceResult.outcome === "accepted") {
-          setIsInstalled(true);
-          setShowBanner(false);
-        }
-      })
-      .catch((err) => {
-        console.warn("PWA install error:", err);
-      })
-      .finally(() => {
-        setDeferredPrompt(null);
-        clearCapturedPrompt();
-      });
-  };
+    const timer = window.setTimeout(() => setShowBanner(true), 5000);
+    return () => window.clearTimeout(timer);
+  }, [isInstalled, deferredPrompt]);
 
   const handleDismiss = () => {
     localStorage.setItem("pwa_install_dismissed", Date.now().toString());
@@ -186,7 +105,10 @@ export function PWAProvider() {
               </button>
               <button
                 type="button"
-                onClick={handleInstall}
+                onClick={() => {
+                  triggerInstall();
+                  setShowBanner(false);
+                }}
                 className="flex-1 h-9 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
@@ -201,71 +123,14 @@ export function PWAProvider() {
 }
 
 export function InstallButton({ className = "" }: { className?: string }) {
-  const [deferredPrompt, setDeferredPrompt] =
-    useState<BeforeInstallPromptEvent | null>(() => getCapturedPrompt());
-  const [isInstalled, setIsInstalled] = useState(() => isStandaloneMode());
+  const { isInstalled, deferredPrompt, triggerInstall, canNativeInstall } = usePWAInstall();
 
-  useEffect(() => {
-    if (isInstalled) {
-      return;
-    }
-
-    const promptReadyHandler = (e: Event) => {
-      const customEvent = e as CustomEvent<BeforeInstallPromptEvent | undefined>;
-      const prompt = customEvent.detail || getCapturedPrompt();
-      if (prompt) {
-        setDeferredPrompt(prompt);
-      }
-    };
-
-    const installedHandler = () => {
-      setIsInstalled(true);
-      setDeferredPrompt(null);
-      clearCapturedPrompt();
-    };
-
-    const promptConsumedHandler = () => {
-      setDeferredPrompt(null);
-    };
-
-    window.addEventListener("pwa-prompt-ready", promptReadyHandler);
-    window.addEventListener("appinstalled", installedHandler);
-    window.addEventListener("pwa-installed", installedHandler);
-    window.addEventListener("pwa-prompt-consumed", promptConsumedHandler);
-
-    return () => {
-      window.removeEventListener("pwa-prompt-ready", promptReadyHandler);
-      window.removeEventListener("appinstalled", installedHandler);
-      window.removeEventListener("pwa-installed", installedHandler);
-      window.removeEventListener("pwa-prompt-consumed", promptConsumedHandler);
-    };
-  }, [isInstalled]);
-
-  if (isInstalled || !deferredPrompt) return null;
-
-  const handleInstall = () => {
-    const promptEvent = deferredPrompt || getCapturedPrompt();
-    if (!promptEvent) return;
-
-    promptEvent
-      .prompt()
-      .then(() => promptEvent.userChoice)
-      .then((choiceResult) => {
-        if (choiceResult.outcome === "accepted") setIsInstalled(true);
-      })
-      .catch((err) => {
-        console.warn("Install error:", err);
-      })
-      .finally(() => {
-        setDeferredPrompt(null);
-        clearCapturedPrompt();
-      });
-  };
+  if (isInstalled || !canNativeInstall) return null;
 
   return (
     <button
       type="button"
-      onClick={handleInstall}
+      onClick={triggerInstall}
       className={`flex items-center gap-1.5 text-sm font-medium text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 border border-teal-200/60 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${className}`}
     >
       <Download className="w-3.5 h-3.5" />
@@ -296,7 +161,7 @@ export function PatientInstallButton({
     canNativeInstall,
   } = usePWAInstall();
 
-  if (isInstalled) return null;
+  if (isInstalled || !canNativeInstall) return null;
 
   const displayName =
     clinicName.length > 18 ? `${clinicName.slice(0, 16)}...` : clinicName;

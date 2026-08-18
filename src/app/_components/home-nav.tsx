@@ -6,7 +6,6 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { InstallButton } from "@/components/pwa-provider";
 
 export function HomeNav() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -72,8 +71,6 @@ export function HomeNav() {
               14-Day Free Trial
             </Button>
           </Link>
-
-          <InstallButton className="!bg-[#0B132B] hover:!bg-[#1a2b5e] !text-white hover:!text-white !border-transparent !rounded-full !font-extrabold shadow-md px-4 sm:px-6 h-10 text-xs sm:text-sm" />
           
           <button 
             className="md:hidden p-2 text-slate-700 hover:text-[#0B132B] transition-colors"

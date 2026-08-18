@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { detectDevicePlatformFromSignals } from "../src/lib/pwa-platform";
 
@@ -45,6 +45,31 @@ assert.equal(
   "installed"
 );
 
+// ─── 1. Static Asset & Service Worker Verification ───────────────────────────
+assert.ok(existsSync(join(process.cwd(), "public/sw.js")), "public/sw.js must exist");
+assert.ok(existsSync(join(process.cwd(), "public/icon-192.png")), "public/icon-192.png must exist");
+assert.ok(existsSync(join(process.cwd(), "public/icon-512.png")), "public/icon-512.png must exist");
+assert.ok(existsSync(join(process.cwd(), "public/manifest.json")), "public/manifest.json must exist");
+
+// ─── 2. Manifest JSON Invariant Check ───────────────────────────────────────
+const staticManifestRaw = readFileSync(join(process.cwd(), "public/manifest.json"), "utf8");
+const staticManifest = JSON.parse(staticManifestRaw);
+assert.ok(staticManifest.name, "manifest name required");
+assert.ok(staticManifest.short_name, "manifest short_name required");
+assert.ok(staticManifest.start_url, "manifest start_url required");
+assert.equal(staticManifest.display, "standalone", "manifest display must be standalone");
+assert.ok(Array.isArray(staticManifest.icons) && staticManifest.icons.length >= 2, "manifest icons required");
+
+// ─── 3. Single-Owner Hook & Component Invariants ──────────────────────────────
+const usePWAInstallSource = readFileSync(join(process.cwd(), "src/hooks/use-pwa-install.ts"), "utf8");
+const pwaProviderSource = readFileSync(join(process.cwd(), "src/components/pwa-provider.tsx"), "utf8");
+
+assert.match(usePWAInstallSource, /window\.addEventListener\("beforeinstallprompt"/, "usePWAInstall must listen to beforeinstallprompt");
+assert.match(usePWAInstallSource, /BEFOREINSTALLPROMPT FIRED/, "usePWAInstall must log BIP event for diagnostics");
+assert.match(usePWAInstallSource, /appInstalled:/, "usePWAInstall must track appInstalled in diagnostics");
+assert.match(pwaProviderSource, /const \{ isInstalled, deferredPrompt, triggerInstall \} = usePWAInstall\(\)/, "PWAProvider must consume usePWAInstall as single source of truth");
+
+// ─── 4. Dynamic Manifest Route Verification ─────────────────────────────────
 const manifestRoute = readFileSync(
   join(process.cwd(), "src/app/api/manifest/[slug]/route.ts"),
   "utf8"
@@ -62,4 +87,5 @@ assert.match(manifestRoute, /prefer_related_applications: false/);
 assert.doesNotMatch(iconRoute, /fetch\(clinic\.logoUrl/);
 assert.match(iconRoute, /Content-Type": "image\/svg\+xml; charset=utf-8"/);
 
-console.log("PWA install verification passed.");
+console.log("PWA install verification passed with comprehensive assertions.");
+

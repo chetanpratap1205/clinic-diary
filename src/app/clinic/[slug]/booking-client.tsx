@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { formatTimeDisplay } from "@/lib/format";
 import { PatientInstallButton } from "@/components/pwa-provider";
+import { usePWAInstall } from "@/hooks/use-pwa-install";
 import { PushOptIn } from "@/components/push-opt-in";
 import confetti from "canvas-confetti";
 import { DICTIONARY, Language } from "@/lib/i18n";
@@ -99,6 +100,7 @@ export function BookingClient({
   leadTimings?: string;
 }) {
   const t = DICTIONARY[lang];
+  const { canNativeInstall } = usePWAInstall();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (dir: "left" | "right") =>
@@ -464,14 +466,16 @@ export function BookingClient({
 
 
               {/* Dedicated 10/10 Clinic App Install Card */}
-              <div className="pt-1">
-                <PatientInstallButton
-                  clinicName={clinic.name}
-                  logoUrl={clinic.logoUrl}
-                  themeColor={themeColor}
-                  className="w-full justify-between py-3 px-4 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl"
-                />
-              </div>
+              {canNativeInstall && (
+                <div className="pt-1">
+                  <PatientInstallButton
+                    clinicName={clinic.name}
+                    logoUrl={clinic.logoUrl}
+                    themeColor={themeColor}
+                    className="w-full justify-between py-3 px-4 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white border-0 shadow-xl"
+                  />
+                </div>
+              )}
 
             </motion.div>
           </div>
