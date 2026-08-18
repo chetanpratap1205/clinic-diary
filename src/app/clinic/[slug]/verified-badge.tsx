@@ -53,10 +53,10 @@ export function VerifiedBadge({ label, tooltip, variant = "pill" }: VerifiedBadg
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="bg-white p-0.5 rounded-full shadow-md cursor-pointer hover:bg-slate-50 transition-colors"
+          className="flex items-center justify-center rounded-full border-2 border-white bg-white shadow-md cursor-pointer hover:scale-105 transition-transform active:scale-95"
           aria-label="Verified Doctor — tap to learn more"
         >
-          <BadgeCheck className="w-7 h-7 text-white fill-[#1d9bf0]" />
+          <BadgeCheck className="w-6 h-6 text-white fill-[#1d9bf0]" />
         </button>
         <Tooltip />
       </div>

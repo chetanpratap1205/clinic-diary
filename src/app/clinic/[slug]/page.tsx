@@ -611,7 +611,7 @@ export default async function BookingPage({
                           stripDr(clinic.doctorName).charAt(0).toUpperCase()
                         )}
                       </div>
-                      <div className="absolute -bottom-1 -right-1 rounded-full ring-2 ring-white">
+                      <div className="absolute -bottom-1 -right-1">
                         <VerifiedBadge label={t.verifiedOfficial} tooltip={t.verifiedTooltip} variant="icon-only" />
                       </div>
                     </div>
@@ -736,7 +736,7 @@ export default async function BookingPage({
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                         <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                       </span>
-                      <span className="text-emerald-800 font-black flex-shrink-0">{t.openToday}:</span>
+                      <span className="text-emerald-800 font-black flex-shrink-0">{t.openToday}</span>
                       <div className="flex flex-col text-slate-600 leading-tight">
                         {todayTimings.map((time, i) => (
                           <span key={i}>{time}</span>

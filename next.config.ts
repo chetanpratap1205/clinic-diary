@@ -107,12 +107,20 @@ const nextConfig: NextConfig = {
         source: "/(manifest\\.json|sw\\.js|api/manifest/.*)",
         headers: [
           {
+            key: "Content-Type",
+            value: "application/manifest+json",
+          },
+          {
             key: "Cache-Control",
             value: "public, max-age=0, must-revalidate",
           },
           {
             key: "Service-Worker-Allowed",
             value: "/",
+          },
+          {
+            key: "Access-Control-Allow-Origin",
+            value: "*",
           },
         ],
       },
