@@ -23,7 +23,6 @@ import { formatTimeDisplay } from "@/lib/format";
 import { PatientInstallButton } from "@/components/pwa-provider";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
 import { PushOptIn } from "@/components/push-opt-in";
-import confetti from "canvas-confetti";
 import { DICTIONARY, Language } from "@/lib/i18n";
 import { formatDoctorName } from "@/lib/utils";
 
@@ -180,13 +179,15 @@ export function BookingClient({
     }
   }, [searchParams]);
 
-  // Auto-center active date in horizontal carousel
+  // Auto-center active date in horizontal carousel (wrapped in rAF to prevent forced reflow on initial load)
   useEffect(() => {
     if (scrollRef.current) {
-      const activeEl = scrollRef.current.querySelector('[data-selected="true"]');
-      if (activeEl) {
-        activeEl.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-      }
+      requestAnimationFrame(() => {
+        const activeEl = scrollRef.current?.querySelector('[data-selected="true"]');
+        if (activeEl) {
+          activeEl.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+        }
+      });
     }
   }, [selectedDate]);
 
@@ -260,13 +261,16 @@ export function BookingClient({
         // Scroll to top so the full success card + confetti is visible
         try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch {}
         
-        // Fire Confetti
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: [themeColor, '#ffffff']
-        });
+        // Fire Confetti dynamically to minimize initial bundle size
+        import("canvas-confetti").then((module) => {
+          const confettiFn = module.default;
+          confettiFn({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: [themeColor, '#ffffff']
+          });
+        }).catch(() => {});
         
         setSuccessData({
           appointmentId: res.appointmentId,

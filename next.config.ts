@@ -103,8 +103,8 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // Cache manifest & SW
-        source: "/(manifest\\.json|sw\\.js)",
+        // Cache manifest & SW (ensure live site deployments never serve stale SW or manifest)
+        source: "/(manifest\\.json|sw\\.js|api/manifest/.*)",
         headers: [
           {
             key: "Cache-Control",

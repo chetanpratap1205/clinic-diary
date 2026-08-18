@@ -107,13 +107,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             `,
           }}
         />
-        {/* Google tag (gtag.js) */}
+        {/* Google tag (gtag.js) - Defer to lazyOnload to prevent main thread blocking during LCP render */}
         <Script
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-Y3BEDYTXTW"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script id="google-analytics" strategy="lazyOnload">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}

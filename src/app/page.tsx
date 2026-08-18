@@ -20,24 +20,24 @@ import {
   BellRing,
   X
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
-import { PremiumIcon } from "@/components/ui/premium-icon";
-import { SocialProofPopup } from "./_components/social-proof-popup";
-import { TheMirror } from "./_components/the-mirror";
-import { ExperienceEngine } from "./_components/experience-engine";
-import { PatientJourneyTimeline } from "./_components/patient-journey-timeline";
-import { DoctorDashboard } from "./_components/doctor-dashboard";
-import { DigitalClinicOwnership } from "./_components/digital-clinic-ownership";
-import { DoctorStories } from "./_components/doctor-stories";
-import { RotatingSpecialty } from "./_components/rotating-specialty";
 import { HeroRedesign } from "./_components/hero-redesign";
 import { HomeNav } from "./_components/home-nav";
-import { LeadMagnetSection } from "./_components/lead-magnet";
-import { HomePricingSection } from "./_components/home-pricing-section";
-import { HomeRoiCalculator } from "./_components/home-roi-calculator";
-import { TerritoryChecker } from "./_components/territory-checker";
-import { EnterpriseSecurityGrid } from "./_components/enterprise-security-grid";
-import { ZeroFrictionGuarantee } from "./_components/zero-friction-guarantee";
+
+const SocialProofPopup = dynamic(() => import("./_components/social-proof-popup").then((m) => m.SocialProofPopup));
+const TheMirror = dynamic(() => import("./_components/the-mirror").then((m) => m.TheMirror));
+const ZeroFrictionGuarantee = dynamic(() => import("./_components/zero-friction-guarantee").then((m) => m.ZeroFrictionGuarantee));
+const DigitalClinicOwnership = dynamic(() => import("./_components/digital-clinic-ownership").then((m) => m.DigitalClinicOwnership));
+const ExperienceEngine = dynamic(() => import("./_components/experience-engine").then((m) => m.ExperienceEngine));
+const PatientJourneyTimeline = dynamic(() => import("./_components/patient-journey-timeline").then((m) => m.PatientJourneyTimeline));
+const DoctorDashboard = dynamic(() => import("./_components/doctor-dashboard").then((m) => m.DoctorDashboard));
+const TerritoryChecker = dynamic(() => import("./_components/territory-checker").then((m) => m.TerritoryChecker));
+const DoctorStories = dynamic(() => import("./_components/doctor-stories").then((m) => m.DoctorStories));
+const EnterpriseSecurityGrid = dynamic(() => import("./_components/enterprise-security-grid").then((m) => m.EnterpriseSecurityGrid));
+const HomeRoiCalculator = dynamic(() => import("./_components/home-roi-calculator").then((m) => m.HomeRoiCalculator));
+const HomePricingSection = dynamic(() => import("./_components/home-pricing-section").then((m) => m.HomePricingSection));
+const LeadMagnetSection = dynamic(() => import("./_components/lead-magnet").then((m) => m.LeadMagnetSection));
 
 export default function HomePage() {
   return (
@@ -47,46 +47,70 @@ export default function HomePage() {
       {/* Dynamic Floating Navigation */}
       <HomeNav />
 
-      {/* Premium Light Hero Section */}
+      {/* Premium Light Hero Section — Instant Render */}
       <div className="relative z-20 bg-[#F8FAFC] overflow-hidden">
         <HeroRedesign />
       </div>
 
       {/* Section 2: The Mirror */}
-      <TheMirror />
+      <div style={{ contentVisibility: "auto", containIntrinsicSize: "1px 600px" }}>
+        <TheMirror />
+      </div>
 
       {/* Section 3: Zero Friction Guarantee */}
-      <ZeroFrictionGuarantee />
+      <div style={{ contentVisibility: "auto", containIntrinsicSize: "1px 600px" }}>
+        <ZeroFrictionGuarantee />
+      </div>
 
       {/* Section 4: Digital Clinic / Ownership */}
-      <DigitalClinicOwnership />
+      <div style={{ contentVisibility: "auto", containIntrinsicSize: "1px 600px" }}>
+        <DigitalClinicOwnership />
+      </div>
 
       {/* Section 5: Experience Engine (Hyper-Personalized Solution) */}
-      <ExperienceEngine />
+      <div style={{ contentVisibility: "auto", containIntrinsicSize: "1px 600px" }}>
+        <ExperienceEngine />
+      </div>
 
       {/* Section 6: Patient Journey Timeline */}
-      <PatientJourneyTimeline />
+      <div style={{ contentVisibility: "auto", containIntrinsicSize: "1px 600px" }}>
+        <PatientJourneyTimeline />
+      </div>
 
       {/* Section 7: Doctor Dashboard View */}
-      <DoctorDashboard />
+      <div style={{ contentVisibility: "auto", containIntrinsicSize: "1px 600px" }}>
+        <DoctorDashboard />
+      </div>
 
       {/* Exclusivity Checker */}
-      <TerritoryChecker />
+      <div style={{ contentVisibility: "auto", containIntrinsicSize: "1px 600px" }}>
+        <TerritoryChecker />
+      </div>
 
       {/* Section 7: Social Proof / Doctor Stories */}
-      <DoctorStories />
+      <div style={{ contentVisibility: "auto", containIntrinsicSize: "1px 600px" }}>
+        <DoctorStories />
+      </div>
 
       {/* Enterprise Infrastructure & Security Grid */}
-      <EnterpriseSecurityGrid />
+      <div style={{ contentVisibility: "auto", containIntrinsicSize: "1px 600px" }}>
+        <EnterpriseSecurityGrid />
+      </div>
 
       {/* Pre-Pricing ROI Calculator */}
-      <HomeRoiCalculator />
+      <div style={{ contentVisibility: "auto", containIntrinsicSize: "1px 600px" }}>
+        <HomeRoiCalculator />
+      </div>
 
       {/* Premium Pricing Tier */}
-      <HomePricingSection />
+      <div style={{ contentVisibility: "auto", containIntrinsicSize: "1px 600px" }}>
+        <HomePricingSection />
+      </div>
 
       {/* Lead Magnet Section */}
-      <LeadMagnetSection />
+      <div style={{ contentVisibility: "auto", containIntrinsicSize: "1px 600px" }}>
+        <LeadMagnetSection />
+      </div>
 
       {/* Clean Executive Navy Footer */}
       <footer className="border-t border-slate-800 bg-[#0B132B] text-white pt-16 sm:pt-24 pb-12 px-4 sm:px-6 relative overflow-hidden">

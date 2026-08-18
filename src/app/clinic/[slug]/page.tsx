@@ -21,9 +21,11 @@ import { ScrollReveal } from "@/components/scroll-reveal";
 import { BookingClient } from "./booking-client";
 import { BottomActionBar } from "./bottom-action-bar";
 import { ClinicLogo } from "./clinic-logo";
-import { FAQAccordion } from "./faq-accordion";
-import { InstallAppSection } from "@/components/install-app-section";
-import { LeadFomoBanner } from "./lead-fomo-banner";
+import dynamicComponent from "next/dynamic";
+
+const FAQAccordion = dynamicComponent(() => import("./faq-accordion").then((m) => m.FAQAccordion));
+const InstallAppSection = dynamicComponent(() => import("@/components/install-app-section").then((m) => m.InstallAppSection));
+const LeadFomoBanner = dynamicComponent(() => import("./lead-fomo-banner").then((m) => m.LeadFomoBanner));
 import { ExpandableText } from "@/components/expandable-text";
 import Link from "next/link";
 import Image from "next/image";
@@ -488,7 +490,7 @@ export default async function BookingPage({
           Desktop: 3-col (Doctor Portrait | Info+Stats | Booking Widget)
           Mobile:  Avatar → Name → Specialty → Stats → [Book CTA via bottom bar]
       ══════════════════════════════════════════════════════════════════════ */}
-      <section aria-labelledby="hero-doctor-name" className="relative pt-8 pb-14 sm:pt-14 sm:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <section aria-labelledby="hero-doctor-name" className="relative pt-8 pb-14 sm:pt-14 sm:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden" style={{ contain: "layout style" }}>
 
         {/* ─── Aurora Background Layer ─────────────────────────────────── */}
         <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden">
