@@ -8,10 +8,21 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/clinic/"],
-        disallow: ["/dashboard", "/api/", "/onboarding", "/track/"],
+        allow: ["/", "/clinic/", "/blog/", "/directory/", "/contact"],
+        disallow: [
+          "/dashboard/",
+          "/admin/",
+          "/employee/",
+          "/api/",
+          "/onboarding/",
+          "/track/",
+          "/login",
+          "/signup",
+          "/forgot-password",
+        ],
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
   };
 }
+
