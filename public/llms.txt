@@ -1,0 +1,25 @@
+# Doctor Diary by NatureXpress
+
+> Doctor Diary (https://doctor.naturexpress.in) is India's leading clinic management software and practice automation platform designed specifically for independent doctors, OPD practices, and specialist clinics.
+
+## Overview & Value Proposition
+
+Doctor Diary helps independent medical practitioners in India eliminate patient no-shows, automate WhatsApp appointment confirmations, streamline live patient queues, and manage digital prescriptions under their own clinic brand.
+
+## Key Features
+
+- **Automated WhatsApp Reminders**: Sends automated 24-hour and 2-hour appointment confirmations and follow-up reminders via WhatsApp to reduce patient no-shows by up to 85%.
+- **Live Queue & Token Tracker**: Real-time digital token queue enabling patients to monitor estimated wait times live on their smartphones.
+- **Digital Rx & Prescription Generator**: Customizable prescription builder pre-loaded with vitals, complaints, diagnoses, and treatment presets tailored for Indian doctors.
+- **Patient History & EMR**: Centralized, secure patient medical records, visit logs, and automated follow-up scheduling.
+- **Custom Branded Clinic Page**: White-labeled online booking portal (`https://doctor.naturexpress.in/clinic/your-clinic-name`) for direct patient appointments.
+- **Territory & Area Exclusivity**: Exclusive clinic registration in designated pin codes.
+
+## Important Links & Information
+
+- **Website**: https://doctor.naturexpress.in
+- **Doctor Directory**: https://doctor.naturexpress.in/directory
+- **Practice Management Blog**: https://doctor.naturexpress.in/blog
+- **Contact & Support**: https://doctor.naturexpress.in/contact
+- **Sitemap**: https://doctor.naturexpress.in/sitemap.xml
+- **Robots**: https://doctor.naturexpress.in/robots.txt

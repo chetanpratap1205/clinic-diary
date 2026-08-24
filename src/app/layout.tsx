@@ -34,6 +34,20 @@ export const metadata: Metadata = {
     "independent clinic software"
   ],
   metadataBase: new URL(BASE_URL),
+  alternates: {
+    canonical: "./",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -72,6 +86,57 @@ export const metadata: Metadata = {
   },
 };
 
+const jsonLdData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${BASE_URL}/#organization`,
+      name: "Doctor Diary",
+      legalName: "NatureXpress",
+      url: BASE_URL,
+      logo: `${BASE_URL}/icon-512.png`,
+      sameAs: ["https://naturexpress.in"],
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "customer support",
+        url: `${BASE_URL}/contact`,
+      },
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${BASE_URL}/#website`,
+      url: BASE_URL,
+      name: "Doctor Diary",
+      description:
+        "The #1 clinic management software for doctors in India. Manage appointments, walk-ins, and follow-ups securely under your own brand.",
+      publisher: {
+        "@id": `${BASE_URL}/#organization`,
+      },
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": `${BASE_URL}/#software`,
+      name: "Doctor Diary Clinic Management Software",
+      operatingSystem: "Web, Android, iOS",
+      applicationCategory: "HealthApplication",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "INR",
+      },
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: "4.9",
+        ratingCount": "120",
+      },
+      description:
+        "Clinic management and practice automation software for independent Indian doctors, featuring WhatsApp reminders, live queue tracking, and prescription management.",
+    },
+  ],
+};
+
+
 import Script from "next/script";
 import { cn } from "@/lib/utils";
 
@@ -82,6 +147,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={cn(inter.variable, outfit.variable, "font-sans", geist.variable)}>
       <head>
+        {/* Structured Data (JSON-LD) for Search Engine, GEO & AEO optimization */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLdData),
+          }}
+        />
         {/* Early PWA install prompt global capture — executes before ANY client bundle */}
         <script
           id="pwa-early-capture"
