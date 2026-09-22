@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getAuthenticatedEmployee } from "@/lib/auth/rbac";
 import Link from "next/link";
-import { LogOut, LayoutDashboard, Users, MapPin, Award, ShieldCheck, Menu, Building2 } from "lucide-react";
+import { LogOut, LayoutDashboard, Users, MapPin, Award, ShieldCheck, Menu, Building2, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 
@@ -57,6 +57,13 @@ export default async function EmployeeLayout({
       >
         <Award className="w-4 h-4" />
         My Targets
+      </Link>
+      <Link
+        href="/employee/training"
+        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-800 transition-colors border border-amber-200"
+      >
+        <BookOpen className="w-4 h-4" />
+        Sales Training 🎓
       </Link>
 
       {(emp.role === "admin" || emp.role === "manager") && (
@@ -218,41 +225,48 @@ export default async function EmployeeLayout({
       </div>
 
       {/* Mobile Bottom Navigation Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-slate-200 flex items-center justify-around z-30 px-2 shadow-lg">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-slate-200 flex items-center justify-around z-30 px-1 shadow-lg">
         <Link
           href="/employee"
-          className="flex flex-col items-center justify-center gap-1 text-slate-600 hover:text-teal-600 py-1 px-2"
+          className="flex flex-col items-center justify-center gap-0.5 text-slate-600 hover:text-teal-600 py-1 px-1.5 min-w-0"
         >
           <LayoutDashboard className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Home</span>
+          <span className="text-[9px] font-medium">Home</span>
         </Link>
         <Link
           href="/employee/leads"
-          className="flex flex-col items-center justify-center gap-1 text-slate-600 hover:text-teal-600 py-1 px-2"
+          className="flex flex-col items-center justify-center gap-0.5 text-slate-600 hover:text-teal-600 py-1 px-1.5 min-w-0"
         >
           <Users className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Leads</span>
+          <span className="text-[9px] font-medium">Leads</span>
         </Link>
         <Link
           href="/employee/clinics"
-          className="flex flex-col items-center justify-center gap-1 text-slate-600 hover:text-teal-600 py-1 px-2"
+          className="flex flex-col items-center justify-center gap-0.5 text-slate-600 hover:text-teal-600 py-1 px-1.5 min-w-0"
         >
           <Building2 className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Clinics</span>
+          <span className="text-[9px] font-medium">Clinics</span>
         </Link>
         <Link
           href="/employee/directory"
-          className="flex flex-col items-center justify-center gap-1 text-slate-600 hover:text-teal-600 py-1 px-2"
+          className="flex flex-col items-center justify-center gap-0.5 text-slate-600 hover:text-teal-600 py-1 px-1.5 min-w-0"
         >
           <MapPin className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Directory</span>
+          <span className="text-[9px] font-medium">Directory</span>
         </Link>
         <Link
           href="/employee/performance"
-          className="flex flex-col items-center justify-center gap-1 text-slate-600 hover:text-teal-600 py-1 px-2"
+          className="flex flex-col items-center justify-center gap-0.5 text-slate-600 hover:text-teal-600 py-1 px-1.5 min-w-0"
         >
           <Award className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Targets</span>
+          <span className="text-[9px] font-medium">Targets</span>
+        </Link>
+        <Link
+          href="/employee/training"
+          className="flex flex-col items-center justify-center gap-0.5 text-amber-600 hover:text-amber-700 py-1 px-1.5 min-w-0"
+        >
+          <BookOpen className="w-5 h-5" />
+          <span className="text-[9px] font-medium">Training</span>
         </Link>
       </div>
     </div>
