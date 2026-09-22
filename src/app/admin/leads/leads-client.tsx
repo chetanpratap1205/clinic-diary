@@ -622,6 +622,16 @@ export function LeadsClient({
                         <MapPin className="w-3 h-3" /> {lead.city}
                       </span>
                     )}
+                    {lead.verificationStatus && (
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${
+                        lead.verificationStatus === "verified" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+                        lead.verificationStatus === "invalid" ? "bg-red-50 text-red-700 border-red-200" :
+                        lead.verificationStatus === "duplicate" ? "bg-purple-50 text-purple-700 border-purple-200" :
+                        "bg-amber-50 text-amber-700 border-amber-200"
+                      }`}>
+                        {lead.verificationStatus === "needs_verification" ? "Unverified" : lead.verificationStatus}
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between mt-auto pt-1">
@@ -641,15 +651,22 @@ export function LeadsClient({
                       </SelectContent>
                     </Select>
 
-                    {daysSinceContact !== null && (
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
-                        contactCold
-                          ? "bg-red-50 text-red-700 border-red-200"
-                          : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                      }`}>
-                        {daysSinceContact === 0 ? "Today" : `${daysSinceContact}d`}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      {lead.lastContactMethod && (
+                        <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                          {lead.lastContactMethod === "whatsapp" ? "💬 WA" : lead.lastContactMethod === "call" ? "📞 Call" : lead.lastContactMethod}
+                        </span>
+                      )}
+                      {daysSinceContact !== null && (
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                          contactCold
+                            ? "bg-red-50 text-red-700 border-red-200"
+                            : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                        }`}>
+                          {daysSinceContact === 0 ? "Today" : `${daysSinceContact}d`}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 

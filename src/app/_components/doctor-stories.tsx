@@ -48,21 +48,21 @@ export function DoctorStories() {
   ];
 
   return (
-    <section className="py-24 px-4 sm:px-6 bg-[#0B132B] text-white relative overflow-hidden">
+    <section className="py-12 sm:py-16 px-4 sm:px-6 bg-[#F8FAFC] text-slate-900 border-t border-slate-200/80 relative overflow-hidden">
       {/* Background soft ambient lights */}
       <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[140px] pointer-events-none -z-10" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         
         {/* Header */}
-        <div className="text-center mb-16 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-[#00B7A8] rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest mb-4">
+        <div className="text-center mb-12 max-w-4xl mx-auto">
+          <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-[#00B7A8] rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest mb-4">
             <CheckCircle2 className="w-4 h-4" /> Verified Clinic Outcomes
           </div>
-          <h2 className="text-3xl sm:text-5xl font-black text-white mb-6 tracking-tight">
+          <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-[#0B132B] mb-4 tracking-tight">
             Independent practices, real outcomes.
           </h2>
-          <p className="text-slate-300 text-lg sm:text-xl font-medium leading-relaxed">
+          <p className="text-slate-600 text-lg sm:text-xl font-medium leading-relaxed">
             See how doctors across different specialties use Doctor Diary to run calmer, more profitable clinics.
           </p>
         </div>
@@ -79,10 +79,10 @@ export function DoctorStories() {
             <motion.div
               key={idx}
               variants={cardVariants}
-              className="bg-white/5 border border-white/10 rounded-[32px] p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden hover:bg-white/8 hover:border-white/20 transition-all duration-300 shadow-xl"
+              className="bg-white border border-slate-200/90 rounded-[32px] p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden hover:border-[#00B7A8]/40 transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-xl"
             >
               {/* Shading/Quote icon */}
-              <Quote className="absolute right-6 top-6 w-16 h-16 text-white/5 pointer-events-none" />
+              <Quote className="absolute right-6 top-6 w-16 h-16 text-slate-100 pointer-events-none" />
 
               <div>
                 {/* Rating stars */}
@@ -93,21 +93,21 @@ export function DoctorStories() {
                 </div>
 
                 {/* Patient / doctor quote */}
-                <p className="text-slate-200 text-sm sm:text-base font-semibold leading-relaxed mb-8 italic">
+                <p className="text-slate-700 text-sm sm:text-base font-semibold leading-relaxed mb-8 italic">
                   "{story.quote}"
                 </p>
               </div>
 
               {/* Doctor Details */}
-              <div className="pt-6 border-t border-white/10 mt-auto">
-                <p className="text-white font-bold text-base">{story.doctorName}</p>
-                <p className="text-slate-400 text-xs font-semibold">{story.specialty}</p>
+              <div className="pt-6 border-t border-slate-100 mt-auto">
+                <p className="text-[#0B132B] font-bold text-base">{story.doctorName}</p>
+                <p className="text-slate-500 text-xs font-semibold">{story.specialty}</p>
                 <p className="text-[#00B7A8] text-xs font-bold mt-1">
                   {story.clinicName} · {story.city}
                 </p>
 
                 {/* Specific Metric Badge */}
-                <div className="mt-4 inline-block bg-emerald-500/10 border border-emerald-500/20 text-[#00B7A8] text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">
+                <div className="mt-4 inline-block bg-emerald-50 border border-emerald-200 text-[#00B7A8] text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">
                   ⚡ {story.metric}
                 </div>
               </div>

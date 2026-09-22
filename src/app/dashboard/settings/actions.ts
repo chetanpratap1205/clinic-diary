@@ -20,6 +20,8 @@ interface SettingsData {
   logoUrl?: string | null;
   heroImageUrl?: string | null;
   googleMapsUrl?: string | null;
+  googleReviewUrl?: string | null;
+  enableAutoReviewBooster?: boolean;
   billingAddress?: string | null;
   state?: string | null;
   gstin?: string | null;
@@ -57,6 +59,8 @@ export async function updateClinicSettings(data: SettingsData) {
         logoUrl: data.logoUrl,
         heroImageUrl: data.heroImageUrl,
         googleMapsUrl: data.googleMapsUrl,
+        googleReviewUrl: data.googleReviewUrl,
+        enableAutoReviewBooster: data.enableAutoReviewBooster ?? true,
         billingAddress: data.billingAddress,
         state: data.state,
         gstin: data.gstin,

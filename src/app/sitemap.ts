@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { db } from "@/db";
 import { clinics } from "@/db/schema";
 import { BLOG_POSTS } from "@/lib/blog-data";
+import { SPECIALTIES, CITIES } from "@/data/seo-data";
+import { COMPARISONS } from "@/data/vs-data";
 
 // Revalidate sitemap every hour so new real clinics & blog posts are auto-discovered without re-deploying
 export const revalidate = 3600;
@@ -36,7 +38,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.5,
     },
+    {
+      url: `${baseUrl}/vs`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
   ];
+
+  // GEO Competitor Comparison Pages
+  const vsEntries: MetadataRoute.Sitemap = COMPARISONS.map((comp) => ({
+    url: `${baseUrl}/vs/${comp.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.9,
+  }));
 
   // 2. High-value SEO Blog Posts
   const blogEntries: MetadataRoute.Sitemap = BLOG_POSTS.map((post) => ({
@@ -56,7 +72,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "demo-clinic",
   ]);
 
-  // 4. Fetch genuine public clinic booking pages
+  // 4. Programmatic SEO pages — 42 specialties × 30 cities = 1,260 targeted landing pages
+  const seoPageEntries: MetadataRoute.Sitemap = SPECIALTIES.flatMap((specialty) =>
+    CITIES.map((city) => ({
+      url: `${baseUrl}/for/${specialty.slug}/${city.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.85,
+    }))
+  );
+
+  // 5. Fetch genuine public clinic booking pages
   let clinicEntries: MetadataRoute.Sitemap = [];
   try {
     const allClinics = await db
@@ -75,6 +101,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("Error fetching clinics for sitemap:", error);
   }
 
-  return [...staticPages, ...blogEntries, ...clinicEntries];
+  return [...staticPages, ...vsEntries, ...seoPageEntries, ...blogEntries, ...clinicEntries];
 }
 

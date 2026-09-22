@@ -68,6 +68,8 @@ const settingsSchema = z.object({
   logoUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
   heroImageUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
   googleMapsUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
+  googleReviewUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
+  enableAutoReviewBooster: z.boolean(),
   billingAddress: z.string().nullable().optional(),
   state: z.string().nullable().optional(),
   gstin: z.string().nullable().optional(),
@@ -99,6 +101,8 @@ interface SettingsClientProps {
     logoUrl?: string | null;
     heroImageUrl?: string | null;
     googleMapsUrl?: string | null;
+    googleReviewUrl?: string | null;
+    enableAutoReviewBooster?: boolean;
     billingAddress?: string | null;
     state?: string | null;
     gstin?: string | null;
@@ -180,6 +184,8 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
       logoUrl: initialData.logoUrl || "",
       heroImageUrl: initialData.heroImageUrl || "",
       googleMapsUrl: initialData.googleMapsUrl || "",
+      googleReviewUrl: initialData.googleReviewUrl || "",
+      enableAutoReviewBooster: initialData.enableAutoReviewBooster ?? true,
       billingAddress: initialData.billingAddress || "",
       state: initialData.state || "",
       gstin: initialData.gstin || "",
@@ -653,6 +659,37 @@ Make it sound extremely premium, trustworthy, and empathetic. Emphasize that we 
                     className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
                   />
                   {errors.googleMapsUrl && <p className="text-xs text-red-500">{errors.googleMapsUrl.message}</p>}
+                </div>
+
+                {/* ⭐ Instant Google Review Booster */}
+                <div className="space-y-3 pt-4 border-t border-slate-100 bg-amber-50/40 p-4 rounded-2xl border border-amber-200/60">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="google-review-url" className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                      <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                      Google Review Link (5-Star Booster)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="enableAutoReviewBooster"
+                        {...register("enableAutoReviewBooster")}
+                        className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 border-slate-300"
+                      />
+                      <label htmlFor="enableAutoReviewBooster" className="text-xs font-semibold text-slate-700 cursor-pointer">
+                        Auto-Send on Visit Complete
+                      </label>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Paste your official Google Review link (<code className="bg-white px-1.5 py-0.5 rounded border text-slate-700 font-mono">https://g.page/r/.../review</code>). When an appointment is marked completed, Clinic Diary instantly dispatches a friendly WhatsApp request to the patient!
+                  </p>
+                  <Input
+                    id="google-review-url"
+                    {...register("googleReviewUrl")}
+                    placeholder="e.g. https://g.page/r/CbXxX1234/review"
+                    className="h-11 rounded-xl text-base shadow-inner bg-white focus:bg-white transition-colors border-amber-200 focus:border-amber-400"
+                  />
+                  {errors.googleReviewUrl && <p className="text-xs text-red-500">{errors.googleReviewUrl.message}</p>}
                 </div>
               </CardContent>
             </Card>

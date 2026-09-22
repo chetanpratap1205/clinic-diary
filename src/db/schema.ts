@@ -31,6 +31,8 @@ export const clinics = pgTable("clinics", {
   state: text("state"),
   gstin: text("gstin"),
   googleMapsUrl: text("google_maps_url"),
+  googleReviewUrl: text("google_review_url"),
+  enableAutoReviewBooster: boolean("enable_auto_review_booster").default(true).notNull(),
   about: text("about"),
   heroImageUrl: text("hero_image_url"),
   instagramUrl: text("instagram_url"),
@@ -46,6 +48,7 @@ export const clinics = pgTable("clinics", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => [
   index("clinics_created_at_idx").on(table.createdAt),
+  index("clinics_referred_by_idx").on(table.referredBy),
 ]);
 
 // ─── Clinic Admins (links auth users to clinics) ─────────────────────────────
@@ -56,7 +59,9 @@ export const clinicAdmins = pgTable("clinic_admins", {
     .references(() => clinics.id, { onDelete: "cascade" }),
   authUserId: uuid("auth_user_id").notNull().unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("clinic_admins_clinic_id_idx").on(table.clinicId),
+]);
 
 
 // ─── Availability (weekly schedule per clinic) ────────────────────────────────
@@ -69,7 +74,9 @@ export const availability = pgTable("availability", {
   startTime: time("start_time").notNull(),
   endTime: time("end_time").notNull(),
   slotDurationMinutes: integer("slot_duration_minutes").default(30).notNull(),
-});
+}, (table) => [
+  index("availability_clinic_id_idx").on(table.clinicId),
+]);
 
 // ─── Availability Overrides (holidays/leaves) ─────────────────────────────────
 export const availabilityOverrides = pgTable("availability_overrides", {
@@ -80,7 +87,9 @@ export const availabilityOverrides = pgTable("availability_overrides", {
   date: date("date").notNull(),
   isClosed: boolean("is_closed").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("availability_overrides_clinic_id_idx").on(table.clinicId),
+]);
 
 // ─── Patients ──────────────────────────────────────────────────────────────────
 export const patients = pgTable(
@@ -140,6 +149,7 @@ export const appointments = pgTable(
       table.appointmentDate
     ),
     index("appointments_status_idx").on(table.status),
+    index("appointments_patient_id_idx").on(table.patientId),
   ]
 );
 
@@ -182,6 +192,7 @@ export const followUps = pgTable(
     ),
     index("follow_ups_status_idx").on(table.status),
     index("follow_ups_patient_idx").on(table.patientId),
+    index("follow_ups_appointment_id_idx").on(table.appointmentId),
     // P0 scale indexes
     index("follow_ups_follow_up_appointment_id_idx").on(table.followUpAppointmentId),
     index("follow_ups_clinic_patient_status_idx").on(table.clinicId, table.patientId, table.status),
@@ -205,11 +216,13 @@ export const visitNotes = pgTable("visit_notes", {
   vitals: text("vitals"),
   diagnosis: text("diagnosis"),
   treatment: text("treatment"),
+  rxImageUrl: text("rx_image_url"),
   followUpRequired: boolean("follow_up_required").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => [
   index("visit_notes_appointment_idx").on(table.appointmentId),
   index("visit_notes_patient_idx").on(table.patientId),
+  index("visit_notes_clinic_id_idx").on(table.clinicId),
 ]);
 
 // ─── Reminder Logs ─────────────────────────────────────────────────────────────
@@ -325,6 +338,8 @@ export const reviews = pgTable(
   },
   (table) => [
     index("reviews_clinic_idx").on(table.clinicId),
+    index("reviews_appointment_id_idx").on(table.appointmentId),
+    index("reviews_patient_id_idx").on(table.patientId),
   ]
 );
 
@@ -377,7 +392,8 @@ export const orderItems = pgTable("order_items", {
   generatedUrl: text("generated_url"), // For custom tracked QR URLs
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => [
-  index("order_items_order_idx").on(table.orderId)
+  index("order_items_order_idx").on(table.orderId),
+  index("order_items_product_id_idx").on(table.productId),
 ]);
 
 // ─── Growth Partners (Field Sales Team) ────────────────────────────────────────
@@ -444,8 +460,15 @@ export const doctorLeads = pgTable("doctor_leads", {
   city: text("city"),
   address: text("address"),
   source: text("source").notNull().default("online"), // online, field_visit, referral, imported
-  status: text("status").notNull().default("new"),     // new, contacted, demo_scheduled, converted, rejected
+  status: text("status").notNull().default("new"),     // new, verified, contacted, whatsapp_sent, called, interested, demo_scheduled, trial, converted, rejected, not_interested
   priority: text("priority").notNull().default("normal"), // hot, warm, normal, cold
+  verificationStatus: text("verification_status").notNull().default("needs_verification"), // needs_verification, verified, invalid, duplicate
+  lastContactMethod: text("last_contact_method"), // whatsapp, call, visit, email
+  lastCallOutcome: text("last_call_outcome"), // connected, no_answer, busy, wrong_number, call_back, interested, not_interested
+  googleMapsUrl: text("google_maps_url"),
+  instagramUrl: text("instagram_url"),
+  websiteUrl: text("website_url"),
+  metaAdsStatus: text("meta_ads_status").notNull().default("unverified"), // unverified, active_ads, no_ads
   // Playbook tracking fields
   leadCategory: text("lead_category").notNull().default("A"), // A=cold, B=visited, C=inbound
   messageSentStep: integer("message_sent_step").notNull().default(0), // 0=none, 1,2,3=step sent
@@ -478,6 +501,7 @@ export const doctorLeads = pgTable("doctor_leads", {
   index("doctor_leads_assigned_manager_idx").on(table.assignedManagerId),
   index("doctor_leads_created_at_idx").on(table.createdAt),
   index("doctor_leads_category_idx").on(table.leadCategory),
+  index("doctor_leads_verification_idx").on(table.verificationStatus),
   uniqueIndex("doctor_leads_clinic_slug_unique_idx").on(table.clinicSlug),
 ]);
 
@@ -501,8 +525,10 @@ export const employeeActivities = pgTable("employee_activities", {
 export const leadActivities = pgTable("lead_activities", {
   id: uuid("id").defaultRandom().primaryKey(),
   leadId: uuid("lead_id").notNull().references(() => doctorLeads.id, { onDelete: "cascade" }),
-  partnerId: uuid("partner_id").notNull().references(() => growthPartners.id),
-  type: text("type").notNull(), // visit, call, note, status_change, whatsapp
+  partnerId: uuid("partner_id").references(() => growthPartners.id),
+  employeeId: uuid("employee_id").references(() => employees.id, { onDelete: "set null" }),
+  performedBy: text("performed_by"),
+  type: text("type").notNull(), // visit, call, note, status_change, whatsapp, call_outcome, verification_change
   notes: text("notes"),
   previousStatus: text("previous_status"),
   newStatus: text("new_status"),
@@ -510,6 +536,7 @@ export const leadActivities = pgTable("lead_activities", {
 }, (table) => [
   index("lead_activities_lead_idx").on(table.leadId),
   index("lead_activities_partner_idx").on(table.partnerId),
+  index("lead_activities_employee_idx").on(table.employeeId),
 ]);
 
 // ─── Commission Payouts ────────────────────────────────────────────────────────
@@ -530,6 +557,8 @@ export const commissionPayouts = pgTable("commission_payouts", {
 }, (table) => [
   index("commission_payouts_partner_idx").on(table.partnerId),
   index("commission_payouts_status_idx").on(table.status),
+  index("commission_payouts_lead_id_idx").on(table.leadId),
+  index("commission_payouts_payment_log_id_idx").on(table.paymentLogId),
 ]);
 
 // ─── Clinic Services ───────────────────────────────────────────────────────────
@@ -625,6 +654,7 @@ export const unclaimedClinics = pgTable("unclaimed_clinics", {
   index("unclaimed_clinics_city_idx").on(table.city),
   index("unclaimed_clinics_slug_idx").on(table.slug),
   index("unclaimed_clinics_is_claimed_idx").on(table.isClaimed),
+  index("unclaimed_clinics_claimed_clinic_id_idx").on(table.claimedClinicId),
 ]);
 
 // ─── Push Subscriptions (₹0 VAPID Web Push) ──────────────────────────────────

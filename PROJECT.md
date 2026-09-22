@@ -1,38 +1,61 @@
-# Project: PWA Installability & Cross-Portal Isolation Fix
+# Project: Clinic Diary Enterprise SaaS Landing Page Overhaul
 
 ## Architecture
-- **Framework**: Next.js (App Router, React 19 SSR + Client components)
-- **Portals**:
-  1. **Doctor Diary Portal**: Doctor-facing dashboard (`/dashboard`, `/login`, etc.) using static `public/manifest.json` (`id: "doctor-diary-app"`, `start_url: "/dashboard"`, `scope: "/"`).
-  2. **Patient Clinic Portal**: Individual clinic booking and tracking pages (`/clinic/[slug]`, `/clinic/[slug]/track/[appointmentId]`) using dynamic manifests (`/api/manifest/[slug]`, `id: "/clinic/[slug]"`, `start_url: "/clinic/[slug]?utm_source=pwa"`, `scope: "/clinic/[slug]"`).
-- **Service Worker Architecture**: Shared `public/sw.js` with root scope (`scope: "/"`), providing network-first strategies for dynamic routes, stale-while-revalidate for patient pages, static asset caching, and web push notifications.
+- **Framework**: Next.js 16 (App Router, React 19 SSR + Client Components)
+- **Styling & Design System**: Tailwind CSS v4 (`@tailwindcss/postcss`), `@theme` medical emerald palette (`#00B7A8`), deep executive navy (`#0B132B`, `#040D21`), off-white canvas (`#FAFBFC`, `#F8FAFC`).
+- **Motion Engine**: Framer Motion v12 (`whileInView`, `viewport={{ once: true, margin: "-80px" }}`, spring physics, 60fps composite animations).
+- **Entry Point**: `src/app/page.tsx` sequentially loading below-hero sections from `src/app/_components/*` via `next/dynamic` with `contentVisibility: "auto"`.
+- **Cross-Portal Isolation Guarantee**: The landing page components in `src/app/_components/*` are strictly self-contained and exclusively imported by `src/app/page.tsx`. Zero shared runtime state or modification to doctor dashboard (`/dashboard`), patient clinic portals (`/clinic/[slug]`), or Doctor Diary PWA configurations.
 
 ## Feature Inventory
 | # | Feature | Description | Milestone | Source |
 |---|---------|-------------|-----------|--------|
-| 1 | Reliable Service Worker Registration | Fix `document.readyState` race condition in `PWAProvider` to ensure `/sw.js` registers reliably on initial load and fast hydration. | M1 | Survey |
-| 2 | Early `beforeinstallprompt` Capture | Implement window-level global event capture (`window.__pwaDeferredPrompt`) so early browser install events are not lost before React hydration. | M1 | Survey |
-| 3 | Dynamic Manifest Icon & Metadata Standards | Fix icon size declarations, split `"any"` and `"maskable"` purpose entries, and route dynamic icons via same-origin icon proxy. | M2 | Survey |
-| 4 | Patient Tracking & Status Page Manifest Routing | Ensure `/track/[appointmentId]` and `/status/[slug]` link to the clinic-specific dynamic manifest rather than falling back to Doctor Diary's manifest. | M2 | Survey |
-| 5 | Robust Platform Detection | Upgrade `detectPlatform` in `use-pwa-install.ts` to support modern iPads (iPadOS 13+), desktop PWA capability, and separate platform identity from prompt readiness. | M3 | Survey |
-| 6 | Accurate UI Fallbacks & Install Guidance | Update `install-app-section.tsx`, `install-app-banner.tsx`, and `PatientInstallButton` to handle `android_manual`, desktop PWA, and eliminate misleading mobile fallback toasts on Android Chrome. | M3 | Survey |
-| 7 | Doctor Diary Non-Regression & E2E Validation | Verify full Doctor Diary PWA integrity and validate all patient PWA install flows across Android Chrome, iOS Safari, and Desktop Chrome. | M4 | Survey |
+| 1 | `TheMirror` Redesign | Problem empathy framing, contrasting Old Chaotic Clinic vs Autonomous Clinic, dark luxury theme with gradient glow. | M1 | Survey |
+| 2 | `ZeroFrictionGuarantee` Redesign | 4 core friction removal guarantees (walk-ins preserved, paper Rx unchanged, 48h free historical register migration, 24/7 autonomous visibility), elevated micro-badges, physical paper vs digital ticket visual. | M1 | Survey |
+| 3 | `DigitalClinicOwnership` Redesign | Sovereignty & 0% commission narrative against aggregator marketplaces, vector SVG mock browser frame with doctor URL pill (`clinic.doctordiary.in/dr-sharma`), live queue badge, and instant booking card. | M1 | Survey |
+| 4 | `ExperienceEngine` Redesign | 40+ specialties ticker marquee + 4 Bento Box cards (Keep Rx Pad, 0% Commission, 24/7 Smart Clinic Manager, 100% Practice Sovereignty) with crisp SVG UI illustrations replacing wireframe rectangles. | M1 | Survey |
+| 5 | `PatientJourneyTimeline` Redesign | 6-stage clinical cycle (`Booking -> Reminder -> Live Queue -> Consult -> Digital Rx -> Review`), 4 discovery channel tabs, hover-pause on 6s auto-rotation, Day/Night QR toggle without CLS, realistic WhatsApp chat bubble UI. | M2 | Survey |
+| 6 | `DoctorDashboard` Redesign | Replace static raster screenshot (`/assets/Dashboard.png`) with interactive SVG/Glassmorphic dashboard mockup with interactive tabs (Live Queue, Daily Analytics, Rx Pad, Follow-ups) and synchronized timeline workflow steps. | M2 | Survey |
+| 7 | `EnterpriseSecurityGrid` Redesign | Framer Motion scroll reveals, 4 enterprise trust cards (100% Patient Data Ownership, 256-bit AES Encryption, 99.99% Uptime SLA, Contractual 0% Cut), compliance badges, trust ribbon. | M3 | Survey |
+| 8 | `TerritoryChecker` Redesign | Fix typo `[Specialty]`, structured search (specialty chips + PIN code input with validation), 3 visual feedback states (Available, Reserved/Locked, Waitlist), radar sweep animation, preserve query params on CTA (`/signup?specialty=...&pin=...`). | M3 | Survey |
+| 9 | `DoctorStories` Redesign | Verified doctor testimonial cards, clinic badges, metric pills, subtle hover elevation, social proof quotes. | M3 | Survey |
+| 10 | `HomeRoiCalculator` Redesign | Full-bleed section container, slider inputs with doctor-friendly presets, Indian currency formatting (`₹1,00,000`), Staff Hours Saved metric, Net ROI multiple (e.g. 48x), CTA with query params. | M4 | Survey |
+| 11 | `HomePricingSection` Redesign | Billing toggle (Monthly vs Annual with discount badge), clear feature matrix, Starter Kit Unboxing block, valid HTML tags, plan pass-through to signup. | M4 | Survey |
+| 12 | `LeadMagnetSection` Redesign | 3D isometric playbook cover, WhatsApp phone + name inputs alongside email, genuine PDF download fallback or rich interactive summary, smooth conversion CTA. | M4 | Survey |
+| 13 | Landing Page Assembly & Storytelling Polish | Cohesive section transitions, dark/light contrast rhythm, global scroll reveal consistency, zero CLS, mobile-to-ultrawide responsiveness. | M4 | Survey |
+| 14 | E2E Testing Suite & Production Build Verification | Opaque-box testing (Tiers 1-4), adversarial test hardening (Tier 5), zero TypeScript errors, passing `npm run build`. | M5 | Survey |
 
 ## Milestones
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
-| M1 | SW Registration & Global Event Capture | `src/components/pwa-provider.tsx`, `src/hooks/use-pwa-install.ts` | none | DONE |
-| M2 | Manifest Generation & Route Metadata | `src/app/api/manifest/[slug]/route.ts`, `src/app/track/[appointmentId]/layout.tsx`, `src/app/status/[slug]/page.tsx` | none | DONE |
-| M3 | Platform Detection & UI Component Fallbacks | `src/hooks/use-pwa-install.ts`, `src/components/install-app-section.tsx`, `src/components/install-app-banner.tsx`, `src/components/pwa-provider.tsx` | M1, M2 | IN_PROGRESS |
-| M4 | E2E Testing, Build Validation & Doctor PWA Non-Regression | Project-wide build, lint, TypeScript checks, and multi-portal PWA audit | M1, M2, M3 | PLANNED |
+| M1 | Storytelling Arc Foundation: Problem & Sovereignty | `src/app/_components/the-mirror.tsx`, `src/app/_components/zero-friction-guarantee.tsx`, `src/app/_components/digital-clinic-ownership.tsx`, `src/app/_components/experience-engine.tsx` | none | DONE (Gate 1 Passed) |
+| M2 | Interactive Product Showcase: Clinical Flow & Dashboard | `src/app/_components/patient-journey-timeline.tsx`, `src/app/_components/doctor-dashboard.tsx` | M1 | DONE (Gate 2 Passed) |
+| M3 | Enterprise Trust & Proof: Security, Territory & Stories | `src/app/_components/enterprise-security-grid.tsx`, `src/app/_components/territory-checker.tsx`, `src/app/_components/doctor-stories.tsx` | M1 | IN_PROGRESS |
+| M4 | High-Converting Financial Engine & Page Assembly | `src/app/_components/home-roi-calculator.tsx`, `src/app/_components/home-pricing-section.tsx`, `src/app/_components/lead-magnet.tsx`, `src/app/page.tsx` | M2, M3 | PLANNED |
+| M5 | E2E Test Pass, Hardening & Build Verification | Full project build verification (`npm run build`, `npm run typecheck`), E2E Tiers 1-4 test pass, Tier 5 adversarial hardening | M1, M2, M3, M4 | PLANNED |
+
+## Interface Contracts
+### Section Integration (`src/app/page.tsx` ↔ `src/app/_components/*`)
+- Every section component must export a React component as `default` (or named export matching `page.tsx` dynamic loader).
+- Props: Sections must be self-contained or receive standard optional `className?: string`.
+- State Isolation: No section may leak uncontained timers, event listeners, or global DOM mutations.
+- Interactive CTAs:
+  - `TerritoryChecker`: navigates to `/signup?specialty=${encodeURIComponent(specialty)}&pin=${pin}`.
+  - `HomeRoiCalculator`: navigates to `/signup?recovery=${monthlyRecovery}&patients=${patients}`.
+  - `HomePricingSection`: navigates to `/signup?plan=${billingCycle}` (e.g. `quarterly`, `annual`).
+  - `LeadMagnetSection`: invokes server action `submitLeadMagnetAction` and provides verified download.
 
 ## Code Layout
-- `src/components/pwa-provider.tsx` — Root PWA provider, service worker registration, global prompt bridge, Doctor vs Patient install buttons.
-- `src/hooks/use-pwa-install.ts` — Platform detection and PWA install trigger hook.
-- `src/components/install-app-section.tsx` — In-page clinic PWA download section with action buttons and guidance toasts.
-- `src/components/install-app-banner.tsx` — Sticky top banner for patient booking and tracking.
-- `src/app/api/manifest/[slug]/route.ts` — Dynamic Web App Manifest generator for individual clinics.
-- `src/app/api/manifest/[slug]/icon/route.ts` — Dynamic clinic icon generator & proxy.
-- `src/app/track/[appointmentId]/layout.tsx` & `page.tsx` — Patient appointment live queue tracking with dynamic manifest link.
-- `public/manifest.json` — Immutable Doctor Diary PWA manifest.
-- `public/sw.js` — Core service worker for caching, offline, and push notifications.
+- `src/app/page.tsx` — Landing page assembly & dynamic section loader.
+- `src/app/_components/the-mirror.tsx` — Problem empathy & operational friction comparison.
+- `src/app/_components/zero-friction-guarantee.tsx` — 4 core adoption guarantee cards.
+- `src/app/_components/digital-clinic-ownership.tsx` — Practice sovereignty & vector browser mockup.
+- `src/app/_components/experience-engine.tsx` — Specialties marquee & Bento Box architecture.
+- `src/app/_components/patient-journey-timeline.tsx` — 6-stage patient journey & interactive queue simulation.
+- `src/app/_components/doctor-dashboard.tsx` — Interactive SVG doctor dashboard & daily workflow tabs.
+- `src/app/_components/enterprise-security-grid.tsx` — 4-card enterprise security & compliance grid.
+- `src/app/_components/territory-checker.tsx` — Exclusivity search widget with radar sweep and validation.
+- `src/app/_components/doctor-stories.tsx` — Verified clinician testimonials & practice metrics.
+- `src/app/_components/home-roi-calculator.tsx` — Interactive Indian currency ROI calculator with sliders.
+- `src/app/_components/home-pricing-section.tsx` — Transparent pricing tiers with billing toggle.
+- `src/app/_components/lead-magnet.tsx` — 3D guide mockup & high-intent lead capture form.

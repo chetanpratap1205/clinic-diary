@@ -27,10 +27,6 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
   const path = request.nextUrl.pathname;
   const isProtectedPath = 
     path.startsWith('/dashboard') || 
@@ -38,16 +34,22 @@ export async function proxy(request: NextRequest) {
     path.startsWith('/admin') ||
     path.startsWith('/employee');
 
-  if (isProtectedPath && !user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
-  }
+  const isAuthPath = path === '/login' || path === '/signup';
 
-  const isAuthPath = path === '/login' || path === '/signup'
-  
-  if (isAuthPath && user) {
-     // Let login actions handle specific role redirect or default
+  if (isProtectedPath || isAuthPath) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (isProtectedPath && !user) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
+
+    if (isAuthPath && user) {
+       // Let login actions handle specific role redirect or default
+    }
   }
 
   return supabaseResponse

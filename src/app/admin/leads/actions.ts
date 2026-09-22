@@ -315,9 +315,22 @@ export async function updateLead(
     timings: string | null;
     about: string | null;
     logoUrl: string | null;
+    verificationStatus: string;
+    lastContactMethod: string | null;
+    lastCallOutcome: string | null;
+    googleMapsUrl: string | null;
+    instagramUrl: string | null;
+    websiteUrl: string | null;
+    metaAdsStatus: string;
   }>
 ) {
   try {
+    const [existingLead] = await db
+      .select({ status: doctorLeads.status, verificationStatus: doctorLeads.verificationStatus })
+      .from(doctorLeads)
+      .where(eq(doctorLeads.id, id))
+      .limit(1);
+
     const updateData: Record<string, unknown> = { updatedAt: new Date() };
 
     if (data.doctorName !== undefined) updateData.doctorName = data.doctorName;
@@ -344,7 +357,6 @@ export async function updateLead(
     if (data.assignedEmployeeId !== undefined) {
       updateData.assignedEmployeeId = data.assignedEmployeeId;
       if (data.assignedEmployeeId) {
-        // Fetch manager for the manually assigned employee
         const { employees } = await import("@/db/schema");
         const [emp] = await db.select({ managerId: employees.managerId }).from(employees).where(eq(employees.id, data.assignedEmployeeId)).limit(1);
         updateData.assignedManagerId = emp?.managerId || null;
@@ -364,15 +376,153 @@ export async function updateLead(
     if (data.timings !== undefined) updateData.timings = data.timings;
     if (data.about !== undefined) updateData.about = data.about;
     if (data.logoUrl !== undefined) updateData.logoUrl = data.logoUrl;
+    if (data.verificationStatus !== undefined) updateData.verificationStatus = data.verificationStatus;
+    if (data.lastContactMethod !== undefined) updateData.lastContactMethod = data.lastContactMethod;
+    if (data.lastCallOutcome !== undefined) updateData.lastCallOutcome = data.lastCallOutcome;
+    if (data.googleMapsUrl !== undefined) updateData.googleMapsUrl = data.googleMapsUrl;
+    if (data.instagramUrl !== undefined) updateData.instagramUrl = data.instagramUrl;
+    if (data.websiteUrl !== undefined) updateData.websiteUrl = data.websiteUrl;
+    if (data.metaAdsStatus !== undefined) updateData.metaAdsStatus = data.metaAdsStatus;
 
-     
     await db.update(doctorLeads).set(updateData as unknown as typeof doctorLeads.$inferInsert).where(eq(doctorLeads.id, id));
+
+    // Log status change activity
+    if (data.status && existingLead && data.status !== existingLead.status) {
+      await db.insert(leadActivities).values({
+        leadId: id,
+        type: "status_change",
+        previousStatus: existingLead.status,
+        newStatus: data.status,
+        notes: `Status changed from ${existingLead.status} to ${data.status}`,
+        createdAt: new Date(),
+      });
+    }
+
+    // Log verification status change activity
+    if (data.verificationStatus && existingLead && data.verificationStatus !== existingLead.verificationStatus) {
+      await db.insert(leadActivities).values({
+        leadId: id,
+        type: "verification_change",
+        notes: `Verification status set to ${data.verificationStatus}`,
+        createdAt: new Date(),
+      });
+    }
 
     revalidatePath("/admin/leads");
     return { success: true };
   } catch (err) {
     console.error("updateLead error:", err);
     return { error: "Failed to update lead." };
+  }
+}
+
+// ─── Log Call Outcome ─────────────────────────────────────────────────────────
+export async function logCallOutcome(leadId: string, outcome: string, notes?: string) {
+  try {
+    const [lead] = await db
+      .select({ status: doctorLeads.status })
+      .from(doctorLeads)
+      .where(eq(doctorLeads.id, leadId))
+      .limit(1);
+
+    if (!lead) return { error: "Lead not found" };
+
+    let nextStatus = lead.status;
+    if (outcome === "interested") nextStatus = "interested";
+    else if (outcome === "not_interested") nextStatus = "not_interested";
+    else if (["new", "verified"].includes(lead.status)) nextStatus = "called";
+
+    await db
+      .update(doctorLeads)
+      .set({
+        lastContactedAt: new Date(),
+        lastContactMethod: "call",
+        lastCallOutcome: outcome,
+        status: nextStatus,
+        updatedAt: new Date(),
+      })
+      .where(eq(doctorLeads.id, leadId));
+
+    await db.insert(leadActivities).values({
+      leadId,
+      type: "call",
+      notes: notes ? `Call outcome: ${outcome} — ${notes}` : `Call outcome logged: ${outcome}`,
+      previousStatus: lead.status,
+      newStatus: nextStatus,
+      createdAt: new Date(),
+    });
+
+    revalidatePath("/admin/leads");
+    return { success: true };
+  } catch (err) {
+    console.error("logCallOutcome error:", err);
+    return { error: "Failed to log call outcome." };
+  }
+}
+
+// ─── Log WhatsApp Opened ──────────────────────────────────────────────────────
+export async function logWhatsAppOpened(leadId: string) {
+  try {
+    const [lead] = await db
+      .select({ status: doctorLeads.status })
+      .from(doctorLeads)
+      .where(eq(doctorLeads.id, leadId))
+      .limit(1);
+
+    if (!lead) return { error: "Lead not found" };
+
+    const nextStatus = ["new", "verified"].includes(lead.status) ? "whatsapp_sent" : lead.status;
+
+    await db
+      .update(doctorLeads)
+      .set({
+        lastContactedAt: new Date(),
+        lastContactMethod: "whatsapp",
+        status: nextStatus,
+        updatedAt: new Date(),
+      })
+      .where(eq(doctorLeads.id, leadId));
+
+    await db.insert(leadActivities).values({
+      leadId,
+      type: "whatsapp",
+      notes: "Opened wa.me chat link",
+      previousStatus: lead.status,
+      newStatus: nextStatus,
+      createdAt: new Date(),
+    });
+
+    revalidatePath("/admin/leads");
+    return { success: true };
+  } catch (err) {
+    console.error("logWhatsAppOpened error:", err);
+    return { error: "Failed to log WhatsApp interaction." };
+  }
+}
+
+// ─── Update Verification Status ───────────────────────────────────────────────
+export async function updateVerificationStatus(leadId: string, verificationStatus: string) {
+  try {
+    await db
+      .update(doctorLeads)
+      .set({
+        verificationStatus,
+        updatedAt: new Date(),
+      })
+      .where(eq(doctorLeads.id, leadId));
+
+    await db.insert(leadActivities).values({
+      leadId,
+      type: "verification_change",
+      notes: `Verification status updated to ${verificationStatus}`,
+      createdAt: new Date(),
+    });
+
+    revalidatePath("/admin/leads");
+    return { success: true };
+  } catch (err) {
+    console.error("updateVerificationStatus error:", err);
+    return { error: "Failed to update verification status." };
   }
 }
 
@@ -391,15 +541,33 @@ export async function deleteLead(id: string) {
 // ─── Mark Message Sent (increments step + logs activity) ─────────────────────
 export async function markMessageSent(leadId: string, step: number) {
   try {
+    const [lead] = await db
+      .select({ status: doctorLeads.status })
+      .from(doctorLeads)
+      .where(eq(doctorLeads.id, leadId))
+      .limit(1);
+
+    const nextStatus = ["new", "verified"].includes(lead?.status || "") ? "whatsapp_sent" : (lead?.status || "whatsapp_sent");
+
     await db
       .update(doctorLeads)
       .set({
         messageSentStep: step,
         lastContactedAt: new Date(),
-        status: "contacted",
+        lastContactMethod: "whatsapp",
+        status: nextStatus,
         updatedAt: new Date(),
       })
       .where(eq(doctorLeads.id, leadId));
+
+    await db.insert(leadActivities).values({
+      leadId,
+      type: "whatsapp",
+      notes: `Sent step ${step} message`,
+      previousStatus: lead?.status || null,
+      newStatus: nextStatus,
+      createdAt: new Date(),
+    });
 
     revalidatePath("/admin/leads");
     return { success: true };
@@ -418,21 +586,8 @@ export async function logActivity(
   newStatus?: string
 ) {
   try {
-    // Get lead to find assignedTo, fallback to a system indicator
-    const [lead] = await db
-      .select({ assignedTo: doctorLeads.assignedTo })
-      .from(doctorLeads)
-      .where(eq(doctorLeads.id, leadId));
-
-    if (!lead?.assignedTo) {
-      // If no partner assigned, just return success without logging to leadActivities
-      // (leadActivities requires a partnerId FK)
-      return { success: true };
-    }
-
     await db.insert(leadActivities).values({
       leadId,
-      partnerId: lead.assignedTo,
       type,
       notes,
       previousStatus: previousStatus || null,

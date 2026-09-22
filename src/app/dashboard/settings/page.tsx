@@ -60,6 +60,8 @@ export default async function SettingsPage() {
     logoUrl: clinic.logoUrl,
     heroImageUrl: clinic.heroImageUrl,
     googleMapsUrl: clinic.googleMapsUrl,
+    googleReviewUrl: clinic.googleReviewUrl,
+    enableAutoReviewBooster: clinic.enableAutoReviewBooster ?? true,
     billingAddress: clinic.billingAddress,
     state: clinic.state,
     gstin: clinic.gstin,

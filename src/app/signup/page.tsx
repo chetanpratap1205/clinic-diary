@@ -11,6 +11,7 @@ import { Loader2, Eye, EyeOff, Mail, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
 import { AnimatedLogo } from "@/components/animated-logo";
+import { trackSignUp } from "@/lib/gtag";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -35,10 +36,12 @@ export default function SignupPage() {
       if (error) { toast.error(error.message); return; }
       
       if (data.session) {
+        trackSignUp("email");
         toast.success("Account created successfully!");
         // Use hard navigation to ensure RSC cache sees the new auth cookie
         window.location.href = "/onboarding";
       } else {
+        trackSignUp("email");
         setNeedsConfirmation(true);
       }
     } catch (err) {

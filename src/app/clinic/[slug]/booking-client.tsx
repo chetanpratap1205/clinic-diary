@@ -25,6 +25,7 @@ import { usePWAInstall } from "@/hooks/use-pwa-install";
 import { PushOptIn } from "@/components/push-opt-in";
 import { DICTIONARY, Language } from "@/lib/i18n";
 import { formatDoctorName } from "@/lib/utils";
+import { trackAppointmentBooked } from "@/lib/gtag";
 
 function getContrastColor(hexcolor: string): string {
   if (!hexcolor) return "#ffffff";
@@ -258,6 +259,11 @@ export function BookingClient({
           });
         }
       } else if (res.appointmentId) {
+        trackAppointmentBooked({
+          clinicSlug: clinic.slug,
+          doctorName: clinic.doctorName,
+          specialty: clinic.specialty || undefined,
+        });
         // Scroll to top so the full success card + confetti is visible
         try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch {}
         

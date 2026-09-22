@@ -10,12 +10,18 @@ import {
   RotateCcw,
   BookOpen,
   MessageCircle,
+  Search,
+  ExternalLink,
+  Flame,
+  Sparkles,
+  Users,
+  Copy,
+  Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Copy, Check, Sparkles, ShieldCheck, Zap } from "lucide-react";
 import type { DoctorLead } from "@/db/schema";
-import { buildMessageForStep } from "./message-builder";
+import { buildMessageForStep, generateLeadDemoUrl } from "./message-builder";
 import { markMessageSent } from "./actions";
 import { DecisionGuideModal } from "./decision-guide-modal";
 import { format } from "date-fns";
@@ -27,7 +33,15 @@ const STEP_META: Record<number, { label: string; subtitle: string; timing: strin
   3: { label: "Clean Exit", subtitle: "Final — No pressure, demo video + prospectus link", timing: "Day 8", timingColor: "text-red-600 bg-red-50 border-red-200" },
 };
 
+export function getMetaAdsSearchUrl(clinicName: string): string {
+  const query = clinicName.replace(/^dr\.?\s*/i, '').trim();
+  return `https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=ALL&q=${encodeURIComponent(query)}&search_type=keyword_unordered`;
+}
 
+export function getInstagramSearchUrl(clinicName: string, city?: string | null): string {
+  const query = `site:instagram.com "${clinicName}" ${city || ''}`;
+  return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+}
 
 // ─── Individual Step Timeline Card ─────────────────────────────────────────────
 interface MessageCardProps {
@@ -40,6 +54,7 @@ interface MessageCardProps {
 function MessageCard({ lead, step, activeSentStep, onStepSent }: MessageCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedMsg, setEditedMsg] = useState("");
+  const [pitchPreset, setPitchPreset] = useState<"universal" | "meta_ads" | "google_rating" | "queue_chaos">("universal");
   const [isPending, startTransition] = useTransition();
 
   const isSent = activeSentStep >= step;
@@ -47,11 +62,33 @@ function MessageCard({ lead, step, activeSentStep, onStepSent }: MessageCardProp
   const isLocked = step > activeSentStep + 1;
   
   const stepMeta = STEP_META[step];
-  const originalMessage = buildMessageForStep(lead, step);
+
+  // Helper to generate specific persona pitches
+  const getPersonaMessage = () => {
+    const docLabel = lead.doctorName ? `Dr. ${lead.doctorName.replace(/^dr\.?\s*/i, '')}` : 'Doctor';
+    const clinicName = lead.clinicName || 'your clinic';
+    const demoUrl = generateLeadDemoUrl(lead);
+
+    if (pitchPreset === 'meta_ads') {
+      return `Hi ${docLabel}, noticed your active Instagram ads for ${clinicName}! 👋\n\nAre your staff manually replying to DMs to confirm slots? We helped top ${lead.specialty || 'specialist'} clinics convert 35% more ad clicks into paid consultations using a 24/7 instant booking page + live queue tracker.\n\nTake a quick 30-sec look at a sample clinic layout here: ${demoUrl}\n\nWould love to set up your clinic page today!`;
+    }
+
+    if (pitchPreset === 'google_rating') {
+      return `Hi ${docLabel}, congratulations on your impressive 5-star reputation on Google for ${clinicName}! 🎉\n\nHowever, when patients search after 8 PM or on weekends, they can't book an appointment directly without calling your front desk. We created a zero-friction booking & live queue tracking page for clinics like yours.\n\nCheck how easy it is for patients: ${demoUrl}\n\nCan I hand over your customized clinic page setup this week?`;
+    }
+
+    if (pitchPreset === 'queue_chaos') {
+      return `Hi ${docLabel}, we know how hectic waiting rooms get at ${clinicName} during peak hours! 🏥\n\nWith Doctor Diary, your patients get a live digital token on their phone so they can wait comfortably in their car or home until their turn is 2 calls away. No waiting room chaos!\n\nSee how live queue tracking works in 30 seconds: ${demoUrl}\n\nWould you like a free 7-day trial for your clinic?`;
+    }
+
+    return buildMessageForStep(lead, step);
+  };
+
+  const originalMessage = getPersonaMessage();
   const displayMessage = isEditing ? editedMsg : originalMessage;
 
-  const phone = lead.phone.replace(/\D/g, "");
-  const phoneWithCountry = phone.startsWith("91") ? phone : `91${phone}`;
+  const rawPhone = lead.phone.replace(/\D/g, "");
+  const phoneWithCountry = rawPhone.startsWith("91") || rawPhone.startsWith("971") ? rawPhone : `91${rawPhone}`;
 
   const handleSend = () => {
     const finalMsg = isEditing ? editedMsg : originalMessage;
@@ -131,7 +168,60 @@ function MessageCard({ lead, step, activeSentStep, onStepSent }: MessageCardProp
 
         {/* Message Content (Only show if not locked) */}
         {!isLocked && (
-          <div className="p-5 space-y-5">
+          <div className="p-5 space-y-4">
+            
+            {/* Pitch Persona Preset Selector (Step 1 only) */}
+            {step === 1 && (
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80">
+                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                  Select Pitch Persona (Based on 1-Click Verification)
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    onClick={() => { setPitchPreset('universal'); setIsEditing(false); }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                      pitchPreset === 'universal'
+                        ? 'bg-slate-800 text-white shadow-sm'
+                        : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    Universal Sequence
+                  </button>
+                  <button
+                    onClick={() => { setPitchPreset('meta_ads'); setIsEditing(false); }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                      pitchPreset === 'meta_ads'
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-50'
+                    }`}
+                  >
+                    🔥 Meta Ads Runner
+                  </button>
+                  <button
+                    onClick={() => { setPitchPreset('google_rating'); setIsEditing(false); }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                      pitchPreset === 'google_rating'
+                        ? 'bg-amber-600 text-white shadow-sm'
+                        : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-50'
+                    }`}
+                  >
+                    ⭐ High Google Rating
+                  </button>
+                  <button
+                    onClick={() => { setPitchPreset('queue_chaos'); setIsEditing(false); }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                      pitchPreset === 'queue_chaos'
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50'
+                    }`}
+                  >
+                    🏥 Long Queue / Pediatric
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                 <MessageCircle className="w-3.5 h-3.5" /> Message Preview
@@ -157,7 +247,6 @@ function MessageCard({ lead, step, activeSentStep, onStepSent }: MessageCardProp
                 {/* Visual WhatsApp Bubble */}
                 <div className="bg-[#E7FDE1] rounded-2xl rounded-tl-sm px-4 py-3.5 text-[14px] text-[#111B21] leading-[1.4] whitespace-pre-wrap font-sans shadow-[0_1px_0.5px_rgba(0,0,0,0.13)]">
                   {displayMessage}
-                  {/* WhatsApp Time indicator mockup */}
                   <div className="text-[10px] text-slate-500 text-right mt-1 opacity-70">
                     {format(new Date(), "HH:mm")}
                   </div>
@@ -222,14 +311,14 @@ interface WhatsAppMessageDrawerProps {
 
 export function WhatsAppMessageDrawer({ lead, open, onOpenChange, onStepSent }: WhatsAppMessageDrawerProps) {
   const [guideOpen, setGuideOpen] = useState(false);
-  // Track step progress locally for instant UI feedback while action revalidates server
   const [localStep, setLocalStep] = useState<number>(lead?.messageSentStep ?? 0);
 
   if (!open || !lead) return null;
 
+  const targetName = lead.clinicName || lead.doctorName;
+
   return (
     <>
-
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity" 
@@ -237,7 +326,7 @@ export function WhatsAppMessageDrawer({ lead, open, onOpenChange, onStepSent }: 
       />
 
       {/* Drawer */}
-      <div className="fixed inset-y-0 right-0 w-full md:w-[600px] bg-slate-50 shadow-2xl z-50 flex flex-col transform transition-transform duration-300">
+      <div className="fixed inset-y-0 right-0 w-full md:w-[620px] bg-slate-50 shadow-2xl z-50 flex flex-col transform transition-transform duration-300">
         
         {/* Header */}
         <div className="px-4 sm:px-6 py-4 bg-white border-b border-slate-200 flex items-center justify-between shrink-0">
@@ -247,15 +336,15 @@ export function WhatsAppMessageDrawer({ lead, open, onOpenChange, onStepSent }: 
             </div>
             <div className="min-w-0">
               <h2 className="text-sm sm:text-base font-bold text-slate-800 truncate">
-                Dispatch to Dr. {lead.doctorName.split(' ').pop()}
+                Dispatch to Dr. {lead.doctorName.replace(/^dr\.?\s*/i, '')}
               </h2>
               <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                 <span className="text-xs text-slate-500 font-medium truncate">
                   {lead.phone}
                 </span>
                 <span className="text-slate-300 hidden sm:inline">•</span>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 truncate`}>
-                  Universal Playbook
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 truncate border border-teal-200`}>
+                  100% Verified Outreach
                 </span>
               </div>
             </div>
@@ -280,20 +369,48 @@ export function WhatsAppMessageDrawer({ lead, open, onOpenChange, onStepSent }: 
         </div>
 
         {/* Scrollable Timeline */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
-          <div className="max-w-xl mx-auto">
-            {/* Context Notice */}
-            <div className={`mb-8 p-4 rounded-xl border flex gap-3 items-start bg-blue-50 border-blue-200`}>
-              <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm mt-0.5">
-                <span className="text-xs font-bold text-blue-700">ℹ</span>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-800">
-                  Universal Outreach Playbook
-                </p>
-                <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                  Send these 3 messages in sequence. Each message includes a personalized live demo link for {lead.clinicName || "this clinic"}.
-                </p>
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="max-w-xl mx-auto space-y-6">
+
+            {/* 🔍 1-Click Verification Action Bar */}
+            <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-sm">
+              <p className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                <Search className="w-4 h-4 text-teal-600" />
+                1-Click Footprint Verification (Verify before sending!)
+              </p>
+              <p className="text-xs text-slate-500 mb-3">
+                Click below to verify the doctor's live Instagram & Meta ads status in 2 seconds before pitching:
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <a
+                  href={getMetaAdsSearchUrl(targetName)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-colors"
+                >
+                  📣 Verify Meta Ads
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+                <a
+                  href={getInstagramSearchUrl(targetName, lead.city)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white text-xs font-semibold shadow-sm transition-colors"
+                >
+                  📸 Check Instagram
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+                {lead.address && (
+                  <a
+                    href={`https://www.google.com/maps/search/${encodeURIComponent(`${targetName} ${lead.city || ''}`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition-colors"
+                  >
+                    📍 Google Maps
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
               </div>
             </div>
 
@@ -314,7 +431,7 @@ export function WhatsAppMessageDrawer({ lead, open, onOpenChange, onStepSent }: 
             </div>
 
             {/* Founder Sales Cheat Sheet (Objection Handling Card) */}
-            <div className="mt-6 p-4 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-[#0B132B] text-white shadow-xl border border-slate-700">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-[#0B132B] text-white shadow-xl border border-slate-700">
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles className="w-4 h-4 text-emerald-400" />
                 <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400">

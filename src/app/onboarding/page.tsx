@@ -25,6 +25,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { submitOnboarding, getUnclaimedClinic } from "./actions";
+import { trackOnboardingComplete } from "@/lib/gtag";
 
 // ─── Schema ────────────────────────────────────────────────────────────────────
 const onboardingSchema = z.object({
@@ -247,6 +248,12 @@ export default function OnboardingPage() {
 
   const onSubmit = async (data: OnboardingData) => {
     setIsSubmitting(true);
+    trackOnboardingComplete({
+      clinicName: data.name,
+      specialty: data.specialty,
+      city: data.city,
+      consultationFee: data.consultationFee,
+    });
     const result = await submitOnboarding(data);
     if (result?.error) {
       toast.error(result.error);

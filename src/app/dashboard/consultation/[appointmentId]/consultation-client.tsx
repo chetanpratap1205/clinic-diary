@@ -23,6 +23,7 @@ import {
   Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { trackConsultationCompleted } from "@/lib/gtag";
 import Link from "next/link";
 import { WhatsAppShareButton } from "@/components/dashboard/patients/whatsapp-share-button";
 import type { Appointment, Patient, VisitNote } from "@/db/schema";
@@ -87,6 +88,7 @@ export function ConsultationClient({
         if (!res.ok) throw new Error("Failed to complete consultation");
 
         toast.success("Visit Completed!");
+        trackConsultationCompleted({ appointmentId: appointment.id });
         setIsCompleted(true);
       } catch (err: any) {
         toast.error(err.message);

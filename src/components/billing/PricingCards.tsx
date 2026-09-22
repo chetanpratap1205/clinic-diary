@@ -11,6 +11,7 @@ import Script from "next/script";
 
 import { PRICING_PLANS } from "@/lib/config/pricing";
 import { EnterpriseContactModal } from "./EnterpriseContactModal";
+import { trackBeginCheckout, trackPurchase } from "@/lib/gtag";
 
 const plans = Object.values(PRICING_PLANS);
 
@@ -45,6 +46,14 @@ export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
         throw new Error(data.error || "Failed to create subscription");
       }
 
+      // Track begin checkout event
+      trackBeginCheckout({
+        planId,
+        planName: planId,
+        value: (data.amount || 0) / 100,
+        currency: data.currency || "INR",
+      });
+
       // 2. Open Razorpay Checkout
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || data.keyId,
@@ -65,6 +74,13 @@ export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
           });
           
           if (verifyRes.ok) {
+            trackPurchase({
+              transactionId: response.razorpay_payment_id || response.razorpay_order_id || `sub_${Date.now()}`,
+              planId,
+              planName: planId,
+              value: (data.amount || 0) / 100,
+              currency: data.currency || "INR",
+            });
             toast.success("Subscription successful! Your account is upgraded.");
             setTimeout(() => window.location.reload(), 1500);
           } else {

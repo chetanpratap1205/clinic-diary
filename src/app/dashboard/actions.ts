@@ -8,6 +8,7 @@ import { getAuthUser } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sendTurnCalledNotification, sendCheckinConfirmedNotification, sendTurnNearbyNotification } from "@/lib/push-notifications";
+import { triggerInstantGoogleReviewBooster } from "@/lib/gmb-review-booster";
 
 export async function logoutDoctor() {
   const supabase = await createClient();
@@ -33,6 +34,8 @@ export async function updateAppointmentStatus(appointmentId: string, status: str
       if (feeCollected !== undefined) {
         updateData.feeCollected = feeCollected;
       }
+      // Instant WhatsApp Google Review Booster
+      triggerInstantGoogleReviewBooster(appointmentId, authUser.clinicId).catch(() => {});
     }
 
     // Only allow update if appointment belongs to doctor's clinic
@@ -233,6 +236,9 @@ export async function completeAppointmentWithNotes(data: {
           eq(appointments.clinicId, authUser.clinicId)
         )
       );
+
+    // Instant WhatsApp Google Review Booster
+    triggerInstantGoogleReviewBooster(data.appointmentId, authUser.clinicId).catch(() => {});
 
     const now = new Date();
 

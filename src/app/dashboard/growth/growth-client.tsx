@@ -1,12 +1,54 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { TrendingUp, Sparkles, Megaphone, Search, Star, Presentation, QrCode, CreditCard, LayoutTemplate, Palette, Globe, Smartphone, Activity, BarChart3, MessageSquare, Bot, Building2, UserPlus, HeartPulse, Receipt, Building, Package, Share2, LineChart, MessageCircle, ShieldCheck, ArrowRight, Target, Users } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  TrendingUp,
+  Sparkles,
+  Search,
+  Star,
+  Globe,
+  QrCode,
+  CreditCard,
+  LayoutTemplate,
+  Activity,
+  BarChart3,
+  MessageSquare,
+  Bot,
+  Building2,
+  HeartPulse,
+  Share2,
+  LineChart,
+  MessageCircle,
+  ShieldCheck,
+  Target,
+  Users,
+  CheckCircle2,
+  Clock,
+  Zap,
+  ArrowRight,
+  Filter,
+  PlusCircle,
+  PhoneCall,
+  CalendarCheck,
+  Send,
+  Layers,
+  Sparkle,
+  Stethoscope,
+  ClipboardList,
+} from "lucide-react";
 import { toast } from "sonner";
 import { GrowthCard, GrowthCardProps } from "./components/GrowthCard";
-import Image from "next/image";
 import { requestGrowthService } from "./actions";
 
 interface GrowthClientProps {
@@ -15,280 +57,310 @@ interface GrowthClientProps {
   requestedServices?: Record<string, string>;
 }
 
-const growClinicServices: Omit<GrowthCardProps, 'onAction'>[] = [
+export interface GrowthServiceItem extends Omit<GrowthCardProps, "onAction"> {
+  category: "acquisition" | "retention" | "branding" | "partners" | "ai";
+}
+
+const allGrowthServices: GrowthServiceItem[] = [
+  // --- ACQUISITION & SEO ---
   {
     id: "gmb-opt",
     title: "Google Business Profile Optimization",
-    description: "Improve your Google visibility, rank higher in local searches, and help nearby patients discover your clinic.",
-    icon: <Search className="text-blue-500" />,
-    badge: { text: "Popular", variant: "default" },
+    description: "Rank #1 on Google Maps when local patients search for 'doctor near me' or specialist clinics.",
+    category: "acquisition",
+    targetRole: "doctor",
+    icon: <Search className="text-blue-600" />,
+    badge: { text: "High Demand", variant: "default" },
     price: 2999,
     pricingPeriod: "month",
     stats: [
-      { label: "Avg Profile Views", value: "+320%" },
-      { label: "New Patient Calls", value: "3x" }
+      { label: "Google Views", value: "+320%" },
+      { label: "New Patient Calls", value: "3.2x" },
     ],
-    features: ["Profile Setup & Verification", "Keyword Optimization", "Monthly Performance Report"]
+    features: ["Profile Setup & Verification", "Keyword & Category Optimization", "Monthly Local Search Report"],
   },
   {
     id: "google-reviews",
-    title: "Google Reviews Growth",
-    description: "Increase genuine patient reviews and strengthen trust before patients visit your clinic.",
-    icon: <Star className="text-yellow-500" />,
-    badge: { text: "Recommended", variant: "premium" },
+    title: "Automated Google Review Growth",
+    description: "Automatically send WhatsApp review requests to happy patients post-consultation to reach 4.9+ stars.",
+    category: "acquisition",
+    targetRole: "both",
+    icon: <Star className="text-amber-500" />,
+    badge: { text: "Must Have", variant: "premium" },
     price: 1999,
     pricingPeriod: "month",
     stats: [
-      { label: "Avg Rating Increase", value: "4.8+" },
-      { label: "Patient Trust", value: "98%" }
+      { label: "Avg Google Rating", value: "4.9★" },
+      { label: "Review Conversion", value: "94%" },
     ],
-    features: ["Automated Review Requests", "Negative Feedback Interception", "Review Showcase Widget"]
+    features: ["Automated Post-Visit SMS/WhatsApp", "Negative Feedback Interception", "Live Review Showcase Widget"],
   },
   {
     id: "local-seo",
-    title: "Local SEO",
-    description: "Rank your clinic higher when patients search for doctors nearby.",
-    icon: <Globe className="text-emerald-500" />,
-    badge: { text: "Available", variant: "outline" },
+    title: "Hyperlocal Clinic SEO Engine",
+    description: "Dominate organic Google search results in your city for your medical specialty.",
+    category: "acquisition",
+    targetRole: "doctor",
+    icon: <Globe className="text-emerald-600" />,
+    badge: { text: "Organic Growth", variant: "outline" },
     price: 2999,
     pricingPeriod: "month",
     stats: [
-      { label: "Search Ranking", value: "Top 3" },
-      { label: "Organic Traffic", value: "+150%" }
+      { label: "Local Search Rank", value: "Top 3" },
+      { label: "Organic Traffic", value: "+180%" },
     ],
-    features: ["Competitor Analysis", "Local Directory Listings", "On-Page SEO Optimization"]
+    features: ["Competitor Rank Analysis", "Medical Directory Listings", "On-Page SEO & Schema"],
   },
   {
     id: "google-ads",
-    title: "Google Ads",
-    description: "Launch targeted campaigns that bring appointment-ready patients to your clinic.",
+    title: "Targeted Patient Acquisition Ads",
+    description: "High-ROI Google & Meta ad campaigns targeting patients looking for immediate appointments.",
+    category: "acquisition",
+    targetRole: "doctor",
     icon: <Target className="text-red-500" />,
-    badge: { text: "High ROI", variant: "success" },
-    price: 9999,
+    badge: { text: "Max Footfall", variant: "success" },
+    price: 8999,
     pricingPeriod: "month",
     stats: [
-      { label: "Avg Campaign ROI", value: "5.2x" },
-      { label: "Lead Conversion", value: "24%" }
+      { label: "Avg Campaign ROI", value: "5.4x" },
+      { label: "Booking Conversion", value: "28%" },
     ],
-    features: ["Keyword Bidding", "Ad Copywriting", "Landing Page Optimization"]
+    features: ["Precision Keyword Bidding", "Ad Copy & Landing Page", "Transparent Weekly Reports"],
   },
   {
-    id: "social-media",
-    title: "Social Media Marketing",
-    description: "Professionally designed posts and campaigns that build trust and awareness.",
-    icon: <Share2 className="text-pink-500" />,
-    badge: { text: "Available", variant: "outline" },
-    price: 3499,
+    id: "clinic-website",
+    title: "Premium Website & Online Booking Page",
+    description: "Lightning-fast landing page with 24/7 instant online booking for your patients.",
+    category: "acquisition",
+    targetRole: "both",
+    icon: <Globe className="text-indigo-600" />,
+    badge: { text: "Enterprise", variant: "default" },
+    price: 7999,
+    pricingPeriod: "one-time",
+    stats: [
+      { label: "Load Speed", value: "<1.2s" },
+      { label: "Mobile Ready", value: "100%" },
+    ],
+    features: ["Custom Domain Integration", "Real-Time Schedule Sync", "SEO & Speed Optimized"],
+  },
+
+  // --- RETENTION & RECALLS (DOCTOR & RECEPTIONIST VALUE) ---
+  {
+    id: "patient-recall",
+    title: "Automated Patient Recall & Follow-ups",
+    description: "Smart automated SMS/WhatsApp reminders for chronic care follow-ups, vaccinations, and routine checkups.",
+    category: "retention",
+    targetRole: "receptionist",
+    icon: <CalendarCheck className="text-purple-600" />,
+    badge: { text: "Reception Saver", variant: "premium" },
+    price: 1499,
     pricingPeriod: "month",
     stats: [
-      { label: "Monthly Reach", value: "10k+" },
-      { label: "Brand Engagement", value: "+85%" }
+      { label: "Repeat Visits", value: "+42%" },
+      { label: "Manual Calls", value: "Zero" },
     ],
-    features: ["Custom Graphics", "Content Calendar", "Community Management"]
-  }
-];
-
-const brandClinicServices: Omit<GrowthCardProps, 'onAction'>[] = [
-  {
-    id: "qr-kit",
-    title: "Premium QR Kit",
-    description: "Exclusive Doctor Diary QR Growth System. Outside QR for 24/7 bookings, Reception QR for skipping queues, and Patient File QR for instant re-booking.",
-    icon: <QrCode className="text-emerald-500" />,
-    badge: { text: "Exclusive", variant: "premium" },
-    price: 999,
-    pricingPeriod: "one-time",
-    stats: [
-      { label: "Booking Speed", value: "20s" },
-      { label: "Queue Wait Time", value: "-45%" }
-    ],
-    features: ["Weather-Proof Acrylic", "Pre-Configured Setup", "Free Replacement"]
+    features: ["Auto 3/6-Month Follow-Up Triggers", "Custom Disease Protocol Templates", "1-Click Patient Confirmation"],
   },
   {
-    id: "visiting-cards",
-    title: "Visiting Cards",
-    description: "Premium, minimal design visiting cards that leave a lasting impression.",
-    icon: <CreditCard className="text-slate-400" />,
-    badge: { text: "Available", variant: "outline" },
-    price: 2999,
-    pricingPeriod: "per 1000",
-    features: ["350 GSM Matte Finish", "Spot UV Highlight", "Double-Sided Print"]
-  },
-  {
-    id: "reception-branding",
-    title: "Reception Branding",
-    description: "Reception stands, window stickers, and counter branding for a modern clinic look.",
-    icon: <LayoutTemplate className="text-indigo-400" />,
-    badge: { text: "Available", variant: "outline" },
-    price: 3999,
-    pricingPeriod: "one-time",
-    features: ["Custom Dimensions", "Installation Guide", "High Durability"]
-  },
-  {
-    id: "posters",
-    title: "Posters",
-    description: "Professional clinic posters for patient education and brand awareness.",
-    icon: <Presentation className="text-orange-400" />,
-    badge: { text: "Available", variant: "outline" },
-    price: 499,
-    pricingPeriod: "per set",
-    features: ["A3 Size", "Laminated Finish", "Health Tips & Info"]
-  },
-  {
-    id: "website",
-    title: "Website",
-    description: "Fast, responsive, SEO-ready, and appointment-enabled premium doctor landing page.",
-    icon: <Globe className="text-blue-400" />,
-    badge: { text: "Popular", variant: "default" },
-    price: 9999,
-    pricingPeriod: "one-time",
-    stats: [
-      { label: "Load Time", value: "<1.5s" },
-      { label: "Mobile Optimized", value: "100%" }
-    ],
-    features: ["Custom Domain", "Online Booking Integration", "Secure Hosting"]
-  }
-];
-
-const trustedPartners: Omit<GrowthCardProps, 'onAction'>[] = [
-  {
-    id: "apollo-diagnostics",
-    title: "Apollo Diagnostics",
-    description: "Integrated lab test bookings and digital reports directly in Doctor Diary.",
-    icon: <Activity className="text-blue-600" />,
-    badge: { text: "Available", variant: "success" },
-    isIntegrated: true,
-    features: ["Seamless Data Sync", "Direct Report Access", "Patient Notifications"]
-  },
-  {
-    id: "tata-1mg",
-    title: "Tata 1mg",
-    description: "Seamless e-pharmacy integration for automated prescription fulfillment.",
-    icon: <HeartPulse className="text-red-500" />,
-    badge: { text: "Available", variant: "outline" },
-    features: ["One-Click Prescriptions", "Doorstep Delivery", "Automated Refills"]
-  },
-  {
-    id: "razorpay",
-    title: "Razorpay",
-    description: "Collect payments seamlessly via UPI, Cards, and Netbanking.",
-    icon: <CreditCard className="text-blue-500" />,
-    badge: { text: "Available", variant: "outline" },
-    features: ["Instant Settlement", "Zero Setup Fee", "Secure Transactions"]
-  },
-  {
-    id: "msg91",
-    title: "MSG91",
-    description: "Reliable SMS delivery for patient alerts, OTPs, and booking confirmations.",
-    icon: <MessageSquare className="text-orange-500" />,
-    badge: { text: "Available", variant: "outline" },
-    features: ["99% Delivery Rate", "Global Coverage", "Detailed Analytics"]
-  },
-  {
-    id: "whatsapp-meta",
-    title: "WhatsApp Business",
-    description: "Official WhatsApp Cloud API integration for automated patient communication.",
-    icon: <MessageCircle className="text-emerald-500" />,
-    badge: { text: "Premium", variant: "premium" },
-    features: ["Green Tick Verification", "Interactive Messages", "End-to-End Encryption"]
-  }
-];
-
-const premiumTools: Omit<GrowthCardProps, 'onAction'>[] = [
-  {
-    id: "ai-receptionist",
-    title: "AI Voice Receptionist",
-    description: "Intelligent voice assistant to handle patient calls 24/7, book appointments, and answer FAQs.",
-    icon: <Bot className="text-indigo-500" />,
-    badge: { text: "Premium", variant: "premium" },
-    price: 9999,
-    pricingPeriod: "month",
-    stats: [
-      { label: "Missed Calls", value: "0%" },
-      { label: "Booking Rate", value: "+35%" }
-    ],
-    features: ["Natural Voice", "Calendar Sync", "Multi-Language"]
-  },
-  {
-    id: "whatsapp-auto",
-    title: "WhatsApp Automation",
-    description: "Automated appointment reminders, patient follow-ups, and review requests via WhatsApp.",
-    icon: <MessageCircle className="text-emerald-500" />,
-    badge: { text: "Available", variant: "outline" },
+    id: "whatsapp-reminders",
+    title: "Smart WhatsApp Appointment Reminders",
+    description: "Drastically reduce clinic no-shows with automated WhatsApp confirmations and navigation links.",
+    category: "retention",
+    targetRole: "receptionist",
+    icon: <MessageCircle className="text-emerald-600" />,
+    badge: { text: "High Efficiency", variant: "success" },
     price: 1999,
     pricingPeriod: "month",
     stats: [
-      { label: "No-Show Rate", value: "-60%" },
-      { label: "Open Rate", value: "98%" }
+      { label: "Clinic No-Shows", value: "-65%" },
+      { label: "WhatsApp Read Rate", value: "98%" },
     ],
-    features: ["Automated Reminders", "Custom Templates", "Two-Way Chat"]
+    features: ["Automated 24h & 2h Reminders", "Interactive Reschedule Buttons", "Google Maps Clinic Location Link"],
   },
   {
-    id: "sms-auto",
-    title: "SMS Automation",
-    description: "Ensure high delivery rates for critical appointment reminders and health alerts.",
-    icon: <MessageSquare className="text-blue-500" />,
-    badge: { text: "Available", variant: "outline" },
+    id: "health-broadcasts",
+    title: "Patient Health & Health Camp Broadcasts",
+    description: "Send seasonal health awareness tips, camp notifications, or new clinic schedule updates in bulk.",
+    category: "retention",
+    targetRole: "both",
+    icon: <Send className="text-blue-500" />,
+    badge: { text: "On-Demand", variant: "outline" },
     price: 999,
     pricingPeriod: "month",
-    features: ["Scheduled Blasts", "Delivery Reports", "Personalized Texts"]
+    stats: [
+      { label: "Patient Reach", value: "100%" },
+      { label: "Camp Footfall", value: "+30%" },
+    ],
+    features: ["Compliance Compliant Blasts", "Pre-approved Health Templates", "Delivery Analytics"],
   },
   {
-    id: "clinic-analytics",
-    title: "Clinic Analytics",
-    description: "Modern dashboard with charts and growth metrics to track your clinic's performance.",
-    icon: <LineChart className="text-emerald-400" />,
-    badge: { text: "Popular", variant: "default" },
-    features: ["Real-Time Data", "Export to PDF/CSV", "Customizable Views"]
+    id: "referral-engine",
+    title: "Patient Family Referral Engine",
+    description: "Encourage satisfied patients to refer family members with digital referral QR codes.",
+    category: "retention",
+    targetRole: "doctor",
+    icon: <Users className="text-pink-600" />,
+    badge: { text: "Built on Request", variant: "warning" },
+    isCustomOnDemand: true,
+    price: 1999,
+    pricingPeriod: "month",
+    stats: [
+      { label: "Word-of-Mouth", value: "+35%" },
+      { label: "Family Bookings", value: "High" },
+    ],
+    features: ["Digital Referral Link", "Reward Tracking System", "Custom Clinic Offer"],
   },
-  {
-    id: "advanced-reports",
-    title: "Advanced Reports",
-    description: "Deep dive into financial, patient demographic, and operational analytics.",
-    icon: <BarChart3 className="text-purple-400" />,
-    badge: { text: "Available", variant: "outline" },
-    features: ["Revenue Breakdown", "Patient Segmentation", "Predictive Trends"]
-  }
-];
 
-const growthBundles: Omit<GrowthCardProps, 'onAction'>[] = [
+  // --- RECEPTION & BRANDING ---
   {
-    id: "bundle-digital-dominance",
-    title: "Digital Dominance Pack",
-    description: "The ultimate growth engine. Get a Premium Website, Local SEO, and Google Business Profile Optimization combined.",
-    icon: <Target className="text-white" />,
-    badge: { text: "15% OFF", variant: "premium" },
-    price: 12999,
-    pricingPeriod: "setup",
+    id: "qr-kit",
+    title: "Smart Clinic QR Growth System",
+    description: "All-in-one physical acrylic QR kit: Entrance 24/7 booking QR, Reception Express Check-in, & Rx QR.",
+    category: "branding",
+    targetRole: "receptionist",
+    icon: <QrCode className="text-emerald-600" />,
+    badge: { text: "Reception Essential", variant: "premium" },
+    price: 999,
+    pricingPeriod: "one-time",
     stats: [
-      { label: "New Patients", value: "5x" },
-      { label: "Online Trust", value: "Max" }
+      { label: "Check-in Time", value: "15 sec" },
+      { label: "Queue Wait Time", value: "-50%" },
     ],
-    features: ["Website Included", "SEO Included", "GMB Included"]
+    features: ["Weather-Proof Acrylic Standees", "Express Check-in Counter Stand", "Prescription Sheet Booking QR"],
   },
   {
-    id: "bundle-modern-reception",
-    title: "Modern Reception Pack",
-    description: "Transform your physical clinic. Premium QR Kit, 1000 Visiting Cards, and Custom Reception Branding.",
-    icon: <Building2 className="text-white" />,
-    badge: { text: "10% OFF", variant: "success" },
-    price: 5499,
-    pricingPeriod: "setup",
+    id: "visiting-cards",
+    title: "NFC & QR Digital Visiting Cards",
+    description: "Premium matte visiting cards with embedded NFC tap technology and instant appointment booking QR.",
+    category: "branding",
+    targetRole: "doctor",
+    icon: <CreditCard className="text-slate-700" />,
+    badge: { text: "Premium Print", variant: "outline" },
+    price: 1999,
+    pricingPeriod: "per 500",
     stats: [
-      { label: "Queue Wait", value: "-40%" },
-      { label: "Brand Recall", value: "High" }
+      { label: "Digital Tap Share", value: "Instant" },
+      { label: "Print Quality", value: "350 GSM" },
     ],
-    features: ["QR Kit Included", "1000 Cards Included", "Standees Included"]
-  }
+    features: ["Matte Finish & Spot UV", "Tap-to-Save Contact", "Direct QR Booking Link"],
+  },
+  {
+    id: "reception-branding",
+    title: "Reception Standees & Guidance Signage",
+    description: "Transform your waiting area with modern clinic branding, patient guidance standees, and banners.",
+    category: "branding",
+    targetRole: "receptionist",
+    icon: <LayoutTemplate className="text-indigo-600" />,
+    badge: { text: "On-Demand", variant: "outline" },
+    price: 3499,
+    pricingPeriod: "one-time",
+    features: ["Custom Clinic Dimensions", "Durable Metallic Frames", "Professional Patient Instructions"],
+  },
+
+  // --- PARTNER INTEGRATIONS ---
+  {
+    id: "apollo-diagnostics",
+    title: "Apollo Diagnostics Lab Sync",
+    description: "Integrated lab test booking and automated digital report sync directly into patient EHR.",
+    category: "partners",
+    targetRole: "both",
+    icon: <Activity className="text-blue-600" />,
+    badge: { text: "Integrated", variant: "success" },
+    isIntegrated: true,
+    features: ["Seamless Report Upload", "Home Sample Pickup Integration", "Zero Setup Cost"],
+  },
+  {
+    id: "tata-1mg",
+    title: "Tata 1mg Pharmacy Fulfillment",
+    description: "1-click digital prescription forwarding for doorstep medicine delivery for your patients.",
+    category: "partners",
+    targetRole: "receptionist",
+    icon: <HeartPulse className="text-red-500" />,
+    badge: { text: "Integrated", variant: "outline" },
+    features: ["1-Click Prescription Dispatch", "Automated Patient Refills", "Pan-India Coverage"],
+  },
+  {
+    id: "razorpay",
+    title: "Razorpay Smart Payment QR",
+    description: "Collect payments seamlessly via UPI, Cards, and Netbanking at reception or online.",
+    category: "partners",
+    targetRole: "receptionist",
+    icon: <CreditCard className="text-blue-500" />,
+    badge: { text: "Integrated", variant: "outline" },
+    features: ["Instant Bank Settlement", "Zero Monthly Charge", "Reconciliation Dashboard"],
+  },
+  {
+    id: "whatsapp-meta",
+    title: "Official WhatsApp Business API (Green Tick)",
+    description: "Official Meta Cloud API integration with verified clinic badge for automated patient communication.",
+    category: "partners",
+    targetRole: "both",
+    icon: <MessageCircle className="text-emerald-600" />,
+    badge: { text: "Verified Badge", variant: "premium" },
+    price: 2499,
+    pricingPeriod: "month",
+    features: ["Meta Green Tick Verification", "24/7 Automated Interactive Bot", "End-to-End Encrypted"],
+  },
+
+  // --- AI & ADVANCED TOOLS ---
+  {
+    id: "ai-receptionist",
+    title: "24/7 AI Voice Phone Receptionist",
+    description: "AI Voice Assistant that answers incoming phone calls, schedules appointments, and answers clinic FAQs 24/7.",
+    category: "ai",
+    targetRole: "receptionist",
+    icon: <Bot className="text-purple-600" />,
+    badge: { text: "AI Innovation", variant: "premium" },
+    price: 4999,
+    pricingPeriod: "month",
+    stats: [
+      { label: "Missed Calls", value: "0%" },
+      { label: "Phone Bookings", value: "+38%" },
+    ],
+    features: ["Natural Human-Like Voice", "Live Calendar Booking", "Hindi & English Support"],
+  },
+  {
+    id: "revenue-analytics",
+    title: "Clinic Revenue & Patient Analytics",
+    description: "Deep insights into clinic footfall trends, doctor revenue breakdown, and patient demographics.",
+    category: "ai",
+    targetRole: "doctor",
+    icon: <BarChart3 className="text-blue-600" />,
+    badge: { text: "Built-In", variant: "success" },
+    isIntegrated: true,
+    features: ["Real-time Revenue Tracking", "Exportable PDF/Excel Reports", "Patient Cohort Trends"],
+  },
 ];
 
 export function GrowthClient({ consultationFee, themeColor, requestedServices = {} }: GrowthClientProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>("all");
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCustomRequest, setIsCustomRequest] = useState(false);
   const [selectedService, setSelectedService] = useState<any>(null);
-  const [selectedGoal, setSelectedGoal] = useState<string>("footfall");
+
+  // Form states
+  const [primaryGoal, setPrimaryGoal] = useState("footfall");
+  const [contactMethod, setContactMethod] = useState("whatsapp");
+  const [customFeatureNote, setCustomFeatureNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAction = (service: any) => {
+  const handleOpenAction = (service: any) => {
     setSelectedService(service);
+    setIsCustomRequest(false);
+    setIsDialogOpen(true);
+  };
+
+  const handleOpenCustomBuildModal = () => {
+    setSelectedService({
+      id: "custom-growth-tool",
+      title: "Request Custom Growth Feature",
+      description: "Describe any feature or integration your clinic needs. Our engineering team will build and deploy it for you.",
+      price: 0,
+    });
+    setIsCustomRequest(true);
     setIsDialogOpen(true);
   };
 
@@ -296,20 +368,24 @@ export function GrowthClient({ consultationFee, themeColor, requestedServices = 
     if (!selectedService) return;
     setIsSubmitting(true);
     try {
+      const descriptionDetails = isCustomRequest
+        ? `Custom Request: ${customFeatureNote} (Contact via: ${contactMethod})`
+        : `${selectedService.description} (Goal: ${primaryGoal}, Contact: ${contactMethod})`;
+
       const res = await requestGrowthService({
         id: selectedService.id,
         title: selectedService.title,
-        description: selectedService.description + ` (Goal: ${selectedGoal})`,
-        price: selectedService.price,
+        description: descriptionDetails,
+        price: selectedService.price || 0,
         category: "growth_service",
       });
 
       if (res.success) {
-        toast.success("Request sent successfully! Our growth team will contact you soon.");
+        toast.success("Request received! Our Growth & Engineering team will contact you within 24 hours.");
         setIsDialogOpen(false);
-        // Optimistically update the UI by setting it in state if needed, or rely on revalidation
+        setCustomFeatureNote("");
       } else {
-        toast.error(res.error || "Failed to send request. Please try again.");
+        toast.error(res.error || "Failed to submit request.");
       }
     } catch (error) {
       toast.error("An unexpected error occurred.");
@@ -318,288 +394,340 @@ export function GrowthClient({ consultationFee, themeColor, requestedServices = 
     }
   };
 
+  // Filtered Services
+  const filteredServices = useMemo(() => {
+    return allGrowthServices.filter((service) => {
+      // Category Filter
+      if (selectedCategory !== "all" && service.category !== selectedCategory) {
+        return false;
+      }
+      // Role Filter
+      if (selectedRoleFilter !== "all") {
+        if (selectedRoleFilter === "doctor" && service.targetRole !== "doctor" && service.targetRole !== "both") {
+          return false;
+        }
+        if (selectedRoleFilter === "receptionist" && service.targetRole !== "receptionist" && service.targetRole !== "both") {
+          return false;
+        }
+      }
+      // Search Query Filter
+      if (searchQuery.trim() !== "") {
+        const query = searchQuery.toLowerCase();
+        const matchesTitle = service.title.toLowerCase().includes(query);
+        const matchesDesc = service.description.toLowerCase().includes(query);
+        const matchesFeatures = service.features?.some((f) => f.toLowerCase().includes(query));
+        return matchesTitle || matchesDesc || matchesFeatures;
+      }
+
+      return true;
+    });
+  }, [selectedCategory, selectedRoleFilter, searchQuery]);
+
   return (
-    <div className="space-y-16 pb-20">
-      
-      {/* Enterprise Hero Section */}
-      <section className="relative bg-slate-900 rounded-[2rem] p-8 md:p-16 text-center lg:text-left shadow-2xl border border-slate-800 overflow-hidden mb-20 flex flex-col lg:flex-row items-center gap-12">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/40 via-slate-900 to-slate-900 pointer-events-none" />
-        
-        <div className="relative z-10 lg:w-1/2 space-y-8">
-          <div className="inline-flex items-center gap-2 bg-blue-500/10 text-blue-400 px-4 py-2 rounded-full font-semibold text-sm mb-2 border border-blue-500/20">
-            <Sparkles className="w-4 h-4 text-blue-400" />
-            Enterprise Clinic Growth Platform
-          </div>
-          
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
-            Scale Your Practice <br className="hidden md:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">
-              With Predictable ROI
-            </span>
-          </h1>
-          
-          <p className="text-lg md:text-xl text-slate-300 max-w-2xl leading-relaxed">
-            Stop losing potential patients to competitors. Doctor Diary provides end-to-end digital marketing and premium branding solutions that position your clinic as the top choice in your city.
-          </p>
-          
-          <div className="pt-6 flex flex-wrap gap-4 justify-center lg:justify-start">
-            <Button 
-              size="lg" 
-              className="rounded-full h-14 px-8 text-lg font-bold bg-blue-600 text-white hover:bg-blue-500 hover:scale-105 transition-all shadow-lg shadow-blue-600/30"
-              onClick={() => {
-                document.getElementById('grow-section')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
-              Explore Solutions
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
+    <div className="space-y-8 pb-16">
+      {/* --- ENTERPRISE SAAS HEADER --- */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-6 md:p-8 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-500/5 via-indigo-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
 
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold border border-blue-200/60">
+              <Zap className="w-3.5 h-3.5 text-blue-600" /> Enterprise Clinic Growth Engine
+            </div>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Growth & Practice Scale Hub
+            </h1>
+            <p className="text-sm md:text-base text-slate-500 font-medium leading-relaxed">
+              Accelerate patient footfall, automate reception workflows, and build an unbeatable online reputation with enterprise growth tools.
+            </p>
           </div>
-        </div>
 
-        <div className="relative z-10 lg:w-1/2 w-full max-w-xl mx-auto">
-          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border border-slate-700/50 bg-slate-800">
-            <Image 
-              src="/assets/growth/clinic-reception.png" 
-              alt="Modern Clinic Reception" 
-              fill
-              className="object-cover"
-            />
-            {/* Overlay Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
-            
-            {/* ROI Stats Overlay */}
-            <div className="absolute bottom-6 left-6 right-6">
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-xl flex items-center gap-5">
-                <div className="w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
-                  <TrendingUp className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <div className="text-3xl font-extrabold text-white tracking-tight">+42%</div>
-                  <div className="text-sm font-medium text-emerald-100 uppercase tracking-wider">Average Patient Footfall</div>
+          {/* Clinic Health Score & Quick Action */}
+          <div className="w-full lg:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-4 bg-slate-50 border border-slate-200/70 p-4 rounded-xl">
+            <div className="flex items-center gap-3 pr-4 border-b sm:border-b-0 sm:border-r border-slate-200/80 pb-3 sm:pb-0">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-black text-lg shadow-sm shadow-emerald-500/20">
+                82
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Growth Health Score</div>
+                <div className="text-xs font-bold text-emerald-700 flex items-center gap-1 mt-0.5">
+                  <TrendingUp className="w-3.5 h-3.5" /> High Readiness • 3 Quick Wins
                 </div>
               </div>
             </div>
+
+            <Button
+              onClick={handleOpenCustomBuildModal}
+              className="bg-slate-900 hover:bg-blue-600 text-white font-bold text-xs rounded-xl h-10 px-4 shadow-sm transition-all flex items-center justify-center gap-2"
+            >
+              <PlusCircle className="w-4 h-4 text-blue-400" /> Request Custom Tool
+            </Button>
           </div>
-          
-          <div className="absolute -bottom-6 -left-6 w-32 h-32 rounded-2xl overflow-hidden border-4 border-slate-900 shadow-xl hidden md:block">
-            <Image 
-              src="/assets/growth/doctor-tablet.png"
-              alt="Doctor Using Tablet"
-              fill
-              className="object-cover"
+        </div>
+      </div>
+
+      {/* --- CONTROLS & FILTER BAR --- */}
+      <div className="space-y-4">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+          {/* Search Input */}
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input
+              type="text"
+              placeholder="Search growth tools, GMB, WhatsApp, QR, AI..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-11 bg-white border-slate-200 rounded-xl text-sm font-medium focus-visible:ring-blue-500"
             />
           </div>
-        </div>
-      </section>
 
-      {/* Section 0: Premium Growth Bundles */}
-      <section id="grow-section" className="space-y-8 mb-16 relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-violet-50 via-fuchsia-50 to-blue-50 transform -skew-y-1 rounded-[3rem] -z-10" />
-        <div className="max-w-3xl pt-8 px-4">
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
-            <Sparkles className="w-8 h-8 text-fuchsia-600" />
-            Premium Growth Bundles
-          </h2>
-          <p className="text-slate-600 mt-2 text-lg font-medium">
-            Unlock massive discounts by bundling essential clinic growth services together.
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 pb-12">
-          {growthBundles.map((service) => (
-            <div key={service.id} className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-[1.5rem] blur opacity-20 group-hover:opacity-40 transition-opacity" />
-              <GrowthCard {...service} onAction={() => handleAction(service)} requestStatus={requestedServices[service.title]} />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ROI & Trust Section (Replaced Pain Points) */}
-      <section className="mb-20">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 mb-4">
-            Why Top Clinics Choose Doctor Diary Growth
-          </h2>
-          <p className="text-lg text-slate-600 font-medium">
-            We don't just provide software; we provide a proven blueprint for clinic expansion.
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white border border-slate-200 rounded-[1.5rem] p-8 hover:shadow-xl hover:shadow-blue-900/5 transition-all text-center">
-            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Search className="w-8 h-8 text-blue-600" />
-            </div>
-            <div className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">3x</div>
-            <h3 className="text-lg font-bold text-slate-700 mb-3 uppercase tracking-wider">Search Visibility</h3>
-            <p className="text-slate-500 leading-relaxed font-medium">
-              Clinics using our local SEO and GMB optimization see a 300% increase in calls directly from Google search within 90 days.
-            </p>
-          </div>
-          
-          <div className="bg-white border border-slate-200 rounded-[1.5rem] p-8 hover:shadow-xl hover:shadow-emerald-900/5 transition-all text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-bl-full -z-10" />
-            <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Users className="w-8 h-8 text-emerald-600" />
-            </div>
-            <div className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">68%</div>
-            <h3 className="text-lg font-bold text-slate-700 mb-3 uppercase tracking-wider">Patient Retention</h3>
-            <p className="text-slate-500 leading-relaxed font-medium">
-              Our WhatsApp automation and premium branding keeps patients returning to your clinic for follow-ups instead of seeking alternatives.
-            </p>
-          </div>
-          
-          <div className="bg-white border border-slate-200 rounded-[1.5rem] p-8 hover:shadow-xl hover:shadow-indigo-900/5 transition-all text-center">
-            <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Star className="w-8 h-8 text-indigo-600 fill-indigo-600/20" />
-            </div>
-            <div className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">4.8+</div>
-            <h3 className="text-lg font-bold text-slate-700 mb-3 uppercase tracking-wider">Average Rating</h3>
-            <p className="text-slate-500 leading-relaxed font-medium">
-              We automate review collection directly from happy patients, burying negative feedback and building bulletproof trust.
-            </p>
+          {/* Target Role Filter Pills */}
+          <div className="flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-xl border border-slate-200/60 overflow-x-auto">
+            <span className="text-[11px] font-bold text-slate-400 px-2 uppercase tracking-wider hidden sm:inline">Value For:</span>
+            {[
+              { id: "all", label: "All Roles", icon: Layers },
+              { id: "doctor", label: "Doctor Focus", icon: Stethoscope },
+              { id: "receptionist", label: "Reception Ease", icon: ClipboardList },
+            ].map((role) => {
+              const IconComp = role.icon;
+              const isActive = selectedRoleFilter === role.id;
+              return (
+                <button
+                  key={role.id}
+                  onClick={() => setSelectedRoleFilter(role.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                    isActive
+                      ? "bg-white text-slate-900 shadow-sm border border-slate-200/60"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <IconComp className={`w-3.5 h-3.5 ${isActive ? "text-blue-600" : "text-slate-400"}`} />
+                  {role.label}
+                </button>
+              );
+            })}
           </div>
         </div>
-      </section>
 
-      {/* Section 1: Grow My Clinic */}
-      <section className="space-y-8 mb-16">
-        <div className="max-w-3xl">
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
-            <TrendingUp className="w-8 h-8 text-blue-600" />
-            Grow My Clinic
-          </h2>
-          <p className="text-slate-500 mt-2 text-lg font-medium">
-            Bring more patients to your clinic with proven digital growth services.
-          </p>
+        {/* Category Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none border-b border-slate-200">
+          {[
+            { id: "all", label: "All Solutions", count: allGrowthServices.length },
+            {
+              id: "acquisition",
+              label: "Acquisition & SEO",
+              count: allGrowthServices.filter((s) => s.category === "acquisition").length,
+            },
+            {
+              id: "retention",
+              label: "Retention & Recalls",
+              count: allGrowthServices.filter((s) => s.category === "retention").length,
+            },
+            {
+              id: "branding",
+              label: "Reception & Branding",
+              count: allGrowthServices.filter((s) => s.category === "branding").length,
+            },
+            {
+              id: "partners",
+              label: "Partner Integrations",
+              count: allGrowthServices.filter((s) => s.category === "partners").length,
+            },
+            {
+              id: "ai",
+              label: "AI & Analytics",
+              count: allGrowthServices.filter((s) => s.category === "ai").length,
+            },
+          ].map((tab) => {
+            const isActive = selectedCategory === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setSelectedCategory(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+                  isActive
+                    ? "border-blue-600 text-blue-600"
+                    : "border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300"
+                }`}
+              >
+                <span>{tab.label}</span>
+                <span
+                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-extrabold ${
+                    isActive ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-500"
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
         </div>
-        
+      </div>
+
+      {/* --- GRID OF SERVICES --- */}
+      {filteredServices.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {growClinicServices.map((service) => (
-            <GrowthCard key={service.id} {...service} onAction={() => handleAction(service)} requestStatus={requestedServices[service.title]} />
+          {filteredServices.map((service) => (
+            <GrowthCard
+              key={service.id}
+              {...service}
+              onAction={() => handleOpenAction(service)}
+              requestStatus={requestedServices[service.title]}
+            />
           ))}
         </div>
-      </section>
+      ) : (
+        <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center max-w-lg mx-auto my-8 space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+            <Search className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-900">No matching growth tools found</h3>
+            <p className="text-xs text-slate-500 mt-1 font-medium">
+              We can build any custom tool or integration specifically tailored for your clinic upon request.
+            </p>
+          </div>
+          <Button
+            onClick={handleOpenCustomBuildModal}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl h-10 px-5 shadow-sm"
+          >
+            Request Custom Feature Development
+          </Button>
+        </div>
+      )}
 
-      {/* Section 2: Brand My Clinic */}
-      <section className="space-y-8 mb-16">
-        <div className="max-w-3xl">
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
-            <Palette className="w-8 h-8 text-indigo-600" />
-            Brand My Clinic
+      {/* --- BUILD ON DEMAND GUARANTEE BANNER --- */}
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl border border-slate-800">
+        <div className="space-y-2 max-w-xl text-center md:text-left">
+          <div className="inline-flex items-center gap-1.5 bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full text-xs font-bold border border-indigo-500/30">
+            <Sparkle className="w-3.5 h-3.5 text-indigo-400" /> On-Demand Engineering Guarantee
+          </div>
+          <h2 className="text-xl md:text-2xl font-extrabold tracking-tight">
+            Need a Specific Tool for Your Reception or Practice?
           </h2>
-          <p className="text-slate-500 mt-2 text-lg font-medium">
-            Create a modern clinic experience that patients remember.
+          <p className="text-xs md:text-sm text-slate-300 font-medium leading-relaxed">
+            If a tool or partner integration isn't listed here, tell us what you need. Our team will build, configure, and activate it for your clinic within 48 to 72 hours.
           </p>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {brandClinicServices.map((service) => (
-            <GrowthCard key={service.id} {...service} onAction={() => handleAction(service)} requestStatus={requestedServices[service.title]} />
-          ))}
-        </div>
-      </section>
 
-      {/* Section 3: Trusted Partners */}
-      <section className="space-y-8 mb-16">
-        <div className="max-w-3xl">
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
-            <ShieldCheck className="w-8 h-8 text-emerald-600" />
-            Trusted Partners
-          </h2>
-          <p className="text-slate-500 mt-2 text-lg font-medium">
-            Carefully selected partners to support your clinic's operations and growth.
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {trustedPartners.map((service) => (
-            <GrowthCard key={service.id} {...service} onAction={() => handleAction(service)} requestStatus={requestedServices[service.title]} />
-          ))}
-        </div>
-      </section>
+        <Button
+          onClick={handleOpenCustomBuildModal}
+          size="lg"
+          className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl h-12 px-6 shadow-lg shadow-blue-600/30 flex-shrink-0"
+        >
+          Request Custom Build
+          <ArrowRight className="w-4 h-4 ml-2" />
+        </Button>
+      </div>
 
-      {/* Section 4: Premium Tools */}
-      <section className="space-y-8 mb-16">
-        <div className="max-w-3xl">
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
-            <Bot className="w-8 h-8 text-purple-600" />
-            Premium Tools
-          </h2>
-          <p className="text-slate-500 mt-2 text-lg font-medium">
-            Power your clinic with intelligent automation and deep insights.
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {premiumTools.map((service) => (
-            <GrowthCard key={service.id} {...service} onAction={() => handleAction(service)} requestStatus={requestedServices[service.title]} />
-          ))}
-        </div>
-      </section>
-
-      {/* Action Dialog */}
+      {/* --- REQUEST SETUP DIALOG --- */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-white border-slate-200">
+        <DialogContent className="sm:max-w-[460px] bg-white border-slate-200">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-3 text-xl text-slate-900">
-              {selectedService?.logoUrl ? (
-                <Image src={selectedService.logoUrl} alt={selectedService.title} width={24} height={24} className="rounded-sm" unoptimized />
-              ) : selectedService?.icon ? (
-                <div className="w-6 h-6">{selectedService.icon}</div>
-              ) : null}
+            <DialogTitle className="flex items-center gap-2.5 text-lg font-bold text-slate-900">
+              {selectedService?.icon && (
+                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700">
+                  {selectedService.icon}
+                </div>
+              )}
               {selectedService?.title}
             </DialogTitle>
-            <DialogDescription className="text-slate-500 pt-2 text-base leading-relaxed font-medium">
+            <DialogDescription className="text-xs text-slate-500 font-medium leading-relaxed pt-1">
               {selectedService?.description}
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="py-5 space-y-4">
-            <div className="space-y-3">
-              <label className="text-sm font-bold text-slate-700">What is your primary goal?</label>
-              <div className="grid grid-cols-1 gap-2">
+
+          <div className="py-4 space-y-4">
+            {isCustomRequest ? (
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700">What tool or feature do you need built?</label>
+                <textarea
+                  rows={4}
+                  value={customFeatureNote}
+                  onChange={(e) => setCustomFeatureNote(e.target.value)}
+                  placeholder="E.g. Custom WhatsApp bot for automated lab collection booking, or integration with local billing software..."
+                  className="w-full p-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700">Primary Objective for your Clinic</label>
+                <div className="grid grid-cols-1 gap-2">
+                  {[
+                    { id: "footfall", label: "Increase new patient calls & footfall" },
+                    { id: "reception", label: "Automate reception & reduce phone calls" },
+                    { id: "retention", label: "Boost repeat visits & reviews" },
+                  ].map((goal) => (
+                    <label
+                      key={goal.id}
+                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                        primaryGoal === goal.id
+                          ? "bg-blue-50/70 border-blue-500 ring-1 ring-blue-500"
+                          : "border-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="primaryGoal"
+                        value={goal.id}
+                        checked={primaryGoal === goal.id}
+                        onChange={() => setPrimaryGoal(goal.id)}
+                        className="w-3.5 h-3.5 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-xs font-bold text-slate-800">{goal.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Preferred Contact Method */}
+            <div className="space-y-2 pt-1">
+              <label className="text-xs font-bold text-slate-700">Preferred Contact Method</label>
+              <div className="grid grid-cols-3 gap-2">
                 {[
-                  { id: "footfall", label: "Increase new patient footfall" },
-                  { id: "retention", label: "Retain existing patients" },
-                  { id: "branding", label: "Premium clinic branding" }
-                ].map(goal => (
-                  <label key={goal.id} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${selectedGoal === goal.id ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-500 shadow-sm' : 'border-slate-200 hover:bg-slate-50'}`}>
-                    <input 
-                      type="radio" 
-                      name="primaryGoal" 
-                      value={goal.id} 
-                      checked={selectedGoal === goal.id}
-                      onChange={() => setSelectedGoal(goal.id)}
-                      className="w-4 h-4 text-blue-600 focus:ring-blue-500" 
-                    />
-                    <span className={`text-sm font-semibold ${selectedGoal === goal.id ? 'text-blue-900' : 'text-slate-700'}`}>{goal.label}</span>
-                  </label>
+                  { id: "whatsapp", label: "WhatsApp" },
+                  { id: "call", label: "Phone Call" },
+                  { id: "email", label: "Email" },
+                ].map((method) => (
+                  <button
+                    key={method.id}
+                    type="button"
+                    onClick={() => setContactMethod(method.id)}
+                    className={`py-2 px-3 text-xs font-bold rounded-xl border transition-all ${
+                      contactMethod === method.id
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    {method.label}
+                  </button>
                 ))}
               </div>
             </div>
 
-            <p className="text-xs text-blue-800 bg-blue-50 p-3 rounded-xl border border-blue-100 font-medium">
-              💡 Our expert will design a custom plan tailored to your goal and get in touch with you shortly.
-            </p>
+            <div className="bg-blue-50 border border-blue-100 p-3 rounded-xl flex items-start gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+              <p className="text-[11px] text-blue-800 font-medium leading-normal">
+                Our Growth & Engineering specialist will review your request and get in touch within 24 hours.
+              </p>
+            </div>
           </div>
-          
-          <DialogFooter>
-            <Button 
-              variant="outline" 
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
               onClick={() => setIsDialogOpen(false)}
-              className="border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold"
+              className="border-slate-200 text-slate-700 text-xs font-semibold h-10 rounded-xl"
             >
               Cancel
             </Button>
-            <Button 
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-600/20"
+            <Button
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-10 rounded-xl shadow-sm"
               onClick={submitRequest}
-              disabled={isSubmitting}
+              disabled={isSubmitting || (isCustomRequest && !customFeatureNote.trim())}
             >
-              {isSubmitting ? "Submitting..." : "Request Setup"}
+              {isSubmitting ? "Submitting..." : isCustomRequest ? "Submit Custom Request" : "Request Setup"}
             </Button>
           </DialogFooter>
         </DialogContent>

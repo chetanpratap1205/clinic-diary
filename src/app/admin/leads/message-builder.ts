@@ -13,8 +13,8 @@ export interface LeadForMessage {
   phone: string;
   specialty?: string | null;
   city?: string | null;
-  leadCategory: string;
-  messageSentStep: number;
+  leadCategory?: string | null;
+  messageSentStep?: number | null;
   clinicSlug?: string | null;
 }
 
@@ -28,18 +28,42 @@ export const MESSAGE_CONFIG = {
 
 // ─── Lookup Tables (referenced by all forms & filters) ────────────────────────
 export const LEAD_STATUSES = [
-  { value: "new", label: "New" },
-  { value: "contacted", label: "Contacted" },
-  { value: "demo_scheduled", label: "Demo Scheduled" },
-  { value: "converted", label: "Converted" },
-  { value: "rejected", label: "Rejected" },
+  { value: "new", label: "New Lead", badgeColor: "bg-slate-100 text-slate-700 border-slate-200" },
+  { value: "verified", label: "Verified", badgeColor: "bg-teal-50 text-teal-700 border-teal-200" },
+  { value: "contacted", label: "Contacted", badgeColor: "bg-blue-50 text-blue-700 border-blue-200" },
+  { value: "whatsapp_sent", label: "WhatsApp Sent", badgeColor: "bg-[#E7FDE1] text-emerald-800 border-emerald-200" },
+  { value: "called", label: "Called", badgeColor: "bg-indigo-50 text-indigo-700 border-indigo-200" },
+  { value: "interested", label: "Interested 🔥", badgeColor: "bg-amber-50 text-amber-800 border-amber-300 font-semibold" },
+  { value: "demo_scheduled", label: "Demo Scheduled", badgeColor: "bg-purple-50 text-purple-700 border-purple-200" },
+  { value: "trial", label: "14-Day Trial", badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-300" },
+  { value: "converted", label: "Won (Converted) 🎉", badgeColor: "bg-emerald-600 text-white font-bold" },
+  { value: "rejected", label: "Lost (Rejected)", badgeColor: "bg-red-50 text-red-600 border-red-200" },
+  { value: "not_interested", label: "Not Interested", badgeColor: "bg-slate-200 text-slate-600 border-slate-300" },
+];
+
+export const VERIFICATION_STATUSES = [
+  { value: "needs_verification", label: "Needs Verification ⚠️", badgeColor: "bg-amber-50 text-amber-700 border-amber-200" },
+  { value: "verified", label: "Verified ✅", badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  { value: "invalid", label: "Invalid Lead ❌", badgeColor: "bg-red-50 text-red-700 border-red-200" },
+  { value: "duplicate", label: "Duplicate 👥", badgeColor: "bg-slate-100 text-slate-600 border-slate-200" },
+];
+
+export const CALL_OUTCOMES = [
+  { value: "connected", label: "Connected / Spoke with Doctor 🗣️" },
+  { value: "no_answer", label: "No Answer / Ringing 🔕" },
+  { value: "busy", label: "Line Busy ⏳" },
+  { value: "wrong_number", label: "Wrong Number ❌" },
+  { value: "call_back", label: "Call Back Requested 📅" },
+  { value: "interested", label: "Doctor Interested 🔥" },
+  { value: "not_interested", label: "Doctor Not Interested 🚫" },
 ];
 
 export const LEAD_SOURCES = [
   { value: "google_maps", label: "Google Maps 🗺️" },
   { value: "social_media", label: "Social Media 📱" },
   { value: "referral", label: "Referral 👥" },
-  { value: "manual", label: "Manual / Other ✍️" },
+  { value: "imported", label: "Imported / Scraped 📥" },
+  { value: "manual", label: "Manual Entry ✍️" },
 ];
 
 export const SPECIALTIES = [
@@ -74,13 +98,25 @@ export const SPECIALTIES = [
 // ─── Auto-Generated Personalized Demo Preview URL ──────────────────────────────
 export function generateLeadDemoUrl(lead: {
   clinicSlug?: string | null;
+  doctorName?: string | null;
+  clinicName?: string | null;
+  city?: string | null;
 }): string {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://doctor.naturexpress.in";
-  if (!lead.clinicSlug) {
-    console.warn("generateLeadDemoUrl: lead.clinicSlug is missing, returning base url");
-    return `${baseUrl}/demo`;
+  if (lead.clinicSlug) {
+    return `${baseUrl}/clinic/${lead.clinicSlug}`;
   }
-  return `${baseUrl}/clinic/${lead.clinicSlug}`;
+  
+  const rawName = lead.clinicName || lead.doctorName || "clinic";
+  const city = lead.city || "";
+  const cleanSlug = `${rawName}-${city}`
+    .toLowerCase()
+    .replace(/^dr\.?\s*/i, "")
+    .replace(/[^a-z0-9]/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 45);
+
+  return `${baseUrl}/clinic/${cleanSlug}`;
 }
 
 // ─── Step / Category Helpers ──────────────────────────────────────────────────
@@ -99,55 +135,41 @@ function extractLastName(name: string): string {
   return clean.split(/\s+/)[0] || clean;
 }
 
-// ─── Universal Messaging Sequence ──────────────────────────────────────────────
+// ─── Universal Messaging Sequence (Truthful & Objective) ──────────────────────
 export function buildUniversalMessage(lead: LeadForMessage, step: number): string {
   const name = extractLastName(lead.doctorName);
   const clinicName = lead.clinicName || "your clinic";
-  const city = lead.city || "your area";
   const demoUrl = generateLeadDemoUrl(lead);
-  const landingPageUrl = "https://doctor.naturexpress.in";
 
   if (step === 1) {
-    return `${formatDoctorName(name)}, I recently searched for ${clinicName} online and noticed patients can’t book an appointment directly after finding you.
-
-So our engineering team built a *custom booking app* for your clinic:
+    return `${formatDoctorName(name)}, we set up a custom online booking page for ${clinicName}:
 🔗 ${demoUrl}
 
-It works under *your clinic’s own name* — not a marketplace. 
-You keep your paper Rx pad and existing workflow. We simply add the digital booking layer around it.
+It operates under your clinic's name with 0% marketplace commission. You keep your paper Rx pad and offline workflow intact.
 
-We’ve already built it. Tap the link to see how it looks.
+Take a 30-second look at how it works.
 
 — Doctor Diary Onboarding`;
   }
 
   if (step === 2) {
-    return `${formatDoctorName(name)}, just checking if you had a chance to see the booking app we built for your clinic.
-
-Top doctors in ${city} are switching to this system for two reasons:
-1. *Zero Disruption:* You get 24/7 online bookings, but your offline clinic workflow stays exactly the same.
-2. *0% Commission:* The patient relationship stays entirely yours.
-
-*Important:* We strictly limit Doctor Diary to *ONE clinic per specialty in each local area* to protect your patient flow from competitors. 
-
-You can check if your area's slot is still available here:
-🔗 ${landingPageUrl}
-
-Reply *YES* to claim your 14-day free trial and lock your territory.`;
-  }
-
-  // Step 3 — Clean Exit / Takeaway
-  return `${formatDoctorName(name)}, this is my final follow-up.
-
-We are keeping your custom booking app reserved for *48 more hours*:
+    return `${formatDoctorName(name)}, following up on the booking page created for ${clinicName}:
 🔗 ${demoUrl}
 
-If you prefer sticking to the old manual system, no problem at all. After the hold period, we will release your area's exclusive slot to another specialist.
+Doctors use Doctor Diary for two main benefits:
+1. 24/7 online booking for patients searching after OPD hours.
+2. 0% commission on consultations.
 
-Reply *ACTIVATE* to secure your digital upgrade and 14-day trial.`;
+Reply YES if you would like to test the 14-day free trial.`;
+  }
+
+  // Step 3 — Final Clean Touchpoint
+  return `${formatDoctorName(name)}, final follow-up regarding the custom booking app for ${clinicName}:
+🔗 ${demoUrl}
+
+Reply ACTIVATE if you would like to claim your 14-day free trial. Otherwise, no problem at all!`;
 }
 
-// ─── Unified message builder (used by WhatsApp drawer) ────────────────────────
 export function buildMessageForStep(lead: LeadForMessage, step: number): string {
   return buildUniversalMessage(lead, step);
 }

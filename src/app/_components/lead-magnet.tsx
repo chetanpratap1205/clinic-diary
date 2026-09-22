@@ -122,7 +122,7 @@ export function LeadMagnetSection() {
   };
 
   return (
-    <section className="py-20 px-4 sm:px-6 relative bg-[#F8FAFC] border-t border-slate-200/80 overflow-hidden">
+    <section className="py-12 sm:py-16 px-4 sm:px-6 relative bg-[#F8FAFC] border-t border-slate-200/80 overflow-hidden">
       <div className="max-w-4xl mx-auto relative z-10 bg-white border border-slate-200 rounded-3xl p-6 sm:p-10 lg:p-12 shadow-xl">
         <div className="flex flex-col md:flex-row items-center gap-8 lg:gap-12">
           

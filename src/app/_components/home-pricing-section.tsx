@@ -10,24 +10,24 @@ export function HomePricingSection() {
   const [isEnterpriseModalOpen, setIsEnterpriseModalOpen] = useState(false);
 
   return (
-    <section id="pricing" className="py-20 sm:py-28 px-4 sm:px-6 bg-[#FAFBFC] relative border-t border-slate-200/80 overflow-hidden">
+    <section id="pricing" className="py-12 sm:py-16 px-4 sm:px-6 bg-[#FAFBFC] relative border-t border-slate-200/80 overflow-hidden">
       <EnterpriseContactModal
         isOpen={isEnterpriseModalOpen}
         onClose={() => setIsEnterpriseModalOpen(false)}
       />
 
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="text-center mb-12 max-w-3xl mx-auto">
+        <div className="text-center mb-10 max-w-4xl mx-auto">
           {/* 14-Day Free Trial Hook Badge */}
           <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-[#00B7A8] rounded-full px-5 py-2 text-sm font-bold mb-6 shadow-sm">
             <Gift className="w-4 h-4 text-[#00B7A8]" />
             14-Day Unlimited Free Trial — No Credit Card Required
           </div>
 
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#0B132B] mb-6 tracking-tight">
+          <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-[#0B132B] mb-4 tracking-tight leading-snug">
             An Investment That <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00B7A8] via-emerald-600 to-[#00897B]">Pays For Itself.</span>
           </h2>
-          <p className="text-slate-600 text-lg sm:text-xl leading-relaxed mb-8 font-medium">
+          <p className="text-slate-600 text-lg sm:text-xl leading-relaxed mb-6 font-medium">
             The average clinic using Doctor Diary sees a <strong className="text-[#0B132B] font-bold">₹50,000+</strong> increase in monthly revenue simply by eliminating no-shows and streamlining operations.
           </p>
 

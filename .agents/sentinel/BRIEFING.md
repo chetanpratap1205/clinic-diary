@@ -1,7 +1,7 @@
-# BRIEFING — 2026-08-15T04:49:10+05:30
+# BRIEFING — 2026-09-21T04:12:58+05:30
 
 ## Mission
-Investigate and fix Android Chrome PWA install fallback toast issue for patient-facing clinic PWA while preserving doctor PWA functionality.
+Drive the Enterprise SaaS Landing Page Overhaul for Clinic Diary to market-ready polish across below-hero sections via project orchestrator and independent victory auditor.
 
 ## 🔒 My Identity
 - Archetype: sentinel
@@ -14,18 +14,21 @@ Investigate and fix Android Chrome PWA install fallback toast issue for patient-
 - Victory Audit is MANDATORY before reporting completion
 - Must verify that existing Doctor Diary PWA remains completely unaffected
 - Do not write code or analyze problems directly
+- Route: General (teamwork_preview_orchestrator)
+- Must achieve passing Next.js build (`npm run build`) and zero regressions
 
 ## User Context
-- **Last user request**: Fix PWA install button showing "Please open on Android (Chrome) or Safari" fallback toast on Android Chrome for patient PWA.
+- **Last user request**: Enterprise SaaS Landing Page Overhaul — Market-Ready Polish. Redesign all below-hero sections (`TheMirror`, `ZeroFrictionGuarantee`, `DigitalClinicOwnership`, `ExperienceEngine`, `PatientJourneyTimeline`, `DoctorDashboard`, `TerritoryChecker`, `DoctorStories`, `EnterpriseSecurityGrid`, `HomeRoiCalculator`, `HomePricingSection`, `LeadMagnetSection`) with Linear/Stripe design standards, enterprise storytelling arc, SVG mockups, Framer Motion animations, interactive widgets, responsive design, and production build standards.
 - **Pending clarifications**: none
 - **Delivered results**: none
 
 ## Project Status
 - **Phase**: in progress
-- **Orchestrator Conversation ID**: f8cc414e-09ae-44ee-b115-ffb537a1e7a2
+- **Routing Choice**: teamwork_preview_orchestrator (General path)
+- **Active Orchestrator ID**: 03c73ab4-4f06-4888-b15b-5dc01b29defb
 - **Cron Tasks**:
-  - Progress Reporting: task-11 (`*/8 * * * *`)
-  - Liveness Check: task-13 (`*/10 * * * *`)
+  - Progress Reporting: task-28 (`*/8 * * * *`)
+  - Liveness Check: task-30 (`*/10 * * * *`)
 
 ## Victory Audit Status
 - **Triggered**: no

@@ -23,11 +23,14 @@ import { Button } from "@/components/ui/button";
 import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import type { DoctorLead } from "@/db/schema";
+import { getMetaAdsSearchUrl, getInstagramSearchUrl } from "./whatsapp-message-drawer";
 import {
   LEAD_STATUSES,
+  VERIFICATION_STATUSES,
+  CALL_OUTCOMES,
   generateLeadDemoUrl,
 } from "./message-builder";
-import { getLeadActivities, deleteLead, updateLead } from "./actions";
+import { getLeadActivities, deleteLead, updateLead, logCallOutcome, updateVerificationStatus } from "./actions";
 import {
   Select,
   SelectContent,
@@ -61,6 +64,7 @@ const activityIcons: Record<string, string> = {
   visit: "🏥",
   note: "📝",
   status_change: "🔄",
+  verification_change: "🛡️",
 };
 
 export function LeadDetailDrawer({
@@ -76,6 +80,8 @@ export function LeadDetailDrawer({
   const [loadingActivities, setLoadingActivities] = useState(true);
   const [notes, setNotes] = useState(lead?.notes || "");
   const [savingNotes, setSavingNotes] = useState(false);
+  const [showCallOutcomeModal, setShowCallOutcomeModal] = useState(false);
+  const [callNotes, setCallNotes] = useState("");
   const [, startTransition] = useTransition();
 
   useEffect(() => {
@@ -125,6 +131,31 @@ export function LeadDetailDrawer({
     });
   };
 
+  const handleVerificationChange = (val: string) => {
+    if (!lead) return;
+    startTransition(async () => {
+      const res = await updateVerificationStatus(lead.id, val);
+      if (res.error) toast.error(res.error);
+      else {
+        toast.success("Verification status updated");
+        onRefresh?.();
+      }
+    });
+  };
+
+  const handleLogCall = (outcome: string) => {
+    if (!lead) return;
+    startTransition(async () => {
+      const res = await logCallOutcome(lead.id, outcome, callNotes || undefined);
+      if (res.error) toast.error(res.error);
+      else {
+        toast.success(`Call logged: ${outcome}`);
+        setShowCallOutcomeModal(false);
+        setCallNotes("");
+        onRefresh?.();
+      }
+    });
+  };
 
   const copyDemoUrl = () => {
     if (!lead) return;
@@ -138,6 +169,7 @@ export function LeadDetailDrawer({
   const stepProgress = lead.messageSentStep || 0;
   const demoUrl = generateLeadDemoUrl(lead);
   const isConverted = lead.status === "converted";
+  const verObj = VERIFICATION_STATUSES.find(v => v.value === (lead.verificationStatus || "needs_verification"));
 
   return (
     <>
@@ -147,9 +179,14 @@ export function LeadDetailDrawer({
       {/* Drawer */}
       <div className="fixed right-0 top-0 h-full w-full sm:max-w-lg bg-white z-50 shadow-2xl flex flex-col">
         {/* Header */}
-        <div className="px-4 sm:px-6 py-4 border-b border-slate-200 flex items-start justify-between gap-4 shrink-0">
+        <div className="px-4 sm:px-6 py-4 border-b border-slate-200 flex items-start justify-between gap-4 shrink-0 bg-slate-50/50">
           <div className="min-w-0">
-            <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Lead Details</p>
+            <div className="flex items-center gap-2 mb-1">
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${verObj?.badgeColor || "bg-amber-50 text-amber-700 border-amber-200"}`}>
+                {verObj?.label || "Needs Verification"}
+              </span>
+              <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">Lead Details</span>
+            </div>
             <h2 className="text-xl font-bold text-slate-900 truncate">{lead.doctorName}</h2>
             {lead.clinicName && (
               <p className="text-sm text-slate-500 mt-0.5 truncate">{lead.clinicName}</p>
@@ -195,6 +232,15 @@ export function LeadDetailDrawer({
                 WhatsApp Playbook
               </button>
             )}
+            <a
+              href={`tel:${lead.phone.replace(/[^\d+]/g, '')}`}
+              onClick={() => setShowCallOutcomeModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
+              title="Call directly from your mobile SIM or phone app"
+            >
+              <Phone className="w-3.5 h-3.5" />
+              Call Mobile SIM
+            </a>
             {onOpenConvertModal && !isConverted && (
               <button
                 onClick={() => { onOpenConvertModal(lead); onOpenChange(false); }}
@@ -221,7 +267,56 @@ export function LeadDetailDrawer({
               <ExternalLink className="w-3.5 h-3.5" />
               Preview Demo
             </a>
+
+            {/* 1-Click Verification Links */}
+            <a
+              href={getMetaAdsSearchUrl(lead.clinicName || lead.doctorName)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition-colors"
+            >
+              📣 Meta Ads
+            </a>
+            <a
+              href={getInstagramSearchUrl(lead.clinicName || lead.doctorName, lead.city)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 text-xs font-semibold transition-colors"
+            >
+              📸 Instagram
+            </a>
           </div>
+
+          {/* Quick Call Outcome Logging Section */}
+          {showCallOutcomeModal && (
+            <div className="mx-4 sm:mx-6 my-3 p-4 bg-indigo-50 border border-indigo-200 rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold text-indigo-900 uppercase tracking-wider">Log Call Outcome</p>
+                <button onClick={() => setShowCallOutcomeModal(false)} className="text-indigo-400 hover:text-indigo-700">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-xs text-indigo-700">Select outcome after calling Dr. {lead.doctorName}:</p>
+              <div className="flex flex-wrap gap-1.5">
+                {CALL_OUTCOMES.map((o) => (
+                  <button
+                    key={o.value}
+                    onClick={() => handleLogCall(o.value)}
+                    className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white border border-indigo-200 text-indigo-800 hover:bg-indigo-600 hover:text-white transition-all shadow-xs"
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+              <input
+                type="text"
+                placeholder="Optional call note (e.g. Call back on Tuesday at 4 PM)..."
+                value={callNotes}
+                onChange={(e) => setCallNotes(e.target.value)}
+                className="w-full text-xs p-2 rounded-lg border border-indigo-200 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              />
+            </div>
+          )}
 
           {/* Key Info Grid */}
           <div className="px-6 py-4 border-b border-slate-100">
@@ -235,10 +330,17 @@ export function LeadDetailDrawer({
                 label="Last Contact"
                 value={
                   lead.lastContactedAt
-                    ? formatDistanceToNow(new Date(lead.lastContactedAt), { addSuffix: true })
+                    ? `${formatDistanceToNow(new Date(lead.lastContactedAt), { addSuffix: true })} (${lead.lastContactMethod || "unknown"})`
                     : "Never contacted"
                 }
               />
+              {lead.lastCallOutcome && (
+                <InfoRow
+                  icon={Phone}
+                  label="Last Call Outcome"
+                  value={CALL_OUTCOMES.find(o => o.value === lead.lastCallOutcome)?.label || lead.lastCallOutcome}
+                />
+              )}
               {lead.followUpDate && (
                 <InfoRow
                   icon={Calendar}
@@ -263,12 +365,12 @@ export function LeadDetailDrawer({
             </div>
           </div>
 
-          {/* Status & Priority Controls */}
+          {/* Status & Verification Controls */}
           <div className="px-6 py-4 border-b border-slate-100">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Pipeline Controls</p>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Pipeline & Verification Controls</p>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-xs text-slate-500 mb-1.5">Status</p>
+                <p className="text-xs text-slate-500 mb-1.5">Lifecycle Status</p>
                 <Select value={lead.status} onValueChange={handleStatusChange}>
                   <SelectTrigger className="h-9 text-sm">
                     <SelectValue />
@@ -276,6 +378,19 @@ export function LeadDetailDrawer({
                   <SelectContent>
                     {LEAD_STATUSES.map((s) => (
                       <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 mb-1.5">Verification Status</p>
+                <Select value={lead.verificationStatus || "needs_verification"} onValueChange={handleVerificationChange}>
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {VERIFICATION_STATUSES.map((v) => (
+                      <SelectItem key={v.value} value={v.value}>{v.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

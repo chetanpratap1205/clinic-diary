@@ -33,7 +33,7 @@ export function TerritoryChecker() {
   };
 
   return (
-    <section className="py-20 px-4 sm:px-6 bg-[#F1F5F9] border-t border-b border-slate-200/80 relative overflow-hidden">
+    <section className="py-12 sm:py-16 px-4 sm:px-6 bg-[#F1F5F9] border-t border-b border-slate-200/80 relative overflow-hidden">
       {/* Subtle Background Mesh Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-emerald-500/10 rounded-full blur-[140px] pointer-events-none -z-10" />
 
@@ -45,10 +45,10 @@ export function TerritoryChecker() {
           <span>Area Exclusivity License</span>
         </div>
 
-        <h2 className="text-3xl sm:text-5xl font-black text-[#0B132B] mb-4 tracking-tight">
-          🔒 Your Specialty. Your Area. Protected.<br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00B7A8] via-emerald-600 to-[#00897B]">
-            One [Specialty] Clinic per Local Area.
+        <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-[#0B132B] mb-4 tracking-tight leading-snug">
+          🔒 Your Specialty. Your Area. Protected.
+          <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#00B7A8] via-emerald-600 to-[#00897B] mt-1">
+            One Clinic per Specialty in Each Local Area.
           </span>
         </h2>
 

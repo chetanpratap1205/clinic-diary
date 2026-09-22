@@ -1,21 +1,23 @@
 import { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2, Clock } from "lucide-react";
+import { CheckCircle2, Clock, Zap, Stethoscope, ClipboardList, Sparkles, ArrowUpRight } from "lucide-react";
 
 export interface GrowthCardProps {
   id: string;
   title: string;
   description: string;
   icon?: ReactNode;
+  targetRole?: "doctor" | "receptionist" | "both";
   badge?: {
     text: string;
-    variant: "default" | "secondary" | "destructive" | "outline" | "premium" | "success";
+    variant: "default" | "secondary" | "destructive" | "outline" | "premium" | "success" | "warning";
   };
   stats?: { label: string; value: string }[];
   features?: string[];
   ctaText?: string;
   isIntegrated?: boolean;
+  isCustomOnDemand?: boolean;
   price?: number;
   pricingPeriod?: string;
   onAction?: () => void;
@@ -26,44 +28,64 @@ export function GrowthCard({
   title,
   description,
   icon,
+  targetRole = "both",
   badge,
   stats,
   features,
-  ctaText = "Request",
+  ctaText = "Request Setup",
   isIntegrated = false,
+  isCustomOnDemand = false,
   price,
   pricingPeriod,
   onAction,
   requestStatus,
 }: GrowthCardProps) {
-  
-  // Determine if it's currently processing or already active
   const isPending = requestStatus === "pending";
   const isActive = isIntegrated || requestStatus === "active" || requestStatus === "paid";
 
   return (
-    <div className={`group relative flex flex-col h-full bg-white border ${isActive ? 'border-emerald-200' : isPending ? 'border-amber-200' : 'border-slate-200 hover:border-blue-200'} rounded-[1.5rem] overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-blue-900/5 hover:-translate-y-1`}>
-      
-      {/* Header Accent & Icon */}
-      <div className="px-6 pt-6 pb-4 flex items-start justify-between relative overflow-hidden">
-        {/* Subtle background glow based on hover */}
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-50 rounded-full blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-        
-        <div className={`relative z-10 w-14 h-14 rounded-2xl ${isActive ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : isPending ? 'bg-amber-50 border-amber-100 text-amber-600' : 'bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200 text-slate-600 group-hover:text-blue-600 group-hover:border-blue-100'} border flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300`}>
-          <div className="[&>svg]:w-7 [&>svg]:h-7">
-            {icon}
-          </div>
+    <div
+      className={`group relative flex flex-col h-full bg-white border ${
+        isActive
+          ? "border-emerald-300 ring-1 ring-emerald-500/20 shadow-sm"
+          : isPending
+          ? "border-amber-300 bg-amber-50/10"
+          : "border-slate-200/80 hover:border-blue-400/80 hover:shadow-xl hover:shadow-blue-500/5"
+      } rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1`}
+    >
+      {/* Top Banner / Role & Badge */}
+      <div className="px-5 pt-5 pb-3 flex items-center justify-between gap-2 border-b border-slate-100/80 bg-slate-50/40">
+        <div className="flex items-center gap-1.5">
+          {targetRole === "doctor" && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200/60 px-2.5 py-0.5 rounded-full">
+              <Stethoscope className="w-3 h-3 text-blue-600" /> Doctor Value
+            </span>
+          )}
+          {targetRole === "receptionist" && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 bg-purple-50 border border-purple-200/60 px-2.5 py-0.5 rounded-full">
+              <ClipboardList className="w-3 h-3 text-purple-600" /> Receptionist Ease
+            </span>
+          )}
+          {targetRole === "both" && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200/60 px-2.5 py-0.5 rounded-full">
+              <Sparkles className="w-3 h-3 text-indigo-600" /> Enterprise Wide
+            </span>
+          )}
         </div>
-        
+
         {badge && (
-          <Badge 
-            variant={badge.variant as any} 
+          <Badge
             className={`
-              relative z-10 rounded-full px-3 py-1.5 text-[10px] sm:text-xs font-bold tracking-wide uppercase shadow-sm
-              ${badge.variant === 'premium' ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-indigo-500/20' : ''}
-              ${badge.variant === 'success' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : ''}
-              ${badge.variant === 'default' ? 'bg-blue-100 text-blue-800 border-blue-200' : ''}
-              ${badge.variant === 'outline' ? 'bg-slate-100 text-slate-700 border-slate-200' : ''}
+              rounded-full px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider border-0 shadow-none
+              ${
+                badge.variant === "premium"
+                  ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm shadow-orange-500/20"
+                  : ""
+              }
+              ${badge.variant === "success" ? "bg-emerald-100 text-emerald-800" : ""}
+              ${badge.variant === "default" ? "bg-blue-100 text-blue-800" : ""}
+              ${badge.variant === "warning" ? "bg-amber-100 text-amber-800" : ""}
+              ${badge.variant === "outline" ? "bg-slate-100 text-slate-700" : ""}
             `}
           >
             {badge.text}
@@ -71,22 +93,42 @@ export function GrowthCard({
         )}
       </div>
 
-      {/* Content */}
-      <div className="px-6 flex-1 flex flex-col">
-        <h3 className="text-xl font-bold text-slate-900 tracking-tight mb-2 group-hover:text-blue-700 transition-colors">
-          {title}
-        </h3>
-        <p className="text-sm text-slate-500 leading-relaxed font-medium mb-6">
-          {description}
-        </p>
+      {/* Main Body */}
+      <div className="p-5 flex-1 flex flex-col">
+        <div className="flex items-start gap-3.5 mb-3">
+          <div className="w-12 h-12 rounded-xl bg-slate-900/5 group-hover:bg-blue-600/10 border border-slate-200/60 group-hover:border-blue-300/60 flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:scale-105">
+            <div className="[&>svg]:w-6 [&>svg]:h-6 transition-colors group-hover:text-blue-600">{icon}</div>
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-900 tracking-tight leading-snug group-hover:text-blue-600 transition-colors">
+              {title}
+            </h3>
+            <p className="text-xs text-slate-500 font-medium leading-relaxed mt-1 line-clamp-2">
+              {description}
+            </p>
+          </div>
+        </div>
 
-        {/* Stats Row */}
+        {/* On-Demand Tag if applicable */}
+        {isCustomOnDemand && (
+          <div className="my-2.5 p-2 rounded-lg bg-amber-50/80 border border-amber-200/60 flex items-center gap-2 text-[11px] font-semibold text-amber-800">
+            <Zap className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+            <span>Available on Request • Custom built for your clinic in 48h</span>
+          </div>
+        )}
+
+        {/* Stats Grid */}
         {stats && stats.length > 0 && (
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="grid grid-cols-2 gap-2 my-3">
             {stats.map((stat, i) => (
-              <div key={i} className="bg-slate-50 rounded-xl p-2 sm:p-3 border border-slate-100 group-hover:bg-blue-50/50 group-hover:border-blue-100/50 transition-colors">
-                <div className="text-base sm:text-lg font-black text-slate-900 tracking-tight truncate">{stat.value}</div>
-                <div className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider sm:tracking-widest mt-0.5 leading-tight">{stat.label}</div>
+              <div
+                key={i}
+                className="bg-slate-50/80 border border-slate-150 p-2 rounded-xl text-center group-hover:bg-blue-50/40 group-hover:border-blue-100 transition-colors"
+              >
+                <div className="text-sm font-extrabold text-slate-900 tracking-tight">{stat.value}</div>
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5 truncate">
+                  {stat.label}
+                </div>
               </div>
             ))}
           </div>
@@ -94,13 +136,11 @@ export function GrowthCard({
 
         {/* Features List */}
         {features && features.length > 0 && (
-          <div className="mb-6 space-y-2.5 mt-auto">
-            {features.map((feature, i) => (
-              <div key={i} className="flex items-start gap-2 text-sm text-slate-600 font-medium">
-                <div className="mt-0.5 bg-blue-100 text-blue-600 rounded-full p-0.5 flex-shrink-0">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                </div>
-                <span className="leading-tight">{feature}</span>
+          <div className="mt-auto pt-3 space-y-1.5">
+            {features.slice(0, 3).map((feature, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs text-slate-600 font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                <span className="truncate">{feature}</span>
               </div>
             ))}
           </div>
@@ -108,40 +148,40 @@ export function GrowthCard({
       </div>
 
       {/* Footer / CTA */}
-      <div className={`p-6 pt-5 border-t mt-auto transition-colors ${isActive ? 'bg-emerald-50/50 border-emerald-100' : isPending ? 'bg-amber-50/50 border-amber-100' : 'bg-slate-50 border-slate-100 group-hover:bg-blue-50/10'}`}>
+      <div className="px-5 py-3.5 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between gap-3 mt-auto">
+        <div className="flex flex-col">
+          {isActive ? (
+            <span className="text-[11px] font-extrabold text-emerald-600 uppercase tracking-wider">Active & Ready</span>
+          ) : price !== undefined ? (
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block -mb-0.5">Investment</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-base font-extrabold text-slate-900">₹{price.toLocaleString("en-IN")}</span>
+                {pricingPeriod && <span className="text-[10px] font-bold text-slate-500">/{pricingPeriod}</span>}
+              </div>
+            </div>
+          ) : (
+            <span className="text-xs font-bold text-slate-600">On-Demand Setup</span>
+          )}
+        </div>
+
         {isActive ? (
-          <div className="flex items-center justify-center gap-2 text-sm font-bold text-emerald-700 py-2 w-full bg-emerald-100/80 border border-emerald-200 rounded-xl shadow-inner cursor-default">
-            <CheckCircle2 className="w-5 h-5" />
-            Service Active
+          <div className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-100/80 px-3 py-1.5 rounded-xl border border-emerald-200">
+            <CheckCircle2 className="w-3.5 h-3.5" /> Connected
           </div>
         ) : isPending ? (
-          <div className="flex items-center justify-center gap-2 text-sm font-bold text-amber-700 py-2 w-full bg-amber-100/80 border border-amber-200 rounded-xl shadow-inner cursor-default animate-pulse">
-            <Clock className="w-5 h-5" />
-            Requested
+          <div className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 bg-amber-100/80 px-3 py-1.5 rounded-xl border border-amber-200 animate-pulse">
+            <Clock className="w-3.5 h-3.5" /> Requested
           </div>
         ) : (
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col">
-              {price !== undefined ? (
-                <>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Est. Investment</span>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-black text-slate-900 tracking-tight">₹{price.toLocaleString('en-IN')}</span>
-                    {pricingPeriod && <span className="text-xs font-bold text-slate-500">/{pricingPeriod}</span>}
-                  </div>
-                </>
-              ) : (
-                <span className="text-sm font-bold text-slate-500">Custom Quote</span>
-              )}
-            </div>
-            
-            <Button 
-              className="bg-slate-900 hover:bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-slate-900/10 hover:shadow-blue-600/30 hover:-translate-y-0.5 transition-all px-6 active:scale-95"
-              onClick={onAction}
-            >
-              {ctaText}
-            </Button>
-          </div>
+          <Button
+            size="sm"
+            className="bg-slate-900 hover:bg-blue-600 text-white rounded-xl text-xs font-bold px-4 h-9 shadow-sm transition-all flex items-center gap-1"
+            onClick={onAction}
+          >
+            {ctaText}
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </Button>
         )}
       </div>
     </div>
