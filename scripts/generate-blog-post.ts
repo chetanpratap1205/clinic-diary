@@ -127,7 +127,7 @@ async function generateArticle(
   city?: string
 ): Promise<GeneratedArticle> {
   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY!);
-  const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3.8-flash" }, { timeout: 120000 });
 
   const internalLinkNote = internalLink
     ? `\n- Include one natural inline link to: ${internalLink} (use anchor text like "clinic software for ${specialty || "doctors"} in ${city || "India"}")`

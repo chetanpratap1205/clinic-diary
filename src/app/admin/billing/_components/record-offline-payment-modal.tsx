@@ -61,10 +61,12 @@ export function RecordOfflinePaymentModal({ clinics }: RecordOfflinePaymentModal
     try {
       const planName =
         planId === "quarterly"
-          ? "Quarterly Plan (3 Months)"
+          ? "3 Months"
           : planId === "yearly"
-          ? "Annual Plan (12 Months)"
-          : "Monthly Plan (1 Month)";
+          ? "12 Months"
+          : planId === "monthly"
+          ? "1 Month"
+          : "3 Months (Custom)";
 
       const res = await recordOfflinePaymentAction({
         clinicId: selectedClinicId,
@@ -142,10 +144,10 @@ export function RecordOfflinePaymentModal({ clinics }: RecordOfflinePaymentModal
                   onChange={(e) => handlePlanChange(e.target.value)}
                   className="w-full h-9 bg-white border border-slate-200 text-slate-900 text-xs px-3 rounded-lg focus:outline-none focus:border-teal-500"
                 >
-                  <option value="quarterly">Quarterly (₹1,499)</option>
-                  <option value="yearly">Annual (₹4,999)</option>
-                  <option value="monthly">Monthly (₹499)</option>
-                  <option value="custom">Custom Plan</option>
+                  <option value="quarterly">Quarterly (₹2,999)</option>
+                  <option value="yearly">Annual (₹9,999)</option>
+                  <option value="monthly">Monthly (₹999)</option>
+                  <option value="custom">Custom Plan (e.g. ₹1,299)</option>
                 </select>
               </div>
 

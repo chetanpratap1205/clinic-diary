@@ -759,6 +759,6 @@ Experience why hundreds of high-volume practitioners trust Doctor Diary as the s
   },
 ];
 
-(slug: string): BlogPost | undefined {
+export function getBlogPostBySlug(slug: string): BlogPost | undefined {
   return BLOG_POSTS.find((post) => post.slug === slug);
 }

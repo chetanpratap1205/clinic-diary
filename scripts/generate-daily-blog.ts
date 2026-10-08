@@ -88,7 +88,10 @@ async function generateArticle(
   city?: string
 ) {
   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY!);
-  const candidateModels = ["gemini-flash-latest", "gemini-3.1-pro-preview", "gemini-3.6-flash"];
+  const candidateModels = [
+    "gemini-3.8-flash",
+    "gemini-flash-latest",
+  ];
 
   const internalLinkNote = internalLink
     ? `\n- Include one natural inline link to: ${internalLink} (use anchor text like "clinic software for ${specialty || "doctors"} in ${city || "India"}")`
@@ -123,41 +126,45 @@ FORMAT YOUR RESPONSE AS PURE JSON (no markdown fences, just valid JSON):
 
   let lastErr: any;
   for (const modelName of candidateModels) {
-    try {
-      console.log(`🤖 Requesting article via ${modelName}...`);
-      const model = genAI.getGenerativeModel({ model: modelName });
-      const result = await model.generateContent(systemPrompt);
-      const responseText = result.response.text().trim();
-
-      const cleanedResponse = responseText
-        .replace(/^```json\s*/i, "")
-        .replace(/^```\s*/i, "")
-        .replace(/\s*```$/i, "")
-        .trim();
-
-      let parsed: any;
+    for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        parsed = JSON.parse(cleanedResponse);
-      } catch {
-        const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          parsed = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error("Failed to parse AI response as JSON");
-        }
-      }
+        console.log(`🤖 Requesting article via ${modelName} (Attempt ${attempt}/3)...`);
+        const model = genAI.getGenerativeModel({ model: modelName }, { timeout: 120000 });
+        const result = await model.generateContent(systemPrompt);
+        const responseText = result.response.text().trim();
 
-      return {
-        title: parsed.title,
-        excerpt: parsed.excerpt,
-        content: parsed.content,
-        keywords: parsed.keywords,
-        readTime: estimateReadTime(parsed.content),
-      };
-    } catch (err: any) {
-      console.warn(`⚠️ Model ${modelName} attempt failed:`, err?.message || err);
-      lastErr = err;
-      await new Promise((r) => setTimeout(r, 2000));
+        const cleanedResponse = responseText
+          .replace(/^```json\s*/i, "")
+          .replace(/^```\s*/i, "")
+          .replace(/\s*```$/i, "")
+          .trim();
+
+        let parsed: any;
+        try {
+          parsed = JSON.parse(cleanedResponse);
+        } catch {
+          const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            parsed = JSON.parse(jsonMatch[0]);
+          } else {
+            throw new Error("Failed to parse AI response as JSON");
+          }
+        }
+
+        return {
+          title: parsed.title,
+          excerpt: parsed.excerpt,
+          content: parsed.content,
+          keywords: parsed.keywords,
+          readTime: estimateReadTime(parsed.content),
+        };
+      } catch (err: any) {
+        console.warn(`⚠️ Model ${modelName} attempt ${attempt} failed:`, err?.message || err);
+        lastErr = err;
+        const waitMs = attempt * 3000;
+        console.log(`⏳ Waiting ${waitMs / 1000}s before retry...`);
+        await new Promise((r) => setTimeout(r, waitMs));
+      }
     }
   }
 
