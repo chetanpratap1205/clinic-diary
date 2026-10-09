@@ -145,7 +145,7 @@ export async function createBooking(
       if (existingPatient.length > 0) {
         patientId = existingPatient[0].id;
       } else {
-        // --- Subscription & 14-Day Enterprise Trial Check ---
+        // --- Subscription & 10-Patient Trial Limit Check ---
         const accessStatus = await getClinicAccessStatus(clinicId);
         if (!accessStatus.hasAccess) {
           throw new Error("This clinic is currently not accepting new patient registrations online.");

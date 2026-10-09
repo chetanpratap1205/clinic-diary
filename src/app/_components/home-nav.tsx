@@ -68,7 +68,7 @@ export function HomeNav() {
         <div className="flex items-center gap-3 sm:gap-4 flex-1 justify-end">
           <Link href="/signup" className="hidden sm:inline-flex">
             <Button size="sm" className="bg-[#00B7A8] hover:bg-[#00998c] text-white font-extrabold rounded-full px-5 h-10 text-xs sm:text-sm shadow-md shadow-[#00B7A8]/20 transition-all">
-              14-Day Free Trial
+              Start Free Trial
             </Button>
           </Link>
           
@@ -88,7 +88,7 @@ export function HomeNav() {
           <Link href="/blog" className="text-sm font-extrabold text-[#0B132B] p-2.5 hover:bg-slate-100 rounded-xl" onClick={() => setIsMobileMenuOpen(false)}>Blog</Link>
           <Link href="/login" className="text-sm font-extrabold text-[#0B132B] p-2.5 hover:bg-slate-100 rounded-xl" onClick={() => setIsMobileMenuOpen(false)}>Sign In</Link>
           <Link href="#pricing" className="text-sm font-extrabold text-[#0B132B] p-2.5 hover:bg-slate-100 rounded-xl" onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
-          <Link href="/signup" className="text-sm font-extrabold text-white bg-[#00B7A8] p-3 text-center rounded-xl" onClick={() => setIsMobileMenuOpen(false)}>14-Day Free Trial</Link>
+          <Link href="/signup" className="text-sm font-extrabold text-white bg-[#00B7A8] p-3 text-center rounded-xl" onClick={() => setIsMobileMenuOpen(false)}>Start Free Trial</Link>
         </div>
       )}
     </header>

@@ -723,11 +723,9 @@ export async function convertLeadToClinicAction(leadId: string) {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
     const slug = `${slugBase}-${Math.random().toString(36).substring(2, 6)}`;
-
     const now = new Date();
-    const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
 
-    // 1. Create Clinic
+    // 1. Create Clinic (starts in 10-patient trial mode)
     const [newClinic] = await db
       .insert(clinics)
       .values({
@@ -742,16 +740,7 @@ export async function convertLeadToClinicAction(leadId: string) {
       })
       .returning();
 
-    // 2. Create Subscription Trial
-    await db.insert(subscriptions).values({
-      clinicId: newClinic.id,
-      planId: "quarterly",
-      status: "active",
-      currentPeriodStart: now,
-      currentPeriodEnd: trialEnd,
-    });
-
-    // 3. Update Lead Status to Converted
+    // 2. Update Lead Status to Converted
     await db
       .update(doctorLeads)
       .set({

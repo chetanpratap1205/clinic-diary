@@ -91,7 +91,7 @@ export default async function PatientsPage(props: { searchParams: Promise<{ [key
     .from(patients)
     .where(eq(patients.clinicId, authUser.clinicId));
 
-  // Check subscription / 14-day trial status
+  // Check subscription / 10-patient trial status
   const accessStatus = await getClinicAccessStatus(authUser.clinicId);
   const isTrialExpired = accessStatus.status === "trial_expired";
 
@@ -101,8 +101,8 @@ export default async function PatientsPage(props: { searchParams: Promise<{ [key
         <FadeInUp>
           <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
             <div>
-              <h3 className="text-lg font-semibold text-amber-900">14-Day Free Trial Expired</h3>
-              <p className="text-amber-700 mt-1">Your free trial has ended. Upgrade to an active plan to continue adding new patients while keeping your existing records safe.</p>
+              <h3 className="text-lg font-semibold text-amber-900">10-Patient Free Trial Limit Reached</h3>
+              <p className="text-amber-700 mt-1">You have reached the trial limit of 10 patients. Upgrade to an active plan to continue adding new patients while keeping your existing records safe.</p>
             </div>
             <Link
               href="/dashboard/billing"
@@ -114,7 +114,7 @@ export default async function PatientsPage(props: { searchParams: Promise<{ [key
         </FadeInUp>
       )}
 
-      {accessStatus.status === "trial_active" && accessStatus.daysRemaining !== null && (
+      {accessStatus.status === "trial_active" && accessStatus.patientsRemaining !== null && (
         <FadeInUp>
           <div className="bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-100 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
             <div className="flex items-center gap-3">
@@ -123,15 +123,17 @@ export default async function PatientsPage(props: { searchParams: Promise<{ [key
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-sky-500"></span>
               </span>
               <div>
-                <h4 className="text-sm font-semibold text-sky-950">14-Day Unlimited Free Trial Active</h4>
+                <h4 className="text-sm font-semibold text-sky-950">
+                  Free Trial: <span className="font-bold text-sky-700">{accessStatus.patientCount} / {accessStatus.patientLimit} Patients Used</span>
+                </h4>
                 <p className="text-xs text-sky-700 mt-0.5">
-                  You have <span className="font-bold">{accessStatus.daysRemaining} day{accessStatus.daysRemaining !== 1 ? 's' : ''} remaining</span> with unlimited patient records & features.
+                  You have <span className="font-bold">{accessStatus.patientsRemaining} spot{accessStatus.patientsRemaining !== 1 ? 's' : ''} remaining</span> before upgrading to unlock unlimited patient records & features.
                 </p>
               </div>
             </div>
             <Link
               href="/dashboard/billing"
-              className="text-xs font-semibold bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-xl transition-all shadow-xs"
+              className="text-xs font-semibold bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-xl transition-all shadow-xs whitespace-nowrap"
             >
               View Plans
             </Link>

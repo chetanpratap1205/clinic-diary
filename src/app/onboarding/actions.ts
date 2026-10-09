@@ -138,23 +138,8 @@ export async function submitOnboarding(data: {
         .catch((e) => console.error("Failed to track marketing signup:", e));
     }
 
-    // Activate 14-Day Free Trial instantly for organic signups!
-    try {
-      const { subscriptions } = await import("@/db/schema");
-      const now = new Date();
-      const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
-      await db.insert(subscriptions).values({
-        clinicId: newClinic.id,
-        planId: "quarterly", // Default trial plan
-        status: "active",
-        currentPeriodStart: now,
-        currentPeriodEnd: trialEnd,
-      });
-      console.log(`[TRIAL ACTIVATED] Started 14-day trial for organic signup ${newClinic.id}`);
-    } catch (err) {
-      console.error("Failed to activate trial on onboarding:", err);
-    }
-
+    // New clinic automatically begins in 10-patient trial mode (0/10 patients used)
+    console.log(`[TRIAL READY] Clinic ${newClinic.id} ready for 10-patient trial.`);
   } catch (error: any) {
     console.error("Onboarding error:", error);
     if (error.code === '23505') { // Postgres unique violation

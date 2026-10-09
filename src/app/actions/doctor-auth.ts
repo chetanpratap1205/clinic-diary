@@ -116,29 +116,13 @@ export async function verifyDoctorPhoneOtp(phone: string, code: string) {
       const isAlreadyAdmin = existingAdmins.some(a => a.authUserId === authUserId);
 
       if (!isAlreadyAdmin) {
-        // MAGIC CLAIM HAPPENS HERE!
-        const { subscriptions } = await import("@/db/schema");
-        
-        await db.transaction(async (tx) => {
-          await tx.insert(clinicAdmins).values({
-            clinicId: targetClinic.id,
-            authUserId: authUserId,
-          });
-
-          // Give them a fresh 14-day trial from the moment of claiming!
-          const now = new Date();
-          const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
-          
-          await tx.insert(subscriptions).values({
-            clinicId: targetClinic.id,
-            planId: "quarterly", // Default to an active plan format so it works seamlessly
-            status: "active",
-            currentPeriodStart: now,
-            currentPeriodEnd: trialEnd,
-          });
+        // Link doctor to claimed clinic
+        await db.insert(clinicAdmins).values({
+          clinicId: targetClinic.id,
+          authUserId: authUserId,
         });
         
-        console.log(`[MAGIC CLAIM] User ${authUserId} just claimed Clinic ${targetClinic.id}`);
+        console.log(`[MAGIC CLAIM] User ${authUserId} claimed Clinic ${targetClinic.id} (10-patient trial active)`);
       }
     }
 

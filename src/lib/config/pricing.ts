@@ -8,7 +8,7 @@ export const PRICING_PLANS = {
     shortDuration: "/ 3 months",
     description: "Perfect for single clinics getting started. No hidden costs.",
     features: [
-      "14-Day Unlimited Free Trial",
+      "First 10 Patients Free Trial",
       "Unlimited Patients & Appointments",
       "Free Premium Starter Kit (Worth ₹1,999)",
       "Smart WhatsApp & SMS Ready",
@@ -25,7 +25,7 @@ export const PRICING_PLANS = {
     shortDuration: "/ 12 months",
     description: "Clean, simple pricing forever. No discounts. GST Included.",
     features: [
-      "14-Day Unlimited Free Trial",
+      "First 10 Patients Free Trial",
       "Everything in Quarterly",
       "Dedicated Account Manager",
       "Area Exclusivity Rights Locked",

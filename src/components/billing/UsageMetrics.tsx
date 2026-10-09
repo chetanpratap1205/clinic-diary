@@ -8,9 +8,11 @@ interface UsageMetricsProps {
   planId: string;
   appointmentCount: number;
   totalPaid: number;
+  patientCount?: number;
+  isTrial?: boolean;
 }
 
-export function UsageMetrics({ planId, appointmentCount, totalPaid }: UsageMetricsProps) {
+export function UsageMetrics({ planId, appointmentCount, totalPaid, patientCount = 0, isTrial = false }: UsageMetricsProps) {
   const getAppointmentLimit = () => {
     switch (planId) {
       case "monthly": return Infinity;
@@ -37,11 +39,11 @@ export function UsageMetrics({ planId, appointmentCount, totalPaid }: UsageMetri
       id: "patients",
       name: "Patients",
       icon: <Users className="w-4 h-4" />,
-      used: "Unlimited",
-      limit: Infinity,
-      unit: "allowed",
+      used: isTrial ? patientCount : (patientCount > 0 ? `${patientCount} (Unlimited)` : "Unlimited"),
+      limit: isTrial ? 10 : Infinity,
+      unit: isTrial ? "patients" : "allowed",
       color: "bg-emerald-500",
-      isUnlimited: true,
+      isUnlimited: !isTrial,
     },
     {
       id: "paid",

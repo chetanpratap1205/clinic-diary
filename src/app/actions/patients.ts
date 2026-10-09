@@ -70,11 +70,11 @@ export async function createPatientAction(data: CreatePatientInput) {
       return { error: "Patient with this phone number already exists" };
     }
 
-    // --- Subscription & 14-Day Enterprise Trial Check ---
+    // --- Subscription & 10-Patient Trial Limit Check ---
     const accessStatus = await getClinicAccessStatus(clinicId);
     if (!accessStatus.hasAccess) {
       return {
-        error: "Your 14-day free trial has expired. Upgrade your plan to continue adding new patients.",
+        error: "You have reached your 10-patient free trial limit. Upgrade your plan to continue adding new patients.",
       };
     }
 

@@ -121,10 +121,10 @@ export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
       />
       
       <div className="text-center mb-12 space-y-4">
-        {/* 14-Day Free Trial Hook Banner */}
+        {/* 10-Patient Free Trial Hook Banner */}
         <div className="inline-flex items-center gap-2 bg-gradient-to-r from-sky-500/10 via-emerald-500/10 to-teal-500/10 border border-emerald-500/20 px-4 py-2 rounded-full text-emerald-800 font-bold text-xs sm:text-sm shadow-xs backdrop-blur-md">
           <Gift className="w-4 h-4 text-emerald-600 animate-bounce" />
-          <span>All Plans Include a <strong>14-Day Unlimited Free Trial</strong> — No Credit Card Required</span>
+          <span>All Plans Include <strong>First 10 Patients Free</strong> — No Credit Card Required</span>
         </div>
 
         <h2 className="text-3xl md:text-5xl font-black tracking-tight bg-gradient-to-r from-slate-900 via-slate-800 to-sky-900 bg-clip-text text-transparent">
@@ -239,7 +239,7 @@ export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
                 )}
                 {!isEnterprise && activePlanId !== plan.id && (PLAN_RANKS[plan.id] || 0) >= activeRank && (
                   <p className={`text-[10px] text-center mt-2 ${plan.popular ? "text-slate-400" : "text-slate-500"}`}>
-                    14-day trial automatically applied if eligible
+                    10-patient free trial automatically included
                   </p>
                 )}
               </div>
@@ -259,7 +259,7 @@ export function PricingCards({ activePlanId, adminName }: PricingCardsProps) {
         </div>
         <h4 className="text-xl font-bold text-slate-900 mb-2">100% Money-Back Guarantee</h4>
         <p className="text-slate-600 text-sm leading-relaxed">
-          Try our platform risk-free with your 14-day free trial. If you feel it&apos;s not useful after upgrading, we&apos;ll refund your money — <strong>no questions asked.</strong>
+          Try our platform risk-free for your first 10 patients. If you feel it&apos;s not useful after upgrading, we&apos;ll refund your money — <strong>no questions asked.</strong>
         </p>
       </motion.div>
 

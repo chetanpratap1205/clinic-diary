@@ -630,7 +630,7 @@ export default async function SpecialtyInCityPage({ params }: Props) {
             <FaqAccordion
               items={specialty.faqQuestions.map((q) => ({
                 question: fillCity(q, city.label),
-                answer: `Doctor Diary is purpose-built for independent ${specialty.shortLabel}s in ${city.label}, ${city.state}. It provides WhatsApp-based appointment booking (patients book without downloading any app), a live digital queue patients track on their phones, automated 24h + 2h reminder sequences, digital prescription generation, and a private branded clinic URL — all with 0% commission. Setup takes 5 minutes and your first 14 days are completely free.`,
+                answer: `Doctor Diary is purpose-built for independent ${specialty.shortLabel}s in ${city.label}, ${city.state}. It provides WhatsApp-based appointment booking (patients book without downloading any app), a live digital queue patients track on their phones, automated 24h + 2h reminder sequences, digital prescription generation, and a private branded clinic URL — all with 0% commission. Setup takes 5 minutes and your first 10 patients are completely free.`,
               }))}
             />
 
@@ -678,7 +678,7 @@ export default async function SpecialtyInCityPage({ params }: Props) {
               </Link>
             </div>
             <p className="text-white/60 text-sm font-medium mt-6">
-              14-day free trial &nbsp;·&nbsp; No credit card &nbsp;·&nbsp; 5-minute setup &nbsp;·&nbsp; Cancel anytime
+              First 10 patients free &nbsp;·&nbsp; No credit card &nbsp;·&nbsp; 5-minute setup &nbsp;·&nbsp; Cancel anytime
             </p>
           </div>
         </section>

@@ -78,7 +78,7 @@ function MessageCard({ lead, step, activeSentStep, onStepSent }: MessageCardProp
     }
 
     if (pitchPreset === 'queue_chaos') {
-      return `Hi ${docLabel}, we know how hectic waiting rooms get at ${clinicName} during peak hours! 🏥\n\nWith Doctor Diary, your patients get a live digital token on their phone so they can wait comfortably in their car or home until their turn is 2 calls away. No waiting room chaos!\n\nSee how live queue tracking works in 30 seconds: ${demoUrl}\n\nWould you like a free 7-day trial for your clinic?`;
+      return `Hi ${docLabel}, we know how hectic waiting rooms get at ${clinicName} during peak hours! 🏥\n\nWith Doctor Diary, your patients get a live digital token on their phone so they can wait comfortably in their car or home until their turn is 2 calls away. No waiting room chaos!\n\nSee how live queue tracking works in 30 seconds: ${demoUrl}\n\nWould you like a free 10-patient trial for your clinic?`;
     }
 
     return buildMessageForStep(lead, step);
@@ -442,7 +442,7 @@ export function WhatsAppMessageDrawer({ lead, open, onOpenChange, onStepSent }: 
                 <div className="p-2.5 rounded-lg bg-white/5 border border-white/10">
                   <span className="font-semibold text-amber-300">Doctor asks: "What's the catch / pricing?"</span>
                   <p className="text-slate-300 mt-1">
-                    ⚡ Reply: *"No catch! 0% commission forever. Your custom booking site & mobile app are 100% free with a 14-day full trial."*
+                    ⚡ Reply: *"No catch! 0% commission forever. Your custom booking site & mobile app are 100% free with a 10-patient full trial."*
                   </p>
                 </div>
                 <div className="p-2.5 rounded-lg bg-white/5 border border-white/10">

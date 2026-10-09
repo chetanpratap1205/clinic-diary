@@ -70,18 +70,11 @@ export async function POST(req: NextRequest) {
     
     const planDetails = PLANS[planId as keyof typeof PLANS];
 
-    // Determine trial status to handle deferred billing
-    const { getClinicAccessStatus } = await import("@/lib/subscription");
-    const accessStatus = await getClinicAccessStatus(authUser.clinicId);
-    
-    // Enterprise Upgrade Logic: Proration / Time Extension
+    // Subscription Period Calculation:
+    // If clinic has an active paid subscription that hasn't expired yet, stack new duration at the end
     let currentPeriodStart = now;
-    if (activeSub && activeSub.currentPeriodEnd && activeSub.currentPeriodEnd > now) {
-      // Append new time to end of existing active subscription
+    if (activeSub && activeSub.currentPeriodEnd && new Date(activeSub.currentPeriodEnd) > now) {
       currentPeriodStart = new Date(activeSub.currentPeriodEnd);
-    } else if (accessStatus.status === "trial_active" && accessStatus.trialEndDate) {
-      // Deferred billing: start period after trial ends
-      currentPeriodStart = new Date(accessStatus.trialEndDate);
     }
     
     const currentPeriodEnd = new Date(currentPeriodStart);

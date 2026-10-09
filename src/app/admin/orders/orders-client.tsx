@@ -259,7 +259,7 @@ export function OrdersClient({ orders, clinics = [], products = [] }: OrdersClie
             ₹0 (Free Trial)
           </span>
           <span className="text-[10px] font-semibold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded border border-emerald-200 block w-fit mt-0.5">
-            14-Day Complimentary
+            10-Patient Complimentary
           </span>
         </div>
       );
@@ -557,7 +557,7 @@ export function OrdersClient({ orders, clinics = [], products = [] }: OrdersClie
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="free_trial">🎁 14-Day Free Trial (₹0 Complimentary)</SelectItem>
+                  <SelectItem value="free_trial">🎁 10-Patient Free Trial (₹0 Complimentary)</SelectItem>
                   <SelectItem value="quarterly_2999">💳 Quarterly Subscription (₹1,499 / month)</SelectItem>
                   <SelectItem value="yearly_9999">👑 Annual Subscription (₹4,999 / year)</SelectItem>
                   <SelectItem value="custom">💵 Custom Amount</SelectItem>

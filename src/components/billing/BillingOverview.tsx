@@ -16,12 +16,7 @@ type Subscription = {
   currentPeriodEnd: Date | null;
 };
 
-export type ClinicAccessStatus = {
-  hasAccess: boolean;
-  status: "active" | "trial_active" | "trial_expired";
-  daysRemaining: number | null;
-  trialEndDate: Date | null;
-};
+import type { ClinicAccessStatus } from "@/lib/subscription";
 
 interface BillingOverviewProps {
   activeSub: Subscription | null;
@@ -71,9 +66,9 @@ export function BillingOverview({ activeSub, accessStatus, appointmentCount, tot
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
           <Alert variant="destructive" className="border-amber-200 bg-amber-50 text-amber-900">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>14-Day Free Trial Expired</AlertTitle>
+            <AlertTitle>10-Patient Free Trial Limit Reached</AlertTitle>
             <AlertDescription>
-              Your 14-day free trial period has completed. Please subscribe to an active plan to continue adding new patients.
+              You have reached your 10-patient free trial limit. Please subscribe to an active plan to continue adding new patients.
             </AlertDescription>
           </Alert>
         </motion.div>
@@ -104,7 +99,7 @@ export function BillingOverview({ activeSub, accessStatus, appointmentCount, tot
                 <div>
                   <CardTitle className="text-xl text-white font-bold tracking-tight">Current Plan</CardTitle>
                   <CardDescription className="mt-1 text-slate-300 font-medium">
-                    {activeSub ? `You are currently on the ${planDetails?.name}` : isTrialActive ? "14-Day Enterprise Free Trial" : "Trial Expired"}
+                    {activeSub ? `You are currently on the ${planDetails?.name}` : isTrialActive ? "10-Patient Free Trial" : "Trial Limit Reached"}
                   </CardDescription>
                 </div>
                 {activeSub && activeSub.status === "active" && (
@@ -116,7 +111,7 @@ export function BillingOverview({ activeSub, accessStatus, appointmentCount, tot
                 {!activeSub && isTrialActive && (
                   <Badge className="bg-sky-500/20 text-sky-300 border border-sky-500/30 flex gap-1.5 items-center px-3 py-1 shadow-inner backdrop-blur-md">
                     <Sparkles className="w-3.5 h-3.5" />
-                    {accessStatus?.daysRemaining === 0 ? "Expires Today" : `${accessStatus?.daysRemaining} Days Left`}
+                    {accessStatus?.patientCount ?? 0} / {accessStatus?.patientLimit ?? 10} Patients
                   </Badge>
                 )}
               </div>
@@ -156,23 +151,21 @@ export function BillingOverview({ activeSub, accessStatus, appointmentCount, tot
                   <div className="bg-sky-500/20 p-4 rounded-full mb-3 border border-sky-400/30">
                     <Sparkles className="w-8 h-8 text-sky-300" />
                   </div>
-                  <h4 className="text-lg font-bold text-white mb-1">14-Day Free Trial</h4>
+                  <h4 className="text-lg font-bold text-white mb-1">10-Patient Free Trial</h4>
                   <p className="max-w-[300px] text-sm text-slate-300 font-medium mb-4">
-                    Enjoy unlimited patient entries and premium features during your trial period.
+                    Enjoy full features for your first 10 patients. Upgrade to an active plan anytime to unlock unlimited patient entries.
                   </p>
-                  {accessStatus?.trialEndDate && (
-                    <span className="text-xs text-sky-200 bg-sky-950/60 px-3 py-1.5 rounded-lg border border-sky-800/50">
-                      Trial ends on {format(new Date(accessStatus.trialEndDate), "MMMM dd, yyyy")}
-                    </span>
-                  )}
+                  <span className="text-xs text-sky-200 bg-sky-950/60 px-3 py-1.5 rounded-lg border border-sky-800/50">
+                    {accessStatus?.patientsRemaining ?? 0} spot{(accessStatus?.patientsRemaining ?? 0) !== 1 ? 's' : ''} remaining
+                  </span>
                 </div>
               ) : (
                 <div className="py-12 flex flex-col items-center justify-center text-center text-slate-300 bg-white/5 backdrop-blur-sm rounded-2xl border border-dashed border-white/20 mt-4 shadow-inner">
                   <div className="bg-white/10 p-4 rounded-full mb-4">
                     <Sparkles className="w-8 h-8 text-slate-200" />
                   </div>
-                  <h4 className="text-lg font-bold text-white mb-1">Trial Expired</h4>
-                  <p className="max-w-[250px] text-sm font-medium">Upgrade to a premium plan to unlock unlimited patients and continue growing your clinic.</p>
+                  <h4 className="text-lg font-bold text-white mb-1">Trial Limit Reached</h4>
+                  <p className="max-w-[250px] text-sm font-medium">You&apos;ve added 10 patients. Upgrade to a premium plan to unlock unlimited patients and continue growing your clinic.</p>
                 </div>
               )}
             </CardContent>
@@ -180,7 +173,13 @@ export function BillingOverview({ activeSub, accessStatus, appointmentCount, tot
         </motion.div>
 
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4, delay: 0.2 }}>
-          <UsageMetrics planId={activeSub?.planId || "free"} appointmentCount={appointmentCount} totalPaid={totalPaid} />
+          <UsageMetrics 
+            planId={activeSub?.planId || "free"} 
+            appointmentCount={appointmentCount} 
+            totalPaid={totalPaid} 
+            patientCount={accessStatus?.patientCount ?? 0}
+            isTrial={!activeSub || accessStatus?.status !== "active"}
+          />
         </motion.div>
       </div>
     </div>

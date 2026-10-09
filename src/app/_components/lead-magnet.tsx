@@ -104,7 +104,7 @@ export function LeadMagnetSection() {
   <div class="cta">
     <h2 style="margin-top:0;">Want to automate this entire system instantly?</h2>
     <p>Doctor Diary implements all 5 of these steps for your clinic out-of-the-box, with zero setup required.</p>
-    <a href="https://doctordiary.in/signup" class="cta-button">Claim Your 14-Day Free Trial</a>
+    <a href="https://doctordiary.in/signup" class="cta-button">Claim Your Free Trial (10 Patients)</a>
   </div>
 
 </body>

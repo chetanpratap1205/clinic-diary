@@ -35,7 +35,7 @@ export const LEAD_STATUSES = [
   { value: "called", label: "Called", badgeColor: "bg-indigo-50 text-indigo-700 border-indigo-200" },
   { value: "interested", label: "Interested 🔥", badgeColor: "bg-amber-50 text-amber-800 border-amber-300 font-semibold" },
   { value: "demo_scheduled", label: "Demo Scheduled", badgeColor: "bg-purple-50 text-purple-700 border-purple-200" },
-  { value: "trial", label: "14-Day Trial", badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-300" },
+  { value: "trial", label: "10-Patient Trial", badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-300" },
   { value: "converted", label: "Won (Converted) 🎉", badgeColor: "bg-emerald-600 text-white font-bold" },
   { value: "rejected", label: "Lost (Rejected)", badgeColor: "bg-red-50 text-red-600 border-red-200" },
   { value: "not_interested", label: "Not Interested", badgeColor: "bg-slate-200 text-slate-600 border-slate-300" },
@@ -160,14 +160,14 @@ Doctors use Doctor Diary for two main benefits:
 1. 24/7 online booking for patients searching after OPD hours.
 2. 0% commission on consultations.
 
-Reply YES if you would like to test the 14-day free trial.`;
+Reply YES if you would like to test the 10-patient free trial.`;
   }
 
   // Step 3 — Final Clean Touchpoint
   return `${formatDoctorName(name)}, final follow-up regarding the custom booking app for ${clinicName}:
 🔗 ${demoUrl}
 
-Reply ACTIVATE if you would like to claim your 14-day free trial. Otherwise, no problem at all!`;
+Reply ACTIVATE if you would like to claim your 10-patient free trial. Otherwise, no problem at all!`;
 }
 
 export function buildMessageForStep(lead: LeadForMessage, step: number): string {

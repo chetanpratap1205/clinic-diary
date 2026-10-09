@@ -37,7 +37,7 @@ export function ConvertLeadModal({ lead, open, onOpenChange }: ConvertLeadModalP
     try {
       const res = await convertLeadToClinicAction(lead.id);
       if (res.success) {
-        toast.success(`✅ Clinic account provisioned for ${res.clinicName || lead.doctorName}! 14-day trial activated.`);
+        toast.success(`✅ Clinic account provisioned for ${res.clinicName || lead.doctorName}! 10-patient trial activated.`);
         onOpenChange(false);
         // Navigate to the clinics list — individual clinic detail page may not exist
         router.push("/admin/clinics");
@@ -61,7 +61,7 @@ export function ConvertLeadModal({ lead, open, onOpenChange }: ConvertLeadModalP
           </div>
           <DialogTitle className="text-lg font-bold">Provision Active Clinic Account</DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
-            Convert lead <span className="font-semibold text-slate-800">{lead.doctorName}</span> ({lead.clinicName || "Practice Clinic"}) into a live clinic account with an automatic 14-day trial.
+            Convert lead <span className="font-semibold text-slate-800">{lead.doctorName}</span> ({lead.clinicName || "Practice Clinic"}) into a live clinic account with an automatic 10-patient trial.
           </DialogDescription>
         </DialogHeader>
 
@@ -84,7 +84,7 @@ export function ConvertLeadModal({ lead, open, onOpenChange }: ConvertLeadModalP
           </div>
           <div className="flex justify-between pt-1.5 border-t border-slate-200 text-emerald-700 font-bold">
             <span>Initial Access:</span>
-            <span>14-Day Free Trial</span>
+            <span>10-Patient Free Trial</span>
           </div>
         </div>
 

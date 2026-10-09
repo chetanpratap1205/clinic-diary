@@ -130,14 +130,14 @@ export function DecisionGuideModal({ onClose, open, onOpenChange }: DecisionGuid
             <div className="space-y-4">
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4">
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  When a doctor replies, your goal is <strong>NOT</strong> to sell the software. Your goal is to get them to activate the <strong>14-Day Free Trial</strong>. Here is how to handle common objections:
+                  When a doctor replies, your goal is <strong>NOT</strong> to sell the software. Your goal is to get them to activate the <strong>10-Patient Free Trial</strong>. Here is how to handle common objections:
                 </p>
               </div>
 
               {[
                 { 
                   obj: "What does it cost? / Is it expensive?", 
-                  ans: "Never give a raw number immediately. Frame it: 'It costs less than a cup of tea per day. We charge 0% commission on patient bookings. Let's start your 14-day free trial so you can see the ROI yourself.'" 
+                  ans: "Never give a raw number immediately. Frame it: 'It costs less than a cup of tea per day. We charge 0% commission on patient bookings. Let's start your 10-patient free trial so you can see the ROI yourself.'" 
                 },
                 { 
                   obj: "Migrating data is a headache / Too hard to switch", 
@@ -200,7 +200,7 @@ export function DecisionGuideModal({ onClose, open, onOpenChange }: DecisionGuid
                 { title: "1. Never use 'Sir' or 'Ma'am'", desc: "Use 'Dr. [LastName]'. Indian doctors view 'Sir' as vendor submission, whereas 'Dr.' establishes peer-to-peer professional respect." },
                 { title: "2. Speed is King for Replies", desc: "If a doctor replies 'YES' or asks a question, reply within 5 minutes. Strike while their attention is on you." },
                 { title: "3. Don't Overexplain", desc: "Keep replies extremely short. If they ask a highly complex technical question, do not type a paragraph. Ask: 'Can we hop on a quick 2-minute call to explain?'" },
-                { title: "4. The Goal is the Trial", desc: "Your objective on WhatsApp is not to collect money. Your objective is to get them to say 'YES' to activating the 14-day free trial." },
+                { title: "4. The Goal is the Trial", desc: "Your objective on WhatsApp is not to collect money. Your objective is to get them to say 'YES' to activating the 10-patient free trial." },
               ].map((r, i) => (
                 <div key={i} className="border border-slate-200 rounded-xl p-4 bg-white shadow-sm flex items-start gap-3">
                   <div className="w-7 h-7 rounded-full bg-teal-100 text-teal-700 font-bold flex items-center justify-center shrink-0 text-xs">

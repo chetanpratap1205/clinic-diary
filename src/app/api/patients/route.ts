@@ -82,13 +82,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // --- Subscription & 14-Day Enterprise Trial Check ---
+    // --- Subscription & 10-Patient Trial Limit Check ---
     const accessStatus = await getClinicAccessStatus(authUser.clinicId);
     if (!accessStatus.hasAccess) {
       return NextResponse.json(
         {
           error: "TRIAL_EXPIRED",
-          message: "Your 14-day free trial has expired. Upgrade your plan to continue adding new patients.",
+          message: "You have reached your 10-patient free trial limit. Upgrade your plan to continue adding new patients.",
         },
         { status: 403 }
       );

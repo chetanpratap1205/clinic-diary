@@ -18,10 +18,10 @@ export function HomePricingSection() {
 
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="text-center mb-10 max-w-4xl mx-auto">
-          {/* 14-Day Free Trial Hook Badge */}
+          {/* 10-Patient Free Trial Hook Badge */}
           <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-[#00B7A8] rounded-full px-5 py-2 text-sm font-bold mb-6 shadow-sm">
             <Gift className="w-4 h-4 text-[#00B7A8]" />
-            14-Day Unlimited Free Trial — No Credit Card Required
+            First 10 Patients Free — No Credit Card Required
           </div>
 
           <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-[#0B132B] mb-4 tracking-tight leading-snug">
@@ -73,7 +73,7 @@ export function HomePricingSection() {
               </div>
               <ul className="space-y-3.5 mb-8">
                 {[
-                  "14-Day Unlimited Free Trial",
+                  "First 10 Patients Free Trial",
                   "0% Commission on Payments",
                   "Unlimited Patients & Appointments",
                   "Free Premium Starter Kit",
@@ -90,7 +90,7 @@ export function HomePricingSection() {
 
             <Link href="/signup" className="block w-full">
               <Button variant="outline" className="w-full rounded-2xl bg-slate-100 border-slate-200 text-[#0B132B] hover:bg-slate-200 h-14 text-base font-bold">
-                Start 14-Day Free Trial
+                Start Free Trial
               </Button>
             </Link>
           </div>
@@ -119,7 +119,7 @@ export function HomePricingSection() {
               
               <ul className="space-y-3.5 mb-8">
                 {[
-                  "14-Day Unlimited Free Trial",
+                  "First 10 Patients Free Trial",
                   "Everything in Quarterly",
                   "Dedicated Account Manager",
                   "Area Exclusivity Rights Locked",
@@ -135,7 +135,7 @@ export function HomePricingSection() {
 
             <Link href="/signup" className="block w-full">
               <Button className="w-full rounded-2xl bg-[#00B7A8] hover:bg-[#00998c] text-white font-bold h-14 text-base shadow-[0_8px_25px_rgba(0,183,168,0.35)]">
-                Start 14-Day Free Trial
+                Start Free Trial
               </Button>
             </Link>
           </div>
