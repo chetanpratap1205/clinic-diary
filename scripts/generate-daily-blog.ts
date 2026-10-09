@@ -206,14 +206,14 @@ ${safeContent}
   },`;
 
   const insertRegex = /\];\s*export function getBlogPostBySlug/;
-  const match = existing.match(insertRegex);
-
-  if (!match || match.index === undefined) {
+  if (!insertRegex.test(existing)) {
     throw new Error("Could not find insertion point in blog-data.ts");
   }
 
-  const insertIdx = match.index;
-  const updated = existing.slice(0, insertIdx) + newPostEntry + "\n];\n\n" + existing.slice(insertIdx + match[0].length);
+  const updated = existing.replace(
+    insertRegex,
+    newPostEntry + "\n];\n\nexport function getBlogPostBySlug"
+  );
   fs.writeFileSync(blogDataPath, updated, "utf-8");
 }
 

@@ -28,12 +28,24 @@ export async function updateSession(request: NextRequest) {
   )
 
   // IMPORTANT: Do NOT run code between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-  //
-  // Refreshing the auth token: calling getUser() triggers token refresh if expired,
-  // and updates the cookie on both the request and response.
-  await supabase.auth.getUser()
+  // supabase.auth.getUser(). Calling getUser() refreshes the auth token if needed
+  // and writes the refreshed cookies to supabaseResponse.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const path = request.nextUrl.pathname
+  const isProtectedPath =
+    path.startsWith('/dashboard') ||
+    path.startsWith('/onboarding') ||
+    path.startsWith('/admin') ||
+    path.startsWith('/employee')
+
+  if (isProtectedPath && !user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
+  }
 
   return supabaseResponse
 }
