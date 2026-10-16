@@ -34,6 +34,9 @@ interface SettingsData {
   complaintPresets: string[];
   diagnosisPresets: string[];
   treatmentPresets: string[];
+  partnerLabName?: string | null;
+  preferredHospital?: string | null;
+  teleconsultUrl?: string | null;
 }
 
 export async function updateClinicSettings(data: SettingsData) {
@@ -73,6 +76,9 @@ export async function updateClinicSettings(data: SettingsData) {
         complaintPresets: data.complaintPresets,
         diagnosisPresets: data.diagnosisPresets,
         treatmentPresets: data.treatmentPresets,
+        partnerLabName: data.partnerLabName ?? null,
+        preferredHospital: data.preferredHospital ?? null,
+        teleconsultUrl: data.teleconsultUrl ?? null,
       })
       .where(eq(clinics.id, user.clinicId));
 

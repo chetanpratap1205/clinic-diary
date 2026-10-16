@@ -148,6 +148,9 @@ export async function generateMetadata({
       complaintPresets: [],
       diagnosisPresets: [],
       treatmentPresets: [],
+      partnerLabName: null,
+      preferredHospital: null,
+      teleconsultUrl: null,
       createdAt: lead.createdAt,
     };
   }
@@ -267,6 +270,9 @@ export default async function BookingPage({
       complaintPresets: [],
       diagnosisPresets: [],
       treatmentPresets: [],
+      partnerLabName: null,
+      preferredHospital: null,
+      teleconsultUrl: null,
       createdAt: lead.createdAt,
     };
     isLead = true;

@@ -72,6 +72,9 @@ export default async function SettingsPage() {
     complaintPresets: clinic.complaintPresets || [],
     diagnosisPresets: clinic.diagnosisPresets || [],
     treatmentPresets: clinic.treatmentPresets || [],
+    partnerLabName: clinic.partnerLabName || null,
+    preferredHospital: clinic.preferredHospital || null,
+    teleconsultUrl: clinic.teleconsultUrl || null,
   };
 
   return (

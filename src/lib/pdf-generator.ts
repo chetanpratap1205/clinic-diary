@@ -189,3 +189,168 @@ export async function generateSalesPackPdfBuffer(
     }
   });
 }
+
+export interface ClinicalRxData {
+  clinicName: string;
+  doctorName: string;
+  specialty: string;
+  degree?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  partnerLabName?: string | null;
+  preferredHospital?: string | null;
+  patientName: string;
+  patientPhone: string;
+  patientAge?: number | null;
+  patientGender?: string | null;
+  abhaId?: string | null;
+  tokenNumber?: number | null;
+  appointmentDate: string;
+  vitals?: string | null;
+  diagnosis?: string | null;
+  complaint?: string | null;
+  treatment?: string | null;
+  labInvestigations?: string[] | null;
+  referral?: {
+    referredHospital?: string;
+    specialty?: string;
+    priority?: string;
+    reason?: string;
+  } | null;
+  receiptUrl?: string;
+}
+
+export async function generateClinicalRxPdfBuffer(data: ClinicalRxData): Promise<Buffer> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ size: 'A4', margin: 35 });
+      const buffers: Buffer[] = [];
+      doc.on('data', buffers.push.bind(buffers));
+      doc.on('end', () => resolve(Buffer.concat(buffers)));
+
+      // Top Header Accent Line
+      doc.rect(35, 30, 525, 4).fill('#0f766e');
+
+      // Clinic & Doctor Details
+      doc.fill('#0f766e').fontSize(20).font('Helvetica-Bold').text(data.clinicName, 35, 45);
+      doc.fill('#1e293b').fontSize(12).font('Helvetica-Bold')
+        .text(`${data.doctorName}${data.degree ? ` (${data.degree})` : ''} • ${data.specialty}`, 35, 70);
+      
+      const subInfo = [data.address, data.phone ? `Ph: ${data.phone}` : null].filter(Boolean).join(' | ');
+      if (subInfo) {
+        doc.fill('#64748b').fontSize(9).font('Helvetica').text(subInfo, 35, 86, { width: 400 });
+      }
+
+      // Doctor Diary Badge (Top Right)
+      doc.fill('#0d9488').fontSize(10).font('Helvetica-Bold').text('DOCTOR DIARY', 440, 48, { width: 120, align: 'right' });
+      doc.fill('#94a3b8').fontSize(8).font('Helvetica').text('Clinical Health Record', 440, 62, { width: 120, align: 'right' });
+
+      // Horizontal separator
+      doc.moveTo(35, 105).lineTo(560, 105).lineWidth(1).strokeColor('#e2e8f0').stroke();
+
+      // Patient Info Card
+      doc.rect(35, 115, 525, 50).fill('#f8fafc');
+      doc.rect(35, 115, 525, 50).lineWidth(1).strokeColor('#e2e8f0').stroke();
+
+      doc.fill('#64748b').fontSize(8).font('Helvetica-Bold').text('PATIENT NAME', 45, 123);
+      doc.fill('#0f172a').fontSize(11).font('Helvetica-Bold').text(data.patientName, 45, 134);
+      if (data.abhaId) {
+        doc.fill('#059669').fontSize(8).font('Helvetica-Bold').text(`ABHA ID: ${data.abhaId} (Verified)`, 45, 150);
+      }
+
+      doc.fill('#64748b').fontSize(8).font('Helvetica-Bold').text('AGE / GENDER', 230, 123);
+      doc.fill('#0f172a').fontSize(10).font('Helvetica')
+        .text(`${data.patientAge ? `${data.patientAge} Yrs` : 'N/A'} / ${data.patientGender || 'N/A'}`, 230, 135);
+
+      doc.fill('#64748b').fontSize(8).font('Helvetica-Bold').text('DATE & TOKEN', 380, 123);
+      doc.fill('#0f172a').fontSize(10).font('Helvetica-Bold')
+        .text(`${data.appointmentDate} • Token #${data.tokenNumber || 'Walk-in'}`, 380, 135);
+
+      let currentY = 180;
+
+      // Vitals Box
+      if (data.vitals) {
+        doc.rect(35, currentY, 525, 26).fill('#ecfdf5');
+        doc.fill('#047857').fontSize(8.5).font('Helvetica-Bold').text('CLINICAL VITALS:', 45, currentY + 8);
+        doc.fill('#064e3b').fontSize(8.5).font('Helvetica').text(data.vitals, 140, currentY + 8, { width: 410 });
+        currentY += 36;
+      }
+
+      // Complaint & Diagnosis
+      if (data.complaint || data.diagnosis) {
+        if (data.complaint) {
+          doc.fill('#475569').fontSize(8.5).font('Helvetica-Bold').text('Chief Symptoms:', 35, currentY);
+          doc.fill('#1e293b').fontSize(9.5).font('Helvetica').text(data.complaint, 120, currentY, { width: 440 });
+          currentY += 18;
+        }
+        if (data.diagnosis) {
+          doc.fill('#475569').fontSize(8.5).font('Helvetica-Bold').text('Diagnosis:', 35, currentY);
+          doc.fill('#0f172a').fontSize(10).font('Helvetica-Bold').text(data.diagnosis, 120, currentY, { width: 440 });
+          currentY += 22;
+        }
+      }
+
+      // Prescription / Treatment Section
+      doc.rect(35, currentY, 525, 22).fill('#f1f5f9');
+      doc.fill('#0f172a').fontSize(9.5).font('Helvetica-Bold').text('Rx • TREATMENT & MEDICATION FORMULARY', 45, currentY + 6);
+      currentY += 28;
+
+      if (data.treatment) {
+        doc.fill('#0f172a').fontSize(9.5).font('Courier').text(data.treatment, 45, currentY, { width: 505, lineGap: 3 });
+        const treatmentLines = data.treatment.split('\n').length;
+        currentY += Math.max(treatmentLines * 15, 60) + 15;
+      } else {
+        doc.fill('#94a3b8').fontSize(9).font('Helvetica').text('No prescription medication recorded.', 45, currentY);
+        currentY += 30;
+      }
+
+      // Diagnostic Lab Investigations
+      if (data.labInvestigations && data.labInvestigations.length > 0) {
+        doc.rect(35, currentY, 525, 18 + data.labInvestigations.length * 14).fill('#eff6ff');
+        doc.rect(35, currentY, 525, 18 + data.labInvestigations.length * 14).lineWidth(0.5).strokeColor('#bfdbfe').stroke();
+
+        doc.fill('#1d4ed8').fontSize(8.5).font('Helvetica-Bold')
+          .text(`ADVISED DIAGNOSTIC INVESTIGATIONS (${data.partnerLabName || 'Preferred Pathology'}):`, 45, currentY + 6);
+        
+        let testY = currentY + 20;
+        data.labInvestigations.forEach((test) => {
+          doc.fill('#1e3a8a').fontSize(8.5).font('Helvetica').text(`•  ${test}`, 55, testY);
+          testY += 13;
+        });
+        currentY = testY + 12;
+      }
+
+      // Tertiary Hospital Referral Slip
+      if (data.referral && data.referral.referredHospital) {
+        const refHeight = 44;
+        doc.rect(35, currentY, 525, refHeight).fill('#fffbeb');
+        doc.rect(35, currentY, 525, refHeight).lineWidth(0.5).strokeColor('#fde68a').stroke();
+
+        doc.fill('#b45309').fontSize(8.5).font('Helvetica-Bold')
+          .text(`TERTIARY HOSPITAL REFERRAL (${(data.referral.priority || 'Priority').toUpperCase()}):`, 45, currentY + 6);
+        doc.fill('#78350f').fontSize(9.5).font('Helvetica-Bold')
+          .text(`Referred to: ${data.referral.referredHospital} — Department of ${data.referral.specialty || 'General'}`, 45, currentY + 18);
+        if (data.referral.reason) {
+          doc.fill('#92400e').fontSize(8).font('Helvetica').text(`Notes: ${data.referral.reason}`, 45, currentY + 31);
+        }
+        currentY += refHeight + 15;
+      }
+
+      // Footer: Doctor Signature & QR Verification
+      const footerY = 740;
+      doc.moveTo(35, footerY).lineTo(560, footerY).lineWidth(0.5).strokeColor('#cbd5e1').stroke();
+
+      doc.fill('#94a3b8').fontSize(8).font('Helvetica')
+        .text('Generated electronically via Doctor Diary • Verified Clinical Record', 35, footerY + 10);
+      
+      // Signature line on right
+      doc.moveTo(400, footerY + 35).lineTo(550, footerY + 35).lineWidth(1).strokeColor('#0f172a').stroke();
+      doc.fill('#0f172a').fontSize(8.5).font('Helvetica-Bold').text('Authorized Clinician Signature', 400, footerY + 40, { width: 150, align: 'center' });
+
+      doc.end();
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+

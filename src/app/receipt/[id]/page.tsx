@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { appointments, clinics, patients } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { format } from "date-fns";
-import { CheckCircle2, Building2, MapPin, Calendar, Receipt, CalendarPlus } from "lucide-react";
+import { CheckCircle2, Building2, MapPin, Calendar, Receipt, CalendarPlus, Activity, FlaskConical, ShieldCheck, Pill } from "lucide-react";
 import Link from "next/link";
 import { formatTimeDisplay } from "@/lib/format";
 import { PrintButton } from "./print-button";
@@ -53,7 +53,16 @@ export default async function ReceiptPage(props: { params: Promise<{ id: string 
     .where(eq(visitNotes.appointmentId, id))
     .limit(1);
 
-  const hasClinicalSummary = Boolean(note && (note.diagnosis || note.treatment || note.complaint));
+  const hasClinicalSummary = Boolean(
+    note && (
+      note.diagnosis || 
+      note.treatment || 
+      note.complaint || 
+      note.vitals || 
+      (note.labInvestigations && note.labInvestigations.length > 0) || 
+      note.referral
+    )
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 font-sans selection:bg-slate-200 print:bg-white print:py-0 print:px-0">
@@ -64,7 +73,7 @@ export default async function ReceiptPage(props: { params: Promise<{ id: string 
           <div className="text-slate-400 text-sm font-medium flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-500" /> Secure E-Receipt
           </div>
-          <PrintButton />
+          <PrintButton appointmentId={appointment.id} />
         </div>
 
         {/* The Receipt Card */}
@@ -102,6 +111,11 @@ export default async function ReceiptPage(props: { params: Promise<{ id: string 
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Patient Name</p>
               <p className="font-bold text-slate-900">{patient.name}</p>
+              {(patient as any).abhaId && (
+                <p className="text-[10px] font-bold text-emerald-700 flex items-center gap-1 mt-0.5">
+                  <ShieldCheck className="w-3 h-3 text-emerald-600" /> ABHA: {(patient as any).abhaId}
+                </p>
+              )}
             </div>
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Date & Time</p>
@@ -143,22 +157,67 @@ export default async function ReceiptPage(props: { params: Promise<{ id: string 
             {/* Optional Clinical Summary Annexure (Mode B for Digital Doctors) */}
             {hasClinicalSummary && (
               <div className="mt-6 pt-6 border-t border-slate-100 space-y-3 text-left">
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Clinical Summary & Advice</h4>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Clinical Summary &amp; Digital Rx</h4>
+                
+                {note.vitals && (
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1 mb-0.5">
+                      <Activity className="w-3.5 h-3.5 text-emerald-600" /> Recorded Clinical Vitals
+                    </p>
+                    <p className="text-xs font-semibold text-slate-800">{note.vitals}</p>
+                  </div>
+                )}
+
                 {note.diagnosis && (
                   <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase">Diagnosis</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Clinical Diagnosis</p>
                     <p className="text-sm font-semibold text-slate-800">{note.diagnosis}</p>
                   </div>
                 )}
+
                 {note.treatment && (
                   <div className="bg-blue-50/50 p-3.5 rounded-xl border border-blue-100/60">
-                    <p className="text-[10px] font-bold text-blue-400 uppercase">Prescription & Advice</p>
-                    <p className="text-sm font-semibold text-blue-900">{note.treatment}</p>
+                    <p className="text-[10px] font-bold text-blue-500 uppercase flex items-center gap-1 mb-1">
+                      <Pill className="w-3.5 h-3.5" /> Prescription &amp; Medication Formulary
+                    </p>
+                    <div className="text-xs font-semibold text-blue-950 font-mono whitespace-pre-wrap leading-relaxed">
+                      {note.treatment}
+                    </div>
                   </div>
                 )}
+
+                {note.labInvestigations && note.labInvestigations.length > 0 && (
+                  <div className="bg-emerald-50/50 p-3.5 rounded-xl border border-emerald-100/60">
+                    <p className="text-[10px] font-bold text-emerald-700 uppercase flex items-center gap-1 mb-1">
+                      <FlaskConical className="w-3.5 h-3.5" /> Advised Diagnostic Tests ({clinic.partnerLabName || "Partner Laboratory"})
+                    </p>
+                    <ul className="list-disc list-inside text-xs font-semibold text-emerald-950 space-y-0.5">
+                      {note.labInvestigations.map((test: string) => (
+                        <li key={test}>{test}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {note.referral && (note.referral as any).referredHospital && (
+                  <div className="bg-amber-50/80 p-3.5 rounded-xl border border-amber-200">
+                    <p className="text-[10px] font-bold text-amber-800 uppercase flex items-center gap-1 mb-0.5">
+                      <Building2 className="w-3.5 h-3.5 text-amber-600" /> Hospital Referral Notice ({((note.referral as any).priority || "Priority").toUpperCase()})
+                    </p>
+                    <p className="text-xs font-bold text-amber-950">
+                      Referred to: {(note.referral as any).referredHospital} ({((note.referral as any).specialty || "Specialist Department")})
+                    </p>
+                    {((note.referral as any).reason) && (
+                      <p className="text-xs text-amber-900 mt-0.5 font-medium">
+                        Notes: {(note.referral as any).reason}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {note.complaint && (
                   <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase">Chief Complaint</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Chief Complaint</p>
                     <p className="text-sm text-slate-700">{note.complaint}</p>
                   </div>
                 )}

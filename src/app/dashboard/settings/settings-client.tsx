@@ -43,6 +43,8 @@ import {
   Layers,
   MessageCircle,
   Link,
+  FlaskConical,
+  Video,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PresetsManager } from "./components/presets-manager";
@@ -82,6 +84,9 @@ const settingsSchema = z.object({
   facebookUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
   youtubeUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
   websiteUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
+  partnerLabName: z.string().nullable().optional(),
+  preferredHospital: z.string().nullable().optional(),
+  teleconsultUrl: z.string().url("Must be a valid URL").or(z.literal("")).nullable().optional(),
 });
 
 type SettingsData = z.infer<typeof settingsSchema>;
@@ -115,6 +120,9 @@ interface SettingsClientProps {
     complaintPresets: string[];
     diagnosisPresets: string[];
     treatmentPresets: string[];
+    partnerLabName?: string | null;
+    preferredHospital?: string | null;
+    teleconsultUrl?: string | null;
   };
   slug: string;
 }
@@ -198,6 +206,9 @@ export function SettingsClient({ initialData, slug }: SettingsClientProps) {
       complaintPresets: initialData.complaintPresets || [],
       diagnosisPresets: initialData.diagnosisPresets || [],
       treatmentPresets: initialData.treatmentPresets || [],
+      partnerLabName: initialData.partnerLabName || "",
+      preferredHospital: initialData.preferredHospital || "",
+      teleconsultUrl: initialData.teleconsultUrl || "",
     },
   });
 
@@ -270,15 +281,18 @@ Make it sound extremely premium, trustworthy, and empathetic. Emphasize that we 
         <div className="xl:col-span-3 space-y-5 sm:space-y-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="w-full h-auto p-1.5 bg-slate-100 sm:rounded-2xl rounded-xl grid grid-cols-3 gap-1 sm:gap-1.5 mb-6">
+              <TabsList className="w-full h-auto p-1.5 bg-slate-100 sm:rounded-2xl rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-1 sm:gap-1.5 mb-6">
                 <TabsTrigger value="profile" className="w-full rounded-lg sm:rounded-xl py-2 sm:py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-all truncate">
-                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 hidden min-[375px]:block" /> Profile
+                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Profile
+                </TabsTrigger>
+                <TabsTrigger value="partners" className="w-full rounded-lg sm:rounded-xl py-2 sm:py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-all truncate">
+                  <FlaskConical className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Partners
                 </TabsTrigger>
                 <TabsTrigger value="location" className="w-full rounded-lg sm:rounded-xl py-2 sm:py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-all truncate">
-                  <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 hidden min-[375px]:block" /> Location
+                  <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Location
                 </TabsTrigger>
                 <TabsTrigger value="presets" className="w-full rounded-lg sm:rounded-xl py-2 sm:py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-all truncate">
-                  <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 hidden min-[375px]:block" /> Presets
+                  <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Presets
                 </TabsTrigger>
               </TabsList>
 
@@ -530,6 +544,93 @@ Make it sound extremely premium, trustworthy, and empathetic. Emphasize that we 
                 </div>
               </CardContent>
             </Card>
+              </TabsContent>
+
+              <TabsContent value="partners" className="space-y-5 focus:outline-none">
+                <Card className="border-slate-100 shadow-sm rounded-2xl sm:rounded-3xl overflow-hidden">
+                  <div className="h-1.5 w-full bg-gradient-to-r from-teal-500 via-indigo-500 to-sky-500" />
+                  <CardHeader className="bg-slate-50/50 border-b border-slate-100 py-4 px-4 sm:px-6">
+                    <CardTitle className="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-3">
+                      <div
+                        className="w-8 h-8 rounded-[10px] flex items-center justify-center border shadow-sm transition-colors"
+                        style={{ backgroundColor: `${themeColor}15`, borderColor: `${themeColor}30`, color: themeColor }}
+                      >
+                        <FlaskConical className="w-4 h-4" />
+                      </div>
+                      Commercial & Referral Partners
+                    </CardTitle>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Configure your official diagnostic laboratory, hospital referral destination, and telemedicine video room.
+                    </p>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 space-y-5">
+                    {/* Diagnostic Partner */}
+                    <div className="space-y-2">
+                      <label htmlFor="partnerLabName" className="text-sm font-semibold text-slate-700 flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <FlaskConical className="w-4 h-4 text-teal-600" />
+                          Diagnostic Pathology Partner
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 bg-teal-50 text-teal-700 border border-teal-200 rounded-full">
+                          Indore Lab Network
+                        </span>
+                      </label>
+                      <Input
+                        id="partnerLabName"
+                        {...register("partnerLabName")}
+                        placeholder="e.g. Nandani Medical Laboratories (Indore)"
+                        className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                      />
+                      <p className="text-xs text-slate-400">
+                        Prints automatically on all diagnostic test requisitions with partner barcode formatting.
+                      </p>
+                    </div>
+
+                    {/* Preferred Hospital */}
+                    <div className="space-y-2 pt-2 border-t border-slate-100">
+                      <label htmlFor="preferredHospital" className="text-sm font-semibold text-slate-700 flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <Building2 className="w-4 h-4 text-indigo-600" />
+                          Tertiary Referral Hospital
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full">
+                          Emergency & IPD
+                        </span>
+                      </label>
+                      <Input
+                        id="preferredHospital"
+                        {...register("preferredHospital")}
+                        placeholder="e.g. Vishesh Jupiter Hospital, Ring Road, Indore"
+                        className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors"
+                      />
+                      <p className="text-xs text-slate-400">
+                        Default referral destination for acute surgical transfers, ICU escalations, and super-specialty second opinions.
+                      </p>
+                    </div>
+
+                    {/* Rural Teleconsult URL */}
+                    <div className="space-y-2 pt-2 border-t border-slate-100">
+                      <label htmlFor="teleconsultUrl" className="text-sm font-semibold text-slate-700 flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <Video className="w-4 h-4 text-sky-600" />
+                          Rural Teleconsultation Video Room URL
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 bg-sky-50 text-sky-700 border border-sky-200 rounded-full">
+                          Kendra Telemedicine
+                        </span>
+                      </label>
+                      <Input
+                        id="teleconsultUrl"
+                        {...register("teleconsultUrl")}
+                        placeholder="https://meet.jit.si/medyseva-teleconsult-clinic"
+                        className="h-11 rounded-xl text-base shadow-inner bg-slate-50/50 focus:bg-white transition-colors font-mono text-sm"
+                      />
+                      <p className="text-xs text-slate-400">
+                        Powers 1-tap encrypted WebRTC video visits directly from the consultation desk for rural Kendra kiosks.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               <TabsContent value="location" className="space-y-5 focus:outline-none">

@@ -27,6 +27,7 @@ export const pool =
   globalForDb.__arenaNextJsPostgresqlPool ??
   new Pool({
     connectionString: databaseUrl,
+    ssl: databaseUrl?.includes("supabase.com") ? { rejectUnauthorized: false } : undefined,
     max: 2, // Limit connections per serverless instance to prevent exhaustion
     idleTimeoutMillis: 15000, // Close idle connections after 15s to prevent using dead sockets
     connectionTimeoutMillis: 10000, // Fail fast if DB is unreachable

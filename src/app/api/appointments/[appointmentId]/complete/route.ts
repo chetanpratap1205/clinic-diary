@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { appointments, visitNotes, followUps, clinics } from "@/db/schema";
+import { appointments, visitNotes, followUps, clinics, patients } from "@/db/schema";
 import { eq, and, lte, desc } from "drizzle-orm";
 import { getAuthUser } from "@/lib/auth";
 
@@ -17,7 +17,17 @@ export async function POST(
 
     const { appointmentId } = params;
     const body = await req.json();
-    const { vitals, complaint, diagnosis, treatment, followUpRequired } = body;
+    const { 
+      vitals, 
+      structuredVitals,
+      complaint, 
+      diagnosis, 
+      treatment, 
+      labInvestigations,
+      referral,
+      abhaId,
+      followUpRequired 
+    } = body;
 
     // Verify appointment belongs to this clinic
     const [appointment] = await db
@@ -38,17 +48,31 @@ export async function POST(
     const now = new Date();
 
     // 1. Save visit note
-    if (complaint || vitals || diagnosis || treatment) {
+    if (complaint || vitals || diagnosis || treatment || structuredVitals || (labInvestigations && labInvestigations.length > 0) || referral) {
       await db.insert(visitNotes).values({
         clinicId: authUser.clinicId,
         patientId: appointment.patientId,
         appointmentId,
         complaint: complaint || null,
         vitals: vitals || null,
+        structuredVitals: structuredVitals || null,
         diagnosis: diagnosis || null,
         treatment: treatment || null,
+        labInvestigations: Array.isArray(labInvestigations) ? labInvestigations : [],
+        referral: referral || null,
         followUpRequired: followUpRequired || false,
       });
+    }
+
+    // 1b. Update patient ABHA ID if passed
+    if (abhaId && appointment.patientId) {
+      await db
+        .update(patients)
+        .set({
+          abhaId,
+          isAbhaVerified: true,
+        })
+        .where(eq(patients.id, appointment.patientId));
     }
 
     // 2. Mark appointment as completed with fee
