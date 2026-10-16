@@ -7,28 +7,23 @@ import {
   FlaskConical,
   Building2,
   Pill,
-  ArrowRight,
   CheckCircle2,
   Zap,
   Phone,
   MessageSquare,
   Lock,
-  Layers,
   Sparkles,
   BarChart3,
-  Users,
-  Clock,
-  ArrowUpRight,
-  DollarSign,
-  Smartphone,
-  Laptop,
   AlertTriangle,
-  FileText,
   BadgeCheck,
-  ChevronRight,
   FileCheck2,
   Check,
   Copy,
+  Crown,
+  Globe,
+  Banknote,
+  Target,
+  ChevronRight,
 } from "lucide-react";
 
 export function NotionPharmaPitchClient() {
@@ -40,26 +35,23 @@ export function NotionPharmaPitchClient() {
   const rxsPerClinicPerDay = 22;
   const daysPerMonth = 30;
   const monthlyRxs = clinicCount * rxsPerClinicPerDay * daysPerMonth;
-  const notionPenetrationRate = 0.24; // 24% default chip adoption
+  const notionPenetrationRate = 0.24;
   const notionMonthlyRxs = Math.round(monthlyRxs * notionPenetrationRate);
-  const avgRxValue = 385; // Notion critical care & chronic basket
+  const avgRxValue = 385;
   const monthlyPharmaVolume = notionMonthlyRxs * avgRxValue;
-  const monthlyPharmaEbitda = Math.round(monthlyPharmaVolume * 0.32); // 32% net margin
+  const monthlyPharmaEbitda = Math.round(monthlyPharmaVolume * 0.32);
 
-  // Diagnostic calculations for Nandani Labs
-  const testsPerMonth = Math.round(monthlyRxs * 0.14); // 14% of visits need tests
-  const nandaniConversionRate = 0.32; // 32% capture
+  const testsPerMonth = Math.round(monthlyRxs * 0.14);
+  const nandaniConversionRate = 0.32;
   const nandaniMonthlyTests = Math.round(testsPerMonth * nandaniConversionRate);
-  const avgTestBasket = 620; // CBC, Lipid, HbA1c average
+  const avgTestBasket = 620;
   const monthlyDiagnosticRevenue = nandaniMonthlyTests * avgTestBasket;
   const monthlyDiagnosticGrossProfit = Math.round(monthlyDiagnosticRevenue * 0.65);
 
-  // Cost Savings
   const mrSavedPer50Clinics = 4;
   const totalMrSaved = Math.max(2, Math.round((clinicCount / 50) * mrSavedPer50Clinics));
-  const monthlyMrCostSaved = totalMrSaved * 42000; // Salary + DA + samples
+  const monthlyMrCostSaved = totalMrSaved * 42000;
 
-  // Totals
   const totalMonthlyBenefit = monthlyPharmaEbitda + monthlyDiagnosticGrossProfit + monthlyMrCostSaved;
   const totalAnnualBenefitCr = ((totalMonthlyBenefit * 12) / 10000000).toFixed(2);
   const totalAnnualGrossVolumeCr = (((monthlyPharmaVolume + monthlyDiagnosticRevenue) * 12) / 10000000).toFixed(2);
@@ -86,7 +78,7 @@ export function NotionPharmaPitchClient() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 font-sans selection:bg-emerald-600 selection:text-white pb-20">
-      
+
       {/* ── TOP EXECUTIVE BANNER ── */}
       <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs px-4 py-3">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-3 text-xs">
@@ -102,7 +94,7 @@ export function NotionPharmaPitchClient() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16 space-y-12 sm:space-y-16">
-        
+
         {/* ── HERO BANNER & HOOK ── */}
         <div className="bg-white rounded-3xl p-6 sm:p-10 lg:p-12 border border-slate-200/90 shadow-sm space-y-6">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-semibold">
@@ -120,7 +112,7 @@ export function NotionPharmaPitchClient() {
           <p className="text-base sm:text-xl text-slate-600 max-w-3xl leading-relaxed">
             A private executive briefing for <strong className="text-slate-900 font-bold">Shantanu Kharia (VIT IT • SP Jain MBA)</strong> on how acquiring or licensing{" "}
             <span className="text-emerald-800 font-semibold underline decoration-emerald-400">Doctor Diary</span> locks in{" "}
-            <strong className="text-slate-900 font-bold">Notion Pharma’s</strong> high-margin critical care injectables and channels 100% of diagnostic pathology requisitions to{" "}
+            <strong className="text-slate-900 font-bold">Notion Pharma&apos;s</strong> high-margin critical care injectables and channels 100% of diagnostic pathology requisitions to{" "}
             <strong className="text-slate-900 font-bold">Nandani Medical Laboratories</strong> across 150+ Indore clinics.
           </p>
 
@@ -147,7 +139,7 @@ export function NotionPharmaPitchClient() {
             <span className="flex items-center gap-1.5"><BadgeCheck className="w-4 h-4 text-emerald-600" /> 100% Source Code Transfer</span>
             <span className="flex items-center gap-1.5"><BadgeCheck className="w-4 h-4 text-emerald-600" /> Pre-Seeded Notion Molecules</span>
             <span className="flex items-center gap-1.5"><BadgeCheck className="w-4 h-4 text-emerald-600" /> Nandani Lab Barcode Routing</span>
-            <span className="flex items-center gap-1.5"><BadgeCheck className="w-4 h-4 text-emerald-600" /> Runs on ₹12,000 Budget Phone</span>
+            <span className="flex items-center gap-1.5"><BadgeCheck className="w-4 h-4 text-emerald-600" /> Offline-Capable PWA Architecture</span>
           </div>
         </div>
 
@@ -373,7 +365,6 @@ export function NotionPharmaPitchClient() {
             </p>
           </div>
 
-          {/* Slider Controls */}
           <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
             <div className="flex items-center justify-between">
               <label htmlFor="clinic-slider" className="text-sm font-bold text-slate-900">
@@ -400,7 +391,6 @@ export function NotionPharmaPitchClient() {
             </div>
           </div>
 
-          {/* Dynamic Metrics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
               <div className="text-xs font-mono font-bold text-slate-500 uppercase">Notion Pharma Monthly EBITDA</div>
@@ -427,7 +417,6 @@ export function NotionPharmaPitchClient() {
             </div>
           </div>
 
-          {/* Total ROI Callout */}
           <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-emerald-800 to-teal-900 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-md">
             <div>
               <div className="text-xs font-mono font-bold text-emerald-300 uppercase tracking-wider">Total Net Annual Bottom-Line Impact</div>
@@ -440,6 +429,130 @@ export function NotionPharmaPitchClient() {
               <div className="text-xs text-emerald-200">Full Buyout Payback Period:</div>
               <div className="text-3xl font-black text-white">{paybackDays} Days</div>
               <div className="text-[10px] text-emerald-300 mt-0.5">Based on ₹18.5L acquisition price</div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── COMPETITIVE MOAT & BEHAVIORAL LOCK-IN ── */}
+        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-8">
+          <div className="space-y-2">
+            <span className="text-xs font-mono font-bold text-emerald-700 uppercase tracking-wider">Competitive Strategy</span>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
+              Why This Moat Is Irreversible After 100 Clinics
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl">
+              Once 100 doctors in Indore are running Doctor Diary with Notion molecules pre-seeded, no competitor — Sun Pharma MRs, Cipla territory managers, Medicos Pharma, or Ind-Swift — can displace your molecules even with higher trade margins.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-700 flex items-center justify-center flex-shrink-0">
+                  <Lock className="w-4 h-4 text-white" />
+                </div>
+                <h4 className="font-bold text-slate-900">Behavioral Lock-In: The Default Chip Effect</h4>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Human behavior research confirms that default options are selected 87% of the time under cognitive load. A doctor consulting 50 patients per day operates at peak cognitive fatigue — they will always choose the pre-seeded Notion chip over typing a competitor name. This is not loyalty. This is architecture.
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-white border border-emerald-200 text-center">
+                  <div className="text-xl font-black text-emerald-800">87%</div>
+                  <div className="text-[10px] text-slate-500">Default chip selection rate</div>
+                </div>
+                <div className="p-3 rounded-xl bg-white border border-emerald-200 text-center">
+                  <div className="text-xl font-black text-emerald-800">0%</div>
+                  <div className="text-[10px] text-slate-500">Competitor override (if locked)</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0">
+                  <Target className="w-4 h-4 text-white" />
+                </div>
+                <h4 className="font-bold text-slate-900">Territory Exclusivity: Block All Competitors</h4>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Under the territory license or buyout, the software&apos;s pharma formulary slot for Indore, Dewas, Ujjain, and Pithampur is contractually locked to Notion Pharma only. Medicos Pharma, Ind-Swift Laboratories, or any Sun/Cipla distributor cannot access this default prescription layer in your territory — period.
+              </p>
+              <ul className="space-y-2 text-xs text-slate-700">
+                <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3 text-emerald-600 flex-shrink-0" /> Indore, Dewas, Ujjain, Pithampur — Locked</li>
+                <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3 text-emerald-600 flex-shrink-0" /> No third-party pharma can onboard in territory</li>
+                <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3 text-emerald-600 flex-shrink-0" /> Competitor MRs become structurally redundant</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* ── BRAND VALUE & HEALTHTECH HOLDING COMPANY ── */}
+        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-8">
+          <div className="space-y-2">
+            <span className="text-xs font-mono font-bold text-emerald-700 uppercase tracking-wider">Strategic Brand Value &amp; Corporate Transformation</span>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
+              From Pharma Manufacturer to HealthTech Holding Company
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
+              You studied Family Managed Business at SP Jain. You understand that the next generation of Kharia Group cannot be just a pharma manufacturer and a pathology lab. The companies that will dominate Malwa healthcare in the next decade own the doctor&apos;s digital workflow.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-700 flex items-center justify-center">
+                <Crown className="w-5 h-5 text-white" />
+              </div>
+              <h4 className="font-bold text-slate-900">Nandani Labs Becomes the Default Diagnostic Brand</h4>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Every doctor using Doctor Diary prints Nandani Labs on their official prescription letterhead. This is the most powerful brand placement in Indore medicine — more valuable than any billboard or newspaper ad — because it is on a legal medical document. Doctor loyalty and word-of-mouth referrals compound organically.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-700 flex items-center justify-center">
+                <Banknote className="w-5 h-5 text-white" />
+              </div>
+              <h4 className="font-bold text-slate-900">PE &amp; Venture Debt Repositioning</h4>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Notion Pharma + Nandani Labs + Doctor Diary = a <strong>technology-enabled pharma-diagnostics platform</strong>. This repositioning unlocks access to pharma-focused PE funds (Lighthouse Funds, CX Partners) and healthcare venture debt (Trifecta Capital) at 3–4x higher company valuations compared to a pure manufacturing play. The asset becomes an investable platform, not just a family business.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-700 flex items-center justify-center">
+                <Globe className="w-5 h-5 text-white" />
+              </div>
+              <h4 className="font-bold text-slate-900">Modern Institute Alumni Network Activation</h4>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                As Vice Chairman of Modern Institute of Pharmaceutical Sciences, you have direct influence over 400+ pharmacy graduates entering Indore&apos;s healthcare ecosystem annually. Doctor Diary becomes the de facto clinical tool taught and recommended within your institution&apos;s network — a captive pipeline that no competitor can replicate.
+              </p>
+            </div>
+          </div>
+
+          {/* Valuation Bridge */}
+          <div className="p-6 rounded-2xl bg-slate-900 text-white space-y-4">
+            <div className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">Corporate Valuation Impact Model</div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="text-center p-4 rounded-xl bg-white/5 border border-white/10">
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-mono mb-1">Current Position</div>
+                <div className="text-2xl font-black text-white">Pharma Mfr</div>
+                <div className="text-xs text-slate-400 mt-1">Valuation: ~2.5x Revenue</div>
+                <div className="text-[10px] text-red-400 mt-1">No tech premium</div>
+              </div>
+              <div className="flex items-center justify-center">
+                <div className="text-center">
+                  <Zap className="w-6 h-6 text-emerald-400 mx-auto" />
+                  <div className="text-[10px] text-emerald-400 font-mono mt-1">After Acquisition</div>
+                </div>
+              </div>
+              <div className="text-center p-4 rounded-xl bg-emerald-900/40 border border-emerald-700">
+                <div className="text-[10px] text-emerald-400 uppercase tracking-wider font-mono mb-1">Repositioned Entity</div>
+                <div className="text-2xl font-black text-white">HealthTech Platform</div>
+                <div className="text-xs text-emerald-300 mt-1">Valuation: 6–8x Revenue</div>
+                <div className="text-[10px] text-emerald-400 mt-1">Tech-enabled multiple</div>
+              </div>
             </div>
           </div>
         </div>
@@ -543,7 +656,7 @@ export function NotionPharmaPitchClient() {
           </div>
         </div>
 
-        {/* ── WHAT ARE THE EXACT NEXT STEPS IF YOU SAY YES? (DEEP TRUST & CLARITY) ── */}
+        {/* ── WHAT ARE THE EXACT NEXT STEPS IF YOU SAY YES? ── */}
         <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-8">
           <div className="space-y-2">
             <span className="text-xs font-mono font-bold text-emerald-700 uppercase tracking-wider">Frictionless Closing Process</span>
@@ -556,7 +669,6 @@ export function NotionPharmaPitchClient() {
           </div>
 
           <div className="relative border-l-2 border-emerald-600 ml-4 sm:ml-6 pl-6 sm:pl-8 space-y-8">
-            {/* Step 1 */}
             <div className="relative group">
               <span className="absolute -left-[35px] sm:-left-[43px] top-0.5 w-7 h-7 rounded-full bg-emerald-700 text-white font-bold text-xs flex items-center justify-center ring-4 ring-white shadow-xs">
                 1
@@ -572,7 +684,6 @@ export function NotionPharmaPitchClient() {
               </div>
             </div>
 
-            {/* Step 2 */}
             <div className="relative group">
               <span className="absolute -left-[35px] sm:-left-[43px] top-0.5 w-7 h-7 rounded-full bg-emerald-700 text-white font-bold text-xs flex items-center justify-center ring-4 ring-white shadow-xs">
                 2
@@ -588,7 +699,6 @@ export function NotionPharmaPitchClient() {
               </div>
             </div>
 
-            {/* Step 3 */}
             <div className="relative group">
               <span className="absolute -left-[35px] sm:-left-[43px] top-0.5 w-7 h-7 rounded-full bg-emerald-700 text-white font-bold text-xs flex items-center justify-center ring-4 ring-white shadow-xs">
                 3
@@ -604,7 +714,6 @@ export function NotionPharmaPitchClient() {
               </div>
             </div>
 
-            {/* Step 4 */}
             <div className="relative group">
               <span className="absolute -left-[35px] sm:-left-[43px] top-0.5 w-7 h-7 rounded-full bg-emerald-700 text-white font-bold text-xs flex items-center justify-center ring-4 ring-white shadow-xs">
                 4
@@ -621,7 +730,6 @@ export function NotionPharmaPitchClient() {
             </div>
           </div>
 
-          {/* Legal Warranties Box */}
           <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
             <div className="flex items-start gap-2">
               <FileCheck2 className="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5" />
@@ -653,7 +761,7 @@ export function NotionPharmaPitchClient() {
             Let&apos;s Meet Today in Indore
           </h2>
           <p className="text-emerald-100 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-            I am in Indore with the production source code and a live demo running on a ₹12,000 budget phone over cellular data. Let&apos;s grab a 20-minute coffee at your Sanwer Road facility or Vijay Nagar office.
+            I am in Indore with the full production codebase, a live database, and a working demo ready for immediate review at your Sanwer Road facility or Vijay Nagar office. This meeting will take 20 minutes and will be the highest-ROI conversation you have this month.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
