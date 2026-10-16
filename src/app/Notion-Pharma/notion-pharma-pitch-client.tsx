@@ -25,6 +25,11 @@ import {
   Target,
   ChevronRight,
   Mail,
+  Calculator,
+  ArrowRightLeft,
+  Boxes,
+  Truck,
+  CircleDollarSign,
 } from "lucide-react";
 
 export function NotionPharmaPitchClient() {
@@ -32,31 +37,46 @@ export function NotionPharmaPitchClient() {
   const [activeTab, setActiveTab] = useState<"formulary" | "labs" | "telemetry">("formulary");
   const [copied, setCopied] = useState<boolean>(false);
 
-  // Financial Calculations
+  // ── MATHEMATICAL ENGINE (AUDITABLE FORMULAS) ──
   const rxsPerClinicPerDay = 22;
   const daysPerMonth = 30;
   const monthlyRxs = clinicCount * rxsPerClinicPerDay * daysPerMonth;
-  const notionPenetrationRate = 0.24;
+
+  // 1. Notion Pharma Manufacturing Volume & EBITDA
+  const notionPenetrationRate = 0.24; // 24% default chip selection
   const notionMonthlyRxs = Math.round(monthlyRxs * notionPenetrationRate);
-  const avgRxValue = 385;
+  const avgRxValue = 385; // Notion critical care injectable & chronic basket (Meromicron, Tazomicron, Pantamac)
   const monthlyPharmaVolume = notionMonthlyRxs * avgRxValue;
-  const monthlyPharmaEbitda = Math.round(monthlyPharmaVolume * 0.32);
+  const pharmaEbitdaMargin = 0.32; // 32% net manufacturer EBITDA margin
+  const monthlyPharmaEbitda = Math.round(monthlyPharmaVolume * pharmaEbitdaMargin);
 
-  const testsPerMonth = Math.round(monthlyRxs * 0.14);
-  const nandaniConversionRate = 0.32;
-  const nandaniMonthlyTests = Math.round(testsPerMonth * nandaniConversionRate);
-  const avgTestBasket = 620;
+  // 2. Nandani Medical Laboratories Diagnostic Capture
+  const testNeedRate = 0.14; // 14% of OPD consultations require lab investigations
+  const testsPerMonth = Math.round(monthlyRxs * testNeedRate);
+  const nandaniCaptureRate = 0.32; // 32% conversion to Nandani Labs
+  const nandaniMonthlyTests = Math.round(testsPerMonth * nandaniCaptureRate);
+  const avgTestBasket = 620; // Average investigation basket (CBC, Lipid, HbA1c, KFT)
   const monthlyDiagnosticRevenue = nandaniMonthlyTests * avgTestBasket;
-  const monthlyDiagnosticGrossProfit = Math.round(monthlyDiagnosticRevenue * 0.65);
+  const diagnosticGrossMargin = 0.65; // 65% diagnostic gross margin
+  const monthlyDiagnosticGrossProfit = Math.round(monthlyDiagnosticRevenue * diagnosticGrossMargin);
 
-  const mrSavedPer50Clinics = 4;
-  const totalMrSaved = Math.max(2, Math.round((clinicCount / 50) * mrSavedPer50Clinics));
-  const monthlyMrCostSaved = totalMrSaved * 42000;
+  // 3. Eliminated Field MR Payroll & Travel Allowance
+  const clinicsPerMr = 25; // 1 field representative manages 25 doctors
+  const totalMrSaved = Math.max(2, Math.round(clinicCount / clinicsPerMr));
+  const mrMonthlyCost = 42000; // Salary (₹28k) + DA/TA (₹10k) + Promotional samples (₹4k)
+  const monthlyMrCostSaved = totalMrSaved * mrMonthlyCost;
 
-  const totalMonthlyBenefit = monthlyPharmaEbitda + monthlyDiagnosticGrossProfit + monthlyMrCostSaved;
+  // 4. Working Capital Savings: Dawa Bazar Credit Cycle Elimination
+  // Traditional Dawa Bazar credit: 75 days receivable lockup. Direct clinic delivery: Instant/prepaid.
+  const capitalCostInterestRate = 0.12 / 12; // 1% monthly cost of capital
+  const monthlyWorkingCapitalSaved = Math.round(monthlyPharmaVolume * 0.40 * capitalCostInterestRate * 2.5);
+
+  // Consolidated Totals
+  const totalMonthlyBenefit = monthlyPharmaEbitda + monthlyDiagnosticGrossProfit + monthlyMrCostSaved + monthlyWorkingCapitalSaved;
   const totalAnnualBenefitCr = ((totalMonthlyBenefit * 12) / 10000000).toFixed(2);
   const totalAnnualGrossVolumeCr = (((monthlyPharmaVolume + monthlyDiagnosticRevenue) * 12) / 10000000).toFixed(2);
-  const paybackDays = Math.max(12, Math.round((1850000 / totalMonthlyBenefit) * 30));
+  const buyoutPrice = 1850000;
+  const paybackDays = Math.max(12, Math.round((buyoutPrice / totalMonthlyBenefit) * 30));
 
   const whatsappPitchUrl =
     "https://wa.me/918077170715?text=" +
@@ -71,7 +91,8 @@ export function NotionPharmaPitchClient() {
     const summary = `Executive Summary - Doctor Diary Acquisition for Notion Pharma & Nandani Labs:
 - Projected Annual Volume: ₹${totalAnnualGrossVolumeCr} Crore
 - Projected Annual Net Bottom-Line: ₹${totalAnnualBenefitCr} Crore
-- One-Time Buyout: ₹18.50 Lakhs (Payback in ${paybackDays} days)
+- Buyer Net Monthly Benefit: ₹${(totalMonthlyBenefit / 100000).toFixed(2)} Lakhs
+- One-Time Buyout: ₹18.50 Lakhs (Full Payback in ${paybackDays} days)
 - Founder Contact: Chetan Pratap (+91 80771 70715 • chetan.pratap@naturexpress.in)`;
     navigator.clipboard.writeText(summary);
     setCopied(true);
@@ -81,27 +102,27 @@ export function NotionPharmaPitchClient() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 font-sans selection:bg-emerald-600 selection:text-white pb-20">
 
-      {/* ── TOP EXECUTIVE BANNER ── */}
+      {/* ── TOP EXECUTIVE BANNER (CLEAN ENTERPRISE HEADER) ── */}
       <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs px-4 py-3">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 font-mono font-bold text-emerald-800 tracking-wide">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
             <Lock className="w-3.5 h-3.5 text-emerald-700" />
-            <span>CONFIDENTIAL STRATEGIC PROPOSAL • M&amp;A / TERRITORY LICENSE</span>
+            <span>CONFIDENTIAL COMMERCIAL PROPOSAL • STRATEGIC ACQUISITION &amp; ENTERPRISE PARTNERSHIP</span>
           </div>
           <div className="hidden sm:flex items-center gap-2 text-slate-600 font-medium">
-            Prepared Exclusively for: <strong className="text-slate-900 font-bold">Shantanu Kharia</strong> (Director: Notion Pharma &amp; Nandani Labs)
+            Prepared Exclusively for: <strong className="text-slate-900 font-bold">Shantanu Kharia</strong> (Director: Notion Pharma &amp; Nandani Labs, Indore)
           </div>
         </div>
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16 space-y-12 sm:space-y-16">
 
-        {/* ── HERO BANNER & HOOK ── */}
+        {/* ── HERO BANNER & STRATEGIC HOOK ── */}
         <div className="bg-white rounded-3xl p-6 sm:p-10 lg:p-12 border border-slate-200/90 shadow-sm space-y-6">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-semibold">
             <Sparkles className="w-4 h-4 text-emerald-600" />
-            Direct Manufacturer-to-Clinic Distribution Gateway
+            Direct Manufacturer-to-Clinic Distribution Gateway • Indore Malwa Territory
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-[1.15]">
@@ -115,7 +136,7 @@ export function NotionPharmaPitchClient() {
             A private executive briefing for <strong className="text-slate-900 font-bold">Shantanu Kharia</strong> on how acquiring or licensing{" "}
             <span className="text-emerald-800 font-semibold underline decoration-emerald-400">Doctor Diary</span> locks in{" "}
             <strong className="text-slate-900 font-bold">Notion Pharma&apos;s</strong> high-margin critical care injectables and channels 100% of diagnostic pathology requisitions to{" "}
-            <strong className="text-slate-900 font-bold">Nandani Medical Laboratories</strong> across 150+ Indore clinics.
+            <strong className="text-slate-900 font-bold">Nandani Medical Laboratories</strong> across 150+ Indore clinics — bypassing the 75-day Dawa Bazar credit trap.
           </p>
 
           <div className="pt-2 flex flex-col sm:flex-row items-center gap-4">
@@ -132,8 +153,8 @@ export function NotionPharmaPitchClient() {
               href="#roi-simulator"
               className="w-full sm:w-auto px-6 py-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-base border border-slate-300/80 flex items-center justify-center gap-2 transition-all"
             >
-              <TrendingUp className="w-4 h-4 text-emerald-700" />
-              Test Live ROI Calculator
+              <Calculator className="w-4 h-4 text-emerald-700" />
+              Examine Exact Mathematical Model
             </a>
           </div>
 
@@ -141,50 +162,50 @@ export function NotionPharmaPitchClient() {
             <span className="flex items-center gap-1.5"><BadgeCheck className="w-4 h-4 text-emerald-600" /> 100% Source Code Transfer</span>
             <span className="flex items-center gap-1.5"><BadgeCheck className="w-4 h-4 text-emerald-600" /> Pre-Seeded Notion Molecules</span>
             <span className="flex items-center gap-1.5"><BadgeCheck className="w-4 h-4 text-emerald-600" /> Nandani Lab Barcode Routing</span>
-            <span className="flex items-center gap-1.5"><BadgeCheck className="w-4 h-4 text-emerald-600" /> Offline-Capable PWA Architecture</span>
+            <span className="flex items-center gap-1.5"><BadgeCheck className="w-4 h-4 text-emerald-600" /> Dawa Bazar Substitution Bypass</span>
           </div>
         </div>
 
-        {/* ── THE PAIN POINT / STRATEGIC BOTTLENECK ── */}
+        {/* ── THE PAIN POINT / INDORE GROUND REALITY ── */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-slate-900">Why the Traditional MR &amp; Dawa Bazar Supply Chain is Leaking Your Cash</h3>
-              <p className="text-xs sm:text-sm text-slate-500">The 3 structural bottlenecks facing Notion Pharma &amp; Nandani Labs in Indore today:</p>
+              <h3 className="text-xl font-bold text-slate-900">The 3 Structural Cash Leaks in Traditional Pharma Distribution</h3>
+              <p className="text-xs sm:text-sm text-slate-500">The unvarnished ground reality facing Notion Pharma &amp; Nandani Labs in Indore today:</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-2.5">
-              <span className="text-[11px] font-mono font-bold text-red-600 uppercase tracking-wider">Bottleneck 1: Field Overhead</span>
-              <h4 className="font-bold text-slate-900 text-base">₹8,00,000+ Monthly MR Payroll</h4>
+              <span className="text-[11px] font-mono font-bold text-red-600 uppercase tracking-wider">Cash Leak 1: The Dawa Bazar Credit Trap</span>
+              <h4 className="font-bold text-slate-900 text-base">75+ Days Blocked Capital</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                You maintain 15+ field reps paying salaries, travel allowance, and promotional gifts. They wait 2 hours in crowded clinics for 45 seconds of hurried doctor attention.
+                Stockists in Dawa Bazar (opposite MY Hospital) demand 60 to 90 days credit while taking 10–12% trade margins. When doctors write prescriptions, chemists routinely substitute Notion molecules with whoever offers 2% extra retailer incentive.
               </p>
             </div>
 
             <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-2.5">
-              <span className="text-[11px] font-mono font-bold text-red-600 uppercase tracking-wider">Bottleneck 2: Dawa Bazar Substitution</span>
-              <h4 className="font-bold text-slate-900 text-base">48-Hour Brand Memory Decay</h4>
+              <span className="text-[11px] font-mono font-bold text-red-600 uppercase tracking-wider">Cash Leak 2: Field Rep Friction</span>
+              <h4 className="font-bold text-slate-900 text-base">₹8,00,000+ Monthly Field Payroll</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Even when a doctor intends to prescribe Meropenem or Tazobactam, chemists at Dawa Bazar substitute Notion Pharma with whichever stockist offers 2% extra credit margin.
+                You maintain 15+ field reps paying salaries, daily allowances, travel, and promotional doctor gifts. They wait 2 hours in crowded waiting rooms for 45 seconds of distracted conversation. Annual rep attrition exceeds 30%.
               </p>
             </div>
 
             <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-2.5">
-              <span className="text-[11px] font-mono font-bold text-red-600 uppercase tracking-wider">Bottleneck 3: Nandani Pathology Gap</span>
+              <span className="text-[11px] font-mono font-bold text-red-600 uppercase tracking-wider">Cash Leak 3: Nandani Pathology Leakage</span>
               <h4 className="font-bold text-slate-900 text-base">Lost Diagnostic Prescriptions</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Doctors write CBC and Lipid profiles on loose paper slips. Patients walk into Central Lab or local collection centers because Nandani isn&apos;t hard-wired into their consultation pad.
+                Nandani Medical Laboratories has premier testing infrastructure at Bicholi Hapsi &amp; Kanadia Road, but doctors write blood work on plain slips. Patients walk into local collection centers or Central Lab because Nandani isn&apos;t hard-coded into the prescription.
               </p>
             </div>
           </div>
         </div>
 
-        {/* ── THE LIVE PRODUCT DEMO / TABS ── */}
+        {/* ── THE LIVE SOFTWARE WALKTHROUGH ── */}
         <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -193,7 +214,7 @@ export function NotionPharmaPitchClient() {
                 Already Built &amp; Live In The Codebase
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                We did not prepare mockups. These exact features are already compiled and active in our database.
+                Zero mockups. These exact features are compiled, connected to our PostgreSQL database, and active right now:
               </p>
             </div>
 
@@ -299,7 +320,7 @@ export function NotionPharmaPitchClient() {
                   <span className="font-mono text-xs font-bold text-teal-800 uppercase tracking-wide">
                     Official Diagnostic Partner: NANDANI MEDICAL LABORATORIES (INDORE)
                   </span>
-                  <span className="text-[11px] text-slate-500">Sanwer Road Hub &amp; Indore Collection</span>
+                  <span className="text-[11px] text-slate-500">Bicholi Hapsi &amp; Kanadia Road Hub</span>
                 </div>
                 <div className="flex flex-wrap gap-2 pt-1">
                   <span className="px-2.5 py-1 rounded-md bg-teal-50 text-teal-800 text-xs font-semibold border border-teal-200">CBC / Hemogram</span>
@@ -331,7 +352,7 @@ export function NotionPharmaPitchClient() {
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                As a director, you can open your dashboard from anywhere in Indore and see real-time prescription velocity across every pin code:
+                From your Vijay Nagar office, see real-time prescription velocity across every pin code in Indore, Sanwer Road, Dewas, and Ujjain:
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -355,22 +376,23 @@ export function NotionPharmaPitchClient() {
           )}
         </div>
 
-        {/* ── INTERACTIVE ROI CALCULATOR (THE WOW FACTOR) ── */}
+        {/* ── THE EXACT MATHEMATICAL ENGINE: HOW BOTH SIDES EARN ── */}
         <div id="roi-simulator" className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-8">
           <div className="space-y-2">
-            <span className="text-xs font-mono font-bold text-emerald-700 uppercase tracking-wider">Interactive Financial Simulation</span>
+            <span className="text-xs font-mono font-bold text-emerald-700 uppercase tracking-wider">Financial Transparency Engine</span>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
-              Calculate Your Exact Return on Investment (ROI)
+              The Exact Mathematical Calculation: How Both Sides Earn
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl">
-              Slide the number of clinics deployed across Indore, Sanwer Road, Dewas, and Ujjain to see your net bottom-line profit.
+            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
+              We don&apos;t use vague estimates. Here is the exact, line-by-line financial equation showing how Notion Pharma earns, how Nandani Labs earns, and how Doctor Diary earns:
             </p>
           </div>
 
+          {/* Interactive Clinic Slider */}
           <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
             <div className="flex items-center justify-between">
               <label htmlFor="clinic-slider" className="text-sm font-bold text-slate-900">
-                Number of Private Clinics Deployed:
+                Active Private Clinics in Malwa Territory:
               </label>
               <span className="text-2xl font-black text-emerald-700 bg-white px-4 py-1 rounded-xl border border-slate-200 shadow-xs">
                 {clinicCount} Clinics
@@ -387,50 +409,134 @@ export function NotionPharmaPitchClient() {
               className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-700"
             />
             <div className="flex justify-between text-[11px] text-slate-400 font-mono">
-              <span>25 Clinics (Pilot)</span>
-              <span>100 Clinics (Indore Core)</span>
-              <span>250 Clinics (Complete Malwa Territory)</span>
+              <span>25 Clinics (Pilot Phase)</span>
+              <span>100 Clinics (Indore Core Network)</span>
+              <span>250 Clinics (Malwa Regional Dominance)</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-              <div className="text-xs font-mono font-bold text-slate-500 uppercase">Notion Pharma Monthly EBITDA</div>
-              <div className="text-3xl font-black text-slate-900">₹{(monthlyPharmaEbitda / 100000).toFixed(2)} Lakhs</div>
-              <p className="text-xs text-slate-600">
-                From {notionMonthlyRxs.toLocaleString()} monthly Notion prescriptions across {clinicCount} clinics.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-              <div className="text-xs font-mono font-bold text-slate-500 uppercase">Nandani Labs Diagnostic Revenue</div>
-              <div className="text-3xl font-black text-slate-900">₹{(monthlyDiagnosticRevenue / 100000).toFixed(2)} Lakhs</div>
-              <p className="text-xs text-slate-600">
-                From {nandaniMonthlyTests.toLocaleString()} tests routed directly to Sanwer Road hub monthly.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-              <div className="text-xs font-mono font-bold text-slate-500 uppercase">Eliminated MR Field Payroll</div>
-              <div className="text-3xl font-black text-emerald-700">₹{(monthlyMrCostSaved / 100000).toFixed(2)} Lakhs</div>
-              <p className="text-xs text-slate-600">
-                Saved by replacing {totalMrSaved} field MRs with direct clinic software automation.
-              </p>
-            </div>
+          {/* Line-by-Line Breakdown Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs sm:text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 text-slate-500 font-mono">
+                  <th className="py-3 px-3">Revenue &amp; Cost Stream</th>
+                  <th className="py-3 px-3">Underlying Mathematical Formula</th>
+                  <th className="py-3 px-3 text-right">Monthly Net Impact</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                <tr>
+                  <td className="py-3.5 px-3">
+                    <strong className="text-slate-900 block font-semibold">1. Notion Pharma EBITDA</strong>
+                    <span className="text-[11px] text-slate-500">Critical care &amp; chronic prescriptions</span>
+                  </td>
+                  <td className="py-3.5 px-3 font-mono text-xs text-slate-600">
+                    {clinicCount} clinics × 22 rx/day × 30 days × 24% default selection × ₹385 avg basket × 32% margin
+                  </td>
+                  <td className="py-3.5 px-3 text-right font-bold text-slate-900 font-mono">
+                    ₹{(monthlyPharmaEbitda / 100000).toFixed(2)} Lakhs
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-3.5 px-3">
+                    <strong className="text-slate-900 block font-semibold">2. Nandani Labs Diagnostic Profit</strong>
+                    <span className="text-[11px] text-slate-500">Automated digital requisition capture</span>
+                  </td>
+                  <td className="py-3.5 px-3 font-mono text-xs text-slate-600">
+                    {monthlyRxs.toLocaleString()} total rx × 14% test need × 32% Nandani capture × ₹620 test basket × 65% margin
+                  </td>
+                  <td className="py-3.5 px-3 text-right font-bold text-slate-900 font-mono">
+                    ₹{(monthlyDiagnosticGrossProfit / 100000).toFixed(2)} Lakhs
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-3.5 px-3">
+                    <strong className="text-slate-900 block font-semibold">3. Eliminated MR Field Payroll</strong>
+                    <span className="text-[11px] text-slate-500">Replaced by automated software prescriber flow</span>
+                  </td>
+                  <td className="py-3.5 px-3 font-mono text-xs text-slate-600">
+                    {totalMrSaved} field representatives × ₹42,000 monthly cost (salary + DA/TA + promotional gifts)
+                  </td>
+                  <td className="py-3.5 px-3 text-right font-bold text-emerald-700 font-mono">
+                    ₹{(monthlyMrCostSaved / 100000).toFixed(2)} Lakhs
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-3.5 px-3">
+                    <strong className="text-slate-900 block font-semibold">4. Dawa Bazar Credit Cost Savings</strong>
+                    <span className="text-[11px] text-slate-500">Direct clinic replenishment vs 75-day debt cycle</span>
+                  </td>
+                  <td className="py-3.5 px-3 font-mono text-xs text-slate-600">
+                    40% direct supply volume × 1% monthly cost of capital × 2.5 months locked receivable interest
+                  </td>
+                  <td className="py-3.5 px-3 text-right font-bold text-slate-900 font-mono">
+                    ₹{(monthlyWorkingCapitalSaved / 100000).toFixed(2)} Lakhs
+                  </td>
+                </tr>
+                <tr className="bg-emerald-50/60 font-bold">
+                  <td className="py-3.5 px-3 text-emerald-950 font-black">Total Net Monthly Bottom-Line Gain</td>
+                  <td className="py-3.5 px-3 text-emerald-800 text-xs font-mono">Sum of streams 1 + 2 + 3 + 4</td>
+                  <td className="py-3.5 px-3 text-right text-emerald-800 font-black font-mono text-base">
+                    ₹{(totalMonthlyBenefit / 100000).toFixed(2)} Lakhs / mo
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
+          {/* Consolidated ROI Banner */}
           <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-emerald-800 to-teal-900 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-md">
             <div>
-              <div className="text-xs font-mono font-bold text-emerald-300 uppercase tracking-wider">Total Net Annual Bottom-Line Impact</div>
+              <div className="text-xs font-mono font-bold text-emerald-300 uppercase tracking-wider">Total Annual Net Bottom-Line Gain (To Buyer)</div>
               <div className="text-3xl sm:text-5xl font-black mt-1">₹{totalAnnualBenefitCr} Crore / Year</div>
               <div className="text-xs text-emerald-100 mt-1">
-                Total annual gross market volume generated: ₹{totalAnnualGrossVolumeCr} Crore
+                Gross pharma &amp; pathology market volume generated: ₹{totalAnnualGrossVolumeCr} Crore annually
               </div>
             </div>
             <div className="text-right bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 flex-shrink-0">
               <div className="text-xs text-emerald-200">Full Buyout Payback Period:</div>
               <div className="text-3xl font-black text-white">{paybackDays} Days</div>
-              <div className="text-[10px] text-emerald-300 mt-0.5">Based on ₹18.5L acquisition price</div>
+              <div className="text-[10px] text-emerald-300 mt-0.5">Based on ₹18.50 Lakhs one-time acquisition</div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── HOW DOCTOR DIARY / WE EARN (TRANSPARENT COMMERCIALS) ── */}
+        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-8">
+          <div className="space-y-2">
+            <span className="text-xs font-mono font-bold text-emerald-700 uppercase tracking-wider">Mutual Alignment</span>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
+              How Doctor Diary / We Earn: Zero Hidden Traps
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
+              Enterprise transactions succeed when both parties know exactly how the other makes money. Here is our exact business model:
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-700 flex items-center justify-center text-white">
+                  <CircleDollarSign className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold text-slate-900">Under Model A (Full Buyout): Clean Capital Event</h4>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                We earn a single one-time capital payment of <strong>₹18,50,000</strong>. In exchange, we hand over 100% of the intellectual property, full GitHub source code repository, Supabase database cluster, and 30 days of pair-programming handover. We retain 0% royalty, 0% equity, and 0% recurring fee. You own the software forever like any company asset.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-white">
+                  <ArrowRightLeft className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold text-slate-900">Under Model B (Territory License): Managed SaaS Operations</h4>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                We earn an upfront territory enablement fee of <strong>₹8,50,000</strong> plus an ongoing managed cloud operations retainer of <strong>₹28,000 / month</strong>. This fee covers 99.9% database uptime, high-speed WhatsApp prescription gateways, automated cloud backups, and custom molecule catalog updates as you launch new SKUs.
+              </p>
             </div>
           </div>
         </div>
@@ -481,7 +587,7 @@ export function NotionPharmaPitchClient() {
                 Under the territory license or buyout, the software&apos;s pharma formulary slot for Indore, Dewas, Ujjain, and Pithampur is contractually locked to Notion Pharma only. Medicos Pharma, Ind-Swift Laboratories, or any Sun/Cipla distributor cannot access this default prescription layer in your territory — period.
               </p>
               <ul className="space-y-2 text-xs text-slate-700">
-                <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3 text-emerald-600 flex-shrink-0" /> Indore, Dewas, Ujjain, Pithampur — Locked</li>
+                <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3 text-emerald-600 flex-shrink-0" /> Indore, Dewas, Ujjain, Pithampur — Exclusively Locked</li>
                 <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3 text-emerald-600 flex-shrink-0" /> No third-party pharma can onboard in territory</li>
                 <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3 text-emerald-600 flex-shrink-0" /> Competitor MRs become structurally redundant</li>
               </ul>
@@ -489,15 +595,15 @@ export function NotionPharmaPitchClient() {
           </div>
         </div>
 
-        {/* ── BRAND VALUE & HEALTHTECH HOLDING COMPANY ── */}
+        {/* ── BRAND VALUE & HEALTHTECH PLATFORM TRANSFORMATION ── */}
         <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-8">
           <div className="space-y-2">
-            <span className="text-xs font-mono font-bold text-emerald-700 uppercase tracking-wider">Strategic Brand Value &amp; Corporate Transformation</span>
+            <span className="text-xs font-mono font-bold text-emerald-700 uppercase tracking-wider">Enterprise Valuation Expansion</span>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
-              From Pharma Manufacturer to HealthTech Holding Company
+              Transforming from Pharma Manufacturer to HealthTech Holding Company
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
-              The healthcare distribution landscape in Madhya Pradesh is shifting rapidly. The companies that will dominate Malwa healthcare in the next decade cannot rely solely on traditional manufacturing and manual field reps — they must own the doctor&apos;s digital prescription workflow.
+              The healthcare landscape in Madhya Pradesh is shifting rapidly. The companies that will dominate Malwa healthcare in the next decade cannot rely solely on traditional manufacturing and manual field reps — they must own the doctor&apos;s digital prescription workflow.
             </p>
           </div>
 

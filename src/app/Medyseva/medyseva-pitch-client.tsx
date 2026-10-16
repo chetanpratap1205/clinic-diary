@@ -26,6 +26,10 @@ import {
   ArrowUpRight,
   ChevronRight,
   Mail,
+  Calculator,
+  ArrowRightLeft,
+  CircleDollarSign,
+  FileText,
 } from "lucide-react";
 
 export function MedysevaPitchClient() {
@@ -33,33 +37,42 @@ export function MedysevaPitchClient() {
   const [activeTab, setActiveTab] = useState<"triage" | "hospital" | "abdm">("hospital");
   const [copied, setCopied] = useState<boolean>(false);
 
-  // Financial Calculations
+  // ── AUDITABLE MATHEMATICAL ENGINE ──
   const consultsPerKendraPerDay = 8;
   const daysPerMonth = 30;
   const monthlyConsults = kendraCount * consultsPerKendraPerDay * daysPerMonth;
 
-  const surgicalEscalationRate = 0.012;
+  // 1. Vishesh Jupiter Hospital IPD Escalation Inflow
+  const surgicalEscalationRate = 0.012; // 1.2% of rural consults require secondary/tertiary surgical or ICU admission
   const escalationCandidates = Math.round(monthlyConsults * surgicalEscalationRate);
-  const visheshConversionRate = 0.10;
+  const visheshConversionRate = 0.10; // 10% convert to Vishesh Jupiter Hospital (via free transfer & PMJAY)
   const monthlyVisheshAdmissions = Math.round(escalationCandidates * visheshConversionRate);
-  const avgTertiaryTicket = 65000;
+  const avgTertiaryTicket = 65000; // Average tertiary admission ticket (cardiology, lap surgery, ortho, ICU)
   const monthlyHospitalRevenue = monthlyVisheshAdmissions * avgTertiaryTicket;
-  const monthlyHospitalEbitda = Math.round(monthlyHospitalRevenue * 0.45);
+  const hospitalEbitdaMargin = 0.45; // 45% hospital gross EBITDA margin
+  const monthlyHospitalEbitda = Math.round(monthlyHospitalRevenue * hospitalEbitdaMargin);
 
-  const minutesSavedPerConsult = 5.2;
+  // 2. Telemedicine Doctor Panel Payroll Savings
+  const minutesSavedPerConsult = 5.2; // 7.5 mins down to 2.3 mins with 1-tap presets
   const monthlyHoursSaved = Math.round((monthlyConsults * minutesSavedPerConsult) / 60);
-  const doctorHourlyRate = 350;
+  const doctorHourlyRate = 350; // Central panel clinical specialist hourly cost
   const monthlyDoctorPayrollCut = Math.min(1250000, Math.round(monthlyHoursSaved * doctorHourlyRate * 0.5));
 
-  const totalMonthlyBenefit = monthlyHospitalEbitda + monthlyDoctorPayrollCut;
+  // 3. NHA ABDM Milestone Government Reimbursements
+  // National Health Authority pays ₹20 per verified ABHA-linked consultation under ABDM incentives
+  const monthlyAbdmGrantRevenue = Math.round(monthlyConsults * 0.40 * 20); // 40% ABHA verification rate at ₹20/tx
+
+  // Consolidated Net Totals
+  const totalMonthlyBenefit = monthlyHospitalEbitda + monthlyDoctorPayrollCut + monthlyAbdmGrantRevenue;
   const totalAnnualBenefitCr = ((totalMonthlyBenefit * 12) / 10000000).toFixed(2);
   const totalAnnualHospitalRevenueCr = ((monthlyHospitalRevenue * 12) / 10000000).toFixed(2);
-  const paybackDays = Math.max(10, Math.round((1650000 / totalMonthlyBenefit) * 30));
+  const buyoutPrice = 1650000;
+  const paybackDays = Math.max(10, Math.round((buyoutPrice / totalMonthlyBenefit) * 30));
 
-  // Valuation calc (approx ARR at ₹200/month per Kendra)
+  // Valuation multiple expansion (ARR lift)
   const annualArr = kendraCount * 200 * 12;
-  const currentValuationMultiple = 2.5;
-  const newValuationMultiple = 8.5;
+  const currentValuationMultiple = 2.5; // Outsourced vendor stack multiple
+  const newValuationMultiple = 8.5; // Proprietary ABDM EMR multiple
   const valuationLiftCr = ((annualArr * (newValuationMultiple - currentValuationMultiple)) / 10000000).toFixed(1);
 
   const whatsappPitchUrl =
@@ -75,8 +88,9 @@ export function MedysevaPitchClient() {
     const summary = `Executive Summary - Doctor Diary Acquisition for Medyseva & Vishesh Hospital:
 - Projected Annual Hospital IPD Inflow: ₹${totalAnnualHospitalRevenueCr} Crore
 - Projected Annual Operational EBITDA: ₹${totalAnnualBenefitCr} Crore
+- Buyer Net Monthly Benefit: ₹${(totalMonthlyBenefit / 100000).toFixed(2)} Lakhs
 - Estimated Series A Valuation Lift: ₹${valuationLiftCr}+ Crore
-- One-Time Buyout: ₹16.50 Lakhs (Payback in ${paybackDays} days)
+- One-Time Buyout: ₹16.50 Lakhs (Full Payback in ${paybackDays} days)
 - Founder Contact: Chetan Pratap (+91 80771 70715 • chetan.pratap@naturexpress.in)`;
     navigator.clipboard.writeText(summary);
     setCopied(true);
@@ -86,16 +100,16 @@ export function MedysevaPitchClient() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 font-sans selection:bg-blue-600 selection:text-white pb-20">
 
-      {/* ── TOP EXECUTIVE BANNER ── */}
+      {/* ── TOP EXECUTIVE BANNER (CLEAN ENTERPRISE HEADER) ── */}
       <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs px-4 py-3">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 font-mono font-bold text-blue-900 tracking-wide">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
             <Lock className="w-3.5 h-3.5 text-blue-700" />
-            <span>CONFIDENTIAL STRATEGIC PROPOSAL • HEALTH-TECH M&amp;A BRIEFING</span>
+            <span>CONFIDENTIAL COMMERCIAL PROPOSAL • STRATEGIC ACQUISITION &amp; ENTERPRISE PARTNERSHIP</span>
           </div>
           <div className="hidden sm:flex items-center gap-2 text-slate-600 font-medium">
-            Prepared Exclusively for: <strong className="text-slate-900 font-bold">Dr. Vishesh Kasliwal</strong> (Founder &amp; CEO, Medyseva)
+            Prepared Exclusively for: <strong className="text-slate-900 font-bold">Dr. Vishesh Kasliwal</strong> (Founder &amp; CEO: Medyseva Technologies, Indore)
           </div>
         </div>
       </div>
@@ -106,7 +120,7 @@ export function MedysevaPitchClient() {
         <div className="bg-white rounded-3xl p-6 sm:p-10 lg:p-12 border border-slate-200/90 shadow-sm space-y-6">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-900 text-xs sm:text-sm font-semibold">
             <HeartPulse className="w-4 h-4 text-blue-600" />
-            Proprietary ABDM EMR Engine &amp; Tertiary IPD Hospital Funnel
+            Proprietary ABDM EMR Engine &amp; 310-Bed Vishesh Jupiter Hospital IPD Funnel
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-[1.15]">
@@ -119,7 +133,7 @@ export function MedysevaPitchClient() {
           <p className="text-base sm:text-xl text-slate-600 max-w-3xl leading-relaxed">
             A private executive briefing for <strong className="text-slate-900 font-bold">Dr. Vishesh Kasliwal</strong> on how acquiring{" "}
             <span className="text-blue-800 font-semibold underline decoration-blue-400">Doctor Diary</span> replaces Medyseva&apos;s outsourced agency technology with a proprietary ABDM-compliant clinical EMR — and channels acute surgical transfers straight into{" "}
-            <strong className="text-slate-900 font-bold">Vishesh Jupiter Hospital (Ring Road, Indore)</strong>, while dramatically lifting Medyseva&apos;s institutional valuation.
+            <strong className="text-slate-900 font-bold">Vishesh Jupiter Hospital (Ring Road, Indore)</strong>, while unlocking institutional Series A valuation multiples.
           </p>
 
           <div className="pt-2 flex flex-col sm:flex-row items-center gap-4">
@@ -136,8 +150,8 @@ export function MedysevaPitchClient() {
               href="#ipd-simulator"
               className="w-full sm:w-auto px-6 py-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-base border border-slate-300/80 flex items-center justify-center gap-2 transition-all"
             >
-              <Building2 className="w-4 h-4 text-blue-700" />
-              Simulate Hospital IPD Revenue
+              <Calculator className="w-4 h-4 text-blue-700" />
+              Examine Exact Mathematical Model
             </a>
           </div>
 
@@ -166,7 +180,7 @@ export function MedysevaPitchClient() {
               <span className="text-[11px] font-mono font-bold text-red-600 uppercase tracking-wider">Roadblock 1: Outsourced Stack</span>
               <h4 className="font-bold text-slate-900 text-base">Agency Backend Dependency</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Medyseva&apos;s current web portal relies on an outsourced vendor endpoint (<code className="text-red-700 font-mono text-[11px] bg-red-50 px-1 py-0.5 rounded">api-medyseva-com.tejpage.com</code>). In institutional Series A due diligence, unowned tech stacks attract severe valuation haircuts — VCs classify this as a single point of failure and a business continuity risk.
+                Medyseva&apos;s web portal relies on an outsourced vendor endpoint (<code className="text-red-700 font-mono text-[11px] bg-red-50 px-1 py-0.5 rounded">api-medyseva-com.tejpage.com</code>). In institutional Series A due diligence, unowned tech stacks attract severe valuation haircuts — VCs classify this as a single point of failure and a business continuity risk.
               </p>
             </div>
 
@@ -182,13 +196,13 @@ export function MedysevaPitchClient() {
               <span className="text-[11px] font-mono font-bold text-red-600 uppercase tracking-wider">Roadblock 3: Lost IPD Patient Flow</span>
               <h4 className="font-bold text-slate-900 text-base">Vishesh Hospital Receives 0% Flow</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                When a rural Kendra detects acute appendicitis, cardiac ischemia, or high-risk obstetrics, the patient wanders off to local practitioners instead of being booked into Vishesh Jupiter Hospital&apos;s 350 beds — a direct revenue leak of lakhs every month.
+                When a rural Kendra detects acute appendicitis, cardiac ischemia, or high-risk obstetrics, the patient wanders off to local practitioners instead of being booked into Vishesh Jupiter Hospital&apos;s 310 beds — a direct revenue leak of lakhs every month.
               </p>
             </div>
           </div>
         </div>
 
-        {/* ── THE LIVE PRODUCT DEMO / TABS ── */}
+        {/* ── THE LIVE SOFTWARE WALKTHROUGH ── */}
         <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -252,7 +266,7 @@ export function MedysevaPitchClient() {
                       Designated Referral Destination:
                     </span>
                     <div className="font-bold text-slate-900 text-sm mt-0.5">
-                      Vishesh Jupiter Hospital, Ring Road, Indore
+                      Vishesh Jupiter Hospital, Scheme 94 Ring Road, Indore (310 Beds)
                     </div>
                   </div>
                   <span className="text-xs font-bold px-2.5 py-1 bg-amber-50 text-amber-800 rounded-md border border-amber-200">
@@ -269,7 +283,7 @@ export function MedysevaPitchClient() {
               </div>
 
               <div className="text-xs text-purple-900 bg-white/80 p-3 rounded-xl border border-purple-200">
-                💡 <strong>The Strategic Value:</strong> Vishesh Hospital&apos;s 350 beds are continuously filled with high-value surgical cases originating from rural MP, generating crores in institutional hospital billing that currently goes to competitors.
+                💡 <strong>The Strategic Value:</strong> Vishesh Hospital&apos;s 310 beds are continuously filled with high-value surgical cases originating from rural MP, generating crores in institutional hospital billing that currently goes to competitors.
               </div>
             </div>
           )}
@@ -370,24 +384,25 @@ export function MedysevaPitchClient() {
               </div>
 
               <div className="text-xs text-teal-900 bg-white/80 p-3 rounded-xl border border-teal-200">
-                💡 <strong>Govt Revenue Unlock:</strong> NHA pays ₹20–₹50 per verified ABHA transaction under ABDM Milestone reimbursements. With 500 Kendras conducting 8 consults/day, this is a meaningful recurring grant income stream — on top of consultation fees.
+                💡 <strong>Govt Revenue Unlock:</strong> NHA pays ₹20 per verified ABHA transaction under ABDM Milestone reimbursements. Across 1,20,000 monthly visits, this represents substantial recurring non-dilutive income.
               </div>
             </div>
           )}
         </div>
 
-        {/* ── INTERACTIVE ROI CALCULATOR (HOSPITAL IPD FUNNEL) ── */}
+        {/* ── THE EXACT MATHEMATICAL ENGINE: HOW BOTH SIDES EARN ── */}
         <div id="ipd-simulator" className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-8">
           <div className="space-y-2">
-            <span className="text-xs font-mono font-bold text-blue-700 uppercase tracking-wider">Financial Simulation Model</span>
+            <span className="text-xs font-mono font-bold text-blue-700 uppercase tracking-wider">Financial Transparency Engine</span>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
-              Calculate Vishesh Hospital&apos;s IPD Revenue Funnel
+              The Exact Mathematical Calculation: How Both Sides Earn
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl">
-              Slide the number of active Medyseva Kendras across rural MP to simulate tertiary IPD bed admissions and operational savings:
+            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
+              Every projection here is backed by transparent unit economics. Slide the active Kendra count to inspect the exact formula for hospital revenue, doctor efficiency, and government grants:
             </p>
           </div>
 
+          {/* Interactive Kendra Slider */}
           <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
             <div className="flex items-center justify-between">
               <label htmlFor="kendra-slider" className="text-sm font-bold text-slate-900">
@@ -408,50 +423,122 @@ export function MedysevaPitchClient() {
               className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-700"
             />
             <div className="flex justify-between text-[11px] text-slate-400 font-mono">
-              <span>100 Kendras (Pilot Cluster)</span>
-              <span>500 Kendras (Current Network)</span>
-              <span>1,000 Kendras (State Expansion)</span>
+              <span>100 Kendras (Pilot Deployment)</span>
+              <span>500 Kendras (Current Active Network)</span>
+              <span>1,000 Kendras (Statewide Scale)</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-              <div className="text-xs font-mono font-bold text-slate-500 uppercase">Monthly Tertiary Admissions</div>
-              <div className="text-3xl font-black text-slate-900">{monthlyVisheshAdmissions} IPD Patients</div>
-              <p className="text-xs text-slate-600">
-                Pre-screened surgical &amp; ICU admissions channeled to Vishesh Jupiter Hospital monthly.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-              <div className="text-xs font-mono font-bold text-slate-500 uppercase">Monthly Hospital Revenue</div>
-              <div className="text-3xl font-black text-blue-800">₹{(monthlyHospitalRevenue / 100000).toFixed(2)} Lakhs</div>
-              <p className="text-xs text-slate-600">
-                At ₹65,000 average tertiary surgical/cardiac admission ticket size.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-              <div className="text-xs font-mono font-bold text-slate-500 uppercase">Doctor Panel Hours Saved</div>
-              <div className="text-3xl font-black text-emerald-700">{monthlyHoursSaved.toLocaleString()} Hours</div>
-              <p className="text-xs text-slate-600">
-                Saves ₹{(monthlyDoctorPayrollCut / 100000).toFixed(2)} Lakhs monthly by cutting visit duration from 7.5 to 2.3 mins.
-              </p>
-            </div>
+          {/* Line-by-Line Breakdown Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs sm:text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 text-slate-500 font-mono">
+                  <th className="py-3 px-3">Revenue &amp; Cost Stream</th>
+                  <th className="py-3 px-3">Underlying Mathematical Formula</th>
+                  <th className="py-3 px-3 text-right">Monthly Net Impact</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                <tr>
+                  <td className="py-3.5 px-3">
+                    <strong className="text-slate-900 block font-semibold">1. Vishesh Jupiter Hospital IPD Inflow</strong>
+                    <span className="text-[11px] text-slate-500">Tertiary surgical &amp; ICU admissions</span>
+                  </td>
+                  <td className="py-3.5 px-3 font-mono text-xs text-slate-600">
+                    {monthlyConsults.toLocaleString()} consults × 1.2% surgical need × 10% Vishesh conversion = {monthlyVisheshAdmissions} IPD pts × ₹65,000 ticket
+                  </td>
+                  <td className="py-3.5 px-3 text-right font-bold text-blue-900 font-mono">
+                    ₹{(monthlyHospitalRevenue / 100000).toFixed(2)} Lakhs <span className="text-[11px] block font-normal text-slate-500">₹{(monthlyHospitalEbitda / 100000).toFixed(2)}L EBITDA</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-3.5 px-3">
+                    <strong className="text-slate-900 block font-semibold">2. Doctor Panel Efficiency Payroll Cut</strong>
+                    <span className="text-[11px] text-slate-500">Visit duration cut from 7.5 to 2.3 minutes</span>
+                  </td>
+                  <td className="py-3.5 px-3 font-mono text-xs text-slate-600">
+                    {monthlyConsults.toLocaleString()} consults × 5.2 mins saved = {monthlyHoursSaved.toLocaleString()} hours saved × ₹350/hr panel rate × 50%
+                  </td>
+                  <td className="py-3.5 px-3 text-right font-bold text-emerald-700 font-mono">
+                    ₹{(monthlyDoctorPayrollCut / 100000).toFixed(2)} Lakhs
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-3.5 px-3">
+                    <strong className="text-slate-900 block font-semibold">3. NHA ABDM Government Incentive</strong>
+                    <span className="text-[11px] text-slate-500">Direct non-dilutive digital health grant</span>
+                  </td>
+                  <td className="py-3.5 px-3 font-mono text-xs text-slate-600">
+                    {monthlyConsults.toLocaleString()} consults × 40% verified ABHA linkage × ₹20/transaction NHA incentive
+                  </td>
+                  <td className="py-3.5 px-3 text-right font-bold text-teal-700 font-mono">
+                    ₹{(monthlyAbdmGrantRevenue / 100000).toFixed(2)} Lakhs
+                  </td>
+                </tr>
+                <tr className="bg-blue-50/60 font-bold">
+                  <td className="py-3.5 px-3 text-blue-950 font-black">Total Net Monthly Operational Bottom-Line Gain</td>
+                  <td className="py-3.5 px-3 text-blue-800 text-xs font-mono">Hospital EBITDA (45%) + Payroll Saved + ABDM Grants</td>
+                  <td className="py-3.5 px-3 text-right text-blue-900 font-black font-mono text-base">
+                    ₹{(totalMonthlyBenefit / 100000).toFixed(2)} Lakhs / mo
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
+          {/* Consolidated ROI Banner */}
           <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-blue-900 to-indigo-950 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-md">
             <div>
-              <div className="text-xs font-mono font-bold text-blue-300 uppercase tracking-wider">Total Annual Vishesh Hospital Impact</div>
+              <div className="text-xs font-mono font-bold text-blue-300 uppercase tracking-wider">Total Annual Vishesh Hospital Billing Unlocked</div>
               <div className="text-3xl sm:text-5xl font-black mt-1">₹{totalAnnualHospitalRevenueCr} Crore / Year</div>
               <div className="text-xs text-blue-200 mt-1">
-                Net operational EBITDA value unlocked: ₹{totalAnnualBenefitCr} Crore annually
+                Net operational EBITDA &amp; savings unlocked: ₹{totalAnnualBenefitCr} Crore annually
               </div>
             </div>
             <div className="text-right bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 flex-shrink-0">
               <div className="text-xs text-blue-200">Full Buyout Payback Period:</div>
               <div className="text-3xl font-black text-white">{paybackDays} Days</div>
-              <div className="text-[10px] text-blue-300 mt-0.5">Based on ₹16.5L acquisition price</div>
+              <div className="text-[10px] text-blue-300 mt-0.5">Based on ₹16.50 Lakhs one-time acquisition</div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── HOW DOCTOR DIARY / WE EARN (TRANSPARENT COMMERCIALS) ── */}
+        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-8">
+          <div className="space-y-2">
+            <span className="text-xs font-mono font-bold text-blue-700 uppercase tracking-wider">Mutual Alignment</span>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
+              How Doctor Diary / We Earn: Zero Hidden Traps
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
+              Enterprise transactions succeed when both parties know exactly how the other makes money. Here is our exact business model:
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-blue-700 flex items-center justify-center text-white">
+                  <CircleDollarSign className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold text-slate-900">Under Model A (Full Buyout): Clean Capital Event</h4>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                We earn a single one-time capital payment of <strong>₹16,50,000</strong>. In exchange, we hand over 100% of the intellectual property, full GitHub source code repository, Supabase database cluster, and 30 days of developer handover. We retain 0% royalty, 0% equity, and 0% recurring fee. Medyseva owns the software forever — permanently eliminating the third-party agency dependency before institutional investors audit your codebase.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-white">
+                  <ArrowRightLeft className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold text-slate-900">Under Model B (Kendra License): Managed SaaS Operations</h4>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                We earn an upfront network enablement fee of <strong>₹7,50,000</strong> plus an ongoing managed cloud operations retainer of <strong>₹32,000 / month</strong>. This fee covers 99.9% database uptime across all 500+ Kendras, automated WebRTC video infrastructure scaling, and hospital referral webhook monitoring.
+              </p>
             </div>
           </div>
         </div>
@@ -514,7 +601,7 @@ export function MedysevaPitchClient() {
               </div>
               <h4 className="font-bold text-slate-900">Government Grant &amp; Scheme Revenue</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                ABDM Milestone reimbursements: NHA pays ₹20–₹50 per verified ABHA transaction. PM-ABHIM digital health grants. NHM state digitisation incentives. With Doctor Diary as the ABDM-compliant engine, Medyseva qualifies for crores in non-dilutive government grant funding — money that arrives without giving up equity.
+                ABDM Milestone reimbursements: NHA pays ₹20 per verified ABHA transaction. PM-ABHIM digital health grants. NHM state digitisation incentives. With Doctor Diary as the ABDM-compliant engine, Medyseva qualifies for crores in non-dilutive government grant funding — money that arrives without giving up equity.
               </p>
             </div>
 
@@ -558,7 +645,7 @@ export function MedysevaPitchClient() {
                   <td className="py-3 px-3 font-black text-blue-900">Medyseva + Doctor Diary</td>
                   <td className="py-3 px-3 text-emerald-700 font-bold">✓ Yes</td>
                   <td className="py-3 px-3 text-emerald-700 font-bold">✓ Yes</td>
-                  <td className="py-3 px-3 text-emerald-700 font-bold">✓ Vishesh Jupiter</td>
+                  <td className="py-3 px-3 text-emerald-700 font-bold">✓ Vishesh Jupiter (310 Beds)</td>
                   <td className="py-3 px-3 text-emerald-700 font-bold">✓ 500+ Kendras</td>
                 </tr>
                 <tr>
@@ -592,7 +679,7 @@ export function MedysevaPitchClient() {
               <div>
                 <p className="text-sm font-bold text-slate-900">The Irreversible First-Mover Advantage</p>
                 <p className="text-xs text-slate-600 leading-relaxed mt-1">
-                  Medyseva&apos;s 500+ physical Kendra network is an asset that took 5+ years to build. Overlaying Doctor Diary&apos;s structured EMR onto this network creates an operational moat that eSanjeevani, mFine, or any urban telehealth startup cannot replicate without physically building Kendras — which takes years and hundreds of crores. You get this competitive moat for ₹16.5 Lakhs.
+                  Medyseva&apos;s 500+ physical Kendra network is an asset that took years to build. Overlaying Doctor Diary&apos;s structured EMR onto this network creates an operational moat that eSanjeevani, mFine, or any urban telehealth startup cannot replicate without physically building Kendras — which takes years and hundreds of crores. You get this competitive moat for ₹16.5 Lakhs.
                 </p>
               </div>
             </div>
@@ -634,7 +721,7 @@ export function MedysevaPitchClient() {
                 <tr>
                   <td className="py-3 px-3 font-semibold text-slate-900">Tertiary Hospital Integration</td>
                   <td className="py-3 px-3 text-red-600">Zero automated referral tracking</td>
-                  <td className="py-3 px-3 text-emerald-700 font-medium">1-Tap Vishesh Hospital escalation with priority triage</td>
+                  <td className="py-3 px-3 text-emerald-700 font-medium">1-Tap Vishesh Jupiter Hospital escalation with priority triage</td>
                 </tr>
                 <tr>
                   <td className="py-3 px-3 font-semibold text-slate-900">VC Diligence Score</td>
