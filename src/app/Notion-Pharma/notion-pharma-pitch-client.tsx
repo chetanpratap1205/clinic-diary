@@ -24,6 +24,7 @@ import {
   Banknote,
   Target,
   ChevronRight,
+  Mail,
 } from "lucide-react";
 
 export function NotionPharmaPitchClient() {
@@ -58,19 +59,20 @@ export function NotionPharmaPitchClient() {
   const paybackDays = Math.max(12, Math.round((1850000 / totalMonthlyBenefit) * 30));
 
   const whatsappPitchUrl =
-    "https://wa.me/917566789944?text=" +
+    "https://wa.me/918077170715?text=" +
     encodeURIComponent(
       "Hi Chetan, I reviewed the confidential Notion Pharma & Nandani Labs strategic proposal for Doctor Diary. Let's meet today in Indore to discuss the acquisition terms."
     );
 
-  const phoneCallUrl = "tel:+917566789944";
+  const phoneCallUrl = "tel:+918077170715";
+  const emailUrl = "mailto:chetan.pratap@naturexpress.in?subject=" + encodeURIComponent("Confidential: Doctor Diary Strategic Proposal - Notion Pharma & Nandani Labs");
 
   const copyProposalSummary = () => {
     const summary = `Executive Summary - Doctor Diary Acquisition for Notion Pharma & Nandani Labs:
 - Projected Annual Volume: ₹${totalAnnualGrossVolumeCr} Crore
 - Projected Annual Net Bottom-Line: ₹${totalAnnualBenefitCr} Crore
 - One-Time Buyout: ₹18.50 Lakhs (Payback in ${paybackDays} days)
-- Contact: Chetan (+91 75667 89944)`;
+- Founder Contact: Chetan Pratap (+91 80771 70715 • chetan.pratap@naturexpress.in)`;
     navigator.clipboard.writeText(summary);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
@@ -110,7 +112,7 @@ export function NotionPharmaPitchClient() {
           </h1>
 
           <p className="text-base sm:text-xl text-slate-600 max-w-3xl leading-relaxed">
-            A private executive briefing for <strong className="text-slate-900 font-bold">Shantanu Kharia (VIT IT • SP Jain MBA)</strong> on how acquiring or licensing{" "}
+            A private executive briefing for <strong className="text-slate-900 font-bold">Shantanu Kharia</strong> on how acquiring or licensing{" "}
             <span className="text-emerald-800 font-semibold underline decoration-emerald-400">Doctor Diary</span> locks in{" "}
             <strong className="text-slate-900 font-bold">Notion Pharma&apos;s</strong> high-margin critical care injectables and channels 100% of diagnostic pathology requisitions to{" "}
             <strong className="text-slate-900 font-bold">Nandani Medical Laboratories</strong> across 150+ Indore clinics.
@@ -454,7 +456,7 @@ export function NotionPharmaPitchClient() {
                 <h4 className="font-bold text-slate-900">Behavioral Lock-In: The Default Chip Effect</h4>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Human behavior research confirms that default options are selected 87% of the time under cognitive load. A doctor consulting 50 patients per day operates at peak cognitive fatigue — they will always choose the pre-seeded Notion chip over typing a competitor name. This is not loyalty. This is architecture.
+                Clinical workflow research confirms that default options are selected 87% of the time under high patient volume. A doctor consulting 50 patients per day operates at peak cognitive fatigue — they will always choose the pre-seeded Notion chip over typing a competitor name. This creates permanent behavioral lock-in.
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-white border border-emerald-200 text-center">
@@ -495,7 +497,7 @@ export function NotionPharmaPitchClient() {
               From Pharma Manufacturer to HealthTech Holding Company
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
-              You studied Family Managed Business at SP Jain. You understand that the next generation of Kharia Group cannot be just a pharma manufacturer and a pathology lab. The companies that will dominate Malwa healthcare in the next decade own the doctor&apos;s digital workflow.
+              The healthcare distribution landscape in Madhya Pradesh is shifting rapidly. The companies that will dominate Malwa healthcare in the next decade cannot rely solely on traditional manufacturing and manual field reps — they must own the doctor&apos;s digital prescription workflow.
             </p>
           </div>
 
@@ -516,7 +518,7 @@ export function NotionPharmaPitchClient() {
               </div>
               <h4 className="font-bold text-slate-900">PE &amp; Venture Debt Repositioning</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Notion Pharma + Nandani Labs + Doctor Diary = a <strong>technology-enabled pharma-diagnostics platform</strong>. This repositioning unlocks access to pharma-focused PE funds (Lighthouse Funds, CX Partners) and healthcare venture debt (Trifecta Capital) at 3–4x higher company valuations compared to a pure manufacturing play. The asset becomes an investable platform, not just a family business.
+                Notion Pharma + Nandani Labs + Doctor Diary = a <strong>technology-enabled pharma-diagnostics platform</strong>. This repositioning unlocks access to pharma-focused PE funds (Lighthouse Funds, CX Partners) and healthcare venture debt (Trifecta Capital) at 3–4x higher company valuations compared to a pure manufacturing play. The asset becomes an investable platform.
               </p>
             </div>
 
@@ -524,9 +526,9 @@ export function NotionPharmaPitchClient() {
               <div className="w-10 h-10 rounded-xl bg-amber-700 flex items-center justify-center">
                 <Globe className="w-5 h-5 text-white" />
               </div>
-              <h4 className="font-bold text-slate-900">Modern Institute Alumni Network Activation</h4>
+              <h4 className="font-bold text-slate-900">Institutional Distribution Reach</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                As Vice Chairman of Modern Institute of Pharmaceutical Sciences, you have direct influence over 400+ pharmacy graduates entering Indore&apos;s healthcare ecosystem annually. Doctor Diary becomes the de facto clinical tool taught and recommended within your institution&apos;s network — a captive pipeline that no competitor can replicate.
+                Leverage your extensive institutional and distribution reach across Indore&apos;s healthcare ecosystem to make Doctor Diary the standard clinical tool across private clinics — building a captive, self-reinforcing network that no competitor can match.
               </p>
             </div>
           </div>
@@ -724,7 +726,7 @@ export function NotionPharmaPitchClient() {
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-50 text-purple-800 border border-purple-200">Go-Live</span>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  We onboard the first 25 high-prescribing Modern Group alumni &amp; private Indore clinics. You verify live prescription flow and Nandani lab requisition tickets generated on your phone. Final IP assignment deed executed and balance 90% payment released.
+                  We onboard the first 25 high-prescribing private Indore clinics. You verify live prescription flow and Nandani lab requisition tickets generated directly. Final IP assignment deed executed and balance 90% payment released.
                 </p>
               </div>
             </div>
@@ -772,14 +774,21 @@ export function NotionPharmaPitchClient() {
               className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white text-emerald-900 hover:bg-emerald-50 font-black text-base shadow-lg flex items-center justify-center gap-2.5 transition-all transform hover:scale-105"
             >
               <MessageSquare className="w-5 h-5 text-emerald-700" />
-              WhatsApp Chetan (Founder &amp; Developer)
+              WhatsApp Chetan (+91 80771 70715)
             </a>
             <a
               href={phoneCallUrl}
               className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-base border border-white/20 flex items-center justify-center gap-2 transition-all"
             >
               <Phone className="w-4 h-4 text-emerald-300" />
-              Call Directly: +91 75667 89944
+              Call Directly: +91 80771 70715
+            </a>
+            <a
+              href={emailUrl}
+              className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-base border border-white/20 flex items-center justify-center gap-2 transition-all"
+            >
+              <Mail className="w-4 h-4 text-emerald-300" />
+              chetan.pratap@naturexpress.in
             </a>
           </div>
 

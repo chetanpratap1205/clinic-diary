@@ -25,6 +25,7 @@ import {
   Globe,
   ArrowUpRight,
   ChevronRight,
+  Mail,
 } from "lucide-react";
 
 export function MedysevaPitchClient() {
@@ -62,12 +63,13 @@ export function MedysevaPitchClient() {
   const valuationLiftCr = ((annualArr * (newValuationMultiple - currentValuationMultiple)) / 10000000).toFixed(1);
 
   const whatsappPitchUrl =
-    "https://wa.me/917566789944?text=" +
+    "https://wa.me/918077170715?text=" +
     encodeURIComponent(
       "Hi Chetan, I reviewed the confidential Medyseva & Vishesh Hospital strategic proposal for Doctor Diary. Let's meet today in Indore to discuss the acquisition terms."
     );
 
-  const phoneCallUrl = "tel:+917566789944";
+  const phoneCallUrl = "tel:+918077170715";
+  const emailUrl = "mailto:chetan.pratap@naturexpress.in?subject=" + encodeURIComponent("Confidential: Doctor Diary Strategic Proposal - Medyseva & Vishesh Hospital");
 
   const copyProposalSummary = () => {
     const summary = `Executive Summary - Doctor Diary Acquisition for Medyseva & Vishesh Hospital:
@@ -75,7 +77,7 @@ export function MedysevaPitchClient() {
 - Projected Annual Operational EBITDA: ₹${totalAnnualBenefitCr} Crore
 - Estimated Series A Valuation Lift: ₹${valuationLiftCr}+ Crore
 - One-Time Buyout: ₹16.50 Lakhs (Payback in ${paybackDays} days)
-- Contact: Chetan (+91 75667 89944)`;
+- Founder Contact: Chetan Pratap (+91 80771 70715 • chetan.pratap@naturexpress.in)`;
     navigator.clipboard.writeText(summary);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
@@ -93,7 +95,7 @@ export function MedysevaPitchClient() {
             <span>CONFIDENTIAL STRATEGIC PROPOSAL • HEALTH-TECH M&amp;A BRIEFING</span>
           </div>
           <div className="hidden sm:flex items-center gap-2 text-slate-600 font-medium">
-            Prepared Exclusively for: <strong className="text-slate-900 font-bold">Dr. Vishesh Kasliwal</strong> (MBBS, MHA UK • Founder &amp; CEO, Medyseva)
+            Prepared Exclusively for: <strong className="text-slate-900 font-bold">Dr. Vishesh Kasliwal</strong> (Founder &amp; CEO, Medyseva)
           </div>
         </div>
       </div>
@@ -115,7 +117,7 @@ export function MedysevaPitchClient() {
           </h1>
 
           <p className="text-base sm:text-xl text-slate-600 max-w-3xl leading-relaxed">
-            A private executive briefing for <strong className="text-slate-900 font-bold">Dr. Vishesh Kasliwal (MBBS, MHA UK)</strong> on how acquiring{" "}
+            A private executive briefing for <strong className="text-slate-900 font-bold">Dr. Vishesh Kasliwal</strong> on how acquiring{" "}
             <span className="text-blue-800 font-semibold underline decoration-blue-400">Doctor Diary</span> replaces Medyseva&apos;s outsourced agency technology with a proprietary ABDM-compliant clinical EMR — and channels acute surgical transfers straight into{" "}
             <strong className="text-slate-900 font-bold">Vishesh Jupiter Hospital (Ring Road, Indore)</strong>, while dramatically lifting Medyseva&apos;s institutional valuation.
           </p>
@@ -285,7 +287,7 @@ export function MedysevaPitchClient() {
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Built with native numeric keypads so Kendra operators can record vital clinical markers with zero keyboard lag, even on entry-level Android smartphones — no proprietary hardware required:
+                Built with native numeric keypads so Kendra operators can record vital clinical markers with zero keyboard lag, even on entry-level smartphones — no proprietary hardware required:
               </p>
 
               <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 pt-1">
@@ -462,7 +464,7 @@ export function MedysevaPitchClient() {
               Why This Is the Highest-ROI Move Before Your Series A
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
-              You trained at Apollo, ran emergency protocols in the UK, and built Medyseva from zero. You understand better than anyone that the difference between a Series A at ₹20 Crore valuation and one at ₹80 Crore is not scale — it is <strong>proprietary technology ownership</strong>.
+              In institutional healthtech fundraising, the difference between a Series A at ₹20 Crore valuation and one at ₹80 Crore is not just Kendra count — it is <strong>proprietary technology ownership and clinical data sovereignty</strong>.
             </p>
           </div>
 
@@ -761,7 +763,7 @@ export function MedysevaPitchClient() {
               What Are The Exact Next Steps If You Say &quot;YES&quot;?
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
-              We respect your clinical schedule and corporate responsibilities. Here is the exact 4-phase transition timeline from signing to network go-live in 7 days:
+              We respect your schedule and corporate responsibilities. Here is the exact 4-phase transition timeline from signing to network go-live in 7 days:
             </p>
           </div>
 
@@ -821,7 +823,7 @@ export function MedysevaPitchClient() {
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">Go-Live</span>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  We roll out the workstation to the first 25 high-volume Kendras in Dewas and Dhar. You verify live video consults and hospital transfer tickets generated on your personal phone. Final IP assignment deed executed and balance 90% payment released.
+                  We roll out the workstation to the first 25 high-volume Kendras in Dewas and Dhar. You verify live video consults and hospital transfer tickets generated directly. Final IP assignment deed executed and balance 90% payment released.
                 </p>
               </div>
             </div>
@@ -869,14 +871,21 @@ export function MedysevaPitchClient() {
               className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white text-blue-950 hover:bg-blue-50 font-black text-base shadow-lg flex items-center justify-center gap-2.5 transition-all transform hover:scale-105"
             >
               <MessageSquare className="w-5 h-5 text-blue-700" />
-              WhatsApp Chetan (Founder &amp; Developer)
+              WhatsApp Chetan (+91 80771 70715)
             </a>
             <a
               href={phoneCallUrl}
               className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-base border border-white/20 flex items-center justify-center gap-2 transition-all"
             >
               <Phone className="w-4 h-4 text-blue-300" />
-              Call Directly: +91 75667 89944
+              Call Directly: +91 80771 70715
+            </a>
+            <a
+              href={emailUrl}
+              className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-base border border-white/20 flex items-center justify-center gap-2 transition-all"
+            >
+              <Mail className="w-4 h-4 text-blue-300" />
+              chetan.pratap@naturexpress.in
             </a>
           </div>
 
