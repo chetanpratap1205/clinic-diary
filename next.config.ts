@@ -53,16 +53,6 @@ const nextConfig: NextConfig = {
         source: '/status/:slug',
         destination: '/clinic/:slug/status',
         permanent: true,
-      },
-      {
-        source: '/notion-pharma',
-        destination: '/Notion-Pharma',
-        permanent: false,
-      },
-      {
-        source: '/medyseva',
-        destination: '/Medyseva',
-        permanent: false,
       }
     ];
   },

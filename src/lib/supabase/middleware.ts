@@ -35,6 +35,19 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const path = request.nextUrl.pathname
+
+  if (path === '/notion-pharma') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/Notion-Pharma'
+    return NextResponse.redirect(url)
+  }
+
+  if (path === '/medyseva') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/Medyseva'
+    return NextResponse.redirect(url)
+  }
+
   const isProtectedPath =
     path.startsWith('/dashboard') ||
     path.startsWith('/onboarding') ||
